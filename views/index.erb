@@ -1,0 +1,39 @@
+<h1><%= title %></h1>
+
+Output generated: <%= Time.now %>
+
+<pre>
+$ <%= @command %>
+</pre>
+
+<table class="table table-bordered">
+  <tr>
+    <th>USER</th>
+    <th>PID</th>
+    <th>%CPU</th>
+    <th>%MEM</th>
+    <th>VSZ</th>
+    <th>RSS</th>
+    <th>TTY</th>
+    <th>STAT</th>
+    <th>START</th>
+    <th>TIME</th>
+    <th>COMMAND</th>
+  </tr>
+  <% @processes.each do |app| %>
+  <tr>
+    <td><%= app.user %></td>
+    <td><%= app.pid %></td>
+    <td><%= app.pct_cpu %></td>
+    <td><%= app.pct_mem %></td>
+    <td><%= app.vsz %></td>
+    <td><%= app.rss %></td>
+    <td><%= app.tty %></td>
+    <td><%= app.stat %></td>
+    <td><%= app.start %></td>
+    <td><%= app.time %></td>
+    <td><%= app.command %></td>
+  </tr>
+  <% end %>
+
+</table>

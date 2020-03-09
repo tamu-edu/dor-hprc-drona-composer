@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <meta charset="UTF-8">
+
+  <%# reload every 15 seconds %>
+  <meta http-equiv="refresh" content="15">
+
+  <link rel="stylesheet" type="text/css" href="<%= url("/bootstrap-3.3.7/css/bootstrap.min.css") %>">
+  <link rel="stylesheet" type="text/css" href="<%= url("/ood-bootstrap3-override-0.0.1/navbar.css") %>">
+</head>
+<body>
+
+<header>
+  <!-- navbar  -->
+  <nav class="ood-appkit navbar navbar-inverse navbar-static-top" role="navigation">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <ul class="navbar-breadcrumbs">
+          <li><a href="<%= dashboard_url %>"><%= dashboard_title %></a></li>
+          <li><a href="<%= url('/') %>"><%= title %></a></li>
+        </ul>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse navbar-responsive-collapse">
+        <ul class="nav navbar-nav">
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+</header>
+
+<div class="container" role="main">
+  <% if @error %>
+      <div class="alert alert-danger"><%= @error %></div>
+  <% end %>
+
+  <%== yield %>
+</div>
+
+<script src="<%= url("/jquery-3.2.1/jquery-3.2.1.min.js") %>"></script>
+<script src="<%= url("/bootstrap-3.3.7-dist/js/bootstrap.min.js") %>"></script>
+</body>
+</html>
