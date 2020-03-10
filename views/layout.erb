@@ -9,6 +9,8 @@
 
   <link rel="stylesheet" type="text/css" href="<%= url("/bootstrap-3.3.7/css/bootstrap.min.css") %>">
   <link rel="stylesheet" type="text/css" href="<%= url("/ood-bootstrap3-override-0.0.1/navbar.css") %>">
+  <link rel="stylesheet" type="text/css" href="<%= url("/adminlte-3.0.2/css/adminlte.min.css") %>">
+
 </head>
 <body>
 
@@ -47,7 +49,12 @@
   <%== yield %>
 </div>
 
-<script src="<%= url("/jquery-3.2.1/jquery-3.2.1.min.js") %>"></script>
-<script src="<%= url("/bootstrap-3.3.7-dist/js/bootstrap.min.js") %>"></script>
+<script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
+<script src="<%= url("/bootstrap-3.3.7/js/bootstrap.min.js") %>"></script>
+<script src="<%= url("/adminlte-3.0.2/js/adminlte.min.js") %>"></script>
+<script src="<%= url("/chartjs-2.9.3/Chart.bundle.min.js") %>"></script>
+
+<script src="<%= url("custom/dashboard.js") %>"></script>
+
 </body>
 </html>
