@@ -13,7 +13,6 @@ class ShowQuota
     lines.drop(1).map do |line|
       DiskQuota.new(*(line.split(" ", 5)))
     end
-    
   end
 
   def exec

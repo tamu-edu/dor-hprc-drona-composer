@@ -1,13 +1,15 @@
 require 'erubi'
-# require './command'
 require './showquota'
+require './squeue'
+require './myproject'
 
 set :erb, :escape_html => true
 
 if development?
   require 'sinatra/reloader'
-  # also_reload './command.rb'
   also_reload './showquota.rb'
+  also_reload './squeue.rb'
+  also_reload './myproject.rb'
 end
 
 helpers do
@@ -26,12 +28,15 @@ end
 
 # Define a route at the root '/' of the app.
 get '/' do
-  # @command = Command.new
-  # @processes, @error = @command.exec
 
   @showquota = ShowQuota.new
   @quota, @error = @showquota.exec
 
+  @squeue = Squeue.new
+  @jobs, @error = @squeue.exec
+
+  @myproject = MyProject.new
+  @allocations = @myproject.exec
   # Render the view
   erb :index
 end
