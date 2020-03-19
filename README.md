@@ -1,4 +1,4 @@
-# ood-example-ps
+# OOD Dashboard for HPRC
 
-Example Open OnDemand app that displays the output of `ps`
+Based on the original Passenger App provided by OOD project.
 
