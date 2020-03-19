@@ -2,6 +2,7 @@ require 'erubi'
 require './showquota'
 require './squeue'
 require './myproject'
+require './utilization'
 
 set :erb, :escape_html => true
 
@@ -35,8 +36,11 @@ get '/' do
   @squeue = Squeue.new
   @jobs, @squeue_error = @squeue.exec
 
-  # @myproject = MyProject.new
-  # @allocations, @allocation_error, stdout_str = @myproject.exec
+  @utilization = Utilization.new
+  @usages, @usage_error = @utilization.exec
+
+  @myproject = MyProject.new
+  @allocations, @allocation_error= @myproject.exec
   # Render the view
   erb :index
 end

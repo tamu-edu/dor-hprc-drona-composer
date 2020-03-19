@@ -28,6 +28,6 @@ class MyProject
       allocation_error = "Command '#{to_s}' exited with error: #{stderr_str}"
     end
 
-    [allocations, allocation_error, stdout_str]
+    [allocations, allocation_error]
   end
 end
