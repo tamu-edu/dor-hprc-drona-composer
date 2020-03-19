@@ -33,10 +33,10 @@ get '/' do
   @quota, @quota_error = @showquota.exec
 
   @squeue = Squeue.new
-  @jobs, @squeue_error, @stdout_str = @squeue.exec
+  @jobs, @squeue_error = @squeue.exec
 
-  @myproject = MyProject.new
-  @allocations = @myproject.exec
+  # @myproject = MyProject.new
+  # @allocations, @allocation_error, stdout_str = @myproject.exec
   # Render the view
   erb :index
 end

@@ -26,6 +26,6 @@ class Squeue
       error = "Command '#{to_s}' exited with error: #{stderr_str}"
     end
 
-    [jobs, squeue_error, stdout_str]
+    [jobs, squeue_error]
   end
 end

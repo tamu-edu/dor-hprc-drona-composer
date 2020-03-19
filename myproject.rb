@@ -1,16 +1,8 @@
-
-# ================================================================================================
-# List of phamminhtris's Project Accounts
-# ------------------------------------------------------------------------------------------------
-# |  Account   |  FY  | Default | Allocation |Used & Pending SUs|   Balance  |          PI        |
-# ------------------------------------------------------------------------------------------------
-# |122809608377|  2020|        Y|     5000.00|            -40.22|     4959.78|Liu, Honggao        |
-# ------------------------------------------------------------------------------------------------
 require 'open3'
 
 class MyProject
   def to_s
-    "myproject -l"
+    "/sw/local/bin/myproject -l"
   end
 
   Allocation = Struct.new(:account, :fy, :default, :allocation, :used_pending_su, :balance, :pi)
@@ -23,22 +15,19 @@ class MyProject
         new_line = line.sub("|", "").strip
         new_line = new_line.chop
         Allocation.new(*(new_line.split("|", 7)))
-        # Allocation.new(new_line, nil, nil, nil, nil, nil, nil)
     end
   end
 
   def exec
     allocations, error = [], nil
 
-    output = "List of phamminhtris's Project Accounts
-    ------------------------------------------------------------------------------------------------
-    |  Account   |  FY  | Default | Allocation |Used & Pending SUs|   Balance  |          PI        |
-    ------------------------------------------------------------------------------------------------
-    |122809608377|  2020|        Y|     5000.00|            -40.22|     4959.78|Liu, Honggao        |
-    ------------------------------------------------------------------------------------------------"
+    stdout_str, stderr_str, status = Open3.capture3(to_s)
+    if status.success?
+      allocations = parse(stdout_str)
+    else
+      allocation_error = "Command '#{to_s}' exited with error: #{stderr_str}"
+    end
 
-    allocations = parse(output)
-    allocations = allocations.compact
-    [allocations, error]
+    [allocations, allocation_error, stdout_str]
   end
 end
