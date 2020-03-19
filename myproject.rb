@@ -20,8 +20,8 @@ class MyProject
     lines = output.strip.split("\n")
     lines = lines.reject { |l| l.empty? }
     lines.drop(4).map do |line|
-        new_line = line.sub("|", "")
-        new_line = new_line.delete_suffix("|")
+        new_line = line.sub("|", "").strip
+        new_line = new_line.chop
         Allocation.new(*(new_line.split("|", 7)))
         # Allocation.new(new_line, nil, nil, nil, nil, nil, nil)
     end
