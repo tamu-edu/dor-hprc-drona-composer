@@ -30,10 +30,10 @@ end
 get '/' do
 
   @showquota = ShowQuota.new
-  @quota, @error = @showquota.exec
+  @quota, @quota_error = @showquota.exec
 
   @squeue = Squeue.new
-  @jobs, @error = @squeue.exec
+  @jobs, @squeue_error, @stdout_str = @squeue.exec
 
   @myproject = MyProject.new
   @allocations = @myproject.exec
