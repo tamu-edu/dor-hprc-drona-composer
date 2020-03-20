@@ -46,9 +46,11 @@ get '/' do
   erb :index
 end
 
+# endpoint
+# https://portal-terra.hprc.tamu.edu/pun/dev/dashboard/allocations
 get '/allocations' do 
   myproject = MyProject.new
   allocations, allocation_error = myproject.exec
   
-  allocations.to_json
+  allocations.map { |o| Hash[o.each_pair.to_a] }.to_json
 end
