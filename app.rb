@@ -1,4 +1,5 @@
 require 'erubi'
+require 'json'
 require './showquota'
 require './squeue'
 require './myproject'
@@ -39,8 +40,15 @@ get '/' do
   @utilization = Utilization.new
   @usages, @usage_error = @utilization.exec
 
-  # @myproject = MyProject.new
-  # @allocations, @allocation_error, @myproject_out = @myproject.exec
+  @myproject = MyProject.new
+  @allocations, @allocation_error, @myproject_out = @myproject.exec
   # Render the view
   erb :index
+end
+
+get '/allocations' do 
+  myproject = MyProject.new
+  allocations, allocation_error = myproject.exec
+  
+  allocations.to_json
 end

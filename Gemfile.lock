@@ -3,6 +3,7 @@ GEM
   specs:
     backports (3.8.0)
     erubi (1.6.1)
+    json (2.3.0)
     multi_json (1.12.1)
     rack (1.6.5)
     rack-protection (1.5.3)
@@ -27,6 +28,7 @@ PLATFORMS
 
 DEPENDENCIES
   erubi
+  json
   sinatra
   sinatra-contrib
 

@@ -18,6 +18,48 @@
 Report generated at: <%= Time.now %>
 
 <div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Allocation(s)</h3>
+      </div>
+      <!-- /.card-header -->
+      <div class="card-body p-0">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 10px">Account</th>
+              <th>FY</th>
+              <th>Default</th>
+              <th>Allocation</th>
+              <th>Used & Pending SUs</th>
+              <th>Balance</th>
+              <th>PI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @allocations.each do |allocation| %>
+            <tr>
+              <td><%= allocation.account %></td>
+              <td><%= allocation.fy %></td>
+              <td><%= allocation.default %></td>
+              <td><%= allocation.allocation %></td>
+              <td><%= allocation.used_pending_su %></td>
+              <td><%= allocation.balance %></td>
+              <td><%= allocation.pi %></td>
+            </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+  </div>
+
+</div>
+
+<div class="row">
   <div class="col-md-6">
     <div class="row">
       <div class="col">
@@ -151,5 +193,5 @@ Report generated at: <%= Time.now %>
     </div>
     <!-- /.card -->
   </div>
-
 </div>
+

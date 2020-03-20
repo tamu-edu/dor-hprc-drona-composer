@@ -2,20 +2,25 @@ require 'open3'
 
 class MyProject
   def to_s
-    "/sw/local/bin/myproject -l"
+    "/home/slurm/bin/pre_charge list"
   end
 
   Allocation = Struct.new(:account, :fy, :default, :allocation, :used_pending_su, :balance, :pi)
 
-  def parse(output)
-    output = output.gsub("-", "")
-    lines = output.strip.split("\n")
-    lines = lines.reject { |l| l.empty? }
-    lines.drop(4).map do |line|
-        new_line = line.sub("|", "").strip
-        # new_line = new_line.chop
-        Allocation.new(*(new_line.split("|", 7)))
+  def parse(out)
+    lines = out.strip.split("\n")
+    lines = lines.drop(5)
+    lines = lines.map do |line|
+        line.strip.delete("-")
     end
+    lines = lines.reject { |line| line.empty? }
+    lines = lines.map do |line|
+      line[1...-1]
+    end
+    lines = lines.map do |line|
+      Allocation.new(*(line.split("|", 7).collect(&:strip)))
+    end
+    
   end
 
   def exec
@@ -28,6 +33,6 @@ class MyProject
       allocation_error = "Command '#{to_s}' exited with error: #{stderr_str}"
     end
 
-    [allocations, allocation_error, stdout_str]
+    [allocations, allocation_error]
   end
 end
