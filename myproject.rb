@@ -13,7 +13,7 @@ class MyProject
     lines = lines.reject { |l| l.empty? }
     lines.drop(4).map do |line|
         new_line = line.sub("|", "").strip
-        new_line = new_line.chop
+        # new_line = new_line.chop
         Allocation.new(*(new_line.split("|", 7)))
     end
   end
@@ -28,6 +28,6 @@ class MyProject
       allocation_error = "Command '#{to_s}' exited with error: #{stderr_str}"
     end
 
-    [allocations, allocation_error]
+    [allocations, allocation_error, stdout_str]
   end
 end

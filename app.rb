@@ -39,8 +39,8 @@ get '/' do
   @utilization = Utilization.new
   @usages, @usage_error = @utilization.exec
 
-  @myproject = MyProject.new
-  @allocations, @allocation_error= @myproject.exec
+  # @myproject = MyProject.new
+  # @allocations, @allocation_error, @myproject_out = @myproject.exec
   # Render the view
   erb :index
 end

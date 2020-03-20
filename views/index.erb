@@ -9,7 +9,7 @@
 <div class="row">
   <div class="col-md-12">
     <div class="alert alert-warning" role="alert">
-      <%= @allocations %>
+      Debug area
     </div>
   </div>
 </div>
@@ -85,8 +85,8 @@ Report generated at: <%= Time.now %>
                 <% @usages.each do |usage| %>
                 <tr>
                   <td><%= usage.resource %></td>
-                  <td><span class="badge bg-normal"><%= usage.used %> / <%= usage.total%> </span>
-                  </td>
+                  <td><%= usage.used %> / <%= usage.total%></td>
+                  <td><span class="badge bg-normal"><%= usage.percent %> </span></td>
                 </tr>
 
                 <% end %>
@@ -152,45 +152,4 @@ Report generated at: <%= Time.now %>
     <!-- /.card -->
   </div>
 
-</div>
-
-<div class="row">
-  <div class="col">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Allocation(s)</h3>
-      </div>
-      <!-- /.card-header -->
-      <div class="card-body p-0">
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width: 10px">Account</th>
-              <th>FY</th>
-              <th>Default</th>
-              <th>Allocation</th>
-              <th>Used & Pending SUs</th>
-              <th>Balance</th>
-              <th>PI</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @allocations.each do |allocation| %>
-            <tr>
-              <td><%= allocation.account %></td>
-              <td><%= allocation.fy %></td>
-              <td><%= allocation.default %></td>
-              <td><%= allocation.used_pending_su %></td>
-              <td><%= allocation.balance %></td>
-              <td><%= allocation.pi %></td>
-            </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-      <!-- /.card-body -->
-    </div>
-    <!-- /.card -->
-  </div>
- 
 </div>

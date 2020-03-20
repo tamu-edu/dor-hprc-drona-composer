@@ -2,7 +2,7 @@ require 'open3'
 
 class Utilization
   def to_s
-    "/home/phamminhtris/utilization.sh"
+    "/sw/local/bin/utilization.sh"
   end
 
   Usage = Struct.new(:resource, :used, :total, :percent)
