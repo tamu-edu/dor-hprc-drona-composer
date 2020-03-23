@@ -24,13 +24,19 @@ class MyProject
   end
 
   def exec
-    allocations, error = [], nil
-
-    stdout_str, stderr_str, status = Open3.capture3(to_s)
-    if status.success?
-      allocations = parse(stdout_str)
+    allocations, allocation_error = [], nil
+    cache = ENV["OOD_ALLOC"]
+    
+    if cache.nil?
+      stdout_str, stderr_str, status = Open3.capture3(to_s)
+      if status.success?
+        allocations = parse(stdout_str)
+        ENV["OOD_ALLOC"]=stdout_str
+      else
+        allocation_error = "Command '#{to_s}' exited with error: #{stderr_str}"
+      end
     else
-      allocation_error = "Command '#{to_s}' exited with error: #{stderr_str}"
+      allocations = parse(cache)
     end
 
     [allocations, allocation_error]
