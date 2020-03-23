@@ -40,17 +40,18 @@ get '/' do
   @utilization = Utilization.new
   @usages, @usage_error = @utilization.exec
 
-  @myproject = MyProject.new
-  @allocations, @allocation_error, @myproject_out = @myproject.exec
+  # @myproject = MyProject.new
+  # @allocations, @allocation_error, @myproject_out = @myproject.exec
   # Render the view
   erb :index
 end
 
 # endpoint
 # https://portal-terra.hprc.tamu.edu/pun/dev/dashboard/allocations
-get '/allocations' do 
+get '/allocations.json' do 
   myproject = MyProject.new
   allocations, allocation_error = myproject.exec
   
-  allocations.map { |o| Hash[o.each_pair.to_a] }.to_json
+  allocations = allocations.map { |o| Hash[o.each_pair.to_a] }
+  {'data' => allocations }.to_json
 end

@@ -1,22 +1,15 @@
-<div class="row">
-  <div class="col">
-    <h1><%= title %></h1>
-  </div>
-</div>
-Report generated at: <%= Time.now %>
-
-<div class="row mb-2">
+<div class="row mb-2 mt-2">
   <div class="col">
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">Allocation(s)</h3>
+        <h4 class="card-title">Allocation(s)</h4>
       </div>
       <!-- /.card-header -->
-      <div class="card-body p-0">
-        <table class="table">
+      <div class="card-body table-responsive p-0">
+        <table id="allocation_table" class="display">
           <thead>
             <tr>
-              <th style="width: 10px">Account</th>
+              <th>Account</th>
               <th>FY</th>
               <th>Default</th>
               <th>Allocation</th>
@@ -25,19 +18,6 @@ Report generated at: <%= Time.now %>
               <th>PI</th>
             </tr>
           </thead>
-          <tbody>
-            <% @allocations.each do |allocation| %>
-            <tr>
-              <td><%= allocation.account %></td>
-              <td><%= allocation.fy %></td>
-              <td><%= allocation.default %></td>
-              <td><%= allocation.allocation %></td>
-              <td><%= allocation.used_pending_su %></td>
-              <td><%= allocation.balance %></td>
-              <td><%= allocation.pi %></td>
-            </tr>
-            <% end %>
-          </tbody>
         </table>
       </div>
       <!-- /.card-body -->
@@ -53,14 +33,17 @@ Report generated at: <%= Time.now %>
       <div class="col">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Your Quota</h3>
+            <div class="d-flex align-items-center">
+              <h4 class="mr-auto p-3">Your Disk Quota</h4>
+              <button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal" data-target="#modalQuotaRequestForm">Request</button>
+            </div>
           </div>
           <!-- /.card-header -->
-          <div class="card-body p-0">
+          <div class="card-body table-responsive p-0">
             <table class="table">
               <thead>
                 <tr>
-                  <th style="width: 10px">Disk</th>
+                  <th>Disk</th>
                   <th>Disk Usage</th>
                   <th>Disk Limit</th>
                   <th>File Usage</th>
@@ -77,11 +60,8 @@ Report generated at: <%= Time.now %>
                   <td><%= disk.disk_limit %></td>
                   <td><%= disk.file_usage %></td>
                   <td><%= disk.file_limit %></td>
-                  <td><span
-                      class="badge bg-normal"><%= ((disk.file_usage.to_f / disk.file_limit.to_f)*100).to_i %>%</span>
-                  </td>
+                  <td><%= ((disk.file_usage.to_f / disk.file_limit.to_f)*100).to_i %>%</td>
                 </tr>
-
                 <% end %>
               </tbody>
             </table>
@@ -95,14 +75,14 @@ Report generated at: <%= Time.now %>
       <div class="col">
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Cluster Information</h3>
+            <h4 class="card-title">Cluster Information</h4>
           </div>
           <!-- /.card-header -->
-          <div class="card-body p-0">
+          <div class="card-body table-responsive p-0">
             <table class="table">
               <thead>
                 <tr>
-                  <th style="width: 10px">Resource Name</th>
+                  <th>Resource Name</th>
                   <th>Utilization</th>
                   <th>% Utilized </th>
                 </tr>
@@ -125,10 +105,11 @@ Report generated at: <%= Time.now %>
       </div>
     </div>
   </div>
+
   <div class="col-md-6">
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">Your Jobs</h3>
+        <h4 class="card-title">Your Jobs</h4>
       </div>
       <!-- /.card-header -->
       <div class="card-body table-responsive p-0">
@@ -176,5 +157,44 @@ Report generated at: <%= Time.now %>
       <!-- /.card-body -->
     </div>
     <!-- /.card -->
+  </div>
+</div>
+
+<!-- Model Forms -->
+<div class="modal fade" id="modalQuotaRequestForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Quota Increase Request</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <i class="fas fa-user prefix grey-text"></i>
+          <input type="text" id="form34" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="form34">Amount of Additional Disk Quota (Optional)</label>
+        </div>
+
+        <div class="md-form mb-5">
+          <i class="fas fa-envelope prefix grey-text"></i>
+          <input type="email" id="form29" class="form-control validate">
+          <label data-error="wrong" data-success="right" for="form29">File Limit Increase (Optional)</label>
+        </div>
+
+        <div class="md-form">
+          <i class="fas fa-pencil prefix grey-text"></i>
+          <textarea type="text" id="form8" class="md-textarea form-control" rows="4"></textarea>
+          <label data-error="wrong" data-success="right" for="form8">Justification</label>
+        </div>
+
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-success">Send Request</button>
+        <!-- <button class="btn btn-unique">Send <i class="fas fa-paper-plane-o ml-1"></i></button> -->
+      </div>
+    </div>
   </div>
 </div>

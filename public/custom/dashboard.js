@@ -1,28 +1,34 @@
-// function loadPieChart() {
-//     var ctx = document.getElementById('loadPieChart').getContext('2d');
+function populate_allocations() {
+    $('#allocation_table').DataTable({
+        ajax: {
+            dataType: "json",
+            url: '/pun/dev/dashboard/allocations.json',
+            method: "GET",
+         },
+        "columns": [
+            { "data": "account" },
+            { "data": "fy" },
+            { "data": "default" },
+            { "data": "allocation" },
+            { "data": "used_pending_su" },
+            { "data": "balance" },
+            { "data": "pi"}
+        ]
+    });
+}
 
-//     data = {
-//         datasets: [{
-//             data: [98, 2],
-//             backgroundColor: ["#E4002B", "#5AC18E"]
-//         }],
+function load_json(request_url) {
+    let request = new XMLHttpRequest();
+    request.open('GET', request_url);
+    request.responseType = 'json';
+    request.send();
 
-//         // These labels appear in the legend and in the tooltips when hovering different arcs
-//         labels: [
-//             'Utilized',
-//             'Free'
-//         ],
-//     };
+    request.onload = function() {
+        const data = request.response;
+        console.log(data);
+    }
+}
 
-
-//     // For a pie chart
-//     var myPieChart = new Chart(ctx, {
-//         type: 'pie',
-//         data: data,
-        
-//     });
-// }
-
-// (() => {
-//     loadPieChart();
-// })()
+(() => {
+    populate_allocations();
+})()
