@@ -1,3 +1,5 @@
 # Keep tmp/ but ignore files underneath
 /tmp/*
 !/tmp/.keep
+
+/vendor

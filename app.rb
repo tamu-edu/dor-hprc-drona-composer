@@ -55,3 +55,13 @@ get '/allocations.json' do
   allocations = allocations.map { |o| Hash[o.each_pair.to_a] }
   {'data' => allocations }.to_json
 end
+
+# endpoint for request quota
+post '/request_quota' do
+  "We have received your request. Good luck getting it!"
+end
+
+get '/request_quota' do
+  "We have received your request. Good luck getting it!"
+end
+

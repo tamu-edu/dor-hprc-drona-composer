@@ -5,11 +5,15 @@ GEM
     erubi (1.6.1)
     json (2.3.0)
     multi_json (1.12.1)
+    passenger (6.0.4)
+      rack
+      rake (>= 0.8.1)
     rack (1.6.5)
     rack-protection (1.5.3)
       rack
     rack-test (0.7.0)
       rack (>= 1.0, < 3)
+    rake (11.2.2)
     sinatra (1.4.8)
       rack (~> 1.5)
       rack-protection (~> 1.4)
@@ -29,8 +33,10 @@ PLATFORMS
 DEPENDENCIES
   erubi
   json
+  passenger
+  rake (= 11.2.2)
   sinatra
   sinatra-contrib
 
 BUNDLED WITH
-   1.13.7
+   1.16.0

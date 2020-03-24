@@ -50,7 +50,8 @@
           </div>
           <!-- /.card-body -->
           <div class="card-footer">
-            <button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal" data-target="#modalQuotaRequestForm">Request</button>
+            <button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+              data-target="#requestQuotaModal">Request</button>
           </div>
           <!-- ./card-footer -->
         </div>
@@ -138,7 +139,7 @@
 </div>
 
 <!-- Model Forms -->
-<div class="modal fade" id="modalQuotaRequestForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+<div class="modal fade" id="requestQuotaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -149,29 +150,31 @@
         </button>
       </div>
       <div class="modal-body mx-3">
-        <div class="md-form mb-5">
-          <i class="fas fa-user prefix grey-text"></i>
-          <input type="text" id="form34" class="form-control validate">
-          <label data-error="wrong" data-success="right" for="form34">Amount of Additional Disk Quota (Optional)</label>
-        </div>
+        <form class="form" id="modalQuotaRequestForm">
+          <div class="md-form mb-5">
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" id="form34" class="form-control validate">
+            <label data-error="wrong" data-success="right" for="form34">Amount of Desired Disk Quota
+              (Optional)</label>
+          </div>
 
-        <div class="md-form mb-5">
-          <i class="fas fa-envelope prefix grey-text"></i>
-          <input type="email" id="form29" class="form-control validate">
-          <label data-error="wrong" data-success="right" for="form29">File Limit Increase (Optional)</label>
-        </div>
+          <div class="md-form mb-5">
+            <i class="fas fa-envelope prefix grey-text"></i>
+            <input type="text" id="form29" class="form-control validate">
+            <label data-error="wrong" data-success="right" for="form29">File Limit Increase (Optional)</label>
+          </div>
 
-        <div class="md-form">
-          <i class="fas fa-pencil prefix grey-text"></i>
-          <textarea type="text" id="form8" class="md-textarea form-control" rows="4"></textarea>
-          <label data-error="wrong" data-success="right" for="form8">Justification</label>
-        </div>
-
+          <div class="md-form">
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" id="form8" class="md-textarea form-control" rows="4" required></textarea>
+            <label data-error="wrong" data-success="right" for="form8">Justification</label>
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+          </div>
+        </form>
       </div>
-      <div class="modal-footer d-flex justify-content-center">
-        <button type="button" class="btn btn-success">Send Request</button>
-        <!-- <button class="btn btn-unique">Send <i class="fas fa-paper-plane-o ml-1"></i></button> -->
-      </div>
+
     </div>
   </div>
 </div>
