@@ -66,8 +66,13 @@ function setup_quota_request_sender() {
           event.preventDefault();
       
           sendData();
+          dismiss_request_quota();
         } );
       } );
+}
+
+function dismiss_request_quota() {
+  $('#requestQuotaModal').modal('hide');
 }
 
 (() => {
