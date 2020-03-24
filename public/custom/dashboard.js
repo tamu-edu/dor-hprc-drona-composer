@@ -55,7 +55,7 @@ function setup_quota_request_sender() {
           XHR.open( "POST", "https://portal-terra.hprc.tamu.edu/pun/dev/dashboard/request_quota" );
       
           // The data sent is what the user provided in the form
-          XHR.send();
+          XHR.send(FD);
         }
        
         // Access the form element...

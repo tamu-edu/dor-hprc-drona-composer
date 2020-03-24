@@ -4,6 +4,7 @@ require './showquota'
 require './squeue'
 require './myproject'
 require './utilization'
+require './request_quota.rb'
 
 set :erb, :escape_html => true
 
@@ -58,10 +59,9 @@ end
 
 # endpoint for request quota
 post '/request_quota' do
-  "We have received your request. Good luck getting it!"
-end
-
-get '/request_quota' do
-  "We have received your request. Good luck getting it!"
+  quota_requester = RequestQuota.new
+  result = quota_requester.exec(params)
+  
+  result
 end
 

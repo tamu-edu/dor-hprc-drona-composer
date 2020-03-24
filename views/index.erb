@@ -153,21 +153,21 @@
         <form class="form" id="modalQuotaRequestForm">
           <div class="md-form mb-5">
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" id="form34" class="form-control validate">
-            <label data-error="wrong" data-success="right" for="form34">Amount of Desired Disk Quota
+            <input type="text" name='desired_disk' class="form-control validate">
+            <label data-error="wrong" data-success="right" for="desired_disk">Amount of Desired Disk Quota
               (Optional)</label>
           </div>
 
           <div class="md-form mb-5">
             <i class="fas fa-envelope prefix grey-text"></i>
-            <input type="text" id="form29" class="form-control validate">
-            <label data-error="wrong" data-success="right" for="form29">File Limit Increase (Optional)</label>
+            <input type="text" name="total_file_limit" class="form-control validate">
+            <label data-error="wrong" data-success="right" for="total_file_limit">File Limit Increase (Optional)</label>
           </div>
 
           <div class="md-form">
             <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" id="form8" class="md-textarea form-control" rows="4" required></textarea>
-            <label data-error="wrong" data-success="right" for="form8">Justification</label>
+            <textarea type="text" name="request_justification" class="md-textarea form-control" placeholder="I need space to install Anaconda (❤️). This defintely requires tons of space (and files)!" rows="4" required></textarea>
+            <label data-error="wrong" data-success="right" for="request_justification">Justification</label>
           </div>
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary">Submit Request</button>
