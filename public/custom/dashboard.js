@@ -1,5 +1,8 @@
 function populate_allocations() {
     $('#allocation_table').DataTable({
+        "scrollY": "200px",
+        "scrollCollapse": true,
+        "paging": false,
         ajax: {
             dataType: "json",
             url: '/pun/dev/dashboard/allocations.json',
