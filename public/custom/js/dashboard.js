@@ -12,12 +12,12 @@ function populate_allocations() {
          },
         "columns": [
             { "data": "account" },
-            { "data": "fy" },
+            // { "data": "fy" },
             { "data": "default" },
-            { "data": "allocation" },
-            { "data": "used_pending_su" },
+            // { "data": "allocation" },
+            // { "data": "used_pending_su" },
             { "data": "balance" },
-            { "data": "pi"}
+            // { "data": "pi"}
         ]
     });
 }
