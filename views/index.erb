@@ -38,7 +38,8 @@
       <tbody>
         <tr>
           <td>Request Software</td>
-          <td><button type="button" class="btn btn-primary">Request</button></td>
+          <td><button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+            data-target="#requestSoftwareModal">Request</button></td>
         </tr>
         <tr>
           <td>Request Package</td>
@@ -186,7 +187,7 @@
   </div>
 </div>
 
-<!-- Model Forms -->
+<!-- Quota Request Model Forms -->
 <div class="modal fade" id="requestQuotaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
   aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -227,6 +228,53 @@
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary">Submit Request</button>
             <p>Note ⚠️: Either Disk Quota or File Limit must be filled. Invalid request will be ignored.</p>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Software Request Model Forms -->
+<div class="modal fade" id="requestSoftwareModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Software Request</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <form class="form" id="modalSoftwareRequestForm">
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
+          </div>
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="desired_disk">Software Download Link</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='desired_disk' class="form-control validate">
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="total_file_limit">Toolchain (if applicable)</label>
+            <i class="fas fa-envelope prefix grey-text"></i>
+            <input type="text" name="total_file_limit" class="form-control validate">
+          </div>
+
+          <div class="md-form">
+            <label data-error="wrong" data-success="right" for="request_justification">Justification</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="request_justification" class="md-textarea form-control"
+              placeholder="Some justifications"
+              rows="4" required></textarea>
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary">Submit Request</button>
           </div>
         </form>
       </div>

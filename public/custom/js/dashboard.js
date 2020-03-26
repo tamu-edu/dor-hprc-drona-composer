@@ -22,17 +22,18 @@ function populate_allocations() {
     });
 }
 
-function load_json(request_url) {
-    let request = new XMLHttpRequest();
-    request.open('GET', request_url);
-    request.responseType = 'json';
-    request.send();
+function load_json(request_url, callback) {
+  let request = new XMLHttpRequest();
+  request.open('GET', request_url);
+  request.responseType = 'json';
+  request.send();
 
-    request.onload = function() {
-        const data = request.response;
-        console.log(data);
-    }
+  request.onload = function() {
+      const data = request.response;
+      callback(data);
+  }
 }
+
 
 function setup_quota_request_sender() {
     // Source: https://developer.mozilla.org/en-US/docs/Learn/Forms/Sending_forms_through_JavaScript
