@@ -2,16 +2,20 @@ require 'open3'
 
 class Squeue
   def to_s
-    "squeue -u $USER"
+    "squeue -l -u $USER"
   end
+  # 
+  # JOBID       PARTITION     NAME     USER      ST       TIME  NODES NODELIST(REASON)
+  # 4334932     short         sys/dash phamminh  R      54:29      1 tnxt-0769
 
-  Job = Struct.new(:id, :name, :user, :partition, :nodes, :cpus, :state, :time, :time_left, :start_time, :reason, :nodelist)
+
+  Job = Struct.new(:id, :partition, :name, :user, :state, :time, :time_limit, :nodes , :nodelist)
 
   def parse(output)
     lines = output.strip.split("\n")
     # drop the first line to skip the header
-    lines.drop(1).map do |line|
-      Job.new(*(line.split(" ", 12)))
+    lines.drop(2).map do |line|
+      Job.new(*(line.split(" ", 9)))
     end
     
   end

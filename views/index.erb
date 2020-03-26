@@ -227,31 +227,22 @@
           <thead class="thead-dark">
             <tr>
               <th>Job ID</th>
-              <th>Name</th>
               <th>Partition</th>
-              <th>Nodes</th>
-              <th>CPUs</th>
+              <th>Name</th>
               <th>State</th>
-              <th>Time</th>
-              <!-- <th>Time Left</th> -->
-              <!-- <th>Start Time</th> -->
-              <th>Reason</th>
-              <th>Nodelist</th>
+              <th>Number of Nodes</th>              
             </tr>
           </thead>
+
           <tbody>
             <tr>
               <td><%= job.id %></td>
-              <td><%= job.name %></td>
               <td><%= job.partition %></td>
-              <td><%= job.nodes %></td>
-              <td><%= job.cpus %></td>
+              <td><%= job.name %></td>
               <td><%= job.state %></td>
-              <td><%= job.time %></td>
-              <!-- <td><%= job.time_left %></td> -->
-              <!-- <td><%= job.start_time %></td> -->
-              <td><%= job.reason %></td>
-              <td><%= job.nodelist %></td>
+              <td><%= job.nodes %></td>
+             
+              <!-- <td><%= job.nodelist %></td> -->
             </tr>
           </tbody>
         </table>
