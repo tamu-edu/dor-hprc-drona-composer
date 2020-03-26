@@ -54,7 +54,7 @@ function setup_quota_request_sender() {
           } );
       
           // Set up our request
-          XHR.open( "POST", "https://portal-terra.hprc.tamu.edu/pun/dev/dashboard/request_quota" );
+          XHR.open( "POST", "/pun/dev/dashboard/request_quota" );
       
           // The data sent is what the user provided in the form
           XHR.send(FD);
@@ -76,6 +76,8 @@ function setup_quota_request_sender() {
 function dismiss_request_quota() {
   $('#requestQuotaModal').modal('hide');
 }
+
+
 
 (() => {
     populate_allocations();

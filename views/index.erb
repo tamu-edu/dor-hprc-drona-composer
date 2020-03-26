@@ -132,10 +132,9 @@
         <table class="table table-head-fixed text-nowrap">
           <thead class="thead-dark">
             <tr>
-              <th>Job ID</th>
+              <th style="width: fit-content;">Job ID</th>
               <th>Name</th>
               <th>State</th>
-             
             </tr>
           </thead>
           <tbody>
@@ -240,15 +239,12 @@
               <td><%= job.partition %></td>
               <td><%= job.name %></td>
               <td><%= job.state %></td>
-              <td><%= job.nodes %></td>
-             
-              <!-- <td><%= job.nodelist %></td> -->
             </tr>
           </tbody>
         </table>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger">Kill</button>
+        <button type="button" class="btn btn-danger" onclick="confirm_job_kill('<%= job.id %>')">Kill</button>
         <button type="button" class="btn btn-primary" data-dismiss="modal">
           Close
         </button>

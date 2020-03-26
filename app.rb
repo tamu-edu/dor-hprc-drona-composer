@@ -5,6 +5,7 @@ require './squeue'
 require './myproject'
 require './utilization'
 require './request_quota.rb'
+require 'open3'
 
 set :erb, :escape_html => true
 
@@ -69,3 +70,8 @@ post '/request_quota' do
   result
 end
 
+delete '/jobs/:job_id' do |job_id|
+  "Killing job #{job_id}"
+  # No error checking (good luck)
+  stdout_str, stderr_str, status = Open3.capture3("scancel #{job_id}")
+end

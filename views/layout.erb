@@ -9,6 +9,8 @@
   <link rel="stylesheet" type="text/css" href="<%= url("/DataTables/datatables.min.css") %>" />
   <link rel="stylesheet" type="text/css" href="<%= url("/custom/css/dashboard.css") %>" />
 
+  
+
 </head>
 
 <body>
@@ -24,6 +26,9 @@
       </a>
     </nav>
 
+
+    <script src="<%= url("/custom/js/job_management.js") %>"></script>
+  
     <div class="container" role="main">
       <% if @error %>
       <div class="alert alert-danger"><%= @error %></div>
@@ -41,7 +46,7 @@
     <script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
     <script src="<%= url("/bootstrap-4.4.1/js/bootstrap.min.js") %>"></script>
     <script type="text/javascript" src="<%= url("/DataTables/datatables.min.js") %>"></script>
-    <script src="<%= url("/custom/js/dashboard.js") %>"></script>
+    <script type="text/javascript" src="<%= url("/custom/js/dashboard.js") %>"></script>
 
 </body>
 
