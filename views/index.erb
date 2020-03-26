@@ -134,32 +134,17 @@
             <tr>
               <th>Job ID</th>
               <th>Name</th>
-              <!-- <th>Partition</th> -->
-              <!-- <th>Nodes</th> -->
-              <!-- <th>CPUs</th> -->
               <th>State</th>
-              <!-- <th>Time</th> -->
-              <!-- <th>Time Left</th> -->
-              <!-- <th>Start Time</th> -->
-              <!-- <th>Reason</th> -->
-              <!-- <th>Nodelist</th> -->
+             
             </tr>
           </thead>
           <tbody>
             <% if @jobs.length > 0 %>
             <% @jobs.each do |job| %>
             <tr>
-              <td><%= job.id %></td>
+              <td><a href="#" data-toggle="modal" data-target="#job<%= job.id %>Modal"><%= job.id %></a></td>
               <td><%= job.name %></td>
-              <!-- <td><%= job.partition %></td> -->
-              <!-- <td><%= job.nodes %></td> -->
-              <!-- <td><%= job.cpus %></td> -->
               <td><%= job.state %></td>
-              <!-- <td><%= job.time %></td> -->
-              <!-- <td><%= job.time_left %></td> -->
-              <!-- <td><%= job.start_time %></td> -->
-              <!-- <td><%= job.reason %></td> -->
-              <!-- <td><%= job.nodelist %></td> -->
             </tr>
             <% end %>
             <% else %>
@@ -192,10 +177,11 @@
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly> 
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
           </div>
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="desired_disk">Amount of Desired Disk Quota (Optional)</label>
+            <label data-error="wrong" data-success="right" for="desired_disk">Amount of Desired Disk Quota
+              (Optional)</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='desired_disk' class="form-control validate">
           </div>
@@ -223,3 +209,60 @@
     </div>
   </div>
 </div>
+
+<!-- Job Modals -->
+
+<% @jobs.each do |job| %>
+<div id="job<%= job.id %>Modal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="classInfo"
+  aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          Job <%= job.id %>
+        </h4>
+      </div>
+      <div class="modal-body">
+        <table id="classTable" class="table table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              <th>Job ID</th>
+              <th>Name</th>
+              <th>Partition</th>
+              <th>Nodes</th>
+              <th>CPUs</th>
+              <th>State</th>
+              <th>Time</th>
+              <!-- <th>Time Left</th> -->
+              <!-- <th>Start Time</th> -->
+              <th>Reason</th>
+              <th>Nodelist</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= job.id %></td>
+              <td><%= job.name %></td>
+              <td><%= job.partition %></td>
+              <td><%= job.nodes %></td>
+              <td><%= job.cpus %></td>
+              <td><%= job.state %></td>
+              <td><%= job.time %></td>
+              <!-- <td><%= job.time_left %></td> -->
+              <!-- <td><%= job.start_time %></td> -->
+              <td><%= job.reason %></td>
+              <td><%= job.nodelist %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger">Kill</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
