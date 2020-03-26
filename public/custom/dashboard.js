@@ -3,6 +3,8 @@ function populate_allocations() {
         "scrollY": "200px",
         "scrollCollapse": true,
         "paging": false,
+        "searching": false,
+        "info": false,
         ajax: {
             dataType: "json",
             url: '/pun/dev/dashboard/allocations.json',

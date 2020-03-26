@@ -1,17 +1,12 @@
-<!-- For Demo Purpose -->
-<header class="py-5 text-center">
-  <h5 class="display-4">Terra Dashboard</h5>
-</header>
-
-<div class="row">
+<div class="row mt-2">
   <div class="col mx-auto">
     <h6 class="text-uppercase">Accounting</h6>
-      <!-- Solid divider -->
-      <hr class="solid">
+    <!-- Solid divider -->
+    <hr class="solid">
   </div>
 </div>
 
-<div class="row mb-2 mt-2" style="border: 0px 1px 1px 1px solid;">
+<div class="row" style="border: 0px 1px 1px 1px solid;">
   <div class="col">
     <table id="allocation_table" class="table table-striped" style="width:100%">
       <thead class="thead-dark">
@@ -28,12 +23,17 @@
     </table>
   </div>
 </div>
+<div class="row">
+  <div class="col">
+    <hr class="solid">
+  </div>
+</div>
 
 <div class="row">
-  <div class="col mt-5">
+  <div class="col mt-2">
     <h6 class="text-uppercase">Your Summary</h6>
-      <!-- Solid divider -->
-      <hr class="solid">
+    <!-- Solid divider -->
+    <hr class="solid">
   </div>
 </div>
 
@@ -81,16 +81,22 @@
     </div>
 
     <!-- Divider -->
-    <div class="row md-2">
-      <div class="col mx-auto">
+    <div class="row">
+      <div class="col">
+        <hr class="solid">
+      </div>
+    </div>
+    <!-- Divider -->
+    <div class="row">
+      <div class="col">
         <h6 class="text-uppercase">Cluster Statistics</h6>
-          <!-- Solid divider -->
-          <hr class="solid">
+        <!-- Solid divider -->
+        <hr class="solid">
       </div>
     </div>
 
     <div class="row md-2">
-      
+
       <div class="col">
         <div class="card">
           <div class="card-body table-responsive p-0">
@@ -183,28 +189,33 @@
       </div>
       <div class="modal-body mx-3">
         <form class="form" id="modalQuotaRequestForm">
-          <div class="md-form mb-5">
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly> 
+          </div>
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="desired_disk">Amount of Desired Disk Quota (Optional)</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='desired_disk' class="form-control validate">
-            <label data-error="wrong" data-success="right" for="desired_disk">Amount of Desired Disk Quota
-              (Optional)</label>
           </div>
 
-          <div class="md-form mb-5">
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="total_file_limit">File Limit Increase (Optional)</label>
             <i class="fas fa-envelope prefix grey-text"></i>
             <input type="text" name="total_file_limit" class="form-control validate">
-            <label data-error="wrong" data-success="right" for="total_file_limit">File Limit Increase (Optional)</label>
           </div>
 
           <div class="md-form">
+            <label data-error="wrong" data-success="right" for="request_justification">Justification</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="request_justification" class="md-textarea form-control"
               placeholder="I need space to install Anaconda (❤️). This defintely requires tons of space (and files)!"
               rows="4" required></textarea>
-            <label data-error="wrong" data-success="right" for="request_justification">Justification</label>
           </div>
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary">Submit Request</button>
+            <p>Note ⚠️: Either Disk Quota or File Limit must be filled. Invalid request will be ignored.</p>
           </div>
         </form>
       </div>

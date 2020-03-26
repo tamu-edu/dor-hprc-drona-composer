@@ -2,11 +2,12 @@ require 'open3'
 
 class RequestQuota
 
-    def compose_email(file_limit, disk_space, justification)
+    def compose_email(cluster_name, file_limit, disk_space, justification)
         user = ENV["USER"]
-        body = "Disk Quota Request for #{user}\n" \
-                "File limit   : #{file_limit}\n"\
-                "Disk space   : #{disk_space}\n" \
+        body =  "User: #{user}\n" \
+                "Cluster: #{cluster_name}\n" \
+                "File limit: #{file_limit}\n"\
+                "Disk space: #{disk_space}\n" \
                 "Justification: #{justification}\n"
 
         "mailx -s '[Quota Request]' -S replyto=$USER@tamu.edu phamminhtris@tamu.edu" \
@@ -17,8 +18,9 @@ class RequestQuota
       justfication = params[:request_justification]
       file_limit = params[:total_file_limit]
       disk_space = params[:desired_disk]
+      cluster_name = params[:cluster_name]
 
-      return compose_email(file_limit, disk_space, justfication)
+      return compose_email(cluster_name, file_limit, disk_space, justfication)
     end
 
     def exec(params)

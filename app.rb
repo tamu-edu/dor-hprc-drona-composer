@@ -25,7 +25,11 @@ helpers do
   end
 
   def title
-    "Your Dashboard"
+    "Dashboard"
+  end
+
+  def cluster_name
+    "Terra"
   end
 end
 
