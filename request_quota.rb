@@ -9,7 +9,7 @@ class RequestQuota
                 "Disk space   : #{disk_space}\n" \
                 "Justification: #{justification}\n"
 
-        "mailx -s '[Quota Request]' -S replyto=$USER@tamu.edu" \
+        "mailx -s '[Quota Request]' -S replyto=$USER@tamu.edu phamminhtris@tamu.edu" \
              "<<< '#{body}'"
     end
 

@@ -1,3 +1,16 @@
+<!-- For Demo Purpose -->
+<header class="py-5 text-center">
+  <h5 class="display-4">Terra Dashboard</h5>
+</header>
+
+<div class="row">
+  <div class="col mx-auto">
+    <h6 class="text-uppercase">Accounting</h6>
+      <!-- Solid divider -->
+      <hr class="solid">
+  </div>
+</div>
+
 <div class="row mb-2 mt-2" style="border: 0px 1px 1px 1px solid;">
   <div class="col">
     <table id="allocation_table" class="table table-striped" style="width:100%">
@@ -13,6 +26,14 @@
         </tr>
       </thead>
     </table>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col mt-5">
+    <h6 class="text-uppercase">Your Summary</h6>
+      <!-- Solid divider -->
+      <hr class="solid">
   </div>
 </div>
 
@@ -58,7 +79,18 @@
         <!-- /.card -->
       </div>
     </div>
+
+    <!-- Divider -->
     <div class="row md-2">
+      <div class="col mx-auto">
+        <h6 class="text-uppercase">Cluster Statistics</h6>
+          <!-- Solid divider -->
+          <hr class="solid">
+      </div>
+    </div>
+
+    <div class="row md-2">
+      
       <div class="col">
         <div class="card">
           <div class="card-body table-responsive p-0">
@@ -166,7 +198,9 @@
 
           <div class="md-form">
             <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="request_justification" class="md-textarea form-control" placeholder="I need space to install Anaconda (❤️). This defintely requires tons of space (and files)!" rows="4" required></textarea>
+            <textarea type="text" name="request_justification" class="md-textarea form-control"
+              placeholder="I need space to install Anaconda (❤️). This defintely requires tons of space (and files)!"
+              rows="4" required></textarea>
             <label data-error="wrong" data-success="right" for="request_justification">Justification</label>
           </div>
           <div class="modal-footer d-flex justify-content-center">
