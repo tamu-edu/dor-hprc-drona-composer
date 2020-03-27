@@ -34,49 +34,7 @@ function load_json(request_url, callback) {
   }
 }
 
-
-function setup_quota_request_sender() {
-    // Source: https://developer.mozilla.org/en-US/docs/Learn/Forms/Sending_forms_through_JavaScript
-    window.addEventListener( "load", function () {
-        function sendData() {
-          const XHR = new XMLHttpRequest();
-      
-          // Bind the FormData object and the form element
-          const FD = new FormData( form );
-      
-          // Define what happens on successful data submission
-          XHR.addEventListener( "load", function(event) {
-            alert( event.target.responseText );
-          } );
-      
-          // Define what happens in case of error
-          XHR.addEventListener( "error", function( event ) {
-            alert( 'Oops! Something went wrong.' );
-          } );
-      
-          // Set up our request
-          XHR.open( "POST", "/pun/dev/dashboard/request_quota" );
-      
-          // The data sent is what the user provided in the form
-          XHR.send(FD);
-        }
-       
-        // Access the form element...
-        let form = document.getElementById( "modalQuotaRequestForm" );
-      
-        // ...and take over its submit event.
-        form.addEventListener( "submit", function ( event ) {
-          event.preventDefault();
-      
-          sendData();
-          dismiss_request_quota();
-        } );
-      } );
-}
-
-
-
-function setup_software_request_sender() {
+function setup_request_sender(request_endpoint, form_id, modal_id) {
   // Source: https://developer.mozilla.org/en-US/docs/Learn/Forms/Sending_forms_through_JavaScript
   window.addEventListener( "load", function () {
       function sendData() {
@@ -96,36 +54,36 @@ function setup_software_request_sender() {
         } );
     
         // Set up our request
-        XHR.open( "POST", "/pun/dev/dashboard/request_software" );
+        XHR.open( "POST", request_endpoint );
     
         // The data sent is what the user provided in the form
         XHR.send(FD);
       }
      
       // Access the form element...
-      let form = document.getElementById( "modalSoftwareRequestForm" );
+      let form = document.getElementById( form_id );
     
       // ...and take over its submit event.
       form.addEventListener( "submit", function ( event ) {
         event.preventDefault();
     
         sendData();
-        dismiss_request_software();
+        dismiss_modal(modal_id);
       } );
     } );
 }
 
-function dismiss_request_quota() {
-  $('#requestQuotaModal').modal('hide');
-}
-
-function dismiss_request_software() {
-  $('#requestSoftwareModal').modal('hide');
+function dismiss_modal(modal_id) {
+  $(modal_id).modal('hide');
 }
 
 
 (() => {
+    HOST_PATH = "/pun/dev/dashboard"
+    SOFTWARE_REQUEST_ENDPOINT = HOST_PATH + "/request_software"
+    QUOTA_REQUEST_ENDPOINT = HOST_PATH + "/request_quota"
+
     populate_allocations();
-    setup_quota_request_sender();
-    setup_software_request_sender();
+    setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");
+    setup_request_sender(QUOTA_REQUEST_ENDPOINT, "modalQuotaRequestForm", "#requestQuotaModal");
 })()
