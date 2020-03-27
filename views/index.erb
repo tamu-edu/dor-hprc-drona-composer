@@ -200,7 +200,7 @@
       </div>
       <div class="modal-body mx-3">
         <form class="form" id="modalQuotaRequestForm">
-          <div class="md-form mb-2">
+          <div class="md-form mb-2" style="display: none;">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
@@ -219,7 +219,7 @@
           </div>
 
           <div class="md-form">
-            <label data-error="wrong" data-success="right" for="request_justification">Justification</label>
+            <label data-error="wrong" data-success="right" for="request_justification">Justification (Required)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="request_justification" class="md-textarea form-control"
               placeholder="I need space to install Anaconda (❤️). This defintely requires tons of space (and files)!"
@@ -249,32 +249,43 @@
       </div>
       <div class="modal-body mx-3">
         <form class="form" id="modalSoftwareRequestForm">
-          <div class="md-form mb-2">
+          
+          <div class="md-form mb-2" style="display: none;">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
           </div>
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="desired_disk">Software Download Link</label>
+            <label data-error="wrong" data-success="right" for="software_link">Software Download Link (Required)</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='desired_disk' class="form-control validate">
+            <input type="text" name='software_link' class="form-control validate" required>
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="total_file_limit">Toolchain (if applicable)</label>
+            <label data-error="wrong" data-success="right" for="toolchains">Toolchain (if applicable)</label>
             <i class="fas fa-envelope prefix grey-text"></i>
-            <input type="text" name="total_file_limit" class="form-control validate">
+            <input type="text" name="toolchains" class="form-control validate" placeholder="e.g. intel/2020a">
+            <p>See <a href="https://hprc.tamu.edu/wiki/SW:Toolchains" target="_blank">Toolchains page</a> for more information.</p>
           </div>
 
           <div class="md-form">
-            <label data-error="wrong" data-success="right" for="request_justification">Justification</label>
+            <label data-error="wrong" data-success="right" for="request_justification">Justifications (Required)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="request_justification" class="md-textarea form-control"
-              placeholder="Some justifications"
+              placeholder="Please provide justifications for your request (e.g. why you need this software, etc.)"
               rows="4" required></textarea>
+          </div>
+
+          <div class="md-form">
+            <label data-error="wrong" data-success="right" for="additional_notes">Additional Notes (if applicable)</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="additional_notes" class="md-textarea form-control"
+              placeholder="e.g. License-Restricted Packages (who should have access)"
+              rows="4"></textarea>
           </div>
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary">Submit Request</button>
+            <p>For more information, please check out our <a href="https://hprc.tamu.edu/policies/software.html" target="_blank">Software Policies</a> page.</p>
           </div>
         </form>
       </div>

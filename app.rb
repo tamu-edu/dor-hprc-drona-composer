@@ -5,6 +5,7 @@ require './squeue'
 require './myproject'
 require './utilization'
 require './request_quota.rb'
+require './request_software.rb'
 require 'open3'
 
 set :erb, :escape_html => true
@@ -66,6 +67,13 @@ end
 post '/request_quota' do
   quota_requester = RequestQuota.new
   result = quota_requester.exec(params)
+  
+  result
+end
+
+post '/request_software' do
+  software_requester = RequestSoftware.new
+  result = software_requester.exec(params)
   
   result
 end
