@@ -15,7 +15,7 @@ function populate_allocations() {
             // { "data": "fy" },
             { "data": "default" },
             // { "data": "allocation" },
-            // { "data": "used_pending_su" },
+            { "data": "used_pending_su" },
             { "data": "balance" },
             // { "data": "pi"}
         ]

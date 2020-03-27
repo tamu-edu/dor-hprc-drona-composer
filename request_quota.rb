@@ -10,7 +10,7 @@ class RequestQuota
                 "Disk space: #{disk_space}\n" \
                 "Justification: #{justification}\n"
 
-        "mailx -s '[Quota Request]' -S replyto=$USER@tamu.edu phamminhtris@tamu.edu" \
+        "mailx -s '[Quota Request]' -S replyto=$USER@tamu.edu help@hprc.tamu.edu" \
              "<<< '#{body}'"
     end
 
@@ -27,7 +27,7 @@ class RequestQuota
         result, error = nil, nil
 
         stdout_str, stderr_str, status = Open3.capture3(email_request(params))
-        result = "Your request has been submitted. An email has been seen to your account."
+        result = "Your request has been submitted. A receipt has been sent to your account."
     
         return result
     end

@@ -31,7 +31,7 @@ helpers do
   end
 
   def cluster_name
-    "Terra"
+    "terra"
   end
 end
 
