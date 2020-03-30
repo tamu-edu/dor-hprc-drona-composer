@@ -6,3 +6,4 @@ gem "erubi"
 gem 'json'
 gem 'passenger'
 gem "rake", '11.2.2'
+gem 'rack-test'
