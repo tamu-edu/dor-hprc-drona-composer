@@ -30,7 +30,6 @@ class RequestsController < Sinatra::Base
         software_request = SoftwareRequest.new
         subject, body = software_request.generate_email(params)
         
-        
         success_msg = "Your Software Request has been sent. A copy of the request has been sent to you via RT"
         failure_msg = "An error has occurred. Please email us at help@hprc.tamu.edu"
 

@@ -121,37 +121,12 @@
     </div>
 
     <div class="row md-2">
-      <div class="col">
-        <div class="card">
-          <div class="card-body table-responsive p-0">
-            <table class="table">
-              <thead class="thead-dark">
-                <tr>
-                  <th>Cluster Resources</th>
-                  <th>Utilization</th>
-                  <th>% Utilized </th>
-                </tr>
-              </thead>
-              <tbody>
-                <% @usages.each do |usage| %>
-                <tr>
-                  <td><%= usage.resource %></td>
-                  <td><%= usage.used %> / <%= usage.total%></td>
-                  <td><span class="badge bg-normal"><%= usage.percent %> </span></td>
-                </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-          <!-- /.card-body -->
-        </div>
-        <!-- /.card -->
+      <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
+          <canvas id="node_utilization_chart"></canvas>
       </div>
-    </div>
 
-    <div class="row md-2">
-      <div class="col" style="position: relative; height:40vh; width:80vw">
-          <canvas id="cluster_utilization_chart"></canvas>
+      <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
+          <canvas id="core_utilization_chart"></canvas>
       </div>
     </div>
   </div>

@@ -44,9 +44,6 @@ get '/' do
   @squeue = Squeue.new
   @jobs, @squeue_error = @squeue.exec
 
-  @utilization = Utilization.new
-  @usages, @usage_error = @utilization.exec
-
   erb :index
 end
 
