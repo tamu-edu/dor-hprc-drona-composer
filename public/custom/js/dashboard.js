@@ -7,7 +7,7 @@ function populate_allocations() {
         "info": false,
         ajax: {
             dataType: "json",
-            url: '/pun/dev/dashboard/allocations.json',
+            url: '/pun/dev/dashboard/resources/allocations',
             method: "GET",
          },
         "columns": [

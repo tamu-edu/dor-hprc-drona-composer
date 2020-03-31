@@ -1,5 +1,7 @@
 require 'sinatra'
 
-require './app'
+require './controllers/resources'
+require './controllers/app'
 
+use ResourcesController
 run Sinatra::Application
