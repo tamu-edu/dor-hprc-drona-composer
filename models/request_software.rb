@@ -1,6 +1,6 @@
 require 'open3'
 
-class RequestSoftware
+class SoftwareRequest
 
     def compose_email(cluster_name, software_name, software_version, 
             software_link, toolchains, justification, additional_notes)
@@ -15,11 +15,10 @@ class RequestSoftware
                 "Justification: #{justification}\n" \
                 "Additional Notes: #{additional_notes}"
 
-        "mailx -s '[Software Request]' -S replyto=$USER@tamu.edu help@hprc.tamu.edu" \
-             "<<< '#{body}'"
+        body.strip
     end
 
-    def email_request(params)
+    def generate_email(params)
         cluster_name = params[:cluster_name]
         justification = params[:request_justification]
         software_name = params[:software_name]
@@ -28,16 +27,10 @@ class RequestSoftware
         toolchains = params[:toolchains]
         additional_notes = params[:additional_notes]
 
-        return compose_email(cluster_name, software_name, software_version, 
+        subject = "SoftwareReq"
+        body = compose_email(cluster_name, software_name, software_version, 
             software_link, toolchains, justification, additional_notes)
+        return [subject, body]
     end
 
-    def exec(params)
-        result, error = nil, nil
-
-        stdout_str, stderr_str, status = Open3.capture3(email_request(params))
-        result = "Your request has been submitted. A receipt has been sent to your account."
-    
-        return result
-    end
 end
