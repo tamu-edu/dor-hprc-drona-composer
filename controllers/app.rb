@@ -4,8 +4,8 @@ require './models/showquota.rb'
 require './models/squeue.rb'
 require './models/myproject.rb'
 require './models/utilization.rb'
-require './request_quota.rb'
-require './request_software.rb'
+require './models/request_quota.rb'
+require './models/request_software.rb'
 require 'open3'
 
 set :erb, :escape_html => true
@@ -48,24 +48,6 @@ get '/' do
   @usages, @usage_error = @utilization.exec
 
   erb :index
-end
-
-# endpoint
-# /pun/dev/dashboard/allocations
-get '/allocations.json' do 
-  myproject = MyProject.new
-  allocations, allocation_error = myproject.exec
-  
-  allocations = allocations.map { |o| Hash[o.each_pair.to_a] }
-  {'data' => allocations }.to_json
-end
-
-get '/cluster_utilization.json' do 
-  utilization = Utilization.new
-  usages, usage_error = utilization.exec
-
-  usages = usages.map { |o| Hash[o.each_pair.to_a] }
-  {'data' => usages }.to_json
 end
 
 # endpoint for request quota

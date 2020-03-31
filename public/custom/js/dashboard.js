@@ -103,8 +103,8 @@ function dismiss_modal(modal_id) {
 
 (() => {
     HOST_PATH = "/pun/dev/dashboard"
-    SOFTWARE_REQUEST_ENDPOINT = HOST_PATH + "/request_software"
-    QUOTA_REQUEST_ENDPOINT = HOST_PATH + "/request_quota"
+    SOFTWARE_REQUEST_ENDPOINT = HOST_PATH + "/request/software"
+    QUOTA_REQUEST_ENDPOINT = HOST_PATH + "/request/quota"
 
     populate_allocations();
     setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");

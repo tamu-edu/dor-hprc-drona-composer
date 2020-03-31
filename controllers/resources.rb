@@ -7,4 +7,12 @@ class ResourcesController < Sinatra::Base
         allocations = allocations.map { |o| Hash[o.each_pair.to_a] }
         {'data' => allocations }.to_json
     end
+
+    get '/resources/cluster/utilization' do 
+        utilization = Utilization.new
+        usages, usage_error = utilization.exec
+
+        usages = usages.map { |o| Hash[o.each_pair.to_a] }
+        {'data' => usages }.to_json
+    end
 end
