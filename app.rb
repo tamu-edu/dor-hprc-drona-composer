@@ -1,9 +1,9 @@
 require 'erubi'
 require 'json'
-require './showquota'
-require './squeue'
-require './myproject'
-require './utilization'
+require './models/showquota.rb'
+require './models/squeue.rb'
+require './models/myproject.rb'
+require './models/utilization.rb'
 require './request_quota.rb'
 require './request_software.rb'
 require 'open3'
@@ -12,9 +12,10 @@ set :erb, :escape_html => true
 
 if development?
   require 'sinatra/reloader'
-  also_reload './showquota.rb'
-  also_reload './squeue.rb'
-  also_reload './myproject.rb'
+  also_reload './models/showquota.rb'
+  also_reload './models/squeue.rb'
+  also_reload './models/myproject.rb'
+  also_reload './models/utilization.rb'
 end
 
 helpers do
@@ -37,7 +38,6 @@ end
 
 # Define a route at the root '/' of the app.
 get '/' do
-
   @showquota = ShowQuota.new
   @quota, @quota_error = @showquota.exec
 
@@ -47,20 +47,25 @@ get '/' do
   @utilization = Utilization.new
   @usages, @usage_error = @utilization.exec
 
-  # @myproject = MyProject.new
-  # @allocations, @allocation_error, @myproject_out = @myproject.exec
-  # Render the view
   erb :index
 end
 
 # endpoint
-# https://portal-terra.hprc.tamu.edu/pun/dev/dashboard/allocations
+# /pun/dev/dashboard/allocations
 get '/allocations.json' do 
   myproject = MyProject.new
   allocations, allocation_error = myproject.exec
   
   allocations = allocations.map { |o| Hash[o.each_pair.to_a] }
   {'data' => allocations }.to_json
+end
+
+get '/cluster_utilization.json' do 
+  utilization = Utilization.new
+  usages, usage_error = utilization.exec
+
+  usages = usages.map { |o| Hash[o.each_pair.to_a] }
+  {'data' => usages }.to_json
 end
 
 # endpoint for request quota

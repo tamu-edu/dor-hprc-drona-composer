@@ -34,6 +34,7 @@ DEPENDENCIES
   erubi
   json
   passenger
+  rack-test
   rake (= 11.2.2)
   sinatra
   sinatra-contrib

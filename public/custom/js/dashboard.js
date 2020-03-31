@@ -34,6 +34,29 @@ function load_json(request_url, callback) {
   }
 }
 
+function setup_utilization_chart(json_data) {
+  var ctx = document.getElementById("cluster_utilization_chart").getContext('2d');
+
+  var utilization_chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ["M", "T", "W", "T", "F", "S", "S"],
+      datasets: [{
+        backgroundColor: [
+          "#2ecc71",
+          "#3498db",
+          "#95a5a6",
+          "#9b59b6",
+          "#f1c40f",
+          "#e74c3c",
+          "#34495e"
+        ],
+        data: [12, 19, 3, 17, 28, 24, 7]
+      }]
+    }
+  });
+}
+
 function setup_request_sender(request_endpoint, form_id, modal_id) {
   // Source: https://developer.mozilla.org/en-US/docs/Learn/Forms/Sending_forms_through_JavaScript
   window.addEventListener( "load", function () {
@@ -86,4 +109,5 @@ function dismiss_modal(modal_id) {
     populate_allocations();
     setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");
     setup_request_sender(QUOTA_REQUEST_ENDPOINT, "modalQuotaRequestForm", "#requestQuotaModal");
+    setup_utilization_chart();
 })()
