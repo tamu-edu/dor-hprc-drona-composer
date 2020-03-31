@@ -10,7 +10,7 @@ function populate_allocations(json) {
     "columns": [
       {
         "data": "account", render: function (data, type, allocation) {
-          return `<a href="#" data-toggle="modal" data-target="account${allocation.account}Modal">${allocation.account}</a>`
+          return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
         }
       },
       // { "data": "fy" },
@@ -35,7 +35,7 @@ function insert_account_details_modal(allocation) {
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title">
-          ${allocation.account}
+          Allocation #${allocation.account}
         </h4>
       </div>
       <div class="modal-body">
@@ -66,7 +66,6 @@ function insert_account_details_modal(allocation) {
         </table>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" onclick="confirm_job_kill('<%= job.id %>')">Kill</button>
         <button type="button" class="btn btn-primary" data-dismiss="modal">
           Close
         </button>
