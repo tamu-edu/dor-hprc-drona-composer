@@ -38,21 +38,12 @@ end
 
 # Define a route at the root '/' of the app.
 get '/' do
-  @showquota = ShowQuota.new
-  @quota, @quota_error = @showquota.exec
-
   @squeue = Squeue.new
   @jobs, @squeue_error = @squeue.exec
 
   erb :index
 end
 
-post '/request_software' do
-  software_requester = RequestSoftware.new
-  result = software_requester.exec(params)
-  
-  result
-end
 
 delete '/jobs/:job_id' do |job_id|
   "Killing job #{job_id}"

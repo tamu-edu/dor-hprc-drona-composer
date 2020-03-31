@@ -15,4 +15,12 @@ class ResourcesController < Sinatra::Base
         usages = usages.map { |o| Hash[o.each_pair.to_a] }
         {'data' => usages }.to_json
     end
+
+    get '/resources/disk/quota' do
+        showquota = ShowQuota.new
+        quota, quota_error = showquota.exec
+
+        disk_resources = quota.map { |o| Hash[o.each_pair.to_a] }
+        {'data' => disk_resources }.to_json
+    end
 end

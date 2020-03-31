@@ -13,7 +13,6 @@
 <body>
 
   <header>
-
     <!-- Image and text -->
     <nav class="navbar navbar-dark" style="background-color: #500000;">
       <a class="navbar-brand" href="#">
@@ -22,11 +21,12 @@
         <span class="text-uppercase"><%= cluster_name %> dashboard</span>
       </a>
     </nav>
+  </header>
 
 
     <script src="<%= url("/custom/js/job_management.js") %>"></script>
   
-    <div class="container" role="main">
+    <div id="main-container" class="container" role="main">
       <% if @error %>
       <div class="alert alert-danger"><%= @error %></div>
       <% end %>

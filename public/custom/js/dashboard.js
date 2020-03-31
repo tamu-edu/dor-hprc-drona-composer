@@ -1,23 +1,117 @@
-function populate_allocations() {
+function populate_allocations(json) {
+  data = json["data"];
   $('#allocation_table').DataTable({
     "scrollY": "200px",
     "scrollCollapse": true,
     "paging": false,
     "searching": false,
     "info": false,
-    ajax: {
-      dataType: "json",
-      url: '/pun/dev/dashboard/resources/allocations',
-      method: "GET",
-    },
+    "data": data,
     "columns": [
-      { "data": "account" },
+      {
+        "data": "account", render: function (data, type, allocation) {
+          return `<a href="#" data-toggle="modal" data-target="account${allocation.account}Modal">${allocation.account}</a>`
+        }
+      },
       // { "data": "fy" },
       { "data": "default" },
       // { "data": "allocation" },
       { "data": "used_pending_su" },
       { "data": "balance" },
       // { "data": "pi"}
+    ]
+  });
+
+  data.forEach((allocation) =>  {
+    insert_account_details_modal(allocation);
+  });
+}
+
+function insert_account_details_modal(allocation) {
+  console.log("appending allocation modal");
+  template = 
+  `
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          ${allocation.account}
+        </h4>
+      </div>
+      <div class="modal-body">
+        <table id="classTable" class="table table-bordered">
+          <thead class="thead-dark">
+            <tr>
+              <th>Account</th>
+              <th>FY</th>
+              <th>Default</th>
+              <th>Allocation</th>
+              <th>Used and Pending</th>
+              <th>Balance</th>
+              <th>PI</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>${allocation.account}</td>
+              <td>${allocation.fy}</td>
+              <td>${allocation.default}</td>
+              <td>${allocation.allocation}</td>
+              <td>${allocation.used_pending_su}</td>
+              <td>${allocation.balance}</td>
+              <td>${allocation.pi}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" onclick="confirm_job_kill('<%= job.id %>')">Kill</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+</div>`
+
+  container = document.getElementById("main-container");
+  var div = document.createElement('div');
+  div.setAttribute('id', `account${allocation.account}Modal`);
+  div.setAttribute('class', "modal fade bs-example-modal-lg");
+  div.setAttribute('tabindex', "-1" );
+  div.setAttribute('role', "dialog");
+  div.setAttribute('aria-labelledby', "classInfo");
+  div.setAttribute('aria-hidden', "true");
+
+  div.innerHTML = template.trim();
+  container.appendChild(div);
+}
+
+function populate_quota() {
+  $('#quota_table').DataTable({
+    "scrollY": "200px",
+    "scrollCollapse": true,
+    "paging": false,
+    "searching": false,
+    "info": false,
+    "ordering": false,
+    ajax: {
+      dataType: "json",
+      url: '/pun/dev/dashboard/resources/disk/quota',
+      method: "GET",
+    },
+    "columns": [
+      { "data": "disk_name" },
+      { "data": "disk_usage" },
+      { "data": "disk_limit" },
+      { "data": "file_usage" },
+      { "data": "file_limit" },
+      {
+        "data": null, render: function (data, type, row) {
+          percent = (row.file_usage / row.file_limit) * 100
+          return percent.toFixed(2);
+        }
+      },
     ]
   });
 }
@@ -142,9 +236,12 @@ function dismiss_modal(modal_id) {
   HOST_PATH = "/pun/dev/dashboard"
   SOFTWARE_REQUEST_ENDPOINT = HOST_PATH + "/request/software"
   QUOTA_REQUEST_ENDPOINT = HOST_PATH + "/request/quota"
+  AlLOCATION_ENDPOINT = HOST_PATH + "/resources/allocations"
 
-  populate_allocations();
+
+  load_json(AlLOCATION_ENDPOINT, populate_allocations);
   setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");
   setup_request_sender(QUOTA_REQUEST_ENDPOINT, "modalQuotaRequestForm", "#requestQuotaModal");
   draw_utilization();
+  populate_quota();
 })()

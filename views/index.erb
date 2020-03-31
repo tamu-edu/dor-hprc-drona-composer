@@ -68,7 +68,7 @@
       <div class="col">
         <div class="card">
           <div class="card-body table-responsive p-0">
-            <table class="table">
+            <table id="quota_table" class="table">
               <thead class="thead-dark">
                 <tr>
                   <th>Disk</th>
@@ -80,18 +80,7 @@
 
                 </tr>
               </thead>
-              <tbody>
-                <% @quota.each do |disk| %>
-                <tr>
-                  <td><%= disk.disk_name %></td>
-                  <td><%= disk.disk_usage %></td>
-                  <td><%= disk.disk_limit %></td>
-                  <td><%= disk.file_usage %></td>
-                  <td><%= disk.file_limit %></td>
-                  <td><%= ((disk.file_usage.to_f / disk.file_limit.to_f)*100).to_i %>%</td>
-                </tr>
-                <% end %>
-              </tbody>
+
             </table>
           </div>
           <!-- /.card-body -->
