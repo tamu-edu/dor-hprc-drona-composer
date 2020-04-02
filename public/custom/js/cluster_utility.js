@@ -81,7 +81,7 @@ function draw_node_usage_chart(node_util_data) {
 }
 
 function hide_spinner() {
-  document.getElementsByClassName('loading-indicator')[0].style.visibility = 'hidden';
+  document.getElementById('chart-loading-indicator').style.visibility = 'hidden';
 }
 
 function setup_utilization_chart(json_data) {
