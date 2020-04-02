@@ -24,28 +24,29 @@
   </header>
 
 
-    <script src="<%= url("/custom/js/job_management.js") %>"></script>
-  
-    <div id="main-container" class="container" role="main">
-      <% if @error %>
-      <div class="alert alert-danger"><%= @error %></div>
-      <% end %>
 
-      <%== yield %>
+  <div id="main-container" class="container" role="main">
+    <% if @error %>
+    <div class="alert alert-danger"><%= @error %></div>
+    <% end %>
+
+    <%== yield %>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <span>High Performance Research Computing | <a href="mailto:help@hprc.tamu.edu">Email Us</a> </span>
     </div>
+  </footer>
 
-    <footer class="footer">
-      <div class="container">
-        <span>High Performance Research Computing | <a href="mailto:help@hprc.tamu.edu">Email Us</a> </span>
-      </div>
-    </footer>
-
-    <script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
-    <script src="<%= url("/bootstrap-4.4.1/js/bootstrap.min.js") %>"></script>
-    <script type="text/javascript" src="<%= url("/DataTables/datatables.min.js") %>"></script>
-    <script type="text/javascript" src="<%= url("/chartjs-2.9.3/Chart.bundle.min.js") %>"></script>
-    <script type="text/javascript" src="<%= url("/custom/js/dashboard.js") %>"></script>
-
+  <script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
+  <script src="<%= url("/bootstrap-4.4.1/js/bootstrap.min.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/DataTables/datatables.min.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/chartjs-2.9.3/Chart.bundle.min.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/custom/js/cluster_utility.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/custom/js/quota.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/custom/js/job_management.js") %>"></script>
+  <script type="text/javascript" src="<%= url("/custom/js/allocations.js") %>"></script>
 </body>
 
 </html>

@@ -32,3 +32,7 @@ function confirm_job_kill(job_id) {
 
     $(`job${job_id}Modal`).modal('hide');
 } 
+
+function populate_job_table() {
+    
+}
