@@ -3,12 +3,11 @@ function populate_quota() {
     var quota_table = document.querySelector("#quota_table");
 
     $('#quota_table').DataTable({
-        "scrollY": "200px",
-        "scrollCollapse": true,
         "paging": false,
         "searching": false,
         "info": false,
         "ordering": false,
+        "scrolling": false,
         ajax: {
             dataType: "json",
             url: '/pun/dev/dashboard/resources/disk/quota',

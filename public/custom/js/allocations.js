@@ -1,20 +1,20 @@
 function populate_allocations(json, table) {
-    table.clear();
+  table.clear();
 
-    data = json["data"];
-    table.rows
-      .add(data)
-      .draw();
+  data = json["data"];
+  table.rows
+    .add(data)
+    .draw();
 
-    data.forEach((allocation) => {
-        insert_account_details_modal(allocation);
-    });
+  data.forEach((allocation) => {
+    insert_account_details_modal(allocation);
+  });
 }
 
 function insert_account_details_modal(allocation) {
-    console.log("appending allocation modal");
-    template =
-        `
+  console.log("appending allocation modal");
+  template =
+    `
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -57,17 +57,17 @@ function insert_account_details_modal(allocation) {
       </div>
   </div>`
 
-    container = document.getElementById("main-container");
-    var div = document.createElement('div');
-    div.setAttribute('id', `account${allocation.account}Modal`);
-    div.setAttribute('class', "modal fade bs-example-modal-lg");
-    div.setAttribute('tabindex', "-1");
-    div.setAttribute('role', "dialog");
-    div.setAttribute('aria-labelledby', "classInfo");
-    div.setAttribute('aria-hidden', "true");
+  container = document.getElementById("main-container");
+  var div = document.createElement('div');
+  div.setAttribute('id', `account${allocation.account}Modal`);
+  div.setAttribute('class', "modal fade bs-example-modal-lg");
+  div.setAttribute('tabindex', "-1");
+  div.setAttribute('role', "dialog");
+  div.setAttribute('aria-labelledby', "classInfo");
+  div.setAttribute('aria-hidden', "true");
 
-    div.innerHTML = template.trim();
-    container.appendChild(div);
+  div.innerHTML = template.trim();
+  container.appendChild(div);
 }
 
 function init_allocation_table() {
@@ -79,38 +79,38 @@ function init_allocation_table() {
     "info": false,
     "processing": true,
     "columns": [
-        {
-            "data": "account", render: function (data, type, allocation) {
-                return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
-            }
-        },
-        { "data": "default" },
-        { "data": "used_pending_su" },
-        { "data": "balance" },
+      {
+        "data": "account", render: function (data, type, allocation) {
+          return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
+        }
+      },
+      { "data": "default" },
+      { "data": "used_pending_su" },
+      { "data": "balance" },
     ],
     "language": {
       "emptyTable": "Loading ..."
     }
-});
+  });
   return alloc_table;
 }
 
 (() => {
-    allocation_url = "/pun/dev/dashboard/resources/allocations"
+  allocation_url = "/pun/dev/dashboard/resources/allocations"
 
-    let request = new XMLHttpRequest();
-    request.open('GET', allocation_url);
-    request.responseType = 'json';
-    request.send();
+  let request = new XMLHttpRequest();
+  request.open('GET', allocation_url);
+  request.responseType = 'json';
+  request.send();
 
-    var alloc_table = init_allocation_table();
+  var alloc_table = init_allocation_table();
 
-    request.onload = function () {
-        const data = request.response;
-        populate_allocations(data, alloc_table);
-    }
+  request.onload = function () {
+    const data = request.response;
+    populate_allocations(data, alloc_table);
+  }
 
-    request.onerror = function () {
-        alert("Failed to fetch your account details. Please try again later.");
-    }
+  request.onerror = function () {
+    alert("Failed to fetch your account details. Please try again later.");
+  }
 })()
