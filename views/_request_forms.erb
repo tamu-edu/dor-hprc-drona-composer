@@ -16,7 +16,8 @@
       </tr>
       <tr>
         <td>Need Assistant?</td>
-        <td><button type="button" class="btn btn-primary">Get Help</button></td>
+        <td><button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+            data-target="#requestHelpModal">Get Help</button></td>
       </tr>
     </tbody>
   </table>
@@ -98,6 +99,82 @@
                 target="_blank">Software
                 Policies</a>.</p>
           </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Help Request Model Forms -->
+<div class="modal fade" id="requestHelpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Get Help</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <form class="form" id="modalHelpRequestForm">
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="help_topic">What do you need help with?</label>
+            <i class="fas fa-envelope prefix grey-text"></i>
+            <select name="help_topic">
+              <option value="Other">Other</option>
+              <option value="Software Usage">Software Usage</option>
+              <option value="Running Job">Running Job</option>
+              <option value="Service Unit related">Service Unit related</option>
+              <option value="Software Installation">Software Installtion</option>
+            </select>
+          </div>
+          
+          <div class="md-form">
+            <label data-error="wrong" data-success="right" for="issue_description">Issue Descriptions</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="issue_description" class="md-textarea form-control"
+              placeholder="Please describe your problem in details."
+              rows="5"></textarea>
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="error_message">Error Message</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="error_message" class="md-textarea form-control"
+              placeholder="e.g. file my_script.py cannot be found" rows="4"></textarea>
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="job_file_path">Path to Your Job File</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='job_file_path' class="form-control validate" placeholder="e.g. $SCRATCH/myawsome_research/my_sim_job.sbatch">
+          </div>
+          
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="program_file_path">Path to Your Executable/Script file</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='program_file_path' class="form-control validate" placeholder="e.g. $SCRATCH/myawsome_research/hello_world.out">
+          </div> 
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="additional_information">Additional Information</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="additional_information" class="md-textarea form-control"
+              placeholder="e.g. The data is located at $SCRATCH/my_data. Also, when I run the job, I use my Python virtual environment located in $SCRATCH/venv/" rows="4"></textarea>
+          </div>
+
+          <div class="modal-footer d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary">Get Help</button>
+          </div>
+          <div style="color: red;">Please be as specific as possible. This will help us resolve your issue faster.</div>
         </form>
       </div>
 
