@@ -1,23 +1,10 @@
-function populate_allocations(json) {
+function populate_allocations(json, table) {
+    table.clear();
+
     data = json["data"];
-    $('#allocation_table').DataTable({
-        "scrollY": "200px",
-        "scrollCollapse": true,
-        "paging": false,
-        "searching": false,
-        "info": false,
-        "data": data,
-        "columns": [
-            {
-                "data": "account", render: function (data, type, allocation) {
-                    return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
-                }
-            },
-            { "data": "default" },
-            { "data": "used_pending_su" },
-            { "data": "balance" },
-        ]
-    });
+    table.rows
+      .add(data)
+      .draw();
 
     data.forEach((allocation) => {
         insert_account_details_modal(allocation);
@@ -83,6 +70,28 @@ function insert_account_details_modal(allocation) {
     container.appendChild(div);
 }
 
+function init_allocation_table() {
+  var alloc_table = $('#allocation_table').DataTable({
+    "scrollY": "200px",
+    "scrollCollapse": true,
+    "paging": false,
+    "searching": false,
+    "info": false,
+    "processing": true,
+    "columns": [
+        {
+            "data": "account", render: function (data, type, allocation) {
+                return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
+            }
+        },
+        { "data": "default" },
+        { "data": "used_pending_su" },
+        { "data": "balance" },
+    ]
+});
+  return alloc_table;
+}
+
 (() => {
     allocation_url = "/pun/dev/dashboard/resources/allocations"
 
@@ -91,9 +100,11 @@ function insert_account_details_modal(allocation) {
     request.responseType = 'json';
     request.send();
 
+    var alloc_table = init_allocation_table();
+
     request.onload = function () {
         const data = request.response;
-        populate_allocations(data);
+        populate_allocations(data, alloc_table);
     }
 
     request.onerror = function () {
