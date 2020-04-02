@@ -87,7 +87,10 @@ function init_allocation_table() {
         { "data": "default" },
         { "data": "used_pending_su" },
         { "data": "balance" },
-    ]
+    ],
+    "language": {
+      "emptyTable": "Loading ..."
+    }
 });
   return alloc_table;
 }
