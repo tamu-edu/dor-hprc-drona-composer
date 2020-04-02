@@ -1,51 +1,7 @@
 <div class="row mt-3" style="border: 0px 1px 1px 1px solid;">
-  <div class="col-md-6">
-    <!-- Divider -->
-    <div class="row">
-      <div class="col">
-        <h6 class="text-uppercase">Accounting</h6>
-        <!-- Solid divider -->
-        <hr class="solid">
-      </div>
-    </div>
-    <table id="allocation_table" class="table table-striped" style="width:100%">
-      <thead class="thead-dark">
-        <tr>
-          <th>Account</th>
-          <!-- <th>FY</th> -->
-          <th>Default</th>
-          <!-- <th>Allocation</th> -->
-          <th>Used & Pending</th>
-          <th>Balance</th>
-          <!-- <th>PI</th> -->
-        </tr>
-      </thead>
-    </table>
-  </div>
+  <%== erb :"_accounting_table" %>
 
-  <div class="col-md-6">
-    <!-- Divider -->
-    <div class="row">
-      <div class="col">
-        <h6 class="text-uppercase">Requests</h6>
-        <!-- Solid divider -->
-        <hr class="solid">
-      </div>
-    </div>
-    <table id="general_request" class="table" style="width:100%">
-      <tbody>
-        <tr>
-          <td>Request Software</td>
-          <td><button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
-              data-target="#requestSoftwareModal">Request</button></td>
-        </tr>
-        <tr>
-          <td>Request Package</td>
-          <td><button type="button" class="btn btn-primary">Request</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <%== erb :"_request_forms" %>
 </div>
 
 <div class="row">
@@ -64,34 +20,7 @@
 
 <div class="row mb-2">
   <div class="col-md-6">
-    <div class="row mb-2">
-      <div class="col">
-        <div class="card">
-          <div class="card-body table-responsive p-0">
-            <table id="quota_table" class="table">
-              <thead class="thead-dark">
-                <tr>
-                  <th>Disk</th>
-                  <th>Disk Usage</th>
-                  <th>Disk Limit</th>
-                  <th>File Usage</th>
-                  <th>File Limit</th>
-                  <th> % File Usage</th>
-                </tr>
-              </thead>
-
-            </table>
-          </div>
-          <!-- /.card-body -->
-          <div class="card-footer">
-            <button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
-              data-target="#requestQuotaModal">Request</button>
-          </div>
-          <!-- ./card-footer -->
-        </div>
-        <!-- /.card -->
-      </div>
-    </div>
+    <%== erb :"_quota_table" %>
 
     <!-- Divider -->
     <div class="row">
@@ -110,11 +39,11 @@
 
     <div class="row md-2">
       <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
-          <canvas id="node_utilization_chart"></canvas>
+        <canvas id="node_utilization_chart"></canvas>
       </div>
 
       <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
-          <canvas id="core_utilization_chart"></canvas>
+        <canvas id="core_utilization_chart"></canvas>
       </div>
     </div>
   </div>
@@ -153,128 +82,8 @@
   </div>
 </div>
 
-<!-- Quota Request Model Forms -->
-<div class="modal fade" id="requestQuotaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-  aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold">Quota Increase Request</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body mx-3">
-        <form class="form" id="modalQuotaRequestForm">
-          <div class="md-form mb-2" style="display: none;">
-            <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
-            <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
-          </div>
-          <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="desired_disk">Amount of Desired Disk Quota
-              (Optional)</label>
-            <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='desired_disk' class="form-control validate">
-          </div>
-
-          <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="total_file_limit">File Limit Increase (Optional)</label>
-            <i class="fas fa-envelope prefix grey-text"></i>
-            <input type="text" name="total_file_limit" class="form-control validate">
-          </div>
-
-          <div class="md-form">
-            <label data-error="wrong" data-success="right" for="request_justification">Justification (Required)</label>
-            <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="request_justification" class="md-textarea form-control"
-              placeholder="I need space to build and install TensorFlow"
-              rows="4" required></textarea>
-          </div>
-          <div class="modal-footer d-flex justify-content-center">
-            <button type="submit" class="btn btn-primary">Submit Request</button>
-            <p>Note ⚠️: Either Disk Quota or File Limit must be filled. Invalid request will be ignored.</p>
-          </div>
-        </form>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- Software Request Model Forms -->
-<div class="modal fade" id="requestSoftwareModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-  aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header text-center">
-        <h4 class="modal-title w-100 font-weight-bold">Software Request</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body mx-3">
-        <div style="color: red">Please check our <a href="https://hprc.tamu.edu/software/<%= cluster_name %>/" target="_blank">
-          list of currently available software</a> before submitting request.</div>
-        <form class="form" id="modalSoftwareRequestForm">
-          <div class="md-form mb-2" style="display: none;">
-            <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
-            <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
-          </div>
-          <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="software_name">Software Information (Required)</label>
-            <div class="form-row align-items-center">
-              <div class="col-sm-6 my-1">
-                <input type="text" class="form-control" name="software_name" placeholder="Name (e.g. Python)" required>
-              </div>
-              <div class="col-sm-6 my-1">
-                <input type="text" class="form-control" name="software_version" placeholder="Version (e.g. 3.8)" required>
-              </div>
-            </div>
-          </div>
 
 
-          <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="software_link">Software Download Link (Required)</label>
-            <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='software_link' class="form-control validate" required>
-          </div>
-
-          <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="toolchains">Toolchain (if applicable)</label>
-            <i class="fas fa-envelope prefix grey-text"></i>
-            <input type="text" name="toolchains" class="form-control validate" placeholder="e.g. intel/2020a">
-            <p>See <a href="https://hprc.tamu.edu/wiki/SW:Toolchains" target="_blank">Toolchains page</a> for more
-              information.</p>
-          </div>
-
-          <div class="md-form">
-            <label data-error="wrong" data-success="right" for="request_justification">Justifications (Required)</label>
-            <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="request_justification" class="md-textarea form-control"
-              placeholder="Please provide justifications for your request (e.g. why you need this software, etc.)"
-              rows="4"></textarea>
-          </div>
-
-          <div class="md-form">
-            <label data-error="wrong" data-success="right" for="additional_notes">Additional Notes (if
-              applicable)</label>
-            <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="additional_notes" class="md-textarea form-control"
-              placeholder="e.g. License-Restricted Packages (who should have access)" rows="4"></textarea>
-          </div>
-          <div class="modal-footer d-flex justify-content-center">
-            <button type="submit" class="btn btn-primary">Submit Request</button>
-            <p>For more information, please check out our <a href="https://hprc.tamu.edu/policies/software.html"
-                target="_blank">Software Policies</a>.</p>
-          </div>
-        </form>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 <!-- Job Modals -->
 
