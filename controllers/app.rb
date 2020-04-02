@@ -38,9 +38,6 @@ end
 
 # Define a route at the root '/' of the app.
 get '/' do
-  @squeue = Squeue.new
-  @jobs, @squeue_error = @squeue.exec
-
   erb :index
 end
 

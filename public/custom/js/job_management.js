@@ -34,7 +34,7 @@ function confirm_job_kill(job_id) {
 }
 
 function init_job_table() {
-  var job_table = $('#allocation_table').DataTable({
+  var job_table = $('#job_table').DataTable({
     "scrollY": "500px",
     "scrollCollapse": true,
     "paging": false,
@@ -44,7 +44,7 @@ function init_job_table() {
     "columns": [
       {
         "data": "id", render: function (data, type, job) {
-          return `<a href="#" data-toggle="modal" data-target="#account${job.id}Modal">${job.id}</a>`
+          return `<a href="#" data-toggle="modal" data-target="#job${job.id}Modal">${job.id}</a>`
         }
       },
       { "data": "name" },
@@ -57,7 +57,7 @@ function init_job_table() {
   return job_table;
 }
 
-function populate_job_table(data, table) {
+function populate_job_table(json, table) {
   table.clear();
 
   data = json["data"];
@@ -71,7 +71,6 @@ function populate_job_table(data, table) {
 }
 
 function insert_job_details_modal(job) {
-  console.log("appending allocation modal");
   template =
     `
       <div class="modal-dialog modal-lg">
@@ -86,8 +85,10 @@ function insert_job_details_modal(job) {
                 <thead class="thead-dark">
                     <tr>
                         <th style="width: fit-content;">Job ID</th>
+                        <th>Partition</th>
                         <th>Name</th>
                         <th>State</th>
+                        <th># Cores</th>
                     </tr>
               </thead>
     
@@ -130,7 +131,7 @@ function insert_job_details_modal(job) {
   request.responseType = 'json';
   request.send();
 
-  var job_table = init_allocation_table();
+  var job_table = init_job_table();
 
   request.onload = function () {
     const data = request.response;

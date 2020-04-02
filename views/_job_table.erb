@@ -1,79 +1,17 @@
 <div class="col-md-6">
-    <div class="card">
-      <div class="card-body table-responsive p-0">
-        <table class="table table-head-fixed text-nowrap">
-          <thead class="thead-dark">
-            <tr>
-              <th style="width: fit-content;">Job ID</th>
-              <th>Name</th>
-              <th>State</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if @jobs.length > 0 %>
-            <% @jobs.each do |job| %>
-            <tr>
-              <td><a href="#" data-toggle="modal" data-target="#job<%= job.id %>Modal"><%= job.id %></a></td>
-              <td><%= job.name %></td>
-              <td><%= job.state %></td>
-            </tr>
-            <% end %>
-            <% else %>
-            <tr>
-              <td>You have no active jobs.</td>
-            </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-      <!-- /.card-body -->
+  <div class="card">
+    <div class="card-body table-responsive p-0">
+      <table id="job_table" class="table table-head-fixed text-nowrap">
+        <thead class="thead-dark">
+          <tr>
+            <th style="width: fit-content;">Job ID</th>
+            <th>Name</th>
+            <th>State</th>
+          </tr>
+        </thead>
+      </table>
     </div>
-    <!-- /.card -->
+    <!-- /.card-body -->
   </div>
-
-<!-- Job Modals -->
-
-<% @jobs.each do |job| %>
-<div id="job<%= job.id %>Modal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog"
-  aria-labelledby="classInfo" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">
-          Job <%= job.id %>
-        </h4>
-      </div>
-      <div class="modal-body">
-        <table id="classTable" class="table table-bordered">
-          <thead class="thead-dark">
-            <tr>
-              <th>Job ID</th>
-              <th>Partition</th>
-              <th>Name</th>
-              <th>State</th>
-              <th>Number of Nodes</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td><%= job.id %></td>
-              <td><%= job.partition %></td>
-              <td><%= job.name %></td>
-              <td><%= job.state %></td>
-              <td><%= job.nodes %></td>
-
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" onclick="confirm_job_kill('<%= job.id %>')">Kill</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
+  <!-- /.card -->
 </div>
-<% end %>

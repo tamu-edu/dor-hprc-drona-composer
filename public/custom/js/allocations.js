@@ -12,7 +12,6 @@ function populate_allocations(json, table) {
 }
 
 function insert_account_details_modal(allocation) {
-  console.log("appending allocation modal");
   template =
     `
     <div class="modal-dialog modal-lg">
