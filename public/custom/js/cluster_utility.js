@@ -24,6 +24,35 @@ function draw_core_usage_chart(core_util_data) {
   });
 }
 
+function show_loading_indicator(chart_id) {
+  var canvas = document.getElementById(chart_id);
+  var context = canvas.getContext('2d');
+  var start = new Date();
+  var lines = 16,
+    cW = context.canvas.width,
+    cH = context.canvas.height;
+
+  var draw = function () {
+    var rotation = parseInt(((new Date() - start) / 1000) * lines) / lines;
+    context.save();
+    context.clearRect(0, 0, cW, cH);
+    context.translate(cW / 2, cH / 2);
+    context.rotate(Math.PI * 2 * rotation);
+    for (var i = 0; i < lines; i++) {
+
+      context.beginPath();
+      context.rotate(Math.PI * 2 / lines);
+      context.moveTo(cW / 10, 0);
+      context.lineTo(cW / 4, 0);
+      context.lineWidth = cW / 30;
+      context.strokeStyle = "rgba(255,255,255," + i / lines + ")";
+      context.stroke();
+    }
+    context.restore();
+  };
+  window.setInterval(draw, 1000 / 30);
+}
+
 function draw_node_usage_chart(node_util_data) {
   var node_util_chart = document.getElementById("node_utilization_chart").getContext('2d');
 
@@ -49,7 +78,10 @@ function draw_node_usage_chart(node_util_data) {
       }
     }
   });
+}
 
+function hide_spinner() {
+  document.getElementsByClassName('loading-indicator')[0].style.visibility = 'hidden';
 }
 
 function setup_utilization_chart(json_data) {
@@ -59,10 +91,13 @@ function setup_utilization_chart(json_data) {
 
   draw_core_usage_chart(core_util_data);
   draw_node_usage_chart(node_util_data);
+
+  hide_spinner();
 }
 
-
 (() => {
+
+
   let request_url = "/pun/dev/dashboard/resources/cluster/utilization";
   let request = new XMLHttpRequest();
   request.open('GET', request_url);

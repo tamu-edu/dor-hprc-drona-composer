@@ -1,19 +1,25 @@
 <!-- Divider -->
-    <div class="row">
-      <div class="col">
-        <h6 class="text-uppercase">Cluster Statistics</h6>
-        <!-- Solid divider -->
-        <hr class="solid">
-      </div>
-    </div>
-
-    <div class="row md-2">
-      <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
-        <canvas id="node_utilization_chart"></canvas>
-      </div>
-
-      <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
-        <canvas id="core_utilization_chart"></canvas>
-      </div>
-    </div>
+<div class="row">
+  <div class="col">
+    <h6 class="text-uppercase">Cluster Statistics</h6>
+    <!-- Solid divider -->
+    <hr class="solid">
   </div>
+</div>
+<!-- Spinner -->
+<div class="loading-indicator d-flex justify-content-center">
+  <div class="spinner-border" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>
+
+<div class="row md-2">
+  <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
+    <canvas id="node_utilization_chart"></canvas>
+  </div>
+
+  <div class="col-md-6" style="position: relative; height:50vh; width:100vw">
+    <canvas id="core_utilization_chart"></canvas>
+  </div>
+</div>
+</div>
