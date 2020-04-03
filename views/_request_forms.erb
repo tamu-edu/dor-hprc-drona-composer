@@ -1,26 +1,23 @@
 <div class="col-md-6">
-  <!-- Divider -->
-  <div class="row">
-    <div class="col">
+  <div class="card table-responsive">
+    <div class="card-header">
       <h6 class="text-uppercase">Requests</h6>
-      <!-- Solid divider -->
-      <hr class="solid">
     </div>
+    <table id="general_request" class="table table-borderless" style="width:100%">
+      <tbody>
+        <tr>
+          <td>Request Software</td>
+          <td><button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+              data-target="#requestSoftwareModal">Request</button></td>
+        </tr>
+        <tr>
+          <td>Need Assistant?</td>
+          <td><button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+              data-target="#requestHelpModal">Get Help</button></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  <table id="general_request" class="table" style="width:100%">
-    <tbody>
-      <tr>
-        <td>Request Software</td>
-        <td><button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
-            data-target="#requestSoftwareModal">Request</button></td>
-      </tr>
-      <tr>
-        <td>Need Assistant?</td>
-        <td><button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
-            data-target="#requestHelpModal">Get Help</button></td>
-      </tr>
-    </tbody>
-  </table>
 </div>
 
 
@@ -58,7 +55,6 @@
               </div>
             </div>
           </div>
-
 
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="software_link">Software Download Link
@@ -136,13 +132,12 @@
               <option value="Software Installation">Software Installtion</option>
             </select>
           </div>
-          
+
           <div class="md-form">
             <label data-error="wrong" data-success="right" for="issue_description">Issue Descriptions</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="issue_description" class="md-textarea form-control"
-              placeholder="Please describe your problem in details."
-              rows="5"></textarea>
+              placeholder="Please describe your problem in details." rows="5"></textarea>
           </div>
 
           <div class="md-form mb-2">
@@ -155,20 +150,24 @@
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="job_file_path">Path to Your Job File</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='job_file_path' class="form-control validate" placeholder="e.g. $SCRATCH/myawsome_research/my_sim_job.sbatch">
+            <input type="text" name='job_file_path' class="form-control validate"
+              placeholder="e.g. $SCRATCH/myawsome_research/my_sim_job.sbatch">
           </div>
-          
+
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="program_file_path">Path to Your Executable/Script file</label>
+            <label data-error="wrong" data-success="right" for="program_file_path">Path to Your Executable/Script
+              file</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='program_file_path' class="form-control validate" placeholder="e.g. $SCRATCH/myawsome_research/hello_world.out">
-          </div> 
+            <input type="text" name='program_file_path' class="form-control validate"
+              placeholder="e.g. $SCRATCH/myawsome_research/hello_world.out">
+          </div>
 
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="additional_information">Additional Information</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="additional_information" class="md-textarea form-control"
-              placeholder="e.g. The data is located at $SCRATCH/my_data. Also, when I run the job, I use my Python virtual environment located in $SCRATCH/venv/" rows="4"></textarea>
+              placeholder="e.g. The data is located at $SCRATCH/my_data. Also, when I run the job, I use my Python virtual environment located in $SCRATCH/venv/"
+              rows="4"></textarea>
           </div>
 
           <div class="modal-footer d-flex justify-content-center">
