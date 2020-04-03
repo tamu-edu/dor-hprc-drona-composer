@@ -35,8 +35,8 @@ function confirm_job_kill(job_id) {
 
 function init_job_table() {
   var job_table = $('#job_table').DataTable({
-    "scrollY": "500px",
-    "scrollCollapse": true,
+    "scrollY": "200px",
+    "scrollCollapse": false,
     "paging": false,
     "searching": false,
     "info": false,

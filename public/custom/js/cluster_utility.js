@@ -81,7 +81,7 @@ function draw_node_usage_chart(node_util_data) {
 }
 
 function hide_spinner() {
-  document.getElementById('chart-loading-indicator').style.visibility = 'hidden';
+  document.getElementById('chart-loading-indicator').remove();
 }
 
 function setup_utilization_chart(json_data) {
@@ -96,8 +96,6 @@ function setup_utilization_chart(json_data) {
 }
 
 (() => {
-
-
   let request_url = "/pun/dev/dashboard/resources/cluster/utilization";
   let request = new XMLHttpRequest();
   request.open('GET', request_url);

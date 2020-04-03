@@ -1,15 +1,3 @@
-<div class="row mt-3" style="border: 0px 1px 1px 1px solid;">
-  <%== erb :"_accounting_table" %>
-
-  <%== erb :"_request_forms" %>
-</div>
-
-<div class="row">
-  <div class="col">
-    <hr class="solid">
-  </div>
-</div>
-
 <div class="row">
   <div class="col mt-2">
     <h6 class="text-uppercase">Your Summary</h6>
@@ -18,18 +6,32 @@
   </div>
 </div>
 
-<div class="row mb-2">
+<div class="row">
   <div class="col-6">
     <%== erb :"_quota_table" %>
-    <!-- Divider -->
-    <div class="row">
-      <div class="col">
-        <hr class="solid">
-      </div>
-    </div>
-    <%== erb :"_cluster_stats" %>
   </div>
   <div class="col-6">
     <%== erb :"_job_table" %>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-4">
+    <%== erb :"_request_forms" %>
+  </div>
+  <div class="col-8">
+    <%== erb :"_accounting_table" %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <hr class="solid">
+  </div>
+</div>
+
+<div class="row mb-2">
+  <div class="col-9">
+    <%== erb :"_cluster_stats" %>
   </div>
 </div>
