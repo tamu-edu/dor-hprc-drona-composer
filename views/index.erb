@@ -19,21 +19,17 @@
 </div>
 
 <div class="row mb-2">
-  <div class="col-md-6">
+  <div class="col-6">
     <%== erb :"_quota_table" %>
-
     <!-- Divider -->
     <div class="row">
       <div class="col">
         <hr class="solid">
       </div>
     </div>
-    
     <%== erb :"_cluster_stats" %>
-
-  <%== erb :"_job_table" %>
+  </div>
+  <div class="col-6">
+    <%== erb :"_job_table" %>
+  </div>
 </div>
-
-
-
-

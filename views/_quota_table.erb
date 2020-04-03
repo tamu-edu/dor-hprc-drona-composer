@@ -1,31 +1,27 @@
-<div class="row mb-2">
-  <div class="col">
-    <div class="card">
-      <div class="card-body table-responsive p-0">
-        <table id="quota_table" class="table">
-          <thead class="thead-dark">
-            <tr>
-              <th>Disk</th>
-              <th>Disk Usage</th>
-              <th>Disk Limit</th>
-              <th>File Usage</th>
-              <th>File Limit</th>
-              <th> % File Usage</th>
-            </tr>
-          </thead>
+<div class="card">
+  <div class="card-body table-responsive p-0">
+    <table id="quota_table" class="table">
+      <thead>
+        <tr>
+          <th>Disk</th>
+          <th>Disk Usage</th>
+          <th>Disk Limit</th>
+          <th>File Usage</th>
+          <th>File Limit</th>
+          <th> % File Usage</th>
+        </tr>
+      </thead>
 
-        </table>
-      </div>
-      <!-- /.card-body -->
-      <div class="card-footer">
-        <button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
-          data-target="#requestQuotaModal">Request Quota Increase</button>
-      </div>
-      <!-- ./card-footer -->
-    </div>
-    <!-- /.card -->
+    </table>
   </div>
+  <!-- /.card-body -->
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
+      data-target="#requestQuotaModal">Request Quota Increase</button>
+  </div>
+  <!-- ./card-footer -->
 </div>
+<!-- /.card -->
 
 <!-- Quota Request Model Forms -->
 <div class="modal fade" id="requestQuotaModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -53,13 +49,15 @@
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="total_file_limit">File Limit Increase (Optional)</label>
+            <label data-error="wrong" data-success="right" for="total_file_limit">File Limit Increase
+              (Optional)</label>
             <i class="fas fa-envelope prefix grey-text"></i>
             <input type="text" name="total_file_limit" class="form-control validate">
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="request_justification">Justification (Required)</label>
+            <label data-error="wrong" data-success="right" for="request_justification">Justification
+              (Required)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="request_justification" class="md-textarea form-control"
               placeholder="I need space to build and install TensorFlow" rows="4" required></textarea>
