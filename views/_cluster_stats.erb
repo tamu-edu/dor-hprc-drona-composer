@@ -1,25 +1,18 @@
-<!-- Divider -->
-<div class="col">
-  <h6 class="text-uppercase">Cluster Statistics</h6>
-  <!-- Solid divider -->
-  <hr class="solid">
-</div>
-<div id="chart-loading-indicator" class="col">
-  <!-- Spinner -->
-  <div  class="d-flex justify-content-center">
-    <div class="spinner-border" role="status">
-      <span class="sr-only">Loading...</span>
+<div class="row">
+  <div id="chart-loading-indicator" class="col-md-12">
+    <!-- Spinner -->
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
   </div>
-</div>
-<div class="col">
-  <div class="row md-2">
-    <div class="col-md-6" style="position: relative;">
-      <canvas id="node_utilization_chart"></canvas>
-    </div>
-  
-    <div class="col-md-6" style="position: relative;">
-      <canvas id="core_utilization_chart"></canvas>
-    </div>
+
+  <div class="col-md-6" style="position: relative;">
+    <canvas id="node_utilization_chart"></canvas>
+  </div>
+
+  <div class="col-md-6" style="position: relative;">
+    <canvas id="core_utilization_chart"></canvas>
   </div>
 </div>

@@ -8,20 +8,24 @@
   <link rel="stylesheet" type="text/css" href="<%= url("/bootstrap-4.4.1/css/bootstrap.min.css") %>">
   <link rel="stylesheet" type="text/css" href="<%= url("/DataTables/datatables.min.css") %>" />
   <link rel="stylesheet" type="text/css" href="<%= url("/custom/css/dashboard.css") %>" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
   <header>
     <!-- Image and text -->
-    <nav class="navbar navbar-dark" style="background-color: #500000;">
-      <a class="navbar-brand" href="#">
+    <nav class="navbar navbar-dark" style="background-color: #500000; font-family: 'Open Sans', sans-serif;">
+      <a class="navbar-brand" href="https://hprc.tamu.edu">
         <img src="<%= url("/images/TAM-Logo-white.svg") %>" width="30" height="30" class="d-inline-block align-top"
           alt="">
-        <span class="text-uppercase"><%= cluster_name %> dashboard</span>
+      </a>
+      <a class="navbar-brand mr-auto" href="https://hprc.tamu.edu">
+        <span class="text-uppercase"><%= cluster_name %> Dashboard</span>
       </a>
     </nav>
   </header>
+
 
 
 
@@ -32,12 +36,6 @@
 
     <%== yield %>
   </div>
-
-  <footer class="footer">
-    <div class="container">
-      <span>High Performance Research Computing | <a href="mailto:help@hprc.tamu.edu">Email Us</a> </span>
-    </div>
-  </footer>
 
   <script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
   <script src="<%= url("/bootstrap-4.4.1/js/bootstrap.min.js") %>"></script>
