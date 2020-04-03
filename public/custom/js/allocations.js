@@ -16,14 +16,14 @@ function insert_account_details_modal(allocation) {
     `
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header bg-primary text-light">
           <h4 class="modal-title">
             Allocation #${allocation.account}
           </h4>
         </div>
         <div class="modal-body">
-          <table id="classTable" class="table table-bordered">
-            <thead class="thead-dark">
+          <table class="table">
+            <thead>
               <tr>
                 <th>Account</th>
                 <th>FY</th>

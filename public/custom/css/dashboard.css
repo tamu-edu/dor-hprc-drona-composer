@@ -1,0 +1,13 @@
+/* Assume that browser does a decent job for caching fonts */
+
+body {
+    font-family: "Open Sans", sans-serif;
+}
+
+h4 {
+    font-weight: bold;
+}
+
+h6 {
+    font-weight: bold;
+}
