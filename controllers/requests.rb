@@ -26,7 +26,7 @@ class RequestsController < Sinatra::Base
         subject, body = quota_request.generate_email(params)
 
         success_msg = "Your Quota Request has been sent. A copy of the request has been sent to you via RT"
-        failure_msg = "An error has occurred. Please email us at help@hprc.tamu.edu"
+        failure_msg = "An error has occurred. Please email us at #{settings.help_email}"
 
         result_msg = send_request(subject, body, success_msg, failure_msg)
         result_msg
@@ -37,7 +37,7 @@ class RequestsController < Sinatra::Base
         subject, body = software_request.generate_email(params)
         
         success_msg = "Your Software Request has been sent. A copy of the request has been sent to you via RT"
-        failure_msg = "An error has occurred. Please email us at help@hprc.tamu.edu"
+        failure_msg = "An error has occurred. Please email us at #{settings.help_email}"
 
         result_msg = send_request(subject, body, success_msg, failure_msg)
         result_msg

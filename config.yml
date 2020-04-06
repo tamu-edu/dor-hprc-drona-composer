@@ -3,6 +3,7 @@ development: &common_settings
     dashboard_url: '/pun/dev/dashboard'
     home_page: 'https://hprc.tamu.edu'
     request_email: 'phamminhtris@tamu.edu'
+    help_email: 'help@example.edu'
 
 production:
     <<: *common_settings
