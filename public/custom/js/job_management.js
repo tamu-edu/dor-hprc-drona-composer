@@ -75,14 +75,14 @@ function insert_job_details_modal(job) {
     `
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header bg-primary text-light">
             <h4 class="modal-title">
               Job #${job.id}
             </h4>
           </div>
           <div class="modal-body">
-            <table id="classTable" class="table table-bordered">
-                <thead class="thead-dark">
+            <table class="table table-bordered">
+                <thead>
                     <tr>
                         <th style="width: fit-content;">Job ID</th>
                         <th>Partition</th>

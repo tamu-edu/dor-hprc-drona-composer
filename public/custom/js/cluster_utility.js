@@ -19,7 +19,7 @@ function draw_core_usage_chart(core_util_data) {
       title: {
         display: true,
         text: 'Core Utilization'
-      }
+      },
     }
   });
 }
