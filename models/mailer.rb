@@ -2,8 +2,14 @@
 require 'open3'
 
 class Mailer
+  
+  def initialize(des_email)  
+    # Instance variables  
+    @recipient_email = des_email 
+  end  
+
   def compose_email_command(subject, body)
-    "mailx -s '#{subject}' -S replyto=$USER@tamu.edu phamminhtris@tamu.edu <<< '#{body}'"
+    "mailx -s '#{subject}' -S replyto=$USER@tamu.edu #{@recipient_email} <<< '#{body}'"
   end
 
   def send_email(subject, body)

@@ -1,8 +1,13 @@
 require_relative '../models/mailer.rb'
+require "sinatra/config_file"
+
 
 class RequestsController < Sinatra::Base
+    register Sinatra::ConfigFile
+    config_file '../config.yml'
+
     def send_request(subject, body, success_msg, failure_message)
-        mailer = Mailer.new
+        mailer = Mailer.new(settings.request_email)
         status  = mailer.send_email(subject, body)
 
         message = nil
@@ -14,6 +19,7 @@ class RequestsController < Sinatra::Base
 
         message
     end
+
 
     post '/request/quota' do
         quota_request = QuotaRequest.new
