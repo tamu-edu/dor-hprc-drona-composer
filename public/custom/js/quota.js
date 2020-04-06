@@ -10,7 +10,7 @@ function populate_quota() {
         "scrolling": false,
         ajax: {
             dataType: "json",
-            url: '/pun/dev/dashboard/resources/disk/quota',
+            url: document.dashboard_url + '/resources/disk/quota',
             method: "GET",
         },
         "columns": [
@@ -71,7 +71,7 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
   }
 
 (() => {
-    quota_request_endpoint = "/pun/dev/dashboard/request/quota";
+    quota_request_endpoint = document.dashboard_url + "/request/quota";
 
     populate_quota();
     setup_quota_request_sender(quota_request_endpoint, "modalQuotaRequestForm", "#requestQuotaModal");

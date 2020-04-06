@@ -96,7 +96,7 @@ function setup_utilization_chart(json_data) {
 }
 
 (() => {
-  let request_url = "/pun/dev/dashboard/resources/cluster/utilization";
+  let request_url = document.dashboard_url + "/resources/cluster/utilization";
   let request = new XMLHttpRequest();
   request.open('GET', request_url);
   request.responseType = 'json';

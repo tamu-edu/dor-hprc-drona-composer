@@ -96,7 +96,7 @@ function init_allocation_table() {
 }
 
 (() => {
-  allocation_url = "/pun/dev/dashboard/resources/allocations"
+  allocation_url = document.dashboard_url + "/resources/allocations";
 
   let request = new XMLHttpRequest();
   request.open('GET', allocation_url);

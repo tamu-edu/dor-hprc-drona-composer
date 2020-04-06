@@ -32,13 +32,12 @@ function setup_request_form_sender(request_endpoint, form_id, modal_id) {
             event.preventDefault();
 
             sendData();
-            $(modal_id).modal('hide');        
+            $(modal_id).modal('hide');
         });
     });
 }
 
 (() => {
-  SOFTWARE_REQUEST_ENDPOINT = "/pun/dev/dashboard/request/software"
-  
-  setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");
+    SOFTWARE_REQUEST_ENDPOINT = document.dashboard_url + "/request/software";
+    setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");
 })()

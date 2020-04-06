@@ -1,0 +1,8 @@
+development: &common_settings
+    cluster_name: 'Terra'
+    dashboard_url: '/pun/dev/dashboard'
+    home_page: 'https://hprc.tamu.edu'
+
+production:
+    <<: *common_settings
+    dashboard_url: '/pun/sys/dashboard'

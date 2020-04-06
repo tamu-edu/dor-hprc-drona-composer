@@ -17,7 +17,7 @@ function kill_job(job_id) {
   });
 
   // Set up our request
-  XHR.open("DELETE", `/pun/dev/dashboard/jobs/${job_id}`);
+  XHR.open("DELETE", document.dashboard_url + `/jobs/${job_id}`);
 
   // The data sent is what the user provided in the form
   XHR.send();
@@ -124,7 +124,7 @@ function insert_job_details_modal(job) {
 }
 
 (() => {
-  allocation_url = "/pun/dev/dashboard/jobs"
+  allocation_url = document.dashboard_url + "/jobs";
 
   let request = new XMLHttpRequest();
   request.open('GET', allocation_url);

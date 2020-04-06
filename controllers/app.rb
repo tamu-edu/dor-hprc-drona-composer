@@ -7,8 +7,12 @@ require './models/utilization.rb'
 require './models/request_quota.rb'
 require './models/request_software.rb'
 require 'open3'
+require "sinatra/config_file"
 
 set :erb, :escape_html => true
+
+register Sinatra::ConfigFile
+config_file './config.yml'
 
 if development?
   require 'sinatra/reloader'
@@ -18,26 +22,9 @@ if development?
   also_reload './models/utilization.rb'
 end
 
-helpers do
-  def dashboard_title
-    "Open OnDemand"
-  end
-
-  def dashboard_url
-    "/pun/sys/dashboard/"
-  end
-
-  def title
-    "Dashboard"
-  end
-
-  def cluster_name
-    "terra"
-  end
-end
-
 # Define a route at the root '/' of the app.
 get '/' do
+  @url = settings.dashboard_url
   erb :index
 end
 

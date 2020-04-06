@@ -31,13 +31,13 @@
         </button>
       </div>
       <div class="modal-body mx-3">
-        <div style="color: red">Please check our <a href="https://hprc.tamu.edu/software/<%= cluster_name %>/"
+        <div style="color: red">Please check our <a href="https://hprc.tamu.edu/software/<%= settings.cluster_name %>/"
             target="_blank">list of currently available software</a> before submitting request.</div>
         <form class="form" id="modalSoftwareRequestForm">
           <div class="md-form mb-2" style="display: none;">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>" readonly>
           </div>
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="software_name">Software Information
@@ -115,7 +115,7 @@
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='cluster_name' class="form-control validate" value="<%= cluster_name %>" readonly>
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>" readonly>
           </div>
 
           <div class="md-form mb-2">
