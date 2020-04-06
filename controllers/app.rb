@@ -41,9 +41,3 @@ get '/' do
   erb :index
 end
 
-
-delete '/jobs/:job_id' do |job_id|
-  "Killing job #{job_id}"
-  # No error checking (good luck)
-  stdout_str, stderr_str, status = Open3.capture3("scancel #{job_id}")
-end
