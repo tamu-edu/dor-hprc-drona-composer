@@ -77,16 +77,24 @@ function init_allocation_table() {
     "searching": false,
     "info": false,
     "processing": true,
-    "columns": [
-      {
-        "data": "account", render: function (data, type, allocation) {
+    "columns": [{
+        "data": "account","sClass":  "text-right",
+        render: function (data, type, allocation) {
           return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
         }
       },
-      { "data": "default" },
-      {"data": "allocation"},
-      { "data": "used_pending_su" },
-      { "data": "balance" },
+      {
+        "data": "default","sClass":  "text-right"
+      },
+      {
+        "data": "allocation", "sClass":  "text-right"
+      },
+      {
+        "data": "used_pending_su", "sClass":  "text-right"
+      },
+      {
+        "data": "balance", "sClass":  "text-right"
+      },
     ],
     "language": {
       "emptyTable": "Loading ..."
