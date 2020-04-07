@@ -2,7 +2,7 @@
 # tail -n+4 is to strip the header of pestat
 
 allocated_nodes=$(/sw/local/bin/pestat -s alloc | tail -n+4 | wc -l)
-mixed_nodes=$(/sw/local/bin/pestat -s down | tail -n+4 | wc -l)
+mixed_nodes=$(/sw/local/bin/pestat -s mix | tail -n+4 | wc -l)
 idle_nodes=$(/sw/local/bin/pestat -s idle | tail -n+4 | wc -l)
 NODE_DATA='"nodes":  { "allocated": '$allocated_nodes', "mixed":  '$mixed_nodes', "idle": '$idle_nodes' }'
 
