@@ -22,6 +22,13 @@ if development?
   also_reload './models/utilization.rb'
 end
 
+helpers do
+  def driver_command(driver_name)
+    driver_scripts_location = settings.driver_scripts_path
+    driver_path = "#{driver_scripts_location}/#{driver_name}"
+  end
+end
+
 # Define a route at the root '/' of the app.
 get '/' do
   @url = settings.dashboard_url

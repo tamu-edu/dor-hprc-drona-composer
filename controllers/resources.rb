@@ -10,18 +10,14 @@ class ResourcesController < Sinatra::Base
         driver_path = "#{driver_scripts_location}/#{driver_name}"
     end
 
-    get '/resources/file_name' do 
-        name = driver_command('utilization.sh')
-        stdout_str, stderr_str, status = Open3.capture3(name)
-        stdout_str
-    end
-
     get '/resources/allocations' do
-        myproject = MyProject.new
-        allocations, allocation_error = myproject.exec
-  
-        allocations = allocations.map { |o| Hash[o.each_pair.to_a] }
-        {'data' => allocations }.to_json
+        get_allocation_command = driver_command('allocations')
+        stdout_str, stderr_str, status = Open3.capture3(get_allocation_command)
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
+        end
     end
 
     get '/resources/cluster/utilization' do 

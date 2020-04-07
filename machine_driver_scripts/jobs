@@ -1,0 +1,35 @@
+#!/bin/python
+import subprocess
+import json
+import os
+
+class Job:
+    def __init__(self, id, partition, name, user, state, time, time_limit, nodes, nodelist):
+        self.id = id
+        self.partition = partition
+        self.name = name
+        self.user = user
+        self.state = state
+        self.time = time
+        self.time_limit = time_limit
+        self.nodes = nodes
+        self.nodelist = nodelist
+
+def job_from_list(data):
+    return Job(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
+
+username = os.getenv('USER')
+output=subprocess.check_output(["/usr/bin/squeue", "-l", '-u', username])
+output = output.split('\n')
+output = output[2:] # skip the headers
+jobs = []
+for line in output:
+    data = line.strip().split()
+    data = map(lambda x: x.strip(), data)
+    if len(data) == 0:
+        continue
+    job = job_from_list(data)
+    jobs.append(job)
+
+json_data = json.dumps([ob.__dict__ for ob in jobs])
+print('{ "data": ' + json_data + '}')
