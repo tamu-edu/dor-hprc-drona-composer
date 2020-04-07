@@ -1,8 +1,8 @@
 function draw_core_usage_chart(core_util_data) {
   var core_util_chart = document.getElementById("core_utilization_chart").getContext('2d');
 
-  used_core = core_util_data["used"]
-  total_core = core_util_data["total"]
+  used_core = core_util_data["allocated"]
+  free_core = core_util_data["idle"]
   var core_chart = new Chart(core_util_chart, {
     type: 'pie',
     data: {
@@ -12,7 +12,7 @@ function draw_core_usage_chart(core_util_data) {
           "#ffcc33",
           "#33ccff"
         ],
-        data: [used_core, total_core - used_core]
+        data: [used_core, free_core]
       }]
     },
     options: {
@@ -57,18 +57,22 @@ function draw_node_usage_chart(node_util_data) {
   var node_util_chart = document.getElementById("node_utilization_chart").getContext('2d');
 
   // node
-  let used_node = node_util_data["used"]
-  let total_node = node_util_data["total"]
+  let used_nodes = node_util_data["allocated"];
+  let mixed_nodes = node_util_data["mixed"];
+  let idle_nodes = node_util_data["idle"];
+  let util_data = [used_nodes, mixed_nodes, idle_nodes];
+  console.log("nodes: " + util_data);
   let node_chart = new Chart(node_util_chart, {
     type: 'pie',
     data: {
-      labels: ["Used", "Free"],
+      labels: ["Allocated", "Mixed", "Idle"],
       datasets: [{
         backgroundColor: [
           "#ff0000",
-          "#66ff33"
+          "#66ff33",
+          "#34e5eb",
         ],
-        data: [used_node, total_node - used_node]
+        data: util_data
       }]
     },
     options: {
@@ -85,9 +89,11 @@ function hide_spinner() {
 }
 
 function setup_utilization_chart(json_data) {
+  // console.log(json_data);
   data = json_data["data"];
-  node_util_data = data[0];
-  core_util_data = data[1];
+  
+  node_util_data = data["nodes"];
+  core_util_data = data["cores"];
 
   draw_core_usage_chart(core_util_data);
   draw_node_usage_chart(node_util_data);
@@ -97,17 +103,19 @@ function setup_utilization_chart(json_data) {
 
 (() => {
   let request_url = document.dashboard_url + "/resources/cluster/utilization";
-  let request = new XMLHttpRequest();
-  request.open('GET', request_url);
-  request.responseType = 'json';
-  request.send();
+  
+  var util_request = $.getJSON( request_url, { format: "json" })
+  .done(function(json_data) {
+    
+    setup_utilization_chart(json_data);
+  })
+  .fail(function( jqxhr, textStatus, error) {
+    console.log(jqxhr);
+    var err = textStatus + ", " + error;
+    console.log( "Request Failed: " + err );
+  })
+  .always(function() {
+      console.log( "complete" );
+  });
 
-  request.onload = function () {
-    const data = request.response;
-    setup_utilization_chart(data);
-  }
-
-  request.onerror = function () {
-    alert("Can't fetch cluster usage data at this time!");
-  }
 })()

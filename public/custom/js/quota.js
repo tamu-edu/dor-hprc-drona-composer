@@ -1,4 +1,34 @@
 
+function colorize_percentage_value(percent) {
+  if (percent < 30.0) {
+    return `${percent} %`.fontcolor('green');
+  } else if (percent >= 70.0) {
+    return `${percent} %`.fontcolor('red');
+  } else {
+    return `${percent} %`.fontcolor('orange');
+  }
+}
+
+
+// borrow from this answer: https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+function formatKBytes(data, type, row) {
+  bytes = data * 1024;
+  return formatBytes(bytes);
+}
+
+
 function populate_quota() {
     var quota_table = document.querySelector("#quota_table");
 
@@ -14,15 +44,21 @@ function populate_quota() {
             method: "GET",
         },
         "columns": [
-            { "data": "disk_name" },
-            { "data": "disk_usage" },
-            { "data": "disk_limit" },
-            { "data": "file_usage" },
-            { "data": "file_limit" },
+            { "data": "name" },
+            { "data": "disk_usage", render: formatKBytes },
+            { "data": "disk_limit", render: formatKBytes },
+            {
+              "data": null, render: function (data, type, row) {
+                  percent = (row.disk_usage / row.disk_limit) * 100
+                  return `${colorize_percentage_value(percent.toFixed(2))}`;
+              }
+            },
+            { "data": "file_usage"},
+            { "data": "file_limit"},
             {
                 "data": null, render: function (data, type, row) {
                     percent = (row.file_usage / row.file_limit) * 100
-                    return percent.toFixed(2);
+                    return `${colorize_percentage_value(percent.toFixed(2))}`;
                 }
             },
         ]

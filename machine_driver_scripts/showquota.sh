@@ -15,5 +15,5 @@ SCRATCH_QUOTA=$(mount | grep -qw scratch && mmlsquota --block-size 1K -u $USER s
 SCRATCH_QUOTA=$(awk '{printf "%-10s, %10s, %10s, %10s, %10s\n", "/scratch", $4, $6, $10, $12}' <<< $SCRATCH_QUOTA);
 SCRATCH_QUOTA=$(parse_disk "${SCRATCH_QUOTA}");
 
-OUT='{ "disks": ['${HOME_QUOTA}', '${SCRATCH_QUOTA}']}'
+OUT='{ "data": ['${HOME_QUOTA}', '${SCRATCH_QUOTA}']}'
 echo $OUT

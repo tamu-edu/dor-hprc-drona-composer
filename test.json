@@ -1,0 +1,1 @@
+{ 'data': { 'nodes': { 'allocated': '253', 'mixed': '3', 'idle': '36' }, 'cores': { 'allocated': '6226', 'idle': '2210'} }}
