@@ -1,3 +1,4 @@
 {
-    "files.autoSave": "onFocusChange"
+    "files.autoSave": "onFocusChange",
+    "python.pythonPath": "/usr/bin/python2.7"
 }
