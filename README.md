@@ -17,13 +17,52 @@ end
 
 ## Structure
 
-// TODO: Still refactoring the code.
-
 ### Sinatra backend
 
-The Sinatra application provides some APIs that front-end application can tap into to get some information regarding the user. The application simply use [open3 gem](https://stdgems.org/open3/) to run batch script on portal node. Currently, most of the application logic can be found in [app.rb](app.r). To make the structure simple (maybe a bit too verbose), each bash command (yeah bash!) is implemented in a separate ruby file.
+The Sinatra application provides some APIs that front-end application can tap into to get some information regarding the user. The application simply use [open3 gem](https://stdgems.org/open3/) to run batch script on portal node. To make the code easy to maintain, the sinatra backend simply call the backend adapter scripts ([machine_driver_scripts](./machine_driver_scripts/)) and foward the raw output of these scripts to the front-end for rendering. That being said, the sinatra backend is more like a router. The main business logic is located in [machine_driver_scripts]. 
 
-For example, [squeue.rb](squeue.rb) implements squeue command (Slurm). 
+This part of the application acts as a router that routes raw information from the driver to the requester. As of this writing, this part of the app is very simple. You can find all the supported routes in [controllers] folder. The organization idea behind it is as follow:
+
+- [app.rb](controllers/app.rb): this controller is the main controller of the app which serves the index page as well as provide the information regarding the "dashboard_url" so that all the JavaScript code knows where to make the call to.
+
+- [jobs.rb](controllers/jobs.rb): handles job related routes (list all jobs, kill job)
+
+- [requests.rb](controllers/requests.rb): handles request form endpoints (software requests, quota requests)
+
+- [resources.rb](controllers/resources.rb): handles resource related endpoints such as cluster current allocation status, user allocations, etc.
+
+### Machine Driver scripts
+This collections of program (bash, python, etc.) is the only way sinatra backend can talk to the underlying machine. This decoupling help with migration to new clusters. The main idea here is that the Sinatra backend know nothing about the machine (not 100% true but close). These scripts can be anything as long as the front-end which (also machine specific) knows how to render the information returns by those scripts. For this repository, the output of all the script is in JSON format. 
+
+For example [machine_driver_scripts/allocations](machine_driver_scripts/allocations), fetch information about all the allocations belong to the current users. It the put this information
+in a JSON format which the front-end knows how to render.
+
+```JSON
+{
+  "data": [
+    {
+      "used_pending_su": 0,
+      "account": "122809601331",
+      "pi": "Liu, Honggao",
+      "default": "N",
+      "fy": "2020",
+      "allocation": 10,
+      "balance": 10
+    },
+    {
+      "used_pending_su": -45.19,
+      "account": "122809608377",
+      "pi": "Liu, Honggao",
+      "default": "Y",
+      "fy": "2020",
+      "allocation": 5000,
+      "balance": 4954.81
+    }
+  ]
+}
+```
+
+Again, the above information is machine specific and need to be adapt for each machine.
 
 ### Front-end
 
