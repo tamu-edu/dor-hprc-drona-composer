@@ -21,7 +21,7 @@ class ResourcesController < Sinatra::Base
     end
 
     get '/resources/cluster/utilization' do 
-        get_utilization_command = driver_command('utilization.sh')
+        get_utilization_command = driver_command('utilization')
         stdout_str, stderr_str, status = Open3.capture3(get_utilization_command)
         if status.success?
             return stdout_str
@@ -31,7 +31,7 @@ class ResourcesController < Sinatra::Base
     end
 
     get '/resources/disk/quota' do
-        get_quota_command = driver_command('showquota.sh')
+        get_quota_command = driver_command('showquota')
         
         stdout_str, stderr_str, status = Open3.capture3(get_quota_command)
         if status.success?
