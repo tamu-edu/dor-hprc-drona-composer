@@ -2,6 +2,9 @@
 import subprocess
 import json
 import os
+import argparse 
+
+CLUSTER_NAME="Terra"
 
 class Job:
     def __init__(self, id, partition, name, user, state, time, time_limit, nodes, nodelist):
@@ -18,18 +21,52 @@ class Job:
 def job_from_list(data):
     return Job(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
 
-username = os.getenv('USER')
-output=subprocess.check_output(["/usr/bin/squeue", "-l", '-u', username])
-output = output.split('\n')
-output = output[2:] # skip the headers
-jobs = []
-for line in output:
-    data = line.strip().split()
-    data = map(lambda x: x.strip(), data)
-    if len(data) == 0:
-        continue
-    job = job_from_list(data)
-    jobs.append(job)
+def list_jobs(args):
+    username = os.getenv('USER')
+    output=subprocess.check_output(["/usr/bin/squeue", "-l", '-u', username])
+    output = output.split('\n')
+    output = output[2:] # skip the headers
+    jobs = []
+    for line in output:
+        data = line.strip().split()
+        data = map(lambda x: x.strip(), data)
+        if len(data) == 0:
+            continue
+        job = job_from_list(data)
+        jobs.append(job)
 
-json_data = json.dumps([ob.__dict__ for ob in jobs])
-print('{ "data": ' + json_data + '}')
+    json_data = json.dumps([ob.__dict__ for ob in jobs])
+    print('{ "data": ' + json_data + '}')
+
+def kill_job(args):
+    job_id = args.kill[0]
+    output=subprocess.check_output(["/usr/bin/scancel", job_id])
+    print(output)
+
+def main():
+    # create parser object 
+    parser = argparse.ArgumentParser(description = "Job utility wrapper for " + CLUSTER_NAME) 
+
+    # defining arguments for parser object 
+    parser.add_argument("-l", "--list", action='store_true',
+                        help = "List all jobs for current user.")
+
+    # defining arguments for parser object 
+    parser.add_argument("-k", "--kill", nargs = 1, 
+                        type = str, metavar = "job_id", default = None, 
+                        help = "Kill a job with the given job id.")
+
+     # parse the arguments from standard input 
+    args = parser.parse_args() 
+
+    # calling functions depending on type of argument 
+    if args.list == True: 
+        list_jobs(args) 
+    elif args.kill != None: 
+        kill_job(args) 
+    else:
+        parser.print_help()
+
+if __name__ == "__main__": 
+    # calling the main function 
+    main()
