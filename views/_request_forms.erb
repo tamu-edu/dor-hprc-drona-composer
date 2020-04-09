@@ -100,7 +100,7 @@
 </div>
 
 <!-- Help Request Model Forms -->
-<div class="modal fade" id="requestHelpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+<div class="modal fade" id="requestHelpModal" tabindex="-1" role="dialog" 
   aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -149,6 +149,12 @@
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='job_file_path' class="form-control validate"
               placeholder="e.g. $SCRATCH/myawsome_research/my_sim_job.sbatch">
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="job_id">Job ID</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='job_id' class="form-control validate">
           </div>
 
           <div class="md-form mb-2">

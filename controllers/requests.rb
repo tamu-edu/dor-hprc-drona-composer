@@ -42,4 +42,15 @@ class RequestsController < Sinatra::Base
         result_msg = send_request(subject, body, success_msg, failure_msg)
         result_msg
     end
+
+    post '/request/help' do
+        help_request = HelpRequest.new
+        subject, body = help_request.generate_email(params)
+        
+        success_msg = "Your Help Request has been sent. A copy of the request has been sent to you via RT"
+        failure_msg = "An error has occurred. Please email us at #{settings.help_email}"
+
+        result_msg = send_request(subject, body, success_msg, failure_msg)
+        result_msg
+    end
 end

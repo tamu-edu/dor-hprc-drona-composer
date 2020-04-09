@@ -37,7 +37,14 @@ function setup_request_form_sender(request_endpoint, form_id, modal_id) {
     });
 }
 
+
+
 (() => {
     SOFTWARE_REQUEST_ENDPOINT = document.dashboard_url + "/request/software";
+    HELP_REQUEST_ENDPOINT = document.dashboard_url + "/request/help";
+    
     setup_request_sender(SOFTWARE_REQUEST_ENDPOINT, "modalSoftwareRequestForm", "#requestSoftwareModal");
+    
+    setup_request_sender(HELP_REQUEST_ENDPOINT, "modalHelpRequestForm", "#requestHelpModal");
+
 })()
