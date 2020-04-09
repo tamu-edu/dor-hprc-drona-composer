@@ -11,8 +11,8 @@ class JobsController < Sinatra::Base
     end
 
     get '/jobs' do
-        get_jobs_command = driver_command('jobs')
-        stdout_str, stderr_str, status = Open3.capture3(get_jobs_command)
+        jobs_command =  driver_command('jobs')
+        stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -l")
         if status.success?
             return stdout_str
         else  
@@ -22,16 +22,14 @@ class JobsController < Sinatra::Base
 
     delete '/jobs/:job_id' do |job_id|
         # No error checking (good luck)
-        stdout_str, stderr_str, status = Open3.capture3("scancel #{job_id}")
-        
-        result_msg = nil
+        jobs_command = driver_command('jobs')
+        stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -k #{job_id}")
+    
         if status.success?
-            result_msg = stdout_str
-        else
-            result_msg = stderr_str
+            return stdout_str
+        else  
+            return stderr_str
         end
-        
-        result_msg
     end
   
 end
