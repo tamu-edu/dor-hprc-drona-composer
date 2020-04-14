@@ -1,0 +1,78 @@
+<div class="modal fade" id="requestSoftwareModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-light text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Software Request</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div style="color: red">Please check our <a href="https://hprc.tamu.edu/software/<%= settings.cluster_name %>/"
+            target="_blank">list of currently available software</a> before submitting request.</div>
+        <form class="form" id="modalSoftwareRequestForm">
+          <div class="md-form mb-2" style="display: none;">
+            <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>" readonly>
+          </div>
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="software_name">Software Information
+              (Required)</label>
+            <div class="form-row align-items-center">
+              <div class="col-sm-6 my-1">
+                <input type="text" class="form-control" name="software_name" placeholder="Name (e.g. Python)" required>
+              </div>
+              <div class="col-sm-6 my-1">
+                <input type="text" class="form-control" name="software_version" placeholder="Version (e.g. 3.8)"
+                  required>
+              </div>
+            </div>
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="software_link">Software Download Link
+              (Required)</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" name='software_link' class="form-control validate" required>
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="toolchains">Toolchain (if
+              applicable)</label>
+            <i class="fas fa-envelope prefix grey-text"></i>
+            <input type="text" name="toolchains" class="form-control validate" placeholder="e.g. intel/2020a">
+            <p>See <a href="https://hprc.tamu.edu/wiki/SW:Toolchains" target="_blank">Toolchains page</a>
+              for more
+              information.</p>
+          </div>
+
+          <div class="md-form">
+            <label data-error="wrong" data-success="right" for="request_justification">Justifications
+              (Required)</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="request_justification" class="md-textarea form-control"
+              placeholder="Please provide justifications for your request (e.g. why you need this software, etc.)"
+              rows="4"></textarea>
+          </div>
+
+          <div class="md-form">
+            <label data-error="wrong" data-success="right" for="additional_notes">Additional Notes (if
+              applicable)</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="additional_notes" class="md-textarea form-control"
+              placeholder="e.g. License-Restricted Packages (who should have access)" rows="4"></textarea>
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+            <p>For more information, please check out our <a href="https://hprc.tamu.edu/policies/software.html"
+                target="_blank">Software
+                Policies</a>.</p>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
