@@ -61,7 +61,6 @@ function draw_node_usage_chart(node_util_data) {
   let mixed_nodes = node_util_data["mixed"];
   let idle_nodes = node_util_data["idle"];
   let util_data = [used_nodes, mixed_nodes, idle_nodes];
-  console.log("nodes: " + util_data);
   let node_chart = new Chart(node_util_chart, {
     type: 'pie',
     data: {
@@ -89,7 +88,6 @@ function hide_spinner() {
 }
 
 function setup_utilization_chart(json_data) {
-  // console.log(json_data);
   data = json_data["data"];
   
   node_util_data = data["nodes"];
@@ -115,7 +113,7 @@ function setup_utilization_chart(json_data) {
     console.log( "Request Failed: " + err );
   })
   .always(function() {
-      console.log( "complete" );
+      // console.log( "complete" );
   });
 
 })()

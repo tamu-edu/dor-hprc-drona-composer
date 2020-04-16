@@ -1,4 +1,4 @@
-function setup_request_form_sender(request_endpoint, form_id, modal_id) {
+function setup_request_sender(request_endpoint, form_id, modal_id) {
     // Source: https://developer.mozilla.org/en-US/docs/Learn/Forms/Sending_forms_through_JavaScript
     window.addEventListener("load", function () {
         function sendData() {
