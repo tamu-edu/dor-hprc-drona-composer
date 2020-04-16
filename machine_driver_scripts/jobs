@@ -43,6 +43,27 @@ def kill_job(args):
     output=subprocess.check_output(["/usr/bin/scancel", job_id])
     print(output)
 
+def tail(f, n, offset=0):
+    # source: https://stackoverflow.com/questions/136168/get-last-n-lines-of-a-file-with-python-similar-to-tail
+    print(offset)
+    stdin,stdout = os.popen2("tail -n " + str(n) + " " + f)
+    stdin.close()
+    lines = stdout.readlines(); stdout.close()
+    return lines[:-offset]
+
+def job_log(args):
+    job_id = args.output[0]
+    n_lines = args.output[1]
+
+    # using shell=True is not recommended. However,
+    # since this is trusted code, should be fine
+    cmd = 'scontrol show jobid ' + job_id + '| grep StdOut | cut -d"=" -f2'
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    log_file_path = ps.communicate()[0].strip()
+
+    last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
+    print('{ "log": "' + last_n_lines + '" }')
+    
 def main():
     # create parser object 
     parser = argparse.ArgumentParser(description = "Job utility wrapper for " + CLUSTER_NAME) 
@@ -51,10 +72,14 @@ def main():
     parser.add_argument("-l", "--list", action='store_true',
                         help = "List all jobs for current user.")
 
-    # defining arguments for parser object 
+    
     parser.add_argument("-k", "--kill", nargs = 1, 
                         type = str, metavar = "job_id", default = None, 
                         help = "Kill a job with the given job id.")
+
+    parser.add_argument("-o", "--output", nargs = 2, 
+                        type = str, metavar=('job_id', 'n_lines'), default = None, 
+                        help = "Output the last n_lines of output of a given job_id")
 
      # parse the arguments from standard input 
     args = parser.parse_args() 
@@ -64,6 +89,8 @@ def main():
         list_jobs(args) 
     elif args.kill != None: 
         kill_job(args) 
+    elif args.output != None:
+        job_log(args)
     else:
         parser.print_help()
 

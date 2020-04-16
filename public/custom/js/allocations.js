@@ -118,7 +118,7 @@ function init_allocation_table() {
             
             return `<a href='javascript:;' onclick='set_default_allocation(${allocation.account});'>Set Default</a>`;
           } else {
-            return allocation.default;
+            return 'default';
           }
         }
       },

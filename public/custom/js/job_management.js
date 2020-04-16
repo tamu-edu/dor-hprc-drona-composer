@@ -33,6 +33,25 @@ function confirm_job_kill(job_id) {
   $(`job${job_id}Modal`).modal('hide');
 }
 
+function show_job_log(job_id) {
+  n_lines = 10;
+  job_log_url = document.dashboard_url + `/jobs/${job_id}/log?n_lines=${n_lines}`;
+  let request = new XMLHttpRequest();
+  request.open('GET', allocation_url);
+  request.responseType = 'json';
+  request.send();
+
+  request.onload = function () {
+    const data = request.response;
+    alert(data["log"]);
+  }
+
+  request.onerror = function () {
+    alert("Failed to fetch log details. Please try again later.");
+  }
+  console.log("Showing log for job " + job_id);
+}
+
 function init_job_table() {
   var job_table = $('#job_table').DataTable({
     "scrollY": "200px",
@@ -49,6 +68,9 @@ function init_job_table() {
       },
       { "data": "name" },
       { "data": "state" },
+      {"data": null, render: function(data, type, job) {
+        return `<a href='javascript:;' onclick='show_job_log(${job.id});'>log</a>`
+      }}
     ],
     "language": {
       "emptyTable": "You have no active jobs"
