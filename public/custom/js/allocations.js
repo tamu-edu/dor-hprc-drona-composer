@@ -69,7 +69,34 @@ function insert_account_details_modal(allocation) {
   container.appendChild(div);
 }
 
+
+function set_default_allocation(account_no) {
+  var userPreference = "";
+  if (confirm(`Are you sure you want to use ${account_no} as your default project account?`) == false) {
+    return;
+  } 
+
+  set_default_allocation_url = document.dashboard_url + `/resources/allocations/default/${account_no}`;
+
+  let request = new XMLHttpRequest();
+  request.open('PUT', set_default_allocation_url);
+  request.responseType = 'text';
+  request.send();
+
+  request.onload = function () {
+    const data = request.response;
+    load_allocation_data();
+  }
+
+  request.onerror = function () {
+    alert("Failed to change your default project account. Please try again.");
+  }
+}
+
 function init_allocation_table() {
+
+  $('#allocation_table').DataTable().clear().destroy();
+
   var alloc_table = $('#allocation_table').DataTable({
     "scrollY": "200px",
     "scrollCollapse": true,
@@ -84,7 +111,16 @@ function init_allocation_table() {
         }
       },
       {
-        "data": "default","sClass":  "text-right"
+        "data": "default","sClass":  "text-right",
+        render: function(data, type, allocation) {
+
+          if (allocation.default == 'N') {
+            
+            return `<a href='javascript:;' onclick='set_default_allocation(${allocation.account});'>Set Default</a>`;
+          } else {
+            return allocation.default;
+          }
+        }
       },
       {
         "data": "allocation", "sClass":  "text-right"
@@ -103,7 +139,7 @@ function init_allocation_table() {
   return alloc_table;
 }
 
-(() => {
+function load_allocation_data() {
   allocation_url = document.dashboard_url + "/resources/allocations";
 
   let request = new XMLHttpRequest();
@@ -121,4 +157,8 @@ function init_allocation_table() {
   request.onerror = function () {
     alert("Failed to fetch your account details. Please try again later.");
   }
+}
+
+(() => {
+  load_allocation_data();
 })()

@@ -12,7 +12,17 @@ class ResourcesController < Sinatra::Base
 
     get '/resources/allocations' do
         get_allocation_command = driver_command('allocations')
-        stdout_str, stderr_str, status = Open3.capture3(get_allocation_command)
+        stdout_str, stderr_str, status = Open3.capture3("#{get_allocation_command} -l")
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
+        end
+    end
+
+    put '/resources/allocations/default/:account_no' do |account_no|
+        get_allocation_command = driver_command('allocations')
+        stdout_str, stderr_str, status = Open3.capture3("#{get_allocation_command} -d #{account_no}")
         if status.success?
             return stdout_str
         else  
