@@ -1,7 +1,10 @@
-#!/usr/bin/python
-
+#!/bin/python
 import subprocess
 import json
+import os
+import argparse 
+
+CLUSTER_NAME="Terra"
 
 class Allocation:
     def __init__(self, account, fy, default, allocation, used_pending_su, balance, pi):
@@ -16,18 +19,53 @@ class Allocation:
 def alloc_from_list(data):
     return Allocation(data[0], data[1], data[2], data[3], data[4], data[5], data[6])
 
-output=subprocess.check_output(["/home/slurm/bin/pre_charge", "list"])
-output = output.split('\n')
-output = output[5:] # skip the headers
+def list_allocations(args):
+    output=subprocess.check_output(["/home/slurm/bin/pre_charge", "list"])
+    output = output.split('\n')
+    output = output[5:] # skip the headers
 
-allocations = []
-for line in output:
-    if '|' in line:
-        line = line.strip('|')
-        data = line.split('|')
-        data = map(lambda x: x.strip(), data)
-        allocation = alloc_from_list(data)
-        allocations.append(allocation)
-    
-json_data = json.dumps([ob.__dict__ for ob in allocations])
-print('{ "data": ' + json_data + '}')
+    allocations = []
+    for line in output:
+        if '|' in line:
+            line = line.strip('|')
+            data = line.split('|')
+            data = map(lambda x: x.strip(), data)
+            allocation = alloc_from_list(data)
+            allocations.append(allocation)
+        
+    json_data = json.dumps([ob.__dict__ for ob in allocations])
+    print('{ "data": ' + json_data + '}')
+
+def switch_default_account(args):
+    account_no = args.default[0]
+
+    output=subprocess.check_output(["/home/slurm/bin/pre_charge", "set", account_no])
+    print(output)
+
+def main():
+    # create parser object 
+    parser = argparse.ArgumentParser(description = "Accounting utility wrapper for " + CLUSTER_NAME) 
+
+    # defining arguments for parser object 
+    parser.add_argument("-l", "--list", action='store_true',
+                        help = "List all allocations for current user.")
+
+    # defining arguments for parser object 
+    parser.add_argument("-d", "--default", nargs = 1, 
+                        type = str, metavar = "account_no", default = None, 
+                        help = "Switch the default project account to the given account no.")
+
+     # parse the arguments from standard input 
+    args = parser.parse_args() 
+
+    # calling functions depending on type of argument 
+    if args.list == True: 
+        list_allocations(args) 
+    elif args.default != None: 
+        switch_default_account(args) 
+    else:
+        parser.print_help()
+
+if __name__ == "__main__": 
+    # calling the main function 
+    main()
