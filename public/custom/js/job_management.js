@@ -34,21 +34,15 @@ function confirm_job_kill(job_id) {
 }
 
 function show_job_log(job_id) {
-  n_lines = 10;
-  job_log_url = document.dashboard_url + `/jobs/${job_id}/log?n_lines=${n_lines}`;
-  let request = new XMLHttpRequest();
-  request.open('GET', allocation_url);
-  request.responseType = 'json';
-  request.send();
+  let n_lines = 10;
+  let job_log_url = document.dashboard_url + `/jobs/${job_id}/log?n_lines=${n_lines}`;
+  var req = new XMLHttpRequest();
+  req.open('GET', job_log_url, true);
+  req.onload  = function() {
+    alert(req.response);
+  };
+  req.send(null);
 
-  request.onload = function () {
-    const data = request.response;
-    alert(data["log"]);
-  }
-
-  request.onerror = function () {
-    alert("Failed to fetch log details. Please try again later.");
-  }
   console.log("Showing log for job " + job_id);
 }
 
@@ -146,7 +140,7 @@ function insert_job_details_modal(job) {
 }
 
 (() => {
-  allocation_url = document.dashboard_url + "/jobs";
+  let allocation_url = document.dashboard_url + "/jobs";
 
   let request = new XMLHttpRequest();
   request.open('GET', allocation_url);

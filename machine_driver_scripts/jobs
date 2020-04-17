@@ -62,7 +62,8 @@ def job_log(args):
     log_file_path = ps.communicate()[0].strip()
 
     last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
-    print('{ "log": "' + last_n_lines + '" }')
+    # This is just string, no json here
+    print(last_n_lines)
     
 def main():
     # create parser object 
