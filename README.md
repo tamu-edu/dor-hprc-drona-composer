@@ -66,7 +66,11 @@ Again, the above information is machine specific and need to be adapt for each m
 
 ### Front-end
 
-As of now, the front-end is extremely simple (index.html + some JavaScript file). The JavaScript code is loaded with index.html. After the page is loaded, the front-end code will make some API call that fetch the information of the user. 
+As of now, the front-end is extremely simple (index.html + some JavaScript file). The JavaScript code is loaded along with [views/index.erb](views/index.erb). After the page is loaded, the front-end code will make some API call that fetch the information of the user. Ideally the name of the file in the views folder should tell you what the file does. I will not
+put tons of words here so that it needs to be updated later. Rather, you should dive into the code and see how they work. To give you a general idea, I will briefly explain the flow of the application.
 
-// TODO: Update this after refactoring
+- Sinatra load the base HTML files when the user access the dashboard app. (This has no content !!!)
+- Our JavaScript code will be loaded and start fetching data provided by the Sinatra backend (discussed above). All the utility JavaScript files are located inside [public/custom/js](public/custom/js) folder.
+- There is very little CSS code. Most styling is done with [Bootstrap 4](https://getbootstrap.com/) (general page layout - the grid system), [chartjs](https://www.chartjs.org/) (for cluster utility pie charts), [DataTable](https://datatables.net/) (renders all data tables with nice animation and sorting features), jQuery (dependency of Bootstrap 4).
+
 
