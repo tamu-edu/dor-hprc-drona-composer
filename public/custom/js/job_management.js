@@ -33,6 +33,43 @@ function confirm_job_kill(job_id) {
   $(`job${job_id}Modal`).modal('hide');
 }
 
+function show_log_modal(job_id, log_str) {
+  template =
+    `
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-light">
+            <h4 class="modal-title">
+              Job #${job_id} Log
+            </h4>
+          </div>
+          <div class="modal-body">
+            <pre>
+            ${log_str}
+            </pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+        </div>
+    </div>`
+
+  container = document.getElementById("main-container");
+  var div = document.createElement('div');
+  div.setAttribute('id', `job-${job_id}-log-modal`);
+  div.setAttribute('class', "modal fade bs-example-modal-lg");
+  div.setAttribute('tabindex', "-1");
+  div.setAttribute('role', "dialog");
+  div.setAttribute('aria-labelledby', "classInfo");
+  div.setAttribute('aria-hidden', "true");
+
+  div.innerHTML = template.trim();
+  container.appendChild(div);
+
+  // div.showModal();
+  $(`#job-${job_id}-log-modal`).modal();
+}
+
 function show_job_log(job_id) {
   toggle_log_loading_spinner(job_id, true);
 
@@ -42,7 +79,8 @@ function show_job_log(job_id) {
   req.open('GET', job_log_url, true);
   req.onload = function () {
     toggle_log_loading_spinner(job_id, false);
-    alert(req.response);
+    show_log_modal(job_id, req.response);    
+    // alert(req.response);
   };
 
   req.onerror = function () {
