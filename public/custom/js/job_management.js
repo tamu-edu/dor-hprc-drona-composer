@@ -34,7 +34,7 @@ function confirm_job_kill(job_id) {
 }
 
 function show_log_modal(job_id, log_str) {
-  template =
+  let template =
     `
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -54,7 +54,7 @@ function show_log_modal(job_id, log_str) {
         </div>
     </div>`
 
-  container = document.getElementById("main-container");
+  var container = document.getElementById("main-container");
   var div = document.createElement('div');
   div.setAttribute('id', `job-${job_id}-log-modal`);
   div.setAttribute('class', "modal fade bs-example-modal-lg");
@@ -66,9 +66,21 @@ function show_log_modal(job_id, log_str) {
   div.innerHTML = template.trim();
   container.appendChild(div);
 
-  // div.showModal();
+  // show the model after built
   $(`#job-${job_id}-log-modal`).modal();
+
+  // we need to clean up the model after it is dismissed
+  $(`#job-${job_id}-log-modal`).on('hidden.bs.modal', function () {
+    removeElement(`job-${job_id}-log-modal`);
+  });
 }
+
+function removeElement(elementId) {
+  // Removes an element from the document
+  var element = document.getElementById(elementId);
+  element.parentNode.removeChild(element);
+}
+
 
 function show_job_log(job_id) {
   toggle_log_loading_spinner(job_id, true);
@@ -79,7 +91,7 @@ function show_job_log(job_id) {
   req.open('GET', job_log_url, true);
   req.onload = function () {
     toggle_log_loading_spinner(job_id, false);
-    show_log_modal(job_id, req.response);    
+    show_log_modal(job_id, req.response);
     // alert(req.response);
   };
 
@@ -103,7 +115,7 @@ function toggle_log_loading_spinner(job_id, show) {
     spinner.style.display = "none";
   }
 
-  let show_log_button_id =  `log-button-${job_id}`;
+  let show_log_button_id = `log-button-${job_id}`;
   var show_log_button = document.getElementById(show_log_button_id);
   if (show) {
     show_log_button.style.display = "none";
