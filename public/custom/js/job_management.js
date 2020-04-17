@@ -34,16 +34,44 @@ function confirm_job_kill(job_id) {
 }
 
 function show_job_log(job_id) {
+  toggle_log_loading_spinner(job_id, true);
+
   let n_lines = 10;
   let job_log_url = document.dashboard_url + `/jobs/${job_id}/log?n_lines=${n_lines}`;
   var req = new XMLHttpRequest();
   req.open('GET', job_log_url, true);
-  req.onload  = function() {
+  req.onload = function () {
+    toggle_log_loading_spinner(job_id, false);
     alert(req.response);
   };
+
+  req.onerror = function () {
+    toggle_log_loading_spinner(job_id, false);
+    alert("Failed to load job's log. Please try again.");
+  }
+
   req.send(null);
 
   console.log("Showing log for job " + job_id);
+}
+
+function toggle_log_loading_spinner(job_id, show) {
+  // if the spinner present, show log button should hide and vice versa
+  let spinner_id = `log-button-${job_id}-spinner`;
+  var spinner = document.getElementById(spinner_id);
+  if (show) {
+    spinner.style.display = "block";
+  } else {
+    spinner.style.display = "none";
+  }
+
+  let show_log_button_id =  `log-button-${job_id}`;
+  var show_log_button = document.getElementById(show_log_button_id);
+  if (show) {
+    show_log_button.style.display = "none";
+  } else {
+    show_log_button.style.display = "inline";
+  }
 }
 
 function init_job_table() {
@@ -54,17 +82,26 @@ function init_job_table() {
     "searching": false,
     "info": false,
     "processing": true,
-    "columns": [
-      {
-        "data": "id", render: function (data, type, job) {
+    "columns": [{
+        "data": "id",
+        render: function (data, type, job) {
           return `<a href="#" data-toggle="modal" data-target="#job${job.id}Modal">${job.id}</a>`
         }
       },
-      { "data": "name" },
-      { "data": "state" },
-      {"data": null, render: function(data, type, job) {
-        return `<a href='javascript:;' onclick='show_job_log(${job.id});'>log</a>`
-      }}
+      {
+        "data": "name"
+      },
+      {
+        "data": "state"
+      },
+      {
+        "data": null,
+        render: function (data, type, job) {
+          let logButton = `<a id='log-button-${job.id}' href='javascript:' onclick='show_job_log(${job.id});'>log</a>
+                          <span style="display: none;" id='log-button-${job.id}-spinner' class="spinner-border" role="status"></span>`;
+          return logButton
+        },
+      }
     ],
     "language": {
       "emptyTable": "You have no active jobs"
@@ -158,4 +195,3 @@ function insert_job_details_modal(job) {
     alert("Failed to fetch your jobs details. Please try again later.");
   }
 })()
-
