@@ -73,7 +73,29 @@ put tons of words here so that it needs to be updated later. Rather, you should 
 - Our JavaScript code will be loaded and start fetching data provided by the Sinatra backend (discussed above). All the utility JavaScript files are located inside [public/custom/js](public/custom/js) folder.
 - There is very little CSS code. Most styling is done with [Bootstrap 4](https://getbootstrap.com/) (general page layout - the grid system), [chartjs](https://www.chartjs.org/) (for cluster utility pie charts), [DataTable](https://datatables.net/) (renders all data tables with nice animation and sorting features), jQuery (dependency of Bootstrap 4).
 
-
 ## Deployment
 
 ### Development
+The general guideline to deploy a development version of the app follow closely the step specified by the official OOD [Passenger App Development tutorial](https://osc.github.io/ood-documentation/master/app-development/tutorials-passenger-apps/ps-to-quota.html#clone-and-setup). Please follow the instruction there to deploy the app in your sandbox environment. 
+
+#### App Configurations
+
+After you have successfully clone your app followed the instructions specified above. There are a few more configurations that need to be specified for the app to work correctly. The main app configurations can be found in [config.yml](config.yml). Please see the comments in the section below to see what each configuration means.
+
+```yaml
+development: &common_settings
+    cluster_name: 'Terra' # this will dynamically change the name of the current cluster
+    dashboard_url: '/pun/dev/dashboard_dev' # this is the URL that point to this app. (help to configure JavaScript code correctly)
+    home_page: 'https://hprc.tamu.edu' # this is where we should take the user to when they click the cluster name on the top left of the page
+    request_email: 'example@hprc.tamu.edu' # this is where all the requests submitted by the user will be sent to
+    help_email: 'help@example.edu' # this is where all the HELP requests submitted by the user will be sent to
+    driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts' # this is the path to the machine driver scripts
+    
+production:
+    <<: *common_settings # we use the development config as the base configurations and override what are different for production environment 
+    dashboard_url: '/pun/sys/dashboard'
+    request_email: 'help@hprc.tamu.edu'
+```
+
+### Production
+// TODO
