@@ -74,3 +74,6 @@ put tons of words here so that it needs to be updated later. Rather, you should 
 - There is very little CSS code. Most styling is done with [Bootstrap 4](https://getbootstrap.com/) (general page layout - the grid system), [chartjs](https://www.chartjs.org/) (for cluster utility pie charts), [DataTable](https://datatables.net/) (renders all data tables with nice animation and sorting features), jQuery (dependency of Bootstrap 4).
 
 
+## Deployment
+
+### Development
