@@ -112,10 +112,50 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
   });
 }
 
+function populate_request_quota_form(quota) {
+
+}
+
+function setup_quota_request_form(quota_request_endpoint) {
+  fetch(quota_request_endpoint)
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    var quotas = data['data'];
+    // quotas = quotas.filter(quota => quota["name"] === '/scratch');
+    var scratch_quota = null;
+
+    quotas.forEach(quota => {
+      disk_name = quota["name"].trim();
+      
+      if (disk_name === '/scratch') {
+        scratch_quota = quota;
+      }
+    });
+
+    if (scratch_quota == null) {
+      console.error("Cannot fetch scratch quota");
+      return;
+    }
+
+    // find and set current values of quota and file limit
+    var current_disk_quota = document.getElementById("current_quota");
+    // console.log("disk_limit" + scratch_quota["disk_limit"]);
+    // console.log(formatKBytes(scratch_quota["disk_limit"]));
+    current_disk_quota.value = formatKBytes(scratch_quota["disk_limit"]);
+
+    var current_file_limit = document.getElementById("current_file_limit");
+    current_file_limit.value = scratch_quota["file_limit"];
+
+  });
+}
+
 (() => {
-  quota_request_endpoint = document.dashboard_url + "/request/quota";
+  let quota_request_endpoint = document.dashboard_url + "/request/quota";
+  let disk_quota_endpoint = document.dashboard_url + "/resources/disk/quota";
 
   populate_quota();
   setup_quota_request_sender(quota_request_endpoint, "modalQuotaRequestForm", "#requestQuotaModal");
-
+  setup_quota_request_form(disk_quota_endpoint);
 })()

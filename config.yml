@@ -1,10 +1,10 @@
 development: &common_settings
     cluster_name: 'Terra'
-    dashboard_url: '/pun/dev/dashboard'
+    dashboard_url: '/pun/dev/dashboard_dev'
     home_page: 'https://hprc.tamu.edu'
     request_email: 'phamminhtris@tamu.edu'
     help_email: 'help@example.edu'
-    driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard/machine_driver_scripts'
+    driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts'
     
 production:
     <<: *common_settings

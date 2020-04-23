@@ -38,18 +38,31 @@
           <div class="md-form mb-2" style="display: none;">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>" readonly>
+            <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>"
+              readonly>
           </div>
+         
+
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="desired_disk">Amount of Desired Disk Quota
-              (Optional)</label>
+            <label data-error="wrong" data-success="right" for="current_quota">Current Disk Quota</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" readonly class="form-control" id="current_quota">
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="desired_disk">New Disk Quota</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='desired_disk' class="form-control validate">
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="total_file_limit">File Limit Increase
-              (Optional)</label>
+            <label data-error="wrong" data-success="right" for="current_file_limit">Current File Limit</label>
+            <i class="fas fa-user prefix grey-text"></i>
+            <input type="text" readonly class="form-control" id="current_file_limit">
+          </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="total_file_limit">New File Limit</label>
             <i class="fas fa-envelope prefix grey-text"></i>
             <input type="text" name="total_file_limit" class="form-control validate">
           </div>
