@@ -1,14 +1,20 @@
-  <div class="card table-responsive ">
-  <table id="job_table" class="table">
-    <thead style="background-color: #ffc107; color: black;">
-      <tr>
-        <th>Job ID</th>
-        <th>Name</th>
-        <th>State</th>
-        <th style="width: fit-content;">Log</th>
-        
-      </tr>
-    </thead>
-  </table>
+<div class="card">
+  <div class="card-body table-responsive p-0">
+    <table id="job_table" class="table">
+      <thead style="background-color: #ffc107; color: black;">
+        <tr>
+          <th>Job ID</th>
+          <th>Name</th>
+          <th>State</th>
+          <th style="width: fit-content;">Log</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+  <!-- /.card-body -->
+  <div class="card-footer">
+    <button type="button" class="btn btn-primary" onclick="location.href='<%= url("/jobs/composer") %>'">Quick Job Submit</button>
+  </div>
+  <!-- ./card-footer -->
 </div>
 <!-- /.card -->
