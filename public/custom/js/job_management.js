@@ -241,6 +241,9 @@ function collect_modules_to_load() {
 
 function register_slurm_submit_button() {
   var slurm_form = document.getElementById('slurm-config-form');
+  if (slurm_form == null) {
+    return;
+  }
   slurm_form.onsubmit = function (event) {
       // since we don't have an input element for module list,
       // we have to add it at the end just before the user submit
@@ -254,6 +257,10 @@ function register_slurm_submit_button() {
 
 function register_add_module_handler() {
   var add_module_button = document.getElementById("add_module_button");
+  if (add_module_button == null) {
+    return;
+  }
+
   add_module_button.onclick = function (event) {
       event.preventDefault();
 
