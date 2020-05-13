@@ -16,7 +16,7 @@
         <h3 class="mb-0">Job Configurations</h3>
       </div>
       <div class="card-body">
-        <form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST" enctype="multipart/form-data" action="/job/submit">
+        <form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST" enctype="multipart/form-data" action="<%= url('/jobs/submit') %>">
 
           <div class="form-group row">
             <label class="col-lg-3 col-form-label form-control-label" for="walltime">Walltime</label>
