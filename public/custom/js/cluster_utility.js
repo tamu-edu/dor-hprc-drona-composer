@@ -1,5 +1,10 @@
 function draw_core_usage_chart(core_util_data) {
-  var core_util_chart = document.getElementById("core_utilization_chart").getContext('2d');
+  let chartCanvas =  document.getElementById("core_utilization_chart");
+  if (chartCanvas == null) {
+    return;
+  }
+
+  var core_util_chart = chartCanvas.getContext('2d');
 
   used_core = core_util_data["allocated"]
   free_core = core_util_data["idle"]

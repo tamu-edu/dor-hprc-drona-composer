@@ -99,6 +99,9 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
 
     // Access the form element...
     let form = document.getElementById(form_id);
+    if (form == null) {
+      return;
+    }
 
     // ...and take over its submit event.
     form.addEventListener("submit", function (event) {
@@ -141,6 +144,9 @@ function setup_quota_request_form(quota_request_endpoint) {
 
     // find and set current values of quota and file limit
     var current_disk_quota = document.getElementById("current_quota");
+    if (current_disk_quota == null) {
+      return;
+    }
     // console.log("disk_limit" + scratch_quota["disk_limit"]);
     // console.log(formatKBytes(scratch_quota["disk_limit"]));
     current_disk_quota.value = formatKBytes(scratch_quota["disk_limit"]);

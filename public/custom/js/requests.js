@@ -26,6 +26,9 @@ function setup_request_sender(request_endpoint, form_id, modal_id) {
 
         // Access the form element...
         let form = document.getElementById(form_id);
+        if (form == null) {
+            return;
+        }
 
         // ...and take over its submit event.
         form.addEventListener("submit", function (event) {
