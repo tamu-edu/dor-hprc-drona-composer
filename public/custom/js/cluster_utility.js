@@ -59,7 +59,12 @@ function show_loading_indicator(chart_id) {
 }
 
 function draw_node_usage_chart(node_util_data) {
-  var node_util_chart = document.getElementById("node_utilization_chart").getContext('2d');
+  let canvasElem = document.getElementById("node_utilization_chart");
+  if (canvasElem == null) {
+    return;
+  }
+  var node_util_chart = canvasElem.getContext('2d');
+
 
   // node
   let used_nodes = node_util_data["allocated"];
@@ -89,6 +94,11 @@ function draw_node_usage_chart(node_util_data) {
 }
 
 function hide_spinner() {
+  let spinner = document.getElementById('chart-loading-indicator');
+  if (spinner == null) {
+    return;
+  }
+  
   document.getElementById('chart-loading-indicator').remove();
 }
 
