@@ -16,7 +16,8 @@
         <h3 class="mb-0">Job Configurations</h3>
       </div>
       <div class="card-body">
-        <form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST" enctype="multipart/form-data" action="<%= url('/jobs/submit') %>">
+        <form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST"
+          enctype="multipart/form-data" action="<%= url('/jobs/submit') %>">
 
           <div class="form-group row">
             <label class="col-lg-3 col-form-label form-control-label" for="walltime">Walltime</label>
@@ -62,30 +63,52 @@
           </div>
 
           <!-- Module search -->
-          <div class="form-inline form-group row">
+          <div class="form-group row">
             <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
             <div class="col-lg-6 ui-widget">
               <input class="form-control" id="module-search">
-              <button type="button" id="add_module_button" class="btn btn-primary mb-2">Add</button>
+              <button type="button" id="add_module_button" class="btn btn-primary mt-2">Add</button>
             </div>
-         
+
           </div>
           <div class="row" id="module-list">
             <!-- place to add modules -->
             <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
           </div>
 
-          <div class="form-inline form-group row">
+          <div class="form-group row mt-2">
             <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Executable Script</label>
             <div class="col-lg-9">
-              <input type="file" name="executable_script" required>
+              <input id="executable_file_input" type="file" name="executable_script" required>
+              <p>You <strong>must</strong> upload an executable script to continue.</p>
+
             </div>
           </div>
+          <div id="runtime_config" style="display: none;">
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label form-control-label">Runtime</label>
+              <div class="col-lg-9">
+                <select class="custom-select">
+                  <option selected value="shell">Shell</option>
+                  <option value="python">Python</option>
+                  <option value="matlab">Matlab</option>
+                </select>
+              </div>
+            </div>
 
-          <div class="form-group row">
-            <label class="col-lg-3 col-form-label form-control-label"></label>
-            <div class="col-lg-9">
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label form-control-label" for="run_command">Run Command</label>
+              <div class="col-lg-9">
+                <input class="form-control" name="run_command" placeholder="Shell command to run your script."
+                  type="text" required>
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label form-control-label"></label>
+              <div class="col-lg-9">
                 <input type="submit" class="btn btn-primary" value="Submit">
+              </div>
             </div>
           </div>
         </form>
