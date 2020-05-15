@@ -76,6 +76,18 @@
             <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
           </div>
 
+          <div class="form-group row">
+            <label class="col-lg-3 col-form-label form-control-label">Runtime</label>
+            <div class="col-lg-9">
+              <select id="runtime_env">
+                <option selected value="shell">Shell</option>
+                <option value="other">Other</option>
+                <option value="python">Python</option>
+                <option value="matlab">Matlab</option>
+              </select>
+            </div>
+          </div>
+
           <div class="form-group row mt-2">
             <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Executable Script</label>
             <div class="col-lg-9">
@@ -86,20 +98,9 @@
           </div>
           <div id="runtime_config" style="display: none;">
             <div class="form-group row">
-              <label class="col-lg-3 col-form-label form-control-label">Runtime</label>
-              <div class="col-lg-9">
-                <select class="custom-select">
-                  <option selected value="shell">Shell</option>
-                  <option value="python">Python</option>
-                  <option value="matlab">Matlab</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group row">
               <label class="col-lg-3 col-form-label form-control-label" for="run_command">Run Command</label>
               <div class="col-lg-9">
-                <input class="form-control" name="run_command" placeholder="Shell command to run your script."
+                <input id="run_command" class="form-control" name="run_command" placeholder="Shell command to run your script."
                   type="text" required>
               </div>
             </div>
