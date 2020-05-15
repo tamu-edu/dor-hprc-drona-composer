@@ -1,6 +1,7 @@
 <div class="row">
   <div class="col-md-12 mt-3">
-    <h4 class="text-uppercase">Job Composer</h4>
+  
+    <h4 class="text-uppercase"><button type="button"  onclick="history.back(-1)" class="btn mr-3 btn-primary">Back</button>Job Composer</h4>
     <!-- Solid divider -->
     <hr class="solid">
   </div>
@@ -22,7 +23,7 @@
           <div class="form-group row">
             <label class="col-lg-3 col-form-label form-control-label" for="walltime">Walltime</label>
             <div class="col-lg-9">
-              <input type="text" name="walltime" class="form-control" pattern="^([1-9])[0-9]+:[0-5][0-9]$"
+              <input type="text" name="walltime" class="form-control" pattern="[0-9]+:[0-5][0-9]$"
                 placeholder="hh:mm (e.g. 12:30)" required>
             </div>
           </div>

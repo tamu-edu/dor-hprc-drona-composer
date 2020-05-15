@@ -6,6 +6,7 @@ development: &common_settings
     help_email: 'help@example.edu'
     modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
     driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts'
+    tamubatch_path: '/sw/local/bin/tamubatch'
     
 production:
     <<: *common_settings
