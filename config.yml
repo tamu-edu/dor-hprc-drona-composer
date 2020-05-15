@@ -4,7 +4,7 @@ development: &common_settings
     home_page: 'https://hprc.tamu.edu'
     request_email: 'phamminhtris@tamu.edu'
     help_email: 'help@example.edu'
-    modules_db_path: '/home/phamminhtris/HPRC_scripts/modules.sqlite3'
+    modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
     driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts'
     
 production:
