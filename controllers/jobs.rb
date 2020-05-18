@@ -92,7 +92,7 @@ class JobsController < Sinatra::Base
     end
 
     def generate_bash_script(module_list, job_compose_path, executable_name, run_command)
-        executable_name = "tamubatch_#{executable_name}.batch"
+        executable_name = "#{executable_name}.job"
         file_path = File.join(job_compose_path, executable_name)
         
         File.open(file_path, 'wb') do |f|
@@ -138,12 +138,10 @@ class JobsController < Sinatra::Base
         end
 
         return "#{settings.tamubatch_path} #{walltime} #{need_gpu} #{cores} #{cores_per_node} #{total_mem} #{account} #{executable_path}"
-            
-        return ""
     end
 
     def parse_module(module_list_as_str) 
-        modules = module_list_as_str.split("\n")
+        modules = module_list_as_str.split("\t")
         return modules
     end
   
@@ -164,31 +162,23 @@ class JobsController < Sinatra::Base
             return "Invalid Job Compose Request."
         end
 
-
+        # this is the script user upload
         executable_path = save_file(job_composer_data_path(), file_name, file)
+
+        # deal with module load and go to the right directory
         bash_script_path = generate_bash_script(parse_module(module_list), job_composer_data_path(), file_name, run_command)
         tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
-        need_gpu = ""
-        if use_gpu
-            need_gpu = "-gpu"
+
+        stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
+    
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
         end
-        # res = """<pre>
-        # walltime = #{walltime}\n
-        # use_gpu = #{need_gpu}\n
-        # total_cpu_cores #{total_cpu_cores}\n
-        # core_per_node #{core_per_node}\n
-        # total_mem = #{total_mem}\n
-        # module_list = #{module_list}\n
-        # file_name = #{file_name}\n
-        # file_data = #{file.read}\n
-        # SCRATCH = #{executable_path}\n
-        # run_command = #{run_command}\n
-        # batch_body = #{bash_script_path}\n
-        # tamubatch_cmd = #{tamubatch_command}\n
-        # </pre>
-        # """
-        redirect '/'
-        # return res
+        
+        # redirect settisngs.dashboard_url
+        
     end
   
 end
