@@ -3,9 +3,9 @@ function collect_modules_to_load() {
     var module_list = "";
     for (let module of module_elems) {
         var module_name = module.textContent;
-        module_name = module_name.replace('(×)', "");
+        // module_name = module_name.replace('(×)', "");
         module_name = module_name.trim();
-        module_list += `${module_name}\n`;
+        module_list += `${module_name}\t`;
     }
     // console.log(module_list);
     return module_list;
@@ -45,14 +45,17 @@ function register_add_module_handler() {
         var container = document.getElementById("module-list");
         var span = document.createElement('span');
         span.setAttribute('class', "badge badge-pill badge-primary module-to-load");
-        span.innerHTML = module_to_add.trim() + " (&times;)";
-        span.onclick = function (event) {
+        span.innerHTML = module_to_add.trim();
+
+
+        var div = document.createElement('div');
+        div.appendChild(span);
+        div.onclick = function (event) {
             var elem = event.target;
             elem.parentNode.removeChild(elem);
         }
 
-        container.appendChild(span);
-
+        container.appendChild(div);
         document.getElementById("module-search").value = "";
     }
 }
@@ -90,7 +93,7 @@ function register_on_file_changed_listener() {
         return;
     }
 
-    file_upload.onchange = function(event) {
+    file_upload.onchange = function (event) {
         let file_picker = event.target;
         var runtime_config = document.getElementById("runtime_config");
         if (runtime_config == null) {
@@ -144,12 +147,12 @@ function update_run_command() {
         case 'shell':
             set_run_command(`./${file_name}`);
             break;
-        case 'python': 
+        case 'python':
             set_run_command(`python ${file_name}`);
             break;
         case 'matlab':
             set_run_command(`matlab ${file_name}`);
-            
+
             break;
         case 'other':
             // console.log("Other");
