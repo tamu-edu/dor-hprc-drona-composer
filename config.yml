@@ -1,14 +1,16 @@
 development: &common_settings
     cluster_name: 'Terra'
-    dashboard_url: '/pun/dev/dashboard_dev'
+    dashboard_url: ''
     home_page: 'https://hprc.tamu.edu'
     request_email: 'phamminhtris@tamu.edu'
     help_email: 'help@example.edu'
     modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
-    driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts'
+    driver_scripts_path: '/Users/tri/Developers/OOD-Dashboard/mock_machine_script'
     tamubatch_path: '/sw/local/bin/tamubatch'
     
 production:
     <<: *common_settings
     dashboard_url: '/pun/sys/dashboard'
     request_email: 'help@hprc.tamu.edu'
+    driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts'
+
