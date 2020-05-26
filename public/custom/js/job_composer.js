@@ -33,6 +33,7 @@ function register_slurm_submit_button() {
 function submit_job(form) {
     var request = new XMLHttpRequest();
 
+    add_submission_loading_indicator();
     request.open('POST', form.action, true);
     request.onload = function (event) {
         if (request.status == 200) {
@@ -40,10 +41,14 @@ function submit_job(form) {
         } else {
             alert(`Error ${request.status}. Try again!`);
         }
+        remove_submission_loading_indicator();
     }
     request.onerror = function(event) {
-        alert("An error has occured. Please try again!")
+        alert("An error has occured. Please try again!");
+        remove_submission_loading_indicator();
     }
+
+    
 
     let data = new FormData(form);
     request.send(data);
@@ -190,8 +195,29 @@ function register_on_runtime_change_listener() {
     if (runtime_env_selector == null) {
         return;
     }
-
     runtime_env_selector.onchange = update_run_command;
+}
+
+function add_submission_loading_indicator() {
+    var submission_section = document.getElementById("job-submit-button-section");
+    if (submission_section == null) {
+        return;
+    }
+
+    var spinner = document.createElement('span');
+    spinner.id = 'submission-loading-spinner';
+    spinner.className = 'spinner-border text-primary';
+
+    submission_section.appendChild(spinner);
+}
+
+function remove_submission_loading_indicator() {
+    var  spinner = document.getElementById("submission-loading-spinner");
+    if ( spinner == null) {
+        return;
+    }
+
+    spinner.remove();
 }
 
 
