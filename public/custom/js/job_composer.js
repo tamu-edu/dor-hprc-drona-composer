@@ -23,8 +23,30 @@ function register_slurm_submit_button() {
             .attr("name", "module-list")
             .attr("value", collect_modules_to_load())
             .appendTo("#slurm-config-form");
-        return true;
+
+        submit_job(slurm_form);
+        event.preventDefault();
+        return false;
     }
+}
+
+function submit_job(form) {
+    var request = new XMLHttpRequest();
+
+    request.open('POST', form.action, true);
+    request.onload = function (event) {
+        if (request.status == 200) {
+            alert(request.responseText);
+        } else {
+            alert(`Error ${request.status}. Try again!`);
+        }
+    }
+    request.onerror = function(event) {
+        alert("An error has occured. Please try again!")
+    }
+
+    let data = new FormData(form);
+    request.send(data);
 }
 
 function register_add_module_handler() {
@@ -171,6 +193,7 @@ function register_on_runtime_change_listener() {
 
     runtime_env_selector.onchange = update_run_command;
 }
+
 
 
 (() => {
