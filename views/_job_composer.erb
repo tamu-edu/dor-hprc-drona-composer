@@ -50,8 +50,8 @@
             <label class="col-lg-3 col-form-label form-control-label" for="total-memory">Total Memory</label>
             <div class="col-lg-9">
               <%# pattern="^([1-9])[0-9]+[MG]$" Use this pattern to support G %>
-              <input class="form-control" type="text" name="total-memory" pattern="^([1-9])[0-9]+$"
-                placeholder="e.g. 1024 (in megabyte)" required>
+              <input class="form-control" type="text" name="total-memory" pattern="^([1-9])[0-9]?(MB|G)$"
+                placeholder="e.g. 1024MB or 2G (MB = Megabyte, G = Gigabyte)" required>
             </div>
           </div>
 

@@ -133,8 +133,6 @@ class JobComposerController < Sinatra::Base
             return stderr_str
         end
         
-        # redirect settisngs.dashboard_url
-        
     end
   
 end
