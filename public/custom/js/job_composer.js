@@ -36,16 +36,17 @@ function submit_job(form) {
     add_submission_loading_indicator();
     request.open('POST', form.action, true);
     request.onload = function (event) {
+        remove_submission_loading_indicator();
         if (request.status == 200) {
             alert(request.responseText);
+            load_job_table();
         } else {
             alert(`Error ${request.status}. Try again!`);
         }
-        remove_submission_loading_indicator();
     }
     request.onerror = function(event) {
-        alert("An error has occured. Please try again!");
         remove_submission_loading_indicator();
+        alert("An error has occured. Please try again!");
     }
 
     

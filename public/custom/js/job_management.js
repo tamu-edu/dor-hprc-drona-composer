@@ -226,12 +226,7 @@ function insert_job_details_modal(job) {
   container.appendChild(div);
 }
 
-
-$(document).ready(function () {
- 
-});
-
-(() => {
+function load_job_table() {
   let allocation_url = document.dashboard_url + "/jobs";
 
   let request = new XMLHttpRequest();
@@ -249,6 +244,8 @@ $(document).ready(function () {
   request.onerror = function () {
     alert("Failed to fetch your jobs details. Please try again later.");
   }
+}
 
-  
+(() => {
+  load_job_table();
 })()
