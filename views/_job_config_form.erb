@@ -1,0 +1,107 @@
+ <!-- form user info -->
+ <div class="card card-outline-secondary">
+   <div class="card-header">
+     <h3 class="mb-0">Job Configurations</h3>
+   </div>
+   <div class="card-body">
+     <form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST"
+       enctype="multipart/form-data" action="<%= url('/jobs/submit') %>">
+
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label" for="walltime">Walltime</label>
+         <div class="col-lg-9">
+           <input type="text" name="walltime" class="form-control" pattern="[0-9]+:[0-5][0-9]$"
+             placeholder="hh:mm (e.g. 12:30)" required>
+         </div>
+       </div>
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label" for="gpu">Request a GPU</label>
+         <div class="col-lg-9">
+           <input class="form-control" type="checkbox" name="gpu">
+         </div>
+       </div>
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label" for="cores">Total #CPUs</label>
+         <div class="col-lg-9">
+           <input class="form-control" type="number" name="cores" placeholder="e.g. 8" min="1" value="1" required>
+         </div>
+       </div>
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label" for="cores-per-node">#Cores/Node</label>
+         <div class="col-lg-9">
+           <input class="form-control" type="number" name="cores-per-node" value="1" min="1" required>
+         </div>
+       </div>
+
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label" for="total-memory">Total Memory</label>
+         <div class="col-lg-9">
+           <%# pattern="^([1-9])[0-9]+[MG]$" Use this pattern to support G %>
+           <input class="form-control" type="text" name="total-memory" pattern="^([1-9])[0-9]?(MB|G)$"
+             placeholder="e.g. 1024MB or 2G (MB = Megabyte, G = Gigabyte)" required>
+         </div>
+       </div>
+
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label" for="project-account">Project Account</label>
+         <div class="col-lg-9">
+           <input class="form-control" name="project-account" placeholder="if blank, use default project account"
+             type="text">
+         </div>
+       </div>
+
+       <!-- Module search -->
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
+         <div class="col-lg-6 ui-widget">
+           <input class="form-control" id="module-search">
+           <button type="button" id="add_module_button" class="btn btn-primary mt-2">Add</button>
+         </div>
+
+       </div>
+       <div class="row" id="module-list">
+         <!-- place to add modules -->
+         <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
+       </div>
+
+       <div class="form-group row">
+         <label class="col-lg-3 col-form-label form-control-label">Runtime</label>
+         <div class="col-lg-9">
+           <select id="runtime_env">
+             <option selected value="shell">Shell</option>
+             <option value="other">Other</option>
+             <option value="python">Python</option>
+             <option value="matlab">Matlab</option>
+           </select>
+         </div>
+       </div>
+
+       <div class="form-group row mt-2">
+         <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Executable
+           Script</label>
+         <div class="col-lg-9">
+           <input id="executable_file_input" type="file" name="executable_script" required>
+           <p>You <strong>must</strong> upload an executable script to continue.</p>
+
+         </div>
+       </div>
+       <div id="runtime_config" style="display: none;">
+         <div class="form-group row">
+           <label class="col-lg-3 col-form-label form-control-label" for="run_command">Run Command</label>
+           <div class="col-lg-9">
+             <input id="run_command" class="form-control" name="run_command"
+               placeholder="Shell command to run your script." type="text" required>
+           </div>
+         </div>
+
+         <div class="form-group row">
+           <label class="col-lg-3 col-form-label form-control-label"></label>
+           <div id="job-submit-button-section" class="col-lg-9">
+             <input type="submit" class="btn btn-primary" value="Submit">
+           </div>
+         </div>
+       </div>
+     </form>
+   </div>
+ </div>
+ <!-- /form user info -->
