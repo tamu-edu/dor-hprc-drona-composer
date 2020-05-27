@@ -126,6 +126,7 @@ function toggle_log_loading_spinner(job_id, show) {
 
 function init_job_table() {
   var job_table = $('#job_table').DataTable({
+    "destroy": true,
     "scrollY": "200px",
     "scrollCollapse": false,
     "paging": false,
@@ -245,6 +246,7 @@ function load_job_table() {
     alert("Failed to fetch your jobs details. Please try again later.");
   }
 }
+
 
 (() => {
   load_job_table();

@@ -60,7 +60,7 @@ class JobComposerController < Sinatra::Base
             f.write("\n")
 
             # move to working directory where the executable is store
-            f.write("# Move to the directory where we put the script\n")
+            f.write("# Go to the directory where we put the script\n")
             f.write("cd #{job_compose_path}\n\n")
 
             f.write("# Run your program using provided command.\n")
@@ -128,7 +128,7 @@ class JobComposerController < Sinatra::Base
         stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
     
         if status.success?
-            return stdout_str
+            return stdout_str + "\n#{tamubatch_command}"
         else  
             return stderr_str
         end
