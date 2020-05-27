@@ -30,6 +30,8 @@
   <%# here we load some constants that are read from our config file (this is a hack) %>
   <script>
     document.dashboard_url = '<%= settings.dashboard_url %>';
+    document.file_app_url = '<%= settings.file_app_url %>';
+    document.username = '<%= @username %>';
   </script>
 
   <div id="main-container" class="container" role="main">

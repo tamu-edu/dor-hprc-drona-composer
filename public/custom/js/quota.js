@@ -27,6 +27,21 @@ function formatKBytes(data) {
   return formatBytes(bytes);
 }
 
+function generate_file_explorer_path_for_disk(disk_name) {
+  disk_name = disk_name.trim()
+  var disk_path = ""
+  if (disk_name === '/home') {
+    disk_path = document.file_app_url + `/home/${document.username}`;
+  } else if (disk_name == "/scratch") {
+    disk_path = document.file_app_url + `/scratch/user/${document.username}`; 
+  } else {
+    // default is scratch 
+    disk_path = document.file_app_url + `/scratch/user/${document.username}`
+  }
+
+  return `<a target="_blank" href="${disk_path}">${disk_name}</a>`
+
+}
 
 function populate_quota() {
   var quota_table = document.querySelector("#quota_table");
@@ -43,7 +58,10 @@ function populate_quota() {
       method: "GET",
     },
     "columns": [{
-        "data": "name"
+        "data": "name",
+        render: function(disk_name, type, row) {
+          return generate_file_explorer_path_for_disk(disk_name);
+        }
       },
       {
         "data": "disk_usage", "sClass":  "text-right",

@@ -28,6 +28,8 @@ end
 # Define a route at the root '/' of the app.
 get '/' do
   @url = settings.dashboard_url
+  @username = ENV["USER"]
+
   erb :index
 end
 
