@@ -1,0 +1,70 @@
+#!/bin/env python
+from os import listdir
+from os.path import isfile, join
+import os
+import json
+import argparse
+
+JOB_FILE_EXT = ".job"
+JOB_COMPOSER_DIR = "job_composer"
+
+
+class JobFile:
+    def __init__(self, name, path, last_modified_time):
+        self.name = name
+        self.path = path
+        self.last_modifed = last_modified_time
+
+def get_job_composer_path():
+    username = os.environ['USER']
+    scratch = os.path.join("/scratch","user")
+    return os.path.join(scratch, username, JOB_COMPOSER_DIR)
+
+def list_job_files(dirpath):
+    files = [f for f in listdir(dirpath) if isfile(join(dirpath, f))]
+    job_files = [f for f in files if f.endswith(JOB_FILE_EXT)]
+    return job_files
+
+def get_available_job_files():
+    job_composer_dir = get_job_composer_path()
+    job_files = list_job_files(job_composer_dir)
+
+    job_file_objs = []
+    for job_name in job_files:
+        job_path = os.path.join(job_composer_dir, job_name)
+        last_modified_time = os.path.getmtime(job_path)
+        job_file = JobFile(job_name, job_path, last_modified_time)
+        job_file_objs.append(job_file)
+
+    json_data = json.dumps([ob.__dict__ for ob in job_file_objs])
+    print('{ "data": ' + json_data + '}')
+
+def main():
+    # create parser object 
+    parser = argparse.ArgumentParser(description = "Job Submit Helper") 
+
+    # defining arguments for parser object 
+    parser.add_argument("-j", "--jobfiles", action='store_true',
+                        help = "List all job files inside job composer directory.")
+
+    # parser.add_argument("-k", "--kill", nargs = 1, 
+    #                     type = str, metavar = "job_id", default = None, 
+    #                     help = "Kill a job with the given job id.")
+
+    # parser.add_argument("-o", "--output", nargs = 2, 
+    #                     type = str, metavar=('job_id', 'n_lines'), default = None, 
+    #                     help = "Output the last n_lines of output of a given job_id")
+
+     # parse the arguments from standard input 
+    args = parser.parse_args() 
+
+    # calling functions depending on type of argument 
+    if args.jobfiles == True: 
+        get_available_job_files()
+        exit(0)
+    
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()
