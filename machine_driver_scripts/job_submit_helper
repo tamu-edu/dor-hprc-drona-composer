@@ -13,7 +13,7 @@ class JobFile:
     def __init__(self, name, path, last_modified_time):
         self.name = name
         self.path = path
-        self.last_modifed = last_modified_time
+        self.last_modified = last_modified_time
 
 def get_job_composer_path():
     username = os.environ['USER']

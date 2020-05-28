@@ -70,6 +70,11 @@ class JobComposerController < Sinatra::Base
         return file_path
     end
 
+    def driver_command(driver_name)
+        driver_scripts_location = settings.driver_scripts_path
+        driver_path = "#{driver_scripts_location}/#{driver_name}"
+    end
+
     def job_composer_data_path()
         path = File.join('/scratch/user/', ENV['USER'])
 
@@ -133,6 +138,16 @@ class JobComposerController < Sinatra::Base
             return stderr_str
         end
         
+    end
+
+    get "/jobs/composer/job_files" do 
+        get_job_files_command =  driver_command('job_submit_helper')
+        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -j")
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
+        end
     end
   
 end

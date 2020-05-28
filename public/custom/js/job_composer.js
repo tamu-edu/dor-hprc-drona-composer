@@ -44,12 +44,12 @@ function submit_job(form) {
             alert(`Error ${request.status}. Try again!`);
         }
     }
-    request.onerror = function(event) {
+    request.onerror = function (event) {
         remove_submission_loading_indicator();
         alert("An error has occured. Please try again!");
     }
 
-    
+
 
     let data = new FormData(form);
     request.send(data);
@@ -213,12 +213,59 @@ function add_submission_loading_indicator() {
 }
 
 function remove_submission_loading_indicator() {
-    var  spinner = document.getElementById("submission-loading-spinner");
-    if ( spinner == null) {
+    var spinner = document.getElementById("submission-loading-spinner");
+    if (spinner == null) {
         return;
     }
 
     spinner.remove();
+}
+
+function get_date_string(unix_time) {
+    let date = new Date(unix_time * 1000);
+    return date.toLocaleString();
+}
+
+function populate_job_file_table(json) {
+    $("#job_file_table").DataTable({
+        "data": json.data,
+        // "destroy": true,
+        "scrollY": "200px",
+        "scrollCollapse": false,
+        "paging": false,
+        "searching": false,
+        "info": false,
+        "processing": true,
+        "columns": [{
+            "data": "name"
+        }, {
+            "data": "last_modified",
+            render: get_date_string
+        }],
+        "language": {
+            "emptyTable": "You have no job files."
+        }
+    });
+}
+
+function init_job_files_table() {
+    let job_files_url = document.dashboard_url + "/jobs/composer/job_files";
+
+    let request = new XMLHttpRequest()
+    request.open('GET', job_files_url);
+    request.responseType = 'json';
+
+    request.onload = function () {
+        const data = request.response;
+        populate_job_file_table(data);
+    }
+
+    request.onerror = function () {
+        alert("Failed to fetch your job file list. Please try again later.");
+    }
+
+    request.send();
+
 }
 
 
@@ -230,4 +277,5 @@ function remove_submission_loading_indicator() {
     register_slurm_submit_button();
     register_on_file_changed_listener();
     register_on_runtime_change_listener();
+    init_job_files_table();
 })();
