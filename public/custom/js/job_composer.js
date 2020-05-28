@@ -97,9 +97,9 @@ function register_autocomplete_for_module_search() {
             // Suggest URL
             //http://api.railwayapi.com/suggest_train/trains/190/apikey/1234567892/
             // The above url did not work for me so using some existing one
-            var suggestURL =
-                window.location.href + "/modules?query=%QUERY";
+            var suggestURL = document.dashboard_url +  "/jobs/composer/modules?query=%QUERY";
             suggestURL = suggestURL.replace('%QUERY', request.term);
+            
 
             // JSONP Request
             $.ajax({
@@ -231,6 +231,10 @@ function generate_file_editor_anchor(job_file) {
     return `<a target="_blank" href="${file_editor_path}">${job_file.name}</a>`;
 }
 
+function generate_resubmit_button(job_file) {
+    return `<a href="#">resubmit</a>`;
+}
+
 function populate_job_file_table(json) {
     $("#job_file_table").DataTable({
         "data": json.data,
@@ -249,6 +253,12 @@ function populate_job_file_table(json) {
         }, {
             "data": "last_modified",
             render: get_date_string
+        }, {
+            "data": null,
+            "orderable": false,
+            render: function(data, type, job_file) {
+                return generate_resubmit_button(job_file);
+            }
         }],
         "language": {
             "emptyTable": "You have no job files."

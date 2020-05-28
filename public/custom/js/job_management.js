@@ -134,25 +134,25 @@ function init_job_table() {
     "info": false,
     "processing": true,
     "columns": [{
-        "data": "id",
-        render: function (data, type, job) {
-          return `<a href="#" data-toggle="modal" data-target="#job${job.id}Modal">${job.id}</a>`
-        }
-      },
-      {
-        "data": "name"
-      },
-      {
-        "data": "state"
-      },
-      {
-        "data": null,
-        render: function (data, type, job) {
-          let logButton = `<a id='log-button-${job.id}' href='javascript:' onclick='show_job_log(${job.id});'>log</a>
-                          <span style="display: none;" id='log-button-${job.id}-spinner' class="spinner-border" role="status"></span>`;
-          return logButton
-        },
+      "data": "id",
+      render: function (data, type, job) {
+        return `<a href="#" data-toggle="modal" data-target="#job${job.id}Modal">${job.id}</a>`
       }
+    },
+    {
+      "data": "name"
+    },
+    {
+      "data": "state"
+    },
+    {
+      "data": null,
+      render: function (data, type, job) {
+        let logButton = `<a id='log-button-${job.id}' href='javascript:' onclick='show_job_log(${job.id});'>log</a>
+                          <span style="display: none;" id='log-button-${job.id}-spinner' class="spinner-border" role="status"></span>`;
+        return logButton
+      },
+    }
     ],
     "language": {
       "emptyTable": "You have no active jobs"
