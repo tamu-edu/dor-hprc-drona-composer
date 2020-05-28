@@ -49,8 +49,6 @@ function submit_job(form) {
         alert("An error has occured. Please try again!");
     }
 
-
-
     let data = new FormData(form);
     request.send(data);
 }
@@ -97,9 +95,9 @@ function register_autocomplete_for_module_search() {
             // Suggest URL
             //http://api.railwayapi.com/suggest_train/trains/190/apikey/1234567892/
             // The above url did not work for me so using some existing one
-            var suggestURL = document.dashboard_url +  "/jobs/composer/modules?query=%QUERY";
+            var suggestURL = document.dashboard_url + "/jobs/composer/modules?query=%QUERY";
             suggestURL = suggestURL.replace('%QUERY', request.term);
-            
+
 
             // JSONP Request
             $.ajax({
@@ -226,13 +224,67 @@ function get_date_string(unix_time) {
     return date.toLocaleString();
 }
 
-function generate_file_editor_anchor(job_file) {
-    let file_editor_path = `${document.file_editor_url}${job_file.path}`;
-    return `<a target="_blank" href="${file_editor_path}">${job_file.name}</a>`;
+function generate_file_editor_anchor(job_file_path) {
+    let file_editor_path = `${document.file_editor_url}${job_file_path}`;
+    return `<a type="button" class="btn btn-secondary" target="_blank" href="${file_editor_path}">Edit</a>`;
 }
 
-function generate_resubmit_button(job_file) {
+function generate_resubmit_button(file_path) {
     return `<a href="#">resubmit</a>`;
+}
+
+function show_job_file_detail_modal(file_name, file_path, file_last_modified) {
+    console.log(`Call show job file details with ${file_name + " " + file_path + " " + file_last_modified}`);
+    let template =
+        `
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-light">
+              <h4 class="modal-title">
+                ${file_name}
+              </h4>
+            </div>
+            <div class="modal-body">
+              <ul>
+                <li>Name: ${file_name}</li>
+                <li>Last Modified: ${get_date_string(file_last_modified)}</li>
+                <li>Location: ${file_path}</li>
+              </ul>
+            </div>
+            <div class="modal-footer">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary">Resubmit</button>
+                    ${generate_file_editor_anchor(file_path)}
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+      </div>`
+
+    var container = document.getElementById("main-container");
+    var div = document.createElement('div');
+    div.setAttribute('id', `job-file-modal`);
+    div.setAttribute('class', "modal fade bs-example-modal-lg");
+    div.setAttribute('tabindex', "-1");
+    div.setAttribute('role', "dialog");
+    div.setAttribute('aria-labelledby', "classInfo");
+    div.setAttribute('aria-hidden', "true");
+
+    div.innerHTML = template.trim();
+    container.appendChild(div);
+
+    // show the model after built
+    $(`#job-file-modal`).modal();
+
+    // we need to clean up the model after it is dismissed
+    $(`#job-file-modal`).on('hidden.bs.modal', function () {
+        removeElement(`job-file-modal`);
+    });
+}
+
+function generate_job_file_detail_modal_anchor(job_file) {
+    return `<a href="javascript:show_job_file_detail_modal('${job_file.name}', '${job_file.path}', ${job_file.last_modified})">${job_file.name}</a>`;
+    
 }
 
 function populate_job_file_table(json) {
@@ -248,18 +300,20 @@ function populate_job_file_table(json) {
         "columns": [{
             "data": "name",
             render: function (data, type, job_file) {
-                return generate_file_editor_anchor(job_file);
+                return generate_job_file_detail_modal_anchor(job_file);
             }
         }, {
             "data": "last_modified",
             render: get_date_string
-        }, {
-            "data": null,
-            "orderable": false,
-            render: function(data, type, job_file) {
-                return generate_resubmit_button(job_file);
-            }
-        }],
+        },
+            // {
+            //     "data": null,
+            //     "orderable": false,
+            //     render: function(data, type, job_file) {
+            //         return generate_resubmit_button(job_file);
+            //     }
+            // }
+        ],
         "language": {
             "emptyTable": "You have no job files."
         }
