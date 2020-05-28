@@ -47,11 +47,14 @@ class JobComposerController < Sinatra::Base
         return file_path
     end
 
-    def generate_bash_script(module_list, job_compose_path, executable_name, run_command)
-        executable_name = "#{executable_name}.job"
-        file_path = File.join(job_compose_path, executable_name)
+    def generate_bash_script(job_name, module_list, job_compose_path, executable_name, run_command)
+        # whitespace is your enermy, same goes for dash ;)
+        # underscore is your friend. At least in file name
+        job_name = job_name.gsub /[- ]/, "_"
+        job_file_name = "#{job_name}.job"
+        job_file_path = File.join(job_compose_path, job_file_name)
         
-        File.open(file_path, 'wb') do |f|
+        File.open(job_file_path, 'wb') do |f|
             # load module step
             f.write("# Load your requested modules\n")
             module_list.each { |module_name| 
@@ -67,7 +70,7 @@ class JobComposerController < Sinatra::Base
             f.write("#{run_command}\n")
         end
 
-        return file_path
+        return job_file_path
     end
 
     def driver_command(driver_name)
@@ -110,6 +113,7 @@ class JobComposerController < Sinatra::Base
 
         walltime = params['walltime']
         use_gpu = params['gpu']
+        job_name = params[:name]
         total_cpu_cores = params['cores']
         core_per_node = params['cores-per-node']
         total_mem = params['total-memory']
@@ -127,7 +131,7 @@ class JobComposerController < Sinatra::Base
         executable_path = save_file(job_composer_data_path(), file_name, file)
 
         # deal with module load and go to the right directory
-        bash_script_path = generate_bash_script(parse_module(module_list), job_composer_data_path(), file_name, run_command)
+        bash_script_path = generate_bash_script(job_name, parse_module(module_list), job_composer_data_path(), file_name, run_command)
         tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
 
         stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
