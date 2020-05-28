@@ -2,6 +2,7 @@ development: &common_settings
     cluster_name: 'Terra'
     dashboard_url: '/pun/dev/OOD-Dashboard'
     file_app_url: '/pun/sys/files/fs'
+    file_editor_url: '/pun/sys/file-editor/edit'
     home_page: 'https://hprc.tamu.edu'
     request_email: 'phamminhtris@tamu.edu'
     help_email: 'help@example.edu'

@@ -226,6 +226,11 @@ function get_date_string(unix_time) {
     return date.toLocaleString();
 }
 
+function generate_file_editor_anchor(job_file) {
+    let file_editor_path = `${document.file_editor_url}${job_file.path}`;
+    return `<a target="_blank" href="${file_editor_path}">${job_file.name}</a>`;
+}
+
 function populate_job_file_table(json) {
     $("#job_file_table").DataTable({
         "data": json.data,
@@ -237,7 +242,10 @@ function populate_job_file_table(json) {
         "info": false,
         "processing": true,
         "columns": [{
-            "data": "name"
+            "data": "name",
+            render: function (data, type, job_file) {
+                return generate_file_editor_anchor(job_file);
+            }
         }, {
             "data": "last_modified",
             render: get_date_string
