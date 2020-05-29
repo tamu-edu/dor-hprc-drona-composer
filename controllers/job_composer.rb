@@ -144,6 +144,16 @@ class JobComposerController < Sinatra::Base
         
     end
 
+    delete "/jobs/composer/job_files/:file_name" do |file_name|
+        get_job_files_command =  driver_command('job_submit_helper')
+        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -d #{file_name}")
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
+        end
+    end
+
     get "/jobs/composer/job_files" do 
         get_job_files_command =  driver_command('job_submit_helper')
         stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -j")

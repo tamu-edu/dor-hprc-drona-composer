@@ -39,7 +39,7 @@ function submit_job(form) {
         remove_submission_loading_indicator();
         if (request.status == 200) {
             alert(request.responseText);
-            load_job_table();
+            init_job_files_table();
         } else {
             alert(`Error ${request.status}. Try again!`);
         }
@@ -229,8 +229,33 @@ function generate_file_editor_anchor(job_file_path) {
     return `<a type="button" class="btn btn-secondary" target="_blank" href="${file_editor_path}">Edit</a>`;
 }
 
-function generate_resubmit_button(file_path) {
-    return `<a href="#">resubmit</a>`;
+function delete_job_file(file_name) {
+    show_global_loading_indicator();
+    let delete_job_file_url = document.dashboard_url + "/jobs/composer/job_files/" + file_name;
+
+    let request = new XMLHttpRequest()
+    request.open('DELETE', delete_job_file_url, true);
+
+    request.onload = function () {
+        hide_global_loading_indicator();
+        $('#job-file-modal').modal('toggle');
+        init_job_files_table();
+    }
+
+    request.onerror = function () {
+        hide_global_loading_indicator();
+        alert("Failed to fetch your job file: " + file_name);
+        init_job_files_table();
+    }
+
+    request.send(null);
+}
+
+function delete_job_file_action(file_name) {
+    var confirmed_delete = confirm(`Are you sure you want to delete ${file_name}`);
+    if (confirmed_delete) {
+        delete_job_file(file_name);
+    }
 }
 
 function show_job_file_detail_modal(file_name, file_path, file_last_modified) {
@@ -254,8 +279,9 @@ function show_job_file_detail_modal(file_name, file_path, file_last_modified) {
             <div class="modal-footer">
                 <div class="btn-group" role="group">
                     <button type="button" class="btn btn-primary">Resubmit</button>
+                    <button type="button" class="btn btn-danger" onclick="delete_job_file_action('${file_name}')">Delete</button>
                     ${generate_file_editor_anchor(file_path)}
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -282,15 +308,23 @@ function show_job_file_detail_modal(file_name, file_path, file_last_modified) {
     });
 }
 
+function show_global_loading_indicator() {
+    $('#overlay').fadeIn();
+}
+
+function hide_global_loading_indicator() {
+    $('#overlay').fadeOut();
+}
+
 function generate_job_file_detail_modal_anchor(job_file) {
     return `<a href="javascript:show_job_file_detail_modal('${job_file.name}', '${job_file.path}', ${job_file.last_modified})">${job_file.name}</a>`;
-    
+
 }
 
 function populate_job_file_table(json) {
     $("#job_file_table").DataTable({
         "data": json.data,
-        // "destroy": true,
+        "destroy": true,
         "scrollY": "200px",
         "scrollCollapse": false,
         "paging": false,
@@ -305,15 +339,7 @@ function populate_job_file_table(json) {
         }, {
             "data": "last_modified",
             render: get_date_string
-        },
-            // {
-            //     "data": null,
-            //     "orderable": false,
-            //     render: function(data, type, job_file) {
-            //         return generate_resubmit_button(job_file);
-            //     }
-            // }
-        ],
+        }],
         "language": {
             "emptyTable": "You have no job files."
         }

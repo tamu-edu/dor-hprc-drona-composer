@@ -41,7 +41,16 @@
     <% end %>
 
     <%== yield %>
+
+    <div id="overlay" style="display:none;">
+      <div class="spinner"></div>
+      <br />
+      Loading...
+    </div>
   </div>
+
+
+
 
   <script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
   <script src="<%= url("/bootstrap-4.4.1/js/bootstrap.min.js") %>"></script>
