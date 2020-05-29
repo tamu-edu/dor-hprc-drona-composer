@@ -1,6 +1,6 @@
 #!/bin/env python
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, exists
 import os
 import json
 import argparse
@@ -39,6 +39,17 @@ def get_available_job_files():
     json_data = json.dumps([ob.__dict__ for ob in job_file_objs])
     print('{ "data": ' + json_data + '}')
 
+def delete_job_files(file_name):
+    job_composer_dir = get_job_composer_path()
+    file_path = os.path.join(job_composer_dir, file_name)
+
+    if exists(file_path):
+        os.remove(file_path)
+        print("Removed " + file_path)
+    else:
+        print("File does not exist.")
+        exit(1)
+
 def main():
     # create parser object 
     parser = argparse.ArgumentParser(description = "Job Submit Helper") 
@@ -47,9 +58,9 @@ def main():
     parser.add_argument("-j", "--jobfiles", action='store_true',
                         help = "List all job files inside job composer directory.")
 
-    # parser.add_argument("-k", "--kill", nargs = 1, 
-    #                     type = str, metavar = "job_id", default = None, 
-    #                     help = "Kill a job with the given job id.")
+    parser.add_argument("-d", "--delete", nargs = 1, 
+                        type = str, metavar = "file_name", default = None, 
+                        help = "Delete job file with given name.")
 
     # parser.add_argument("-o", "--output", nargs = 2, 
     #                     type = str, metavar=('job_id', 'n_lines'), default = None, 
@@ -61,6 +72,9 @@ def main():
     # calling functions depending on type of argument 
     if args.jobfiles == True: 
         get_available_job_files()
+        exit(0)
+    elif args.delete != None:
+        delete_job_files(args.delete[0])
         exit(0)
     
     else:
