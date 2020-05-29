@@ -8,7 +8,7 @@ function kill_job(job_id) {
     $(`#job${job_id}Modal`).modal('hide');
 
     // Here we reload to update our data (not efficient!!!)
-    location.reload();
+    load_job_table();
   });
 
   // Define what happens in case of error

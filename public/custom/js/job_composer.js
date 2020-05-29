@@ -40,6 +40,7 @@ function submit_job(form) {
         if (request.status == 200) {
             alert(request.responseText);
             init_job_files_table();
+            load_job_table();
         } else {
             alert(`Error ${request.status}. Try again!`);
         }
@@ -258,6 +259,35 @@ function delete_job_file_action(file_name) {
     }
 }
 
+function submit_job_file(file_name) {
+    show_global_loading_indicator();
+    let sub_job_file_url = document.dashboard_url + "/jobs/composer/submit/" + file_name;
+
+    let request = new XMLHttpRequest()
+    request.open('GET', sub_job_file_url, true);
+
+    request.onload = function (event) {
+        hide_global_loading_indicator();
+        $('#job-file-modal').modal('toggle');
+        alert(request.responseText);
+        load_job_table();
+    }
+
+    request.onerror = function () {
+        hide_global_loading_indicator();
+        alert("Failed to submit your job file: " + file_name);
+    }
+
+    request.send(null);
+}
+
+function resubmit_job_file_action(file_name) {
+    var confirmed_submit = confirm(`Are you sure you want to submit ${file_name}`);
+    if (confirmed_submit) {
+        submit_job_file(file_name);
+    }
+}
+
 function show_job_file_detail_modal(file_name, file_path, file_last_modified) {
     console.log(`Call show job file details with ${file_name + " " + file_path + " " + file_last_modified}`);
     let template =
@@ -278,7 +308,7 @@ function show_job_file_detail_modal(file_name, file_path, file_last_modified) {
             </div>
             <div class="modal-footer">
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-primary">Resubmit</button>
+                    <button type="button" class="btn btn-primary" onclick="resubmit_job_file_action('${file_name}')">Resubmit</button>
                     <button type="button" class="btn btn-danger" onclick="delete_job_file_action('${file_name}')">Delete</button>
                     ${generate_file_editor_anchor(file_path)}
                     <button type="button" class="btn btn-info" data-dismiss="modal">Close</button>
@@ -363,7 +393,6 @@ function init_job_files_table() {
     }
 
     request.send();
-
 }
 
 

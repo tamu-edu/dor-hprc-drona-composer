@@ -4,6 +4,7 @@ import json
 import os
 import argparse 
 
+
 CLUSTER_NAME="Terra"
 
 class Job:
@@ -61,9 +62,12 @@ def job_log(args):
     ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     log_file_path = ps.communicate()[0].strip()
 
-    last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
-    # This is just string, no json here
-    print(last_n_lines)
+    if os.path.exists(log_file_path):
+        last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
+        # This is just string, no json here
+        print(last_n_lines)
+    else:
+        print("Your job is not running. No log file can be found at the moment.")
     
 def main():
     # create parser object 
