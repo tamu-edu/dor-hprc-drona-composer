@@ -5,8 +5,25 @@
   <div class="table-responsive">
     <table class="table borderless">
       <tr>
-        <td><a target="_blank" href='<%= url("/jobs/composer") %>'>Quick Job Submit</a></td>
+        <td><a target="_blank" class="btn btn-link" href='<%= url("/jobs/composer") %>'>Quick Job Submit</a></td>
+      </tr>
+      <tr>
+
+        <td><button type="button" class="btn btn-link" data-toggle="modal" data-target="#requestHelpModal">Request
+            Assistant</button></td>
+      </tr>
+      <tr>
+
+        <td><button type="button" class="btn btn-link" data-toggle="modal"
+            data-target="#requestSoftwareModal">Request Software</button></td>
       </tr>
     </table>
   </div>
 </div>
+
+<!-- Software Request Model Forms -->
+<%== erb :"_software_request_form" %>
+
+
+<!-- Help Request Model Forms -->
+<%== erb :"_help_request_form" %>
