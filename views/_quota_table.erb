@@ -1,7 +1,10 @@
 <div class="card">
+  <div class="card-header maroon-header">
+    Disk Quotas
+  </div>
   <div class="card-body table-responsive p-0">
     <table id="quota_table" class="table">
-      <thead class="thead-dark">
+      <thead>
         <tr>
           <th>Disk</th>
           <th>Disk Usage</th>
@@ -16,7 +19,7 @@
   <!-- /.card-body -->
   <div class="card-footer">
     <button type="button" class="btn btn-primary" class="nav-link active btn-rounded mb-4" data-toggle="modal"
-      data-target="#requestQuotaModal">Request Quota Increase</button>
+      data-target="#requestQuotaModal">Quota Increase</button>
   </div>
   <!-- ./card-footer -->
 </div>
@@ -41,7 +44,7 @@
             <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>"
               readonly>
           </div>
-         
+
 
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="current_quota">Current Disk Quota</label>

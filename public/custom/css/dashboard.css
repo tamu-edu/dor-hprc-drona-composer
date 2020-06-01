@@ -53,3 +53,8 @@ h6 {
         transform: rotate(360deg);
     }
 }
+
+.maroon-header {
+  background-color: #332C2C; 
+  color: white;
+}

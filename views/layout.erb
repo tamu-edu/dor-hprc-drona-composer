@@ -18,6 +18,7 @@
   <header>
     <!-- Image and text -->
     <nav class="navbar navbar-dark" style="background-color: #500000; font-family: 'Open Sans'; font-weight: 700;">
+
       <a class="navbar-brand" href="<%= settings.home_page %>">
         <img src="<%= url("/images/TAM-Logo-white.svg") %>" width="30" height="30" class="d-inline-block align-top"
           alt="">
@@ -25,6 +26,18 @@
       <a class="navbar-brand mr-auto" href="<%= settings.home_page %>">
         <span class="text-uppercase"><%= settings.cluster_name %> Toolbox</span>
       </a>
+      <div class="nav-item">
+        <a href="#" style="color: white" class="nav-link" data-toggle="modal" data-target="#requestHelpModal">Request
+          Assistant</a>
+      </div>
+      <div class="nav-item">
+        <a href="#" style="color: white"  class="nav-link" data-toggle="modal" data-target="#requestSoftwareModal">Request Software</a>
+      </div>
+
+      <%== erb :"_software_request_form" %>
+      <%== erb :"_help_request_form" %>
+
+
     </nav>
   </header>
   <%# here we load some constants that are read from our config file (this is a hack) %>

@@ -14,8 +14,8 @@ function draw_core_usage_chart(core_util_data) {
       labels: ["Used", "Free"],
       datasets: [{
         backgroundColor: [
-          "#ffcc33",
-          "#33ccff"
+          "#FF0000",
+          "#00FF00"
         ],
         data: [used_core, free_core]
       }]
@@ -77,9 +77,9 @@ function draw_node_usage_chart(node_util_data) {
       labels: ["Allocated", "Mixed", "Idle"],
       datasets: [{
         backgroundColor: [
-          "#ff0000",
-          "#66ff33",
-          "#34e5eb",
+          "#FF0000",
+          "#0000FF",
+          "#00FF00",
         ],
         data: util_data
       }]
