@@ -8,15 +8,21 @@
         <tr>
           <th>Job ID</th>
           <th>Name</th>
+          <th>Partition</th>
           <th>State</th>
-          <th style="width: fit-content;">Log</th>
+          <th></th>
+          <th></th>
         </tr>
       </thead>
     </table>
   </div>
   <!-- /.card-body -->
   <div class="card-footer">
+  <div>
     <a target="_blank" role="button" class="btn btn-primary" href='<%= url("/jobs/composer") %>'>Job Composer</a>
+    <span><button type="button" class="btn btn-primary" id='refresh-job-table-button' onclick='load_job_table()'>Refresh</button></span>
+    <span style="display: none;" id='refresh-job-table-button-spinner' class="spinner-border" role="status"></span>
+  </div>
   </div>
 </div>
 <!-- /.card -->

@@ -6,9 +6,9 @@ function populate_allocations(json, table) {
     .add(data)
     .draw();
 
-  data.forEach((allocation) => {
-    insert_account_details_modal(allocation);
-  });
+  // data.forEach((allocation) => {
+  //   insert_account_details_modal(allocation);
+  // });
 }
 
 function insert_account_details_modal(allocation) {
@@ -107,7 +107,9 @@ function init_allocation_table() {
     "columns": [{
         "data": "account","sClass":  "text-right",
         render: function (data, type, allocation) {
-          return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
+          // return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
+          return `${allocation.account}`
+
         }
       },
       {

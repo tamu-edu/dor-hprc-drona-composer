@@ -136,7 +136,8 @@ function init_job_table() {
     "columns": [{
       "data": "id",
       render: function (data, type, job) {
-        return `<a href="#" data-toggle="modal" data-target="#job${job.id}Modal">${job.id}</a>`
+        // return `<a href="#" data-toggle="modal" data-target="#job${job.id}Modal">${job.id}</a>`
+        return job.id
       }
     },
     {
@@ -146,11 +147,29 @@ function init_job_table() {
       "data": "state"
     },
     {
+      "data": "partition"
+    },
+    {
       "data": null,
+      orderable: false,
       render: function (data, type, job) {
-        let logButton = `<a id='log-button-${job.id}' href='javascript:' onclick='show_job_log(${job.id});'>log</a>
+        var logButton = ""
+        if (job.state.trim() === "RUNNING") {
+          logButton = `<button type="button" class="btn btn-primary" id='log-button-${job.id}' onclick='show_job_log(${job.id})'>log</button>
                           <span style="display: none;" id='log-button-${job.id}-spinner' class="spinner-border" role="status"></span>`;
+        } else {
+          logButton = '<button type="button" class="btn btn-primary" disabled>Log</button>';
+        }
+        
         return logButton
+      },
+    },
+    {
+      "data": null,
+      orderable: false,
+      render: function (data, type, job) {
+        let killButton =  `<button type="button" class="btn btn-danger" onclick="confirm_job_kill('${job.id}')">Kill</button>`
+        return killButton
       },
     }
     ],
@@ -228,6 +247,7 @@ function insert_job_details_modal(job) {
 }
 
 function load_job_table() {
+  // toggle_refresh_job_table_loading_spinner(true);
   let allocation_url = document.dashboard_url + "/jobs";
 
   let request = new XMLHttpRequest();
@@ -240,12 +260,39 @@ function load_job_table() {
   request.onload = function () {
     const data = request.response;
     populate_job_table(data, job_table);
+    // toggle_refresh_job_table_loading_spinner(false);
   }
 
   request.onerror = function () {
     alert("Failed to fetch your jobs details. Please try again later.");
   }
 }
+
+
+function toggle_refresh_job_table_loading_spinner(show) {
+  // if the spinner present, show log button should hide and vice versa
+  let spinner_id = 'refresh-job-table-button-spinner';
+  var spinner = document.getElementById(spinner_id);
+  if (spinner == null) {
+    return;
+  }
+
+  if (show) {
+    spinner.style.display = "block";
+  } else {
+    spinner.style.display = "none";
+  }
+
+  let refresh_job_table_button_id = 'refresh-job-table-button';
+  var refresh_job_table_button = document.getElementById(refresh_job_table_button_id);
+  if (show) {
+    refresh_job_table_button.style.display = "none";
+  } else {
+    refresh_job_table_button.style.display = "inline";
+  }
+}
+
+
 
 
 (() => {
