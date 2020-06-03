@@ -58,3 +58,8 @@ h6 {
   background-color: #332C2C; 
   color: white;
 }
+
+.module-to-load:hover {
+  background-color: red;
+  cursor: pointer;
+}
