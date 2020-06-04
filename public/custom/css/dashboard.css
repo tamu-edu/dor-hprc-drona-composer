@@ -4,18 +4,17 @@ body {
   font-family: "Open Sans", sans-serif;
 }
 
-h4 {
+h4, h6 {
   font-weight: bold;
-}
-
-h6 {
-  font-weight: bold;
+  color: maroon;
 }
 
 .ui-autocomplete {
   max-height: 200px;
-  overflow-y: auto; /* prevent horizontal scrollbar */
-  overflow-x: hidden; /* add padding to account for vertical scrollbar */
+  overflow-y: auto;
+  /* prevent horizontal scrollbar */
+  overflow-x: hidden;
+  /* add padding to account for vertical scrollbar */
   z-index: 1000 !important;
 }
 
@@ -37,29 +36,94 @@ h6 {
 }
 
 .spinner {
-    margin: 0 auto;
-    height: 64px;
-    width: 64px;
-    animation: rotate 0.8s infinite linear;
-    border: 5px solid firebrick;
-    border-right-color: transparent;
-    border-radius: 50%;
+  margin: 0 auto;
+  height: 64px;
+  width: 64px;
+  animation: rotate 0.8s infinite linear;
+  border: 5px solid firebrick;
+  border-right-color: transparent;
+  border-radius: 50%;
 }
+
 @keyframes rotate {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .maroon-header {
-  background-color: #332C2C; 
-  color: white;
+  background-color: white;
+  color: maroon;
+  font-weight: bold;
 }
 
 .module-to-load:hover {
   background-color: red;
   cursor: pointer;
 }
+
+.card {
+  border: 0.5;
+  border-color: rgba(80, 0, 0, 0.3);
+  border-radius: 15px 15px 15px 15px !important;
+  padding: 0.5em;
+}
+
+.card-footer, .card-header {
+  background-color: transparent;
+}
+
+
+.maroon-button {
+  color: maroon;
+  background-color: white;
+  border-color: rgba(80, 0, 0, 0.5);
+  border-radius: 8px 8px 8px 8px !important;
+}
+
+.maroon-button:hover,
+.maroon-button:focus {
+  color: white;
+  background-color: maroon;
+  border-color: maroon;
+}
+
+.request-maroon-button {
+  color: white;
+  background-color: maroon;
+  border-radius: 8px 8px 8px 8px !important;
+}
+
+.request-maroon-button:hover,
+.request-maroon-button:focus {
+  color: white;
+  background-color: maroon;
+  border-color: maroon;
+
+}
+
+thead th {
+  background-color: transparent;
+  color: maroon;
+}
+
+a {
+  color: maroon;
+}
+a:hover {
+  color: grey;
+}
+
+footer {
+  background-color: maroon;
+  color: white;
+}
+
+.modal-header {
+  background-color: maroon;
+  color: white !important;
+} 

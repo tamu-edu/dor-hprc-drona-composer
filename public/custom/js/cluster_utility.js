@@ -23,7 +23,9 @@ function draw_core_usage_chart(core_util_data) {
     options: {
       title: {
         display: true,
-        text: 'Core Utilization'
+        text: 'Core Utilization',
+        fontColor: '#500000',
+        fontStyle: 'bold'
       },
     }
   });
@@ -87,7 +89,9 @@ function draw_node_usage_chart(node_util_data) {
     options: {
       title: {
         display: true,
-        text: 'Node Utilization'
+        text: 'Node Utilization',
+        fontColor: '#500000',
+        fontStyle: 'bold'
       }
     }
   });
