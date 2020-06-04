@@ -2,10 +2,7 @@ require 'open3'
 
 class HelpRequest
 
-    def compose_email(cluster_name, 
-            help_topic, issue_description, 
-            error_message, job_file_path, job_id,
-            program_file_path, additional_information)
+    def compose_email(cluster_name,  help_topic, issue_description, error_message, job_file_path, job_id, program_file_path, additional_information)
 
         user = ENV["USER"]
         body =  "User: #{user}\n" \
@@ -33,9 +30,7 @@ class HelpRequest
         additional_information = params[:additional_information]
 
       subject = "HelpRequest"
-      body = compose_email(cluster_name, help_topic, 
-        issue_description, error_message, job_file_path, job_id
-        program_file_path, additional_information)
+      body = compose_email(cluster_name, help_topic, issue_description, error_message, job_file_path, job_id, program_file_path, additional_information)
 
       [subject, body]
     end

@@ -1,4 +1,9 @@
 require_relative '../models/mailer.rb'
+require_relative '../models/request_help.rb'
+require_relative '../models/request_quota.rb'
+require_relative '../models/request_software.rb'
+
+
 require "sinatra/config_file"
 
 
