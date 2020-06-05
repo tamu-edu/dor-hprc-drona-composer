@@ -11,5 +11,9 @@ total_cpus=$(/sw/local/bin/pestat -s alloc,mix,idle | tail -n+4 | awk '{print $5
 idle_cpus=$(expr $total_cpus - $allocated_cpus)
 CORE_DATA='"cores": { "allocated": '$allocated_cpus', "idle": '$idle_cpus'}'
 
-UTIL_DATA='{ "data": { '$NODE_DATA', '$CORE_DATA' }}'
+running_jobs=$(/usr/bin/squeue --noheader --states=RUNNING | wc -l)
+pending_jobs=$(/usr/bin/squeue --noheader --states=PENDING | wc -l)
+JOBS='"jobs": { "running": '$running_jobs', "pending": '$pending_jobs'}'
+
+UTIL_DATA='{ "data": { '$NODE_DATA', '$CORE_DATA', '$JOBS' }}'
 echo $UTIL_DATA

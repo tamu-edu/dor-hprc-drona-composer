@@ -6,31 +6,71 @@
   </div>
 </div>
 
-<div class="card shadow p-3">
-<div class="row">
-  <div id="chart-loading-indicator" class="col">
-    <!-- Spinner -->
-    <div class="d-flex justify-content-center">
-      <div class="spinner-border" role="status">
-        <span class="sr-only">Loading...</span>
+<div class="card shadow">
+  <div class="card-body">
+    <div class="chart-loading-indicator row">
+      <div class="col">
+        <!-- Spinner -->
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>  
-</div>
 
-<div class="row">
-  <div class="col" style="position: relative;">
-    <canvas id="node_utilization_chart"></canvas>
-  </div>
-</div>
+    <div class="row">
+      <div class="col" style="position: relative;">
+        <canvas id="node_utilization_chart"></canvas>
+      </div>
+    </div>
 
-<!-- Solid divider -->
+    <!-- Solid divider -->
     <hr class="solid">
 
-<div class="row">
-  <div class="col" style="position: relative;">
-    <canvas id="core_utilization_chart"></canvas>
+    <div class="chart-loading-indicator row">
+      <div class="col">
+        <!-- Spinner -->
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col" style="position: relative;">
+        <canvas id="core_utilization_chart"></canvas>
+      </div>
+    </div>
+
+    <div class="row mt-3">
+      <div class="col">
+        <table id="job_stats_table" class="table">
+          <thead class="maroon-header">
+            <tr>
+              <td>Jobs</td>
+              <td>#</td>
+            </tr>
+          </thead>
+          <tbody>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="chart-loading-indicator row">
+      <div class="col">
+        <!-- Spinner -->
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
 </div>

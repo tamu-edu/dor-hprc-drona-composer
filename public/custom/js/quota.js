@@ -39,7 +39,7 @@ function generate_file_explorer_path_for_disk(disk_name) {
     disk_path = document.file_app_url + `/scratch/user/${document.username}`
   }
 
-  return `<a target="_blank" class="btn btn-primary maroon-button" style="border:1px solid #500000;" href="${disk_path}">${disk_name}</a>`
+  return `<a target="_blank" href="${disk_path}">${disk_name}</a>`
 
 }
 

@@ -4,7 +4,8 @@ body {
   font-family: "Open Sans", sans-serif;
 }
 
-h4, h6 {
+h4,
+h6 {
   font-weight: bold;
   color: maroon;
 }
@@ -73,7 +74,8 @@ h4, h6 {
   padding: 0.5em;
 }
 
-.card-footer, .card-header {
+.card-footer,
+.card-header {
   background-color: transparent;
 }
 
@@ -96,6 +98,7 @@ h4, h6 {
   color: white;
   background-color: maroon;
   border-radius: 8px 8px 8px 8px !important;
+  border-color: maroon;
 }
 
 .request-maroon-button:hover,
@@ -103,7 +106,19 @@ h4, h6 {
   color: white;
   background-color: maroon;
   border-color: maroon;
+}
 
+.navbar-button {
+  color: maroon;
+  background-color: white;
+  border-radius: 8px 8px 8px 8px !important;
+}
+
+.navbar-button:hover {
+  color: white;
+  background-color: maroon;
+  border-radius: 8px 8px 8px 8px !important;
+  border-color: white;
 }
 
 thead th {
@@ -114,6 +129,7 @@ thead th {
 a {
   color: maroon;
 }
+
 a:hover {
   color: grey;
 }
@@ -126,4 +142,4 @@ footer {
 .modal-header {
   background-color: maroon;
   color: white !important;
-} 
+}

@@ -1,5 +1,5 @@
 function draw_core_usage_chart(core_util_data) {
-  let chartCanvas =  document.getElementById("core_utilization_chart");
+  let chartCanvas = document.getElementById("core_utilization_chart");
   if (chartCanvas == null) {
     return;
   }
@@ -98,41 +98,69 @@ function draw_node_usage_chart(node_util_data) {
 }
 
 function hide_spinner() {
-  let spinner = document.getElementById('chart-loading-indicator');
-  if (spinner == null) {
+  let spinners = document.getElementsByClassName('chart-loading-indicator');
+  if (spinners== null) {
     return;
   }
-  
-  document.getElementById('chart-loading-indicator').remove();
+
+  while (spinners[0]) {
+    spinners[0].parentNode.removeChild(spinners[0]);
+  }
+}
+
+function populate_jobs_stats_table(job_data) {
+  let num_pending_jobs = job_data['pending'];
+  let num_running_jobs = job_data['running'];
+
+  if (num_pending_jobs == null || num_running_jobs == null) {
+    return;
+  }
+
+  var job_stats_table = document.getElementById('job_stats_table');
+  if (job_stats_table == null) {
+    return;
+  }
+  var table_body = job_stats_table.getElementsByTagName('tbody')[0];
+  var running_job_row = table_body.insertRow(0);
+  var titleCell = running_job_row.insertCell(0);
+  var dataCell = running_job_row.insertCell(1);
+  titleCell.innerHTML = "Running";
+  dataCell.innerHTML = num_running_jobs;
+
+  var pending_job_row = table_body.insertRow(1);
+  var titleCell = pending_job_row.insertCell(0);
+  var dataCell = pending_job_row.insertCell(1);
+  titleCell.innerHTML = "Pending";
+  dataCell.innerHTML = num_pending_jobs;
 }
 
 function setup_utilization_chart(json_data) {
   data = json_data["data"];
-  
+
   node_util_data = data["nodes"];
   core_util_data = data["cores"];
+  jobs_stats_data = data["jobs"];
 
   draw_core_usage_chart(core_util_data);
   draw_node_usage_chart(node_util_data);
-
+  populate_jobs_stats_table(jobs_stats_data);
   hide_spinner();
 }
 
 (() => {
   let request_url = document.dashboard_url + "/resources/cluster/utilization";
-  
-  var util_request = $.getJSON( request_url, { format: "json" })
-  .done(function(json_data) {
-    
-    setup_utilization_chart(json_data);
-  })
-  .fail(function( jqxhr, textStatus, error) {
-    console.log(jqxhr);
-    var err = textStatus + ", " + error;
-    console.log( "Request Failed: " + err );
-  })
-  .always(function() {
+
+  var util_request = $.getJSON(request_url, { format: "json" })
+    .done(function (json_data) {
+      setup_utilization_chart(json_data);
+    })
+    .fail(function (jqxhr, textStatus, error) {
+      console.log(jqxhr);
+      var err = textStatus + ", " + error;
+      console.log("Request Failed: " + err);
+    })
+    .always(function () {
       // console.log( "complete" );
-  });
+    });
 
 })()

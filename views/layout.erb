@@ -20,18 +20,20 @@
     <nav class="navbar navbar-dark" style="background-color: #500000; font-family: 'Open Sans'; font-weight: 700;">
 
       <a class="navbar-brand" href="<%= settings.home_page %>">
-        <img src="<%= url("/images/HPRC-Identity-ExternalLeft-Dark.svg") %>" width="200"  class="d-inline-block align-top"
-          alt="">
+        <img src="<%= url("/images/HPRC-Identity-ExternalLeft-Dark.svg") %>" width="200"
+          class="d-inline-block align-top" alt="">
       </a>
       <a class="navbar-brand mx-auto" href="<%= settings.dashboard_url %>">
         <span class="text-uppercase"><%= settings.cluster_name %> Toolbox</span>
       </a>
       <div class="nav-item pull-right">
-        <button type="button" class="btn btn-dark" style="color: #500000; background-color: white;" class="nav-link" data-toggle="modal" data-target="#requestHelpModal">Request
+        <button type="button" class="btn btn-dark navbar-button" class="nav-link" data-toggle="modal"
+          data-target="#requestHelpModal">Request
           Assistant</button>
       </div>
       <div class="nav-item pull-right">
-        <button type="button" class="btn btn-dark ml-2" style="color: #500000; background-color: white;"  class="nav-link" data-toggle="modal" data-target="#requestSoftwareModal">Request Software</button>
+        <button type="button" class="btn btn-dark ml-2 navbar-button" class="nav-link" data-toggle="modal"
+          data-target="#requestSoftwareModal">Request Software</button>
       </div>
 
       <%== erb :"_software_request_form" %>
@@ -63,7 +65,7 @@
   <footer class="footer mt-2">
     <!-- just to add some padding and be a place holder for contents -->
   </footer>
-  
+
 
 
   <script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
