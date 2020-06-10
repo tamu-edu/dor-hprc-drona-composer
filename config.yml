@@ -12,7 +12,7 @@ development: &common_settings
     
 production:
     <<: *common_settings
-    dashboard_url: '/pun/sys/dashboard'
+    dashboard_url: '/pun/sys/terra-dashboard'
     request_email: 'help@hprc.tamu.edu'
-    # driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts'
+    driver_scripts_path: '/var/www/ood/apps/sys/terra-dashboard/machine_driver_scripts'
 
