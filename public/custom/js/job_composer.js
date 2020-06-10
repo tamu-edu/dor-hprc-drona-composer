@@ -294,10 +294,10 @@ function show_job_file_detail_modal(file_name, file_path, file_last_modified) {
         `
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
-            <div class="modal-header bg-primary text-light">
-              <h4 class="modal-title">
+            <div class="modal-header text-light">
+              <h5 class="modal-title">
                 ${file_name}
-              </h4>
+              </h5>
             </div>
             <div class="modal-body">
               <ul>

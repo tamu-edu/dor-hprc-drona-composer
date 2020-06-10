@@ -38,10 +38,10 @@ function show_log_modal(job_id, log_str) {
     `
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
-          <div class="modal-header bg-primary text-light">
-            <h4 class="modal-title">
+          <div class="modal-header text-light">
+            <h5 class="modal-title">
               Job #${job_id} Log
-            </h4>
+            </h5>
           </div>
           <div class="modal-body">
             <pre>
