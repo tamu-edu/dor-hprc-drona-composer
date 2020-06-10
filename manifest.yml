@@ -1,2 +1,4 @@
-name: Dashboard Application
-description: A summary for user profile
+name: Terra Dashboard
+description: Terra Dashboard utilites
+icon: fa://columns
+category: Dashboard

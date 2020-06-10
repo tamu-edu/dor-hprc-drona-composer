@@ -74,7 +74,7 @@ function set_default_allocation(account_no) {
   var userPreference = "";
   if (confirm(`Are you sure you want to use ${account_no} as your default project account?`) == false) {
     return;
-  } 
+  }
 
   set_default_allocation_url = document.dashboard_url + `/resources/allocations/default/${account_no}`;
 
@@ -105,37 +105,41 @@ function init_allocation_table() {
     "info": false,
     "processing": true,
     "columns": [{
-        "data": "account","sClass":  "text-right",
-        render: function (data, type, allocation) {
-          // return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
-          return `${allocation.account}`
+      "data": "account", "sClass": "text-right",
+      render: function (data, type, allocation) {
+        // return `<a href="#" data-toggle="modal" data-target="#account${allocation.account}Modal">${allocation.account}</a>`
+        return `${allocation.account}`
 
-        }
-      },
-      {
-        "data": "default","sClass":  "text-right",
-        render: function(data, type, allocation) {
+      }
+    },
+    {
+      "data": "default", "sClass": "text-right",
+      render: function (data, type, allocation) {
 
-          if (allocation.default == 'N') {
-            
-            return `<a href='javascript:;' onclick='set_default_allocation(${allocation.account});'>Set Default</a>`;
-          } else {
-            return 'default';
-          }
+        if (allocation.default == 'N') {
+
+          return `<a href='javascript:;' onclick='set_default_allocation(${allocation.account});'>Set Default</a>`;
+        } else {
+          return 'default';
         }
-      },
-      {
-        "data": "allocation", "sClass":  "text-right"
-      },
-      {
-        "data": "used_pending_su", "sClass":  "text-right"
-      },
-      {
-        "data": "balance", "sClass":  "text-right"
-      },
+      }
+    },
+    {
+      "data": "allocation", "sClass": "text-right"
+    },
+    {
+      "data": "used_pending_su", "sClass": "text-right"
+    },
+    {
+      "data": "balance", "sClass": "text-right"
+    },
     ],
     "language": {
-      "emptyTable": "Loading ..."
+      "emptyTable": `<div class="d-flex justify-content-center">
+      <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>`
     }
   });
   return alloc_table;

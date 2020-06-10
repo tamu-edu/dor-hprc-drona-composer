@@ -69,6 +69,23 @@ def job_log(args):
     else:
         print("Your job is not running. No log file can be found at the moment.")
     
+def job_error(args):
+    job_id = args.output[0]
+    n_lines = args.output[1]
+
+    # using shell=True is not recommended. However,
+    # since this is trusted code, should be fine
+    cmd = 'scontrol show jobid ' + job_id + '| grep StdErr | cut -d"=" -f2'
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    log_file_path = ps.communicate()[0].strip()
+
+    if os.path.exists(log_file_path):
+        last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
+        # This is just string, no json here
+        print(last_n_lines)
+    else:
+        print("Your job is not running. No log file can be found at the moment.")
+
 def main():
     # create parser object 
     parser = argparse.ArgumentParser(description = "Job utility wrapper for " + CLUSTER_NAME) 
@@ -86,6 +103,10 @@ def main():
                         type = str, metavar=('job_id', 'n_lines'), default = None, 
                         help = "Output the last n_lines of output of a given job_id")
 
+    parser.add_argument("-e", "--error", nargs = 2, 
+                        type = str, metavar=('job_id', 'n_lines'), default = None, 
+                        help = "Output the last n_lines of error log for the given job_id")
+
      # parse the arguments from standard input 
     args = parser.parse_args() 
 
@@ -96,6 +117,8 @@ def main():
         kill_job(args) 
     elif args.output != None:
         job_log(args)
+    elif args.error != None:
+        job_error(args)
     else:
         parser.print_help()
 
