@@ -137,7 +137,7 @@ class JobComposerController < Sinatra::Base
         stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
     
         if status.success?
-            return stdout_str + "\n#{tamubatch_command}"
+            return stdout_str
         else  
             return stderr_str
         end
