@@ -15,6 +15,25 @@ get '/frank-says' do
 end
 ```
 
+## Development
+
+**IMPORTANT NOTE**: To align ruby enviroment with what will be used in production, do:
+
+```bash
+source scl_source enable rh-git29 rh-nodejs6 rh-ruby24 httpd24 ondemand
+```
+
+Remove old gems
+
+```bash 
+rm -rf ./vendor
+```
+
+Then install gem dependencies
+```bash
+scl enable ondemand -- bundle
+```
+
 ## Structure
 
 ### Sinatra backend
@@ -98,4 +117,19 @@ production:
 ```
 
 ### Production
-// TODO
+
+1. Install dependencies
+
+Please make sure you follow the notes about installing Gem at the beginning of this README.md. The command below is extremely important as it makes sure the production app uses the correct ruby environment.
+
+```bash
+source scl_source enable rh-git29 rh-nodejs6 rh-ruby24 httpd24 ondemand
+```
+
+2. Modify app configurations.
+
+Overwrite parameters for production environment in config.yml as you see fit. Use "&common_seetings" as the starting point (Development parameters basically), you can override anything under production: section.
+
+3. Copy app files/folders
+
+After you have installed dependencies, you should follow the deployment instructions in [Publish App](https://osc.github.io/ood-documentation/master/app-development/tutorials-passenger-apps/ps-to-quota.html#publish-app) documentation section (also see [App sharing](https://osc.github.io/ood-documentation/master/app-sharing.html) for more information). One important note from experience is that you will need to set correct permissions (**INCLUDING HIDEN FOLDER!!!!!! ⚠️**). This advice is especially true for [System Installed Apps](https://osc.github.io/ood-documentation/master/app-sharing.html#system-installed-apps).
