@@ -83,20 +83,20 @@ function removeElement(elementId) {
 
 
 function show_job_log(job_id) {
-  toggle_log_loading_spinner(job_id, true);
+  show_global_loading_indicator();
 
   let n_lines = 10;
   let job_log_url = document.dashboard_url + `/jobs/${job_id}/log?n_lines=${n_lines}`;
   var req = new XMLHttpRequest();
   req.open('GET', job_log_url, true);
   req.onload = function () {
-    toggle_log_loading_spinner(job_id, false);
+    hide_global_loading_indicator();
     show_log_modal(job_id, req.response);
-    // alert(req.response);
+    
   };
 
   req.onerror = function () {
-    toggle_log_loading_spinner(job_id, false);
+    hide_global_loading_indicator();
     alert("Failed to load job's log. Please try again.");
   }
 
@@ -105,24 +105,27 @@ function show_job_log(job_id) {
   console.log("Showing log for job " + job_id);
 }
 
-function toggle_log_loading_spinner(job_id, show) {
-  // if the spinner present, show log button should hide and vice versa
-  let spinner_id = `log-button-${job_id}-spinner`;
-  var spinner = document.getElementById(spinner_id);
-  if (show) {
-    spinner.style.display = "block";
-  } else {
-    spinner.style.display = "none";
+function show_job_error_log(job_id) {
+  show_global_loading_indicator();
+  let n_lines = 10;
+  let job_log_url = document.dashboard_url + `/jobs/${job_id}/error_log?n_lines=${n_lines}`;
+  var req = new XMLHttpRequest();
+  req.open('GET', job_log_url, true);
+  req.onload = function () {
+    hide_global_loading_indicator();
+    show_log_modal(job_id, req.response);
+  };
+
+  req.onerror = function () {
+    hide_global_loading_indicator();
+    alert("Failed to load job's log. Please try again.");
   }
 
-  let show_log_button_id = `log-button-${job_id}`;
-  var show_log_button = document.getElementById(show_log_button_id);
-  if (show) {
-    show_log_button.style.display = "none";
-  } else {
-    show_log_button.style.display = "inline";
-  }
+  req.send(null);
+
+  // console.log("Showing log for job " + job_id);
 }
+
 
 function init_job_table() {
   var job_table = $('#job_table').DataTable({
@@ -155,12 +158,14 @@ function init_job_table() {
       render: function (data, type, job) {
         var logButton = ""
         if (job.state.trim() === "RUNNING") {
-          logButton = `<button type="button" class="btn btn-primary" id='log-button-${job.id}' onclick='show_job_log(${job.id})'>log</button>
-                          <span style="display: none;" id='log-button-${job.id}-spinner' class="spinner-border" role="status"></span>`;
+          logButton = `<div class="btn-group" role="group" aria-label="">
+                        <button type="button" class="btn btn-primary" id='log-button-${job.id}' onclick='show_job_log(${job.id})'>Log</button>
+                        <button type="button" class="btn btn-danger" id='error-log-button-${job.id}' onclick='show_job_error_log(${job.id})'>Error</button>
+                      </div>`;
         } else {
           logButton = '<button type="button" class="btn btn-primary" disabled>Log</button>';
         }
-        
+
         return logButton
       },
     },
@@ -168,7 +173,7 @@ function init_job_table() {
       "data": null,
       orderable: false,
       render: function (data, type, job) {
-        let killButton =  `<button type="button" class="btn btn-danger" onclick="confirm_job_kill('${job.id}')">Kill</button>`
+        let killButton = `<button type="button" class="btn btn-danger" onclick="confirm_job_kill('${job.id}')">Kill</button>`
         return killButton
       },
     }

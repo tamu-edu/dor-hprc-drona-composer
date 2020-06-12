@@ -70,8 +70,8 @@ def job_log(args):
         print("Your job is not running. No log file can be found at the moment.")
     
 def job_error(args):
-    job_id = args.output[0]
-    n_lines = args.output[1]
+    job_id = args.error[0]
+    n_lines = args.error[1]
 
     # using shell=True is not recommended. However,
     # since this is trusted code, should be fine
@@ -118,6 +118,7 @@ def main():
     elif args.output != None:
         job_log(args)
     elif args.error != None:
+        
         job_error(args)
     else:
         parser.print_help()
