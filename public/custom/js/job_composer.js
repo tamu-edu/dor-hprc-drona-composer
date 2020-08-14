@@ -11,6 +11,22 @@ function collect_modules_to_load() {
     return module_list;
 }
 
+function calculate_walltime() {
+    var days = document.getElementById("days");
+    var hours = document.getElementById("hours");
+    var mins = document.getElementById("mins");
+
+    console.log(days.value);
+    console.log(hours.value);
+    console.log(mins.value);
+    if (days == null || hours == null || mins == null) {
+        return `00:30`;
+    }
+
+    var runtime_hours = Number(days.value) * 24 + Number(hours.value);
+    return `${runtime_hours}:${Number(mins.value)}`;
+}
+
 function register_slurm_submit_button() {
     var slurm_form = document.getElementById('slurm-config-form');
     if (slurm_form == null) {
@@ -24,6 +40,12 @@ function register_slurm_submit_button() {
             .attr("value", collect_modules_to_load())
             .appendTo("#slurm-config-form");
 
+        $("<input />").attr("type", "hidden")
+            .attr("name", "walltime")
+            .attr("value", calculate_walltime())
+            .appendTo("#slurm-config-form");
+
+        console.log(slurm_form);
         submit_job(slurm_form);
         event.preventDefault();
         return false;

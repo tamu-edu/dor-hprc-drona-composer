@@ -66,6 +66,9 @@ class JobComposerController < Sinatra::Base
             f.write("# Go to the directory where we put the script\n")
             f.write("cd #{job_compose_path}\n\n")
 
+            f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
+            f.write("dos2unix #{executable_name}\n\n")
+
             f.write("# Run your program using provided command.\n")
             f.write("#{run_command}\n")
         end
@@ -137,7 +140,8 @@ class JobComposerController < Sinatra::Base
         stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
     
         if status.success?
-            return stdout_str
+            return tamubatch_command
+            # return stdout_str
         else  
             return stderr_str
         end
