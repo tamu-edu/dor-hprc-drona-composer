@@ -22,8 +22,10 @@ def get_job_composer_path():
     return os.path.join(scratch, username, JOB_COMPOSER_DIR)
 
 def list_job_files(dirpath):
-    files = [f for f in listdir(dirpath) if isfile(join(dirpath, f))]
-    job_files = [f for f in files if f.endswith(JOB_FILE_EXT)]
+    # assume the job file has the same name as job folder
+    job_files = [os.path.join(dirpath, dir, dir + JOB_FILE_EXT) for dir in listdir(dirpath)]
+
+    job_files = [f for f in job_files if isfile(f)]
     return job_files
 
 def get_available_job_files():
@@ -31,10 +33,10 @@ def get_available_job_files():
     job_files = list_job_files(job_composer_dir)
 
     job_file_objs = []
-    for job_name in job_files:
-        job_path = os.path.join(job_composer_dir, job_name)
+    for job_path in job_files:
+        file_name = os.path.basename(job_path)
         last_modified_time = os.path.getmtime(job_path)
-        job_file = JobFile(job_name, job_path, last_modified_time)
+        job_file = JobFile(file_name, job_path, last_modified_time)
         job_file_objs.append(job_file)
 
     json_data = json.dumps([ob.__dict__ for ob in job_file_objs])
@@ -42,7 +44,8 @@ def get_available_job_files():
 
 def delete_job_files(file_name):
     job_composer_dir = get_job_composer_path()
-    file_path = os.path.join(job_composer_dir, file_name)
+    job_dir = os.path.splitext(file_name)[0]
+    file_path = os.path.join(job_composer_dir, job_dir, file_name)
 
     if exists(file_path):
         os.remove(file_path)
@@ -53,7 +56,8 @@ def delete_job_files(file_name):
 
 def submit_job_file(file_name):
     job_composer_dir = get_job_composer_path()
-    file_path = os.path.join(job_composer_dir, file_name)
+    job_dir = os.path.splitext(file_name)[0]
+    file_path = os.path.join(job_composer_dir, job_dir, file_name)
 
     if exists(file_path):
         output=subprocess.check_output(["/sw/local/bin/sbatch", file_path])

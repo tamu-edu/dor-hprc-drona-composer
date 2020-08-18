@@ -36,10 +36,12 @@ class JobComposerController < Sinatra::Base
         return res.to_json
     end
     
-    def save_file(parent_path, filename, file)
-        Dir.mkdir(parent_path) unless File.exists?(parent_path)
+    def save_file(parent_path, job_name, filename, file)
+        
+        job_folder_path = File.join(parent_path, job_name)
+        Dir.mkdir(job_folder_path) unless File.exists?(job_folder_path)
 
-        file_path = File.join(parent_path, filename)
+        file_path = File.join(job_folder_path, filename)
         File.open(file_path, 'wb') do |f|
             f.write(file.read)
         end
@@ -47,12 +49,16 @@ class JobComposerController < Sinatra::Base
         return file_path
     end
 
-    def generate_bash_script(job_name, module_list, job_compose_path, executable_name, run_command)
-        # whitespace is your enermy, same goes for dash ;)
-        # underscore is your friend. At least in file name
-        job_name = job_name.gsub /[- ]/, "_"
-        job_file_name = "#{job_name}.job"
-        job_file_path = File.join(job_compose_path, job_file_name)
+    def job_file_name(job_name)
+        
+        file_name = "#{job_name}.job"
+
+        return file_name 
+    end
+
+    def generate_bash_script(job_name, module_list, job_folder_path, executable_name, run_command)
+        
+        job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
         File.open(job_file_path, 'wb') do |f|
             # load module step
@@ -64,7 +70,7 @@ class JobComposerController < Sinatra::Base
 
             # move to working directory where the executable is store
             f.write("# Go to the directory where we put the script\n")
-            f.write("cd #{job_compose_path}\n\n")
+            f.write("cd #{job_folder_path}\n\n")
 
             f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
             f.write("dos2unix #{executable_name}\n\n")
@@ -89,7 +95,7 @@ class JobComposerController < Sinatra::Base
         return path
     end 
 
-    def generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, executable_path)
+    def generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, job_file_path)
         walltime = "-W #{walltime}"
         need_gpu = ""
         if use_gpu
@@ -104,7 +110,7 @@ class JobComposerController < Sinatra::Base
             account = ""
         end
 
-        return "#{settings.tamubatch_path} #{walltime} #{need_gpu} #{cores} #{cores_per_node} #{total_mem} #{account} #{executable_path}"
+        return "#{settings.tamubatch_path} #{walltime} #{need_gpu} #{cores} #{cores_per_node} #{total_mem} #{account} #{job_file_path}"
     end
 
     def parse_module(module_list_as_str) 
@@ -117,6 +123,10 @@ class JobComposerController < Sinatra::Base
         walltime = params['walltime']
         use_gpu = params['gpu']
         job_name = params[:name]
+        # whitespace is your enermy, same goes for dash ;)
+        # underscore is your friend. At least in file name
+        job_name = job_name.gsub /[- ]/, "_"
+
         total_cpu_cores = params['cores']
         core_per_node = params['cores-per-node']
         total_mem = params['total-memory']
@@ -131,17 +141,17 @@ class JobComposerController < Sinatra::Base
         end
 
         # this is the script user upload
-        executable_path = save_file(job_composer_data_path(), file_name, file)
-
-        # deal with module load and go to the right directory
-        bash_script_path = generate_bash_script(job_name, parse_module(module_list), job_composer_data_path(), file_name, run_command)
+        executable_path = save_file(job_composer_data_path(), job_name, file_name, file)
+        
+        # # deal with module load and go to the right directory
+        job_path = File.join(job_composer_data_path(), job_name)
+        bash_script_path = generate_bash_script(job_name, parse_module(module_list), job_path, file_name, run_command)
         tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
-
+        
         stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
     
         if status.success?
-            return tamubatch_command
-            # return stdout_str
+            return stdout_str
         else  
             return stderr_str
         end
@@ -160,6 +170,7 @@ class JobComposerController < Sinatra::Base
 
     get "/jobs/composer/submit/:file_name" do |file_name|
         get_job_files_command =  driver_command('job_submit_helper')
+        
         stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -s #{file_name}")
         if status.success?
             return stdout_str
