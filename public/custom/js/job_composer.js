@@ -275,7 +275,7 @@ function delete_job_file(file_name) {
 }
 
 function delete_job_file_action(file_name) {
-    var confirmed_delete = confirm(`Are you sure you want to delete ${file_name}`);
+    var confirmed_delete = confirm(`Are you sure you want to delete ${file_name}? This will remove the job file and any files associate with this job (output, executable script, etc.). Proceed with caution!`);
     if (confirmed_delete) {
         delete_job_file(file_name);
     }

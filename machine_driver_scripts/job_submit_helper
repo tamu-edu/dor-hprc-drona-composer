@@ -1,6 +1,7 @@
 #!/bin/env python
 from os import listdir
 from os.path import isfile, join, exists
+import shutil
 import os
 import json
 import argparse
@@ -44,11 +45,11 @@ def get_available_job_files():
 
 def delete_job_files(file_name):
     job_composer_dir = get_job_composer_path()
-    job_dir = os.path.splitext(file_name)[0]
-    file_path = os.path.join(job_composer_dir, job_dir, file_name)
+    job_dir_name = os.path.splitext(file_name)[0]
 
-    if exists(file_path):
-        os.remove(file_path)
+    job_dir = os.path.join(job_composer_dir, job_dir_name)
+    if exists(job_dir):
+        shutil.rmtree(job_dir)
         print("Removed " + file_path)
     else:
         print("File does not exist.")
