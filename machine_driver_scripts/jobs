@@ -24,9 +24,10 @@ def job_from_list(data):
 
 def list_jobs(args):
     username = os.getenv('USER')
-    output=subprocess.check_output(["/usr/bin/squeue", "-l", '-u', username])
+    output_format = "%.18i %.9P %j %u %.8T %.10M %.9l %.6D %R"
+    output=subprocess.check_output(["/usr/bin/squeue", '-u', username, '-o', output_format])
     output = output.split('\n')
-    output = output[2:] # skip the headers
+    output = output[1:] # skip the headers
     jobs = []
     for line in output:
         data = line.strip().split()
