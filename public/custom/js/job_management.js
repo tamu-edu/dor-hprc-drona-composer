@@ -144,7 +144,15 @@ function init_job_table() {
       }
     },
     {
-      "data": "name"
+      "data": "name",
+      render: function(data, type, job) {
+        if (data.length > 10) {
+          var trimmedString = data.substring(data.length - 10);
+          return `<label title="${data}"><u>${'...' + trimmedString}</u></label>`;
+        } else {
+          return data;
+        }
+      }
     },
     {
       "data": "state"

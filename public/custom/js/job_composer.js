@@ -194,15 +194,16 @@ function update_run_command() {
     let runtime = runtime_env_selector.value;
     switch (runtime) {
         case 'shell':
-            set_run_command(`./${file_name}`);
+            set_run_command(`chmod +x ${file_name} && ./${file_name}`);
             break;
         case 'python':
             set_run_command(`python ${file_name}`);
             break;
         case 'matlab':
             set_run_command(`matlab ${file_name}`);
-
             break;
+        case 'r':
+                set_run_command(`r -f ${file_name}`);
         case 'other':
             // console.log("Other");
             set_run_command_placeholder(`Please enter your run command. Use `);

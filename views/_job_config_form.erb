@@ -83,6 +83,7 @@
             <option value="other">Other</option>
             <option value="python">Python</option>
             <option value="matlab">Matlab</option>
+            <option value="r">R</option>
           </select>
         </div>
       </div>
@@ -98,10 +99,11 @@
       </div>
       <div id="runtime_config" style="display: none;">
         <div class="form-group row">
-          <label class="col-lg-3 col-form-label form-control-label" for="run_command">Run Command</label>
+          <label class="col-lg-3 col-form-label form-control-label" for="run_command">Commands</label>
           <div class="col-lg-9">
-            <input id="run_command" class="form-control" name="run_command"
-              placeholder="Shell command to run your script." type="text" required>
+            <textarea id="run_command" class="form-control" name="run_command"
+              placeholder="Shell command to run your script." type="text" rows="5" required></textarea>
+            
           </div>
         </div>
 
