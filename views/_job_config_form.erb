@@ -49,18 +49,28 @@
         <div class="col-lg-9">
           <%# pattern="^([1-9])[0-9]+[MG]$" Use this pattern to support G %>
           <input class="form-control" type="text" name="total-memory" pattern="^[1-9]\d*(MB|G)$"
-            placeholder="e.g. 1024MB or 2G (MB = Megabyte, G = Gigabyte)" required>
+            placeholder="e.g. 1024MB or 2G " required>
+          <div>MB = Megabyte, G = Gigabyte</div>
         </div>
       </div>
 
       <div class="form-group row">
         <label class="col-lg-3 col-form-label form-control-label" for="project-account">Project Account</label>
         <div class="col-lg-9">
-          <input class="form-control" name="project-account" placeholder="if blank, use default project account"
-            type="text">
+          <input class="form-control" name="project-account" type="text">
+          <div>If blank, use default project account</div>
         </div>
+        
       </div>
 
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="email">Email</label>
+        <div class="col-lg-9">
+          <input class="form-control" name="email" placeholder="Default netid@tamu.edu"
+            type="text">
+          <div>Email address to receive output from your job.</div>
+        </div>
+      </div>
       <!-- Module search -->
       <div class="form-group row">
         <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
