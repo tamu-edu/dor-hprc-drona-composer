@@ -56,7 +56,7 @@ class JobComposerController < Sinatra::Base
         return file_name 
     end
 
-    def generate_bash_script(job_name, module_list, job_folder_path, executable_name, run_command)
+    def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command)
         
         job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
@@ -77,6 +77,12 @@ class JobComposerController < Sinatra::Base
 
             f.write("# Run your program using provided command.\n")
             f.write("#{run_command}\n")
+
+            f.write("# Send your result via email\n")
+            if email.nil? or email.empty?
+                email = "#{ENV['USER']}@tamu.edu"
+            end
+            f.write("bash #{settings.send_result_path} #{job_folder_path} #{email}\n\n")
         end
 
         return job_file_path
@@ -131,6 +137,7 @@ class JobComposerController < Sinatra::Base
         core_per_node = params['cores-per-node']
         total_mem = params['total-memory']
         project_account = params['project-account']
+        email = params[:email]
         module_list= params['module-list'] 
         file_name = params[:executable_script][:filename]
         file = params[:executable_script][:tempfile]
@@ -145,7 +152,7 @@ class JobComposerController < Sinatra::Base
         
         # # deal with module load and go to the right directory
         job_path = File.join(job_composer_data_path(), job_name)
-        bash_script_path = generate_bash_script(job_name, parse_module(module_list), job_path, file_name, run_command)
+        bash_script_path = generate_bash_script(job_name, parse_module(module_list), job_path, email, file_name, run_command)
         tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
         
         stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
