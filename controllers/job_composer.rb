@@ -82,7 +82,7 @@ class JobComposerController < Sinatra::Base
             if email.nil? or email.empty?
                 email = "#{ENV['USER']}@tamu.edu"
             end
-            f.write("bash #{settings.send_result_path} #{job_folder_path} #{email}\n\n")
+            f.write("bash #{settings.send_result_path} -p #{job_folder_path} -e #{email}\n\n")
         end
 
         return job_file_path

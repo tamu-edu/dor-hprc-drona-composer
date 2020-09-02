@@ -1,27 +1,63 @@
 #!/bin/bash
 
 print_usage() {
-    echo "$0 path_to_send email";
+    # Display Help
+    echo "Send a given directory as a zip file via email."
+    echo "There is a limit on the size of the zip file." 
+    echo "Zip files >= 1MB is not supported."
+    echo
+    echo "Syntax: $0 -p <path> -e <email>"
+    echo "options:"
+    echo "p     The path to the desired folder."
+    echo "e     The email to send the zip file to."
+    echo
 }
 
-# check if we at least get enough arguments
-if [ $# -lt 2 ]
+FOLDER_PATH=""
+EMAIL=""
+# Get the options
+while getopts "p:e:h:" opt; do
+   case ${opt} in
+        h) # display Help
+            print_usage
+            exit;;
+        p) 
+            FOLDER_PATH=$OPTARG
+            ;;
+        e)
+            EMAIL=$OPTARG
+            ;;
+        \? )
+            echo "Invalid Option: -$OPTARG" 1>&2
+            exit
+            ;;
+   esac
+done
+
+# Validating inputs
+if [ -z "$EMAIL" ] 
 then
-    print_usage;
-    exit 1
+    echo "Missing email. Abort!" 
+    print_usage
+    exit
 fi
 
-FOLDER_PATH=$1
-EMAIL=$2
+if [ -z "$FOLDER_PATH" ]
+then
+    echo "Missing folder path. Abort!"
+    print_usage
+    exit
+fi
 
 if [ ! -d $FOLDER_PATH ]
 then
     echo "Path $FOLDER_PATH does not exist. Abort!"
-    exit 1
+    exit
 fi
 
 FOLDER_SIZE=$(du -b --max-depth=0  $FOLDER_PATH | cut -f1)
 
+# one gigabyte is quite generous. but it is hard to predict the maximum compression ratio
 ONE_GB="1073741824"
 if [ ! $FOLDER_SIZE -lt $ONE_GB ]
 then
@@ -29,6 +65,7 @@ then
     exit 1
 fi
 
+# Zipping
 BASE_PATH=$(dirname $FOLDER_PATH)
 ZIP_NAME=$(basename $FOLDER_PATH)
 ZIP_FULL_PATH="${BASE_PATH}/${ZIP_NAME}.zip"
