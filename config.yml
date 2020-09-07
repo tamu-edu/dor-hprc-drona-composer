@@ -9,7 +9,7 @@ development: &common_settings
     modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
     driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/OOD-Dashboard/machine_driver_scripts'
     tamubatch_path: '/sw/local/bin/tamubatch'
-    send_result_path: '/var/www/ood/apps/dev/phamminhtris/gateway/OOD-Dashboard/machine_driver_scripts/send_result.sh'
+    send_result_path: '/home/phamminhtris/send_result.sh'
     
 production:
     <<: *common_settings

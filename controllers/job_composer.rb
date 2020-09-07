@@ -70,7 +70,7 @@ class JobComposerController < Sinatra::Base
 
             # move to working directory where the executable is store
             f.write("# Go to the directory where we put the script\n")
-            f.write("cd #{job_folder_path}\n\n")
+            f.write("cd #{job_folder_path}/\n\n")
 
             f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
             f.write("dos2unix #{executable_name}\n\n")
