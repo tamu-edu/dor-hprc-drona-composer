@@ -123,7 +123,44 @@ class JobComposerController < Sinatra::Base
         modules = module_list_as_str.split("\t")
         return modules
     end
-  
+
+    def generate_matlabsubmit_script(job_folder_path, job_name, matlab_script, matlabsubmit_command)
+        shell_script_name = "#{File.join(job_folder_path, job_name)}.sh"
+
+        File.open(shell_script_name, 'wb') do |f|
+            # load module step
+            f.write("# Load default matlab module\n")
+            f.write("ml load #{settings.default_matlab_module}\n\n")
+
+            # move to working directory where the executable is store
+            f.write("# Go to the directory where we put the script\n")
+            f.write("cd #{job_folder_path}/\n\n")
+
+            f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
+            f.write("dos2unix #{matlab_script}\n\n")
+
+            f.write("# Submit your job using matlab submit\n")
+            f.write("#{matlabsubmit_command}\n")
+        end
+    end
+
+    def memory_in_mb(memory_amount)
+        
+    end
+
+    def matlabsubmit_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
+        # -h Shows this message
+        # -m set the amount of requested memory in MEGA bytes(e.g. -m 20000)
+        # -t sets the walltime; form hh:mm (e.g. -t 03:27)
+        # -w sets the number of ADDITIONAL workers
+        # -g indicates script needs GPU  (no value needed)
+        # -b sets the billing account to use 
+        # -s set number of threads for multithreading (default: 8 ( 1  when -w > 0)
+        # -p set number of workers per node
+        # -f run function call instead of script
+        # -x add explicit batch scheduler option    
+    end
+    
     post '/jobs/submit' do 
 
         walltime = params['walltime']
@@ -142,6 +179,9 @@ class JobComposerController < Sinatra::Base
         file_name = params[:executable_script][:filename]
         file = params[:executable_script][:tempfile]
         run_command = params[:run_command]
+
+        # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
+        runtime = params[:runtime]
 
         if walltime.nil? or total_cpu_cores.nil? or core_per_node.nil? or total_mem.nil? or file_name.nil?
             return "Invalid Job Compose Request."
