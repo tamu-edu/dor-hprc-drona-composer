@@ -6,19 +6,17 @@ print_usage() {
     echo "There is a limit on the size of the zip file." 
     echo "Zip files >= 1MB is not supported."
     echo
-    echo "Syntax: $0 -p <path> -e <email> [-s email subject]"
+    echo "Syntax: $0 -p <path> -e <email>"
     echo "options:"
     echo "p     The path to the desired folder."
     echo "e     The email to send the zip file to."
-    echo "s     Email Subject to use."
     echo
 }
 
 FOLDER_PATH=""
 EMAIL=""
-subject=""
 # Get the options
-while getopts "p:e:s:h:" opt; do
+while getopts "p:e:h:" opt; do
    case ${opt} in
         h) # display Help
             print_usage
@@ -28,9 +26,6 @@ while getopts "p:e:s:h:" opt; do
             ;;
         e)
             EMAIL=$OPTARG
-            ;;
-        s)
-            subject=$OPTARG
             ;;
         \? )
             echo "Invalid Option: -$OPTARG" 1>&2

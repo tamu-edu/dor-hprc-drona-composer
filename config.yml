@@ -9,9 +9,7 @@ development: &common_settings
     modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
     driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/OOD-Dashboard/machine_driver_scripts'
     tamubatch_path: '/sw/local/bin/tamubatch'
-    send_result_path: '/sw/local/bin/send_result'
-    default_matlab_module: "Matlab/R2020a"
-    
+    send_result_path: '/var/www/ood/apps/dev/phamminhtris/gateway/OOD-Dashboard/machine_driver_scripts/send_result.sh'
     
 production:
     <<: *common_settings
