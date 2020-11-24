@@ -98,8 +98,16 @@ class JobComposerController < Sinatra::Base
 
         job_compose_path = 'job_composer'
         path = File.join(path, job_compose_path)
+
         return path
     end 
+
+    def create_folder_if_not_exist(dir_path)
+        
+        unless File.directory?(dir_path)
+            FileUtils.mkdir_p(dir_path)
+        end
+    end
 
     def generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, job_file_path)
         walltime = "-W #{walltime}"
@@ -144,10 +152,6 @@ class JobComposerController < Sinatra::Base
         end
     end
 
-    def memory_in_mb(memory_amount)
-        
-    end
-
     def matlabsubmit_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
         # -h Shows this message
         # -m set the amount of requested memory in MEGA bytes(e.g. -m 20000)
@@ -187,11 +191,15 @@ class JobComposerController < Sinatra::Base
             return "Invalid Job Compose Request."
         end
 
+        # create job_composer folder if needed
+        storage_path = job_composer_data_path()
+        create_folder_if_not_exist(storage_path)
+
         # this is the script user upload
-        executable_path = save_file(job_composer_data_path(), job_name, file_name, file)
+        executable_path = save_file(storage_path, job_name, file_name, file)
         
         # # deal with module load and go to the right directory
-        job_path = File.join(job_composer_data_path(), job_name)
+        job_path = File.join(storage_path, job_name)
         bash_script_path = generate_bash_script(job_name, parse_module(module_list), job_path, email, file_name, run_command)
         tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
         
