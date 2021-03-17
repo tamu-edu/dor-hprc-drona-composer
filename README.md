@@ -17,21 +17,30 @@ end
 
 ## Development
 
-**IMPORTANT NOTE**: To align ruby enviroment with what will be used in production, do:
+**IMPORTANT NOTE**: 
+
+It is necessary to align development and production environement. Verify the production environment.
 
 ```bash
-source scl_source enable rh-git29 rh-nodejs6 rh-ruby24 httpd24 ondemand
+$ ls /opt/rh
+rh-git29  rh-nodejs6  rh-ruby24   httpd24   ondemand
+```
+
+Align ruby enviroment with what will be used in production. *Note*: Use the correct versions of the softwares by following the output of the command above.
+
+```bash
+$ source scl_source enable rh-git29 rh-nodejs6 rh-ruby24 httpd24 ondemand
 ```
 
 Remove old gems
 
 ```bash 
-rm -rf ./vendor
+$ rm -rf ./vendor
 ```
 
 Then install gem dependencies
 ```bash
-scl enable ondemand -- bundle
+$ scl enable ondemand -- bundle
 ```
 
 ## Structure
@@ -95,26 +104,34 @@ put tons of words here so that it needs to be updated later. Rather, you should 
 ## Deployment
 
 ### Development
-The general guideline to deploy a development version of the app follow closely the step specified by the official OOD [Passenger App Development tutorial](https://osc.github.io/ood-documentation/master/app-development/tutorials-passenger-apps/ps-to-quota.html#clone-and-setup). Please follow the instruction there to deploy the app in your sandbox environment. 
+
+Start by reading and following [installations.md](docs/installations/installations.md) for setting up the development of this app. Pay close attention to the app configuration section.
+
+For a general guideline to deploy a development version of an app, follow closely the step specified by the official OOD [Passenger App Development tutorial](https://osc.github.io/ood-documentation/master/app-development/tutorials-passenger-apps/ps-to-quota.html#clone-and-setup). 
 
 #### App Configurations
 
-After you have successfully clone your app followed the instructions specified above. There are a few more configurations that need to be specified for the app to work correctly. The main app configurations can be found in [config.yml](config.yml). Please see the comments in the section below to see what each configuration means.
+After following the instructions installations.md, the app is ready to launch. Change or add parameters to development section as you see fit. 
 
 ```yaml
 development: &common_settings
-    cluster_name: 'Terra' # this will dynamically change the name of the current cluster
-    dashboard_url: '/pun/dev/dashboard_dev' # this is the URL that point to this app. (help to configure JavaScript code correctly)
-    home_page: 'https://hprc.tamu.edu' # this is where we should take the user to when they click the cluster name on the top left of the page
-    request_email: 'example@hprc.tamu.edu' # this is where all the requests submitted by the user will be sent to
-    help_email: 'help@example.edu' # this is where all the HELP requests submitted by the user will be sent to
-    driver_scripts_path: '/var/www/ood/apps/dev/phamminhtris/gateway/dashboard_dev/machine_driver_scripts' # this is the path to the machine driver scripts
-    
+    cluster_name: 'Terra'
+    dashboard_url: '/pun/dev/OOD-Dashboard'
+    home_page: 'https://hprc.tamu.edu'
+    request_email: 'johndoe@tamu.edu'
+    help_email: 'johndoe@tamu.edu'
+    driver_scripts_path: '/var/www/ood/apps/dev/johndoe/gateway/OOD-Dashboard/machine_driver_scripts'
+
 production:
     <<: *common_settings # we use the development config as the base configurations and override what are different for production environment 
-    dashboard_url: '/pun/sys/dashboard'
+    dashboard_url: '/pun/sys/OOD-Dashboard'
     request_email: 'help@hprc.tamu.edu'
+    driver_scripts_path: '/var/www/ood/apps/sys/OOD-Dashboard/machine_driver_scripts'
 ```
+
+To see the running app in development, access https://[portal-host]/pun/dev/[your app directory name]
+
+Example: https://portal-terra.hprc.tamu.edu/pun/dev/OOD-Dashboard, if the app is running on Terra portal and app is named "OOD-Dashboard" after cloning (following steps in [installations.md](docs/installations/installations.md)).
 
 ### Production
 
@@ -123,12 +140,14 @@ production:
 Please make sure you follow the notes about installing Gem at the beginning of this README.md. The command below is extremely important as it makes sure the production app uses the correct ruby environment.
 
 ```bash
-source scl_source enable rh-git29 rh-nodejs6 rh-ruby24 httpd24 ondemand
+$ source scl_source enable rh-git29 rh-nodejs6 rh-ruby24 httpd24 ondemand
 ```
 
 2. Modify app configurations.
 
 Overwrite parameters for production environment in config.yml as you see fit. Use "&common_seetings" as the starting point (Development parameters basically), you can override anything under production: section.
+
+Modify [manifest.yml](manifest.yml) so that the main portal display the correct name and description.
 
 3. Copy app files/folders
 

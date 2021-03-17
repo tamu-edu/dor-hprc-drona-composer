@@ -7,14 +7,14 @@ To install the application in OOD sanbox enviroment, you will first need to enab
 For Terra cluster, the portal's hostname is portal-terra.hprc.tamu.edu. You will need to login into the portal node to enable the developer menu. To enable the developer menu, for our setup on Terra, we can simply create the correct directory structure using the following command:
 
 ```bash
-mkdir -p /var/www/ood/apps/dev/[username]/gateway
+$ mkdir -p /var/www/ood/apps/dev/[username]/gateway
 ```
 
 Note: There is additional steps listed in the original OOD instructions but I found it works just fine **without** the below steps:
 
 ```bash
-cd /var/www/ood/apps/dev/[username]
-sudo ln -s /home/[usernam]/ondemand/dev gateway
+$ cd /var/www/ood/apps/dev/[username]
+$ sudo ln -s /home/[usernam]/ondemand/dev gateway
 ```
 
 ## 2. Clone a new application
@@ -62,26 +62,33 @@ In the app detail page (see the image above), click **Bundle Install**. This ste
 Back to your terminal (assume you are still in logged in), go to the newly cloned app directory
 
 ```bash
-cd /var/www/ood/apps/dev/[username]/gateway/[your app directory]
+$ cd /var/www/ood/apps/dev/[username]/gateway/[your app directory]
 ```
 
 Note: [your app directory] is the directory name you gave in Clone Existing App page.
 
 Using your favorite text editor (vim, nano, etc. ), open config.yml. 
-Please replace the following configuration parameters (by changing [your app directory name], [username], request email, help_email) according to your setup.
+Please replace the following configuration parameters (by changing [cluster name], [your app directory name], [username], request email, help_email) according to your setup.
+
+The other parameters can be left intact. 
 
 ```yaml
 development: &common_settings
+    cluster_name: '[cluster name]' # this will dynamically change the name of the current cluster
+    dashboard_url: '/pun/dev/[app name]' # this is the URL that point to this app. (help to configure JavaScript code correctly)
+    request_email: 'user@exxample.edu' # this is where all the requests submitted by the user will be sent to
+    help_email: 'user@example.edu' # this is where all the HELP requests submitted by the user will be sent to
+    driver_scripts_path: '/var/www/ood/apps/dev/[username]/gateway/[app name]/machine_driver_scripts' # this is the path to the machine driver scripts
+```
+
+An example is given here:
+```yaml
+development: &common_settings
     cluster_name: 'Terra'
-    dashboard_url: '/pun/dev/[your app directory name]'
-    file_app_url: '/pun/sys/files/fs'
-    file_editor_url: '/pun/sys/file-editor/edit'
-    home_page: 'https://hprc.tamu.edu'
-    request_email: '[The email you want the app to send request to]'
-    help_email: '[helpdesk email]'
-    modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
-    driver_scripts_path: '/var/www/ood/apps/dev/[username]/gateway/[your app directory name]/machine_driver_scripts'
-    tamubatch_path: '/sw/local/bin/tamubatch'
+    dashboard_url: '/pun/dev/OOD-Dashboard'
+    request_email: 'johndoe@tamu.edu'
+    help_email: 'johndoe@tamu.edu'
+    driver_scripts_path: '/var/www/ood/apps/dev/johndoe/gateway/OOD-Dashboard/machine_driver_scripts'
 ```
 
 Back to App Detail Page
