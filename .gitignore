@@ -6,3 +6,4 @@
 .bundle
 Gemfile.lock
 .vscode/*
+config.yml

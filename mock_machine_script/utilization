@@ -1,3 +1,0 @@
-#!/usr/bin/env python
-
-print('{ "data": { "nodes": { "allocated": 256, "mixed": 58, "idle": 55 }, "cores": { "allocated": 6483, "idle": 2449} }}')
