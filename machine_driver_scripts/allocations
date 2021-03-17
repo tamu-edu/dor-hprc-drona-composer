@@ -4,7 +4,6 @@ import json
 import os
 import argparse 
 
-CLUSTER_NAME="Terra"
 
 class Allocation:
     def __init__(self, account, fy, default, allocation, used_pending_su, balance, pi):
@@ -44,7 +43,7 @@ def switch_default_account(args):
 
 def main():
     # create parser object 
-    parser = argparse.ArgumentParser(description = "Accounting utility wrapper for " + CLUSTER_NAME) 
+    parser = argparse.ArgumentParser(description = "Accounting utility wrapper") 
 
     # defining arguments for parser object 
     parser.add_argument("-l", "--list", action='store_true',

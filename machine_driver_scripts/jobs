@@ -5,8 +5,6 @@ import os
 import argparse 
 
 
-CLUSTER_NAME="Terra"
-
 class Job:
     def __init__(self, id, partition, name, user, state, time, time_limit, nodes, nodelist):
         self.id = id
@@ -89,7 +87,7 @@ def job_error(args):
 
 def main():
     # create parser object 
-    parser = argparse.ArgumentParser(description = "Job utility wrapper for " + CLUSTER_NAME) 
+    parser = argparse.ArgumentParser(description = "Job utility wrapper") 
 
     # defining arguments for parser object 
     parser.add_argument("-l", "--list", action='store_true',
