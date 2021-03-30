@@ -12,6 +12,9 @@ class RequestsController < Sinatra::Base
     config_file '../config.yml'
 
     def send_request(subject, body, success_msg, failure_message)
+        
+        body = body.strip.gsub(/\r\n?/, "\n")
+
         mailer = Mailer.new(settings.request_email)
         status  = mailer.send_email(subject, body)
 
