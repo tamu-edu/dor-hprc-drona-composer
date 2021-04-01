@@ -143,11 +143,14 @@ Please make sure you follow the notes about installing Gem at the beginning of t
 $ source scl_source enable rh-git29 rh-nodejs6 rh-ruby24 httpd24 ondemand
 ```
 
-2. Modify app configurations.
+2. Modify app configurations 
 
-Overwrite parameters for production environment in config.yml as you see fit. Use "&common_seetings" as the starting point (Development parameters basically), you can override anything under production: section.
+`setup` script replaces cluster-name, app-name, and user-name with corresponding arguments taken from the environment. 
 
-Modify [manifest.yml](manifest.yml) so that the main portal display the correct name and description.
+Run the following command to change app configurations in config.yml and manifest.yml
+```bash
+$ chmod +x setup && ./setup
+```
 
 3. Copy app files/folders
 
