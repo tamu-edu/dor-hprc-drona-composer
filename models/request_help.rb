@@ -9,13 +9,16 @@ class HelpRequest
                 "User: #{user}\n" \
                 "Cluster: #{cluster_name}\n" \
                 "\n" \
+                "------------------------------------------------------------\n" \
+                "\n" \
                 "Issue Description: #{issue_description}\n" \
+                "\n" \
+                "------------------------------------------------------------\n" \
                 "\n" \
                 "Error Message: #{error_message}\n" \
                 "\n" \
                 "\n" \
                 "Job File: #{job_file_path}\n"\
-                "\n" \
                 "Job ID: #{job_id}\n"\
                 "\n" \
                 "\n" \
