@@ -5,15 +5,25 @@ class HelpRequest
     def compose_email(cluster_name,  help_topic, issue_description, error_message, job_file_path, job_id, program_file_path, additional_information)
 
         user = ENV["USER"]
-        body =  "User: #{user}\n" \
+        body =  "Help Topic: #{help_topic}\n" \
+                "User: #{user}\n" \
                 "Cluster: #{cluster_name}\n" \
-                "Help Topic: #{help_topic}\n" \
-                "Issue Description: #{issue_description}\n"\
+                "\n" \
+                "------------------------------------------------------------\n" \
+                "\n" \
+                "Issue Description: #{issue_description}\n" \
+                "\n" \
+                "------------------------------------------------------------\n" \
+                "\n" \
                 "Error Message: #{error_message}\n" \
+                "\n" \
+                "\n" \
                 "Job File: #{job_file_path}\n"\
                 "Job ID: #{job_id}\n"\
-                "Program File: #{program_file_path}\n"\
-                "Additional Information: #{additional_information}"
+                "\n" \
+                "\n" \
+                "Program File: #{program_file_path}\n\n" \
+                "Additional Information: #{additional_information}" \
         
         body = body.strip
         body
@@ -29,7 +39,7 @@ class HelpRequest
         program_file_path = params[:program_file_path]
         additional_information = params[:additional_information]
 
-      subject = "HelpRequest"
+      subject = "Portal Help Request: " + help_topic
       body = compose_email(cluster_name, help_topic, issue_description, error_message, job_file_path, job_id, program_file_path, additional_information)
 
       [subject, body]
