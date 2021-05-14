@@ -9,7 +9,7 @@
         </button>
       </div>
       <div class="modal-body mx-3">
-        <div style="color: red">Please check our <a href="https://hprc.tamu.edu/software/<%= settings.cluster_name %>/"
+        <div class="text-center md-form mb-4">Please check our <a style="color: maroon;" href="https://hprc.tamu.edu/wiki/SW#Available_Packages_and_Software_Collections"
             target="_blank">list of currently available software</a> before submitting request.</div>
         <form class="form" id="modalSoftwareRequestForm">
           <div class="md-form mb-2" style="display: none;">
@@ -48,7 +48,7 @@
               information.</p>
           </div>
 
-          <div class="md-form">
+          <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="request_justification">Justifications 
             (optional)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
@@ -57,7 +57,7 @@
               rows="4"></textarea>
           </div>
 
-          <div class="md-form">
+          <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="additional_notes">Additional Information (optional)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="additional_notes" class="md-textarea form-control"
@@ -65,13 +65,12 @@
           </div>
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary request-maroon-button">Submit Request</button>
-            <p>For more information, please check out our <a href="https://hprc.tamu.edu/policies/software.html"
+            <p class="text-center">For more information, please check out our <a href="https://hprc.tamu.edu/policies/software.html"
                 target="_blank">Software
                 Policies</a>.</p>
           </div>
         </form>
       </div>
-
     </div>
   </div>
 </div>

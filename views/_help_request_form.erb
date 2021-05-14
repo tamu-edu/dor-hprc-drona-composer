@@ -10,7 +10,7 @@
       </div>
       <div class="modal-body mx-3">
         <form class="form" id="modalHelpRequestForm">
-          <div class="md-form mb-2">
+          <div class="md-form mb-2" style="display: none;">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>" readonly>
@@ -28,7 +28,7 @@
             </select>
           </div>
 
-          <div class="md-form">
+          <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="issue_description">Issue Descriptions</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="issue_description" class="md-textarea form-control"
@@ -74,10 +74,11 @@
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary request-maroon-button" >Get Help</button>
           </div>
-          <div style="color: red;">Please be as specific as possible. This will help us resolve your issue faster.</div>
+          <div style="color: maroon;" class="text-center">
+            Please be as specific as possible. This will help us resolve your issue faster.
+          </div>
         </form>
       </div>
-
     </div>
   </div>
 </div>

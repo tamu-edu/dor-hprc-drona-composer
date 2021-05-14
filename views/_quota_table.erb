@@ -30,7 +30,7 @@
   aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header text-dark text-center">
+      <div class="modal-header text-light text-center">
         <h5 class="modal-title w-100 font-weight-bold">Quota Increase Request</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -44,7 +44,7 @@
             <p>For quota requests that result in 10 TB or more of disk storage, requests must be submitted by the PI. They will be reviewed and approved by HPRC Director.</p>
           </div>
 
-          <div class="md-form mb-2">
+          <div class="md-form mb-2" style="display: none;">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>"
@@ -96,17 +96,17 @@ What is your long-term plan for this data?"></textarea>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="comment" class="md-textarea form-control" rows="4"
               placeholder="This request is for group <group-name> directory.
-I am the PI and I am making this request on behalf of students with <NetID>."></textarea>
+I am the PI and I am making this request on behalf of students with <netid>."></textarea>
           </div>
 
-          <div class="md-form">
+          <div class="md-form mb-2">
             <input type="checkbox" name="terms" required> I verify that I will remove any unnecessary data and compress
             files/folders to save shared resources.</input>
           </div>
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary request-maroon-button">Submit Request</button>
           </div>
-          <div style="color: red" class="text-center">
+          <div style="color: maroon;" class="text-center">
             Either Disk Quota or File Limit must be filled. Invalid request will be ignored.
           </div>
         </form>
