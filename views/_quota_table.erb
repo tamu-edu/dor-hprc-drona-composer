@@ -39,6 +39,11 @@
 
       <div class="modal-body mx-3">
         <form class="form" id="modalQuotaRequestForm">
+          <div class="md-form mb-2" style="color: maroon;">
+            <p>Quota requests are subject for review and approval by HPRC admins. Please provide strong and detailed justification for the requests.</p>
+            <p>For quota requests that result in 10 TB or more of disk storage, requests must be submitted by the PI. They will be reviewed and approved by HPRC Director.</p>
+          </div>
+
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
@@ -77,15 +82,23 @@
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="request_justification">Justification
-              (Required)</label>
+            <label data-error="wrong" data-success="right" for="request_justification">Justification (Required)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="request_justification" class="md-textarea form-control"
             rows="4" required placeholder="What data is stored with requested quota?
 What job requires this quota increase?
 What is the input/output size of the job?
-what is your long-term plan for this data" ></textarea>
+What is your long-term plan for this data?"></textarea>
           </div>
+
+          <div class="md-form mb-2">
+            <label data-error="wrong" data-success="right" for="comment">Comment (Optional)</label>
+            <i class="fas fa-pencil prefix grey-text"></i>
+            <textarea type="text" name="comment" class="md-textarea form-control" rows="4"
+              placeholder="This request is for group <group-name> directory.
+I am the PI and I am making this request on behalf of students with <NetID>."></textarea>
+          </div>
+
           <div class="md-form">
             <input type="checkbox" name="terms" required> I verify that I will remove any unnecessary data and compress
             files/folders to save shared resources.</input>
