@@ -9,6 +9,9 @@ class QuotaRequest
       current_quota = params[:current_quota]
       current_file_limit = params[:current_file_limit]
 
+      current_used_quota = params[:current_used_disk_quota]
+      current_used_file = params[:current_used_file]
+
       disk_space = params[:desired_disk]
       file_limit = params[:total_file_limit]
       justification = params[:request_justification]
@@ -16,10 +19,13 @@ class QuotaRequest
       subject = "[#{cluster_name}] Quota Request: #{user}"
       body =  "Cluster: #{cluster_name}\n" \
                 "User: #{user}\n" \
-                "------------------------------------------------------------\n" \
+                "--- CURRENT QUOTA ---\n" \
                 "Current disk space: #{current_quota}\n" \
                 "Current file limit: #{current_file_limit}\n" \
-                "------------------------------------------------------------\n" \
+                "--- USED QUOTA ---\n" \
+                "Used disk space: #{current_used_quota}\n" \
+                "Used file count: #{current_used_file}\n" \
+                "--- REQUESTING QUOTA ---\n" \
                 "Requesting disk space: #{disk_space}\n" \
                 "Requesting file limit: #{file_limit}\n" \
                 "Justification: #{justification}"

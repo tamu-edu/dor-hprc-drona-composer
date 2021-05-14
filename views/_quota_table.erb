@@ -36,6 +36,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
+
       <div class="modal-body mx-3">
         <form class="form" id="modalQuotaRequestForm">
           <div class="md-form mb-2">
@@ -45,6 +46,11 @@
               readonly>
           </div>
 
+          <!-- Hidden input fields for current used file count and disk quota -->
+          <div style="display: none;">
+            <input type="hidden" id="current_used_file" name="current_used_file">
+            <input type="hidden" id="current_used_disk_quota" name="current_used_disk_quota">
+          </div>
 
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="current_quota">Current Disk Quota</label>
@@ -75,7 +81,10 @@
               (Required)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
             <textarea type="text" name="request_justification" class="md-textarea form-control"
-              placeholder="I need space to build and install TensorFlow" rows="4" required></textarea>
+            rows="4" required placeholder="What data is stored with requested quota?
+What job requires this quota increase?
+What is the input/output size of the job?
+what is your long-term plan for this data" ></textarea>
           </div>
           <div class="md-form">
             <input type="checkbox" name="terms" required> I verify that I will remove any unnecessary data and compress
@@ -84,7 +93,7 @@
           <div class="modal-footer d-flex justify-content-center">
             <button type="submit" class="btn btn-primary request-maroon-button">Submit Request</button>
           </div>
-          <div style="color: red">
+          <div style="color: red" class="text-center">
             Either Disk Quota or File Limit must be filled. Invalid request will be ignored.
           </div>
         </form>

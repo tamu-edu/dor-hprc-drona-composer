@@ -44,8 +44,6 @@ function generate_file_explorer_path_for_disk(disk_name) {
 }
 
 function populate_quota() {
-  var quota_table = document.querySelector("#quota_table");
-
   $('#quota_table').DataTable({
     "paging": false,
     "searching": false,
@@ -165,12 +163,14 @@ function setup_quota_request_form(quota_request_endpoint) {
     if (current_disk_quota == null) {
       return;
     }
-    // console.log("disk_limit" + scratch_quota["disk_limit"]);
-    // console.log(formatKBytes(scratch_quota["disk_limit"]));
     current_disk_quota.value = formatKBytes(scratch_quota["disk_limit"]);
 
     var current_file_limit = document.getElementById("current_file_limit");
     current_file_limit.value = scratch_quota["file_limit"];
+
+    // invisible form components (needs this for RT email)
+    $("#current_used_disk_quota").val(formatKBytes(scratch_quota["disk_usage"]));
+    $("#current_used_file").val(scratch_quota["file_usage"]);
 
   });
 }
