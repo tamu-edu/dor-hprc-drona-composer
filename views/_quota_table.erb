@@ -38,7 +38,7 @@
       </div>
       <div class="modal-body mx-3">
         <form class="form" id="modalQuotaRequestForm">
-          <div class="md-form mb-2" style="display: none;">
+          <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name='cluster_name' class="form-control validate" value="<%= settings.cluster_name %>"
@@ -49,7 +49,7 @@
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="current_quota">Current Disk Quota</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" readonly class="form-control" id="current_quota">
+            <input type="text" name="current_quota" readonly class="form-control" id="current_quota">
           </div>
 
           <div class="md-form mb-2">
@@ -61,7 +61,7 @@
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="current_file_limit">Current File Limit</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" readonly class="form-control" id="current_file_limit">
+            <input type="text" name="current_file_limit" readonly class="form-control" id="current_file_limit">
           </div>
 
           <div class="md-form mb-2">
