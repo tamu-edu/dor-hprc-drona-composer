@@ -14,6 +14,9 @@ class QuotaRequest
 
       disk_space = params[:desired_disk]
       file_limit = params[:total_file_limit]
+      student_netid = params[:student_netid]
+      request_until = params[:request_until]
+      buyin_storage = params[:buyin_storage]
       justification = params[:request_justification]
       
       subject = "[#{cluster_name}] Quota Request: #{user}"
@@ -26,6 +29,9 @@ class QuotaRequest
                 "Used disk space: #{current_used_quota}\n" \
                 "Used file count: #{current_used_file}\n" \
                 "--- REQUESTING QUOTA ---\n" \
+                "Buy-in Amount: #{buyin_storage}\n" \
+                "Student Netid: #{student_netid}\n" \
+                "Request Until: #{request_until}\n" \
                 "Requesting disk space: #{disk_space}\n" \
                 "Requesting file limit: #{file_limit}\n" \
                 "Justification: #{justification}"
