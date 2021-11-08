@@ -2,6 +2,7 @@ function checkLength (value){
     var x = document.getElementById("need-PI-request");
     var bodyFields = document.getElementById("body-form-fields");
     var extraFields = document.getElementById("extra-form-fields");
+    var currentFields = document.getElementById("current-status-fields");
     var submitField = document.getElementById("submit-field");
     var justificationField = document.getElementById("justification-field");
     if (value === "yes") {
@@ -11,15 +12,17 @@ function checkLength (value){
         x.style.display = "none";
         bodyFields.style.display = "block";
         extraFields.style.display = "none";
+        currentFields.style.display = "block";
         submitField.style.display = "block";
         justificationField.required = true;
-    } 
+    }
 }
 
 function checkPi (value){
     var PiNotice = document.getElementById("Pi-notice");
     var confirmBuyin = document.getElementById("buyin-option");
     var extraFields = document.getElementById("extra-form-fields");
+    var currentFields = document.getElementById("current-status-fields");
     var bodyFields = document.getElementById("body-form-fields");
     var submitField = document.getElementById("submit-field");
     if (value === "yes") {
@@ -29,6 +32,7 @@ function checkPi (value){
         PiNotice.style.display = "block";
         confirmBuyin.style.display = "none";
         bodyFields.style.display = "none";
+        currentFields.style.display = "none";
         submitField.style.display = "none";
         extraFields.style.display = "none";
     } 
@@ -38,6 +42,7 @@ function checkPi (value){
 function checkBuyin(value){
     var bodyFields = document.getElementById("body-form-fields");
     var extraFields = document.getElementById("extra-form-fields");
+    var currentFields = document.getElementById("current-status-fields");
     var buyinStorage = document.getElementById("buyin-storage");
     var submitField = document.getElementById("submit-field");
     var justificationField = document.getElementById("justification-field");
@@ -45,7 +50,7 @@ function checkBuyin(value){
         bodyFields.style.display = "none";
         extraFields.style.display = "block";
         buyinStorage.style.display = "block";
-        // justificationField.required = false;
+        justificationField.required = false;
         
     } else {
         bodyFields.style.display = "block";
@@ -54,6 +59,7 @@ function checkBuyin(value){
         justificationField.required = true;
     }
     submitField.style.display = "block";
+    currentFields.style.display = "block";
 }
 
 
