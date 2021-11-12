@@ -122,6 +122,13 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
     // ...and take over its submit event.
     form.addEventListener("submit", function (event) {
       event.preventDefault();
+      var scratch_storage = form.desired_disk;
+      var file_limit = form.total_file_limit;
+      if ((!scratch_storage.value) && (!file_limit.value)) {
+        alert("Either Scratch Storage or File Limit must be filled");
+        return;
+      }
+      
 
       sendData();
 

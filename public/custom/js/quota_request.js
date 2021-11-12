@@ -43,19 +43,16 @@ function checkBuyin(value){
     var bodyFields = document.getElementById("body-form-fields");
     var extraFields = document.getElementById("extra-form-fields");
     var currentFields = document.getElementById("current-status-fields");
-    var buyinStorage = document.getElementById("buyin-storage");
     var submitField = document.getElementById("submit-field");
     var justificationField = document.getElementById("justification-field");
     if (value === "yes") {
         bodyFields.style.display = "none";
         extraFields.style.display = "block";
-        buyinStorage.style.display = "block";
         justificationField.required = false;
         
     } else {
         bodyFields.style.display = "block";
         extraFields.style.display = "block";
-        buyinStorage.style.display = "none";
         justificationField.required = true;
     }
     submitField.style.display = "block";
