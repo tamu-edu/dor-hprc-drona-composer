@@ -1,0 +1,4 @@
+Cluster: Terra    User: duy    Current disk space: 1 TB    Current file limit: 250000    Used disk space: 8.86 GB    Used file count: 69632    Student Netid:     Request Until:     Requesting disk space: 3.5TB    Requesting file limit:
+------------------------------------------------
+Cluster: Terra    User: duy    Current disk space: 1 TB    Current file limit: 250000    Used disk space: 8.86 GB    Used file count: 69632    Student Netid: duy-testing    Request Until: 10/06/2021    Requesting disk space: 3.5TB    Requesting file limit: 250000
+------------------------------------------------

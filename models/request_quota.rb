@@ -44,32 +44,32 @@ class QuotaRequest
       [subject, body]
     end
 
-    # def generate_log(params)
-    #   cluster_name = params[:cluster_name]
-    #   user = ENV["USER"]
+    def generate_log(params)
+      cluster_name = params[:cluster_name]
+      user = ENV["USER"]
 
-    #   current_quota = params[:current_quota]
-    #   current_file_limit = params[:current_file_limit]
+      current_quota = params[:current_quota]
+      current_file_limit = params[:current_file_limit]
 
-    #   current_used_quota = params[:current_used_disk_quota]
-    #   current_used_file = params[:current_used_file]
+      current_used_quota = params[:current_used_disk_quota]
+      current_used_file = params[:current_used_file]
 
-    #   disk_space = params[:desired_disk]
-    #   file_limit = params[:total_file_limit]
-    #   student_netid = params[:student_netid]
-    #   request_until = params[:request_until]
+      disk_space = params[:desired_disk]
+      file_limit = params[:total_file_limit]
+      student_netid = params[:student_netid]
+      request_until = params[:request_until]
 
-    #   log =  "Cluster: #{cluster_name}    " \
-    #             "User: #{user}    " \
-    #             "Current disk space: #{current_quota}    " \
-    #             "Current file limit: #{current_file_limit}    " \
-    #             "Used disk space: #{current_used_quota}    " \
-    #             "Used file count: #{current_used_file}    " \
-    #             "Student Netid: #{student_netid}    " \
-    #             "Request Until: #{request_until}    " \
-    #             "Requesting disk space: #{disk_space}TB    " \
-    #             "Requesting file limit: #{file_limit}    " 
-    #   log = log.strip
-    #   log
-    # end
+      log =  "Cluster: #{cluster_name}    " \
+                "User: #{user}    " \
+                "Current disk space: #{current_quota}    " \
+                "Current file limit: #{current_file_limit}    " \
+                "Used disk space: #{current_used_quota}    " \
+                "Used file count: #{current_used_file}    " \
+                "Student Netid: #{student_netid}    " \
+                "Request Until: #{request_until}    " \
+                "Requesting disk space: #{disk_space}TB    " \
+                "Requesting file limit: #{file_limit}\n" 
+      log = log.strip
+      log
+    end
 end

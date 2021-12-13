@@ -32,10 +32,12 @@ class RequestsController < Sinatra::Base
     post '/request/quota' do
         quota_request = QuotaRequest.new
         subject, body = quota_request.generate_email(params)
+        # log_file = File.open("logs/quotaLog.txt", "a")
         # File.write("../logs/quota_log.txt", "Hello", mode: "a")
-        # log = quota_request.generate_log(params)
+        log = quota_request.generate_log(params)
 
-        # File.write("../logs/quota_log.txt", log, mode: "a")
+        File.write("logs/quota_log.txt", log, mode: "a")
+        File.write("logs/quota_log.txt", "\n------------------------------------------------\n", mode: "a")
 
         success_msg = "Your Quota Request has been sent. A copy of the request has been sent to you via RT"
         failure_msg = "An error has occurred. Please email us at #{settings.help_email}"
