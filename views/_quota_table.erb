@@ -36,14 +36,66 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-
+      
+      
+      
       <div class="modal-body mx-3">
         <form class="form" id="modalQuotaRequestForm">
           <div class="md-form mb-2" style="color: maroon;">
-            <p>Quota requests are subject for review and approval by HPRC admins. Please provide strong and detailed justification for the requests.</p>
-            <p>For quota requests that result in 10 TB or more of disk storage, requests must be submitted by the PI. They will be reviewed and approved by HPRC Director.</p>
+            <p>Quota requests are subject to review and approval by HPRC admins. Please provide a strong and detailed justification for this request.</p>
+            <p>Only a PI can request quota increases that exceed 10 TB or last more than six months. These requests need approval from the HPRC Director.</p>
           </div>
+          
+          <div class="md-form mb-2">
+	        <p> Is this request more than 10TB or for longer than 6 months? </p>
+            <input type="radio" name="length" id="yes6" value="yes" onclick=checkLength(value)>Yes  
+            <input type="radio" name="length" id="no6" value="no" onclick=checkLength(value)>No  
+          </div>
+          
+          <div class="md-form mb-2" style="color: maroon;">
+            <div id="need-PI-request" style="display:none">
+                <!--<p> Quota increases greater than 10 TB or 6 months must be requested by a PI to be approved by the Director of HPRC. -->
+                <!--    If you are not a PI, please have your PI contact us to provide justification. </p>-->
+            
+                <p> Are you a PI for this request? </p>
+                <input type="radio" name="confirmPi" id="yesPI" value="yes" onclick=checkPi(value)>Yes  
+                <input type="radio" name="confirmPi" id="noPI" value="no" onclick=checkPi(value)>No
+            </div>
+            
+          </div>
+          
+          <div id="Pi-notice" style="display:none;">
+              <div class="md-form mb-2">
+                <p>Please have your PI request the quota increase!</p>
+              </div>
+          </div>
+          
+          <div class="md-form mb-2" style="color: maroon;">
+            <div id="buyin-option" style="display:none">
+                <p>HPRC offers a Buy-In option for storage:<br>
+                Are you interested in buying in ($130/TB for 5 years, $26/TB for one year) </p>
+                <input type="radio" name="confirmBuyin" id="yesBuy" value="yes" onclick=checkBuyin(value)>Yes
+                <input type="radio" name="confirmBuyin" id="noBuy" value="no" onclick=checkBuyin(value)>No
+            </div>
+          </div>
+          
+          
+          <div id="extra-form-fields" style="display:none;">
+            <div class="md-form mb-2">
+                <label data-error="wrong" data-success="right" for="request_until">Until when do you need the increased storage?</label>
+                <input type="text" name="request_until" class="md-textarea form-control" id="datepicker">
+            </div>
+            
+            <div class="md-form mb-2">
+                <label data-error="wrong" data-success="right" for="student_netid">If this request is for a student, provide netid of the student or group name:</label>
+                <i class="fas fa-pencil prefix grey-text"></i>
+                <textarea type="text" name="student_netid" class="md-textarea form-control"
+                rows="1"></textarea>
+            </div>
+          </div>
+          
 
+          <div id="current-status-fields" style="display: none;">
           <div class="md-form mb-2" style="display: none;">
             <label data-error="wrong" data-success="right" for="cluster_name">Cluster Name</label>
             <i class="fas fa-user prefix grey-text"></i>
@@ -58,15 +110,20 @@
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="current_quota">Current Disk Quota</label>
+            <label data-error="wrong" data-success="right" for="current_quota">Current Scratch Quota</label>
             <i class="fas fa-user prefix grey-text"></i>
             <input type="text" name="current_quota" readonly class="form-control" id="current_quota">
           </div>
 
           <div class="md-form mb-2">
-            <label data-error="wrong" data-success="right" for="desired_disk">New Disk Quota</label>
+            <label data-error="wrong" data-success="right" for="desired_disk">New Scratch Quota</label>
             <i class="fas fa-user prefix grey-text"></i>
-            <input type="text" name='desired_disk' class="form-control validate">
+            <div class="input-group">
+              <input type="number" step="any" name='desired_disk' class="form-control validate" id="desired_disk">
+              <div class="input-group-append">
+                <span class="input-group-text"> TB </span>
+              </div>
+            </div>
           </div>
 
           <div class="md-form mb-2">
@@ -78,9 +135,12 @@
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="total_file_limit">New File Limit</label>
             <i class="fas fa-envelope prefix grey-text"></i>
-            <input type="text" name="total_file_limit" class="form-control validate">
+            <input type="number" step="any" name="total_file_limit" class="form-control validate" id="total_file_limit">
+          </div>
           </div>
 
+          
+          <div id="body-form-fields" style="display:none;">
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="request_justification">Justification (Required)</label>
             <p>What data is stored with requested quota? <br>
@@ -88,28 +148,31 @@
             What is the input/output size of the job? <br>
             What is your long-term plan for this data?</p>
             <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="request_justification" class="md-textarea form-control"
-            rows="4" required></textarea>
+            <textarea type="text" name="request_justification" class="md-textarea form-control" id="justification-field"
+            rows="4"></textarea>
           </div>
 
           <div class="md-form mb-2">
             <label data-error="wrong" data-success="right" for="comment">Comment (Optional)</label>
             <i class="fas fa-pencil prefix grey-text"></i>
-            <textarea type="text" name="comment" class="md-textarea form-control" rows="4"
-              placeholder="This request is for group <group-name> directory.
-I am the PI and I am making this request on behalf of students with <netid>."></textarea>
+            <textarea type="text" name="comment" class="md-textarea form-control" rows="4"></textarea>
           </div>
-
-          <div class="md-form mb-2">
-            <input type="checkbox" name="terms" required> I verify that I will remove any unnecessary data and compress
-            files/folders to save shared resources.</input>
           </div>
-          <div class="modal-footer d-flex justify-content-center">
-            <button type="submit" class="btn btn-primary request-maroon-button">Submit Request</button>
+          
+          <div id="submit-field" style="display:none;">
+            <div class="md-form mb-2">
+                <input type="checkbox" name="terms" required> I verify that I will remove any unnecessary data and compress
+                files/folders to save shared resources.</input>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary request-maroon-button" onclick="logFile()">Submit Request</button>
+            </div>
+            <div style="color: maroon;" class="text-center">
+                Either Disk Quota or File Limit must be filled.
+            </div>
           </div>
-          <div style="color: maroon;" class="text-center">
-            Either Disk Quota or File Limit must be filled. Invalid request will be ignored.
-          </div>
+          
+          
         </form>
       </div>
     </div>

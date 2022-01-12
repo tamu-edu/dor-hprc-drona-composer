@@ -11,6 +11,14 @@
   <link rel="stylesheet" type="text/css" href="<%= url("/jquery-ui-1.12.1/jquery-ui.min.css") %>">
 
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+  
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#datepicker" ).datepicker();
+  } );
+  </script>
 </head>
 
 <body>
@@ -79,7 +87,7 @@
   <script type="text/javascript" src="<%= url("/custom/js/allocations.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/requests.js") %>"></script>
   <script type="text/javascript" src="<%= url("/custom/js/job_composer.js") %>"></script>
-
+  <script type="text/javascript" src="<%= url("/custom/js/quota_request.js") %>"></script>
 </body>
 
 </html>

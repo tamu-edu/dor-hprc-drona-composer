@@ -115,13 +115,20 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
 
     // Access the form element...
     let form = document.getElementById(form_id);
-    if (form == null) {
+    if (form === null) {
       return;
     }
 
     // ...and take over its submit event.
     form.addEventListener("submit", function (event) {
       event.preventDefault();
+      var scratch_storage = form.desired_disk;
+      var file_limit = form.total_file_limit;
+      if ((!scratch_storage.value) && (!file_limit.value)) {
+        alert("Either Scratch Storage or File Limit must be filled");
+        return;
+      }
+      
 
       sendData();
 
@@ -153,14 +160,14 @@ function setup_quota_request_form(quota_request_endpoint) {
       }
     });
 
-    if (scratch_quota == null) {
+    if (scratch_quota === null) {
       console.error("Cannot fetch scratch quota");
       return;
     }
 
     // find and set current values of quota and file limit
     var current_disk_quota = document.getElementById("current_quota");
-    if (current_disk_quota == null) {
+    if (current_disk_quota === null) {
       return;
     }
     current_disk_quota.value = formatKBytes(scratch_quota["disk_limit"]);
