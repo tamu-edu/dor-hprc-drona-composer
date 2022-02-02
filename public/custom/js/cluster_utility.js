@@ -8,16 +8,17 @@ function draw_core_usage_chart(core_util_data) {
 
   used_core = core_util_data["allocated"]
   free_core = core_util_data["idle"]
+  let core_sum = used_core + free_core;
   var core_chart = new Chart(core_util_chart, {
-    type: 'pie',
+    type: 'bar',
     data: {
       labels: ["Used", "Free"],
       datasets: [{
         backgroundColor: [
-          "#FF0000",
-          "#00FF00"
+          "#500000",
+          "#500000"
         ],
-        data: [used_core, free_core]
+        data: [used_core*100/core_sum, free_core*100/core_sum]
       }]
     },
     options: {
@@ -25,8 +26,34 @@ function draw_core_usage_chart(core_util_data) {
         display: true,
         text: 'Core Utilization',
         fontColor: '#500000',
-        fontStyle: 'bold'
+        fontStyle: 'bold',
+        fontSize: 20
       },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true,
+            min: 0,
+            max: 100,
+            fontSize: 20
+          },
+          gridLines: {
+            drawOnChartArea: false,
+            lineWidth: 3,
+            color: "#000000"
+          }
+        }],
+        xAxes: [{
+          gridLines: {
+            drawOnChartArea: false,
+            lineWidth: 3,
+            color: "#000000",
+          }
+        }]
+      },
+      legend: {
+        display: false
+      }
     }
   });
 }
@@ -72,18 +99,21 @@ function draw_node_usage_chart(node_util_data) {
   let used_nodes = node_util_data["allocated"];
   let mixed_nodes = node_util_data["mixed"];
   let idle_nodes = node_util_data["idle"];
-  let util_data = [used_nodes, mixed_nodes, idle_nodes];
+  let util_data_sum = used_nodes + mixed_nodes + idle_nodes;
+  let util_data = [used_nodes*100/util_data_sum, mixed_nodes*100/util_data_sum, idle_nodes*100/util_data_sum];
   let node_chart = new Chart(node_util_chart, {
-    type: 'pie',
+    type: 'bar',
     data: {
       labels: ["Allocated", "Mixed", "Idle"],
       datasets: [{
+        label: "Data", 
         backgroundColor: [
-          "#FF0000",
-          "#0000FF",
-          "#00FF00",
+          "#500000",
+          "#500000",
+          "#500000",
         ],
-        data: util_data
+        data: util_data,
+        borderWidth: 1
       }]
     },
     options: {
@@ -91,7 +121,33 @@ function draw_node_usage_chart(node_util_data) {
         display: true,
         text: 'Node Utilization',
         fontColor: '#500000',
-        fontStyle: 'bold'
+        fontStyle: 'bold',
+        fontSize: 20
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            beginAtZero: true,
+            min: 0,
+            max: 100,
+            fontSize: 20
+          },
+          gridLines: {
+            drawOnChartArea: false,
+            lineWidth: 3,
+            color: "#000000"
+          }
+        }],
+        xAxes: [{
+          gridLines: {
+            drawOnChartArea: false,
+            lineWidth: 3,
+            color: "#000000"
+          }
+        }]
+      },
+      legend: {
+        display: false
       }
     }
   });
