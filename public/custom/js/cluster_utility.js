@@ -11,6 +11,7 @@ function draw_core_usage_chart(core_util_data) {
   let core_sum = used_core + free_core;
 
   const data2 = {
+    labels: ["Core Usage"],
     datasets: [
       {
         label: "Used",
@@ -34,6 +35,9 @@ function draw_core_usage_chart(core_util_data) {
         gridLines: {
           display: false
         },
+        ticks: {
+          display: false
+        }
       }],
       xAxes: [{
         stacked: true,
@@ -114,6 +118,7 @@ function draw_node_usage_chart(node_util_data) {
   let util_data_idle = [idle_nodes*100/util_data_sum];
 
   const data2 = {
+    labels: ["Node Usage"],
     datasets: [
       {
         label: "Allocated",
@@ -142,6 +147,9 @@ function draw_node_usage_chart(node_util_data) {
         gridLines: {
           display: false
         },
+        ticks: {
+          display: false
+        }
       }],
       xAxes: [{
         stacked: true,
