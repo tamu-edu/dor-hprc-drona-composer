@@ -9,52 +9,60 @@ function draw_core_usage_chart(core_util_data) {
   used_core = core_util_data["allocated"]
   free_core = core_util_data["idle"]
   let core_sum = used_core + free_core;
-  var core_chart = new Chart(core_util_chart, {
-    type: 'bar',
-    data: {
-      labels: ["Used", "Free"],
-      datasets: [{
-        backgroundColor: [
-          "#500000",
-          "#500000"
-        ],
-        data: [used_core*100/core_sum, free_core*100/core_sum]
+
+  const data2 = {
+    datasets: [
+      {
+        label: "Used",
+        data: [used_core*100/core_sum],
+        backgroundColor: "#500000"
+      },
+      {
+        label: "Free",
+        data: [free_core*100/core_sum],
+        backgroundColor: "#A9A9A9"
+      },
+    ],
+    borderWidth: 1
+  };
+
+  const options2 = {
+    responsive: true,
+    scales: {
+      yAxes: [{
+        stacked: true,
+        gridLines: {
+          display: false
+        },
+      }],
+      xAxes: [{
+        stacked: true,
+        ticks: {
+          beginAtZero: true,
+          min: 0,
+          max: 100
+        },
+        gridLines: {
+          display: false
+        },
       }]
     },
-    options: {
-      title: {
-        display: true,
-        text: 'Core Utilization',
-        fontColor: '#500000',
-        fontStyle: 'bold',
-        fontSize: 20
-      },
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true,
-            min: 0,
-            max: 100,
-            fontSize: 20
-          },
-          gridLines: {
-            drawOnChartArea: false,
-            lineWidth: 3,
-            color: "#000000"
-          }
-        }],
-        xAxes: [{
-          gridLines: {
-            drawOnChartArea: false,
-            lineWidth: 3,
-            color: "#000000",
-          }
-        }]
-      },
-      legend: {
-        display: false
-      }
+    title: {
+      display: true,
+      text: 'Core Utilization',
+      fontColor: '#500000',
+      fontStyle: 'bold',
+      fontSize: 20
+    },
+    legend: {
+      display: false
     }
+  }
+
+  var core_chart = new Chart(core_util_chart, {
+    type: 'horizontalBar',
+    data:  data2,
+    options: options2
   });
 }
 
@@ -92,64 +100,77 @@ function draw_node_usage_chart(node_util_data) {
   if (canvasElem == null) {
     return;
   }
-  var node_util_chart = canvasElem.getContext('2d');
 
+  var node_util_chart = canvasElem.getContext('2d');
 
   // node
   let used_nodes = node_util_data["allocated"];
   let mixed_nodes = node_util_data["mixed"];
   let idle_nodes = node_util_data["idle"];
   let util_data_sum = used_nodes + mixed_nodes + idle_nodes;
-  let util_data = [used_nodes*100/util_data_sum, mixed_nodes*100/util_data_sum, idle_nodes*100/util_data_sum];
-  let node_chart = new Chart(node_util_chart, {
-    type: 'bar',
-    data: {
-      labels: ["Allocated", "Mixed", "Idle"],
-      datasets: [{
-        label: "Data", 
-        backgroundColor: [
-          "#500000",
-          "#500000",
-          "#500000",
-        ],
-        data: util_data,
-        borderWidth: 1
+  // let util_data = [used_nodes*100/util_data_sum, mixed_nodes*100/util_data_sum, idle_nodes*100/util_data_sum];
+  let util_data_used = [used_nodes*100/util_data_sum];
+  let util_data_mixed = [mixed_nodes*100/util_data_sum];
+  let util_data_idle = [idle_nodes*100/util_data_sum];
+
+  const data2 = {
+    datasets: [
+      {
+        label: "Allocated",
+        data: util_data_used,
+        backgroundColor: "#500000"
+      },
+      {
+        label: "Mixed",
+        data: util_data_mixed,
+        backgroundColor: "#A9A9A9"
+      },
+      {
+        label: "Idle",
+        data: util_data_idle,
+        backgroundColor: "#D3D3D3"
+      }
+    ],
+    borderWidth: 1
+  };
+
+  const options2 = {
+    responsive: true,
+    scales: {
+      yAxes: [{
+        stacked: true,
+        gridLines: {
+          display: false
+        },
+      }],
+      xAxes: [{
+        stacked: true,
+        ticks: {
+          beginAtZero: true,
+          min: 0,
+          max: 100
+        },
+        gridLines: {
+          display: false
+        },
       }]
     },
-    options: {
-      title: {
-        display: true,
-        text: 'Node Utilization',
-        fontColor: '#500000',
-        fontStyle: 'bold',
-        fontSize: 20
-      },
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true,
-            min: 0,
-            max: 100,
-            fontSize: 20
-          },
-          gridLines: {
-            drawOnChartArea: false,
-            lineWidth: 3,
-            color: "#000000"
-          }
-        }],
-        xAxes: [{
-          gridLines: {
-            drawOnChartArea: false,
-            lineWidth: 3,
-            color: "#000000"
-          }
-        }]
-      },
-      legend: {
-        display: false
-      }
+    title: {
+      display: true,
+      text: 'Node Utilization',
+      fontColor: '#500000',
+      fontStyle: 'bold',
+      fontSize: 20
+    },
+    legend: {
+      display: false
     }
+  }
+
+  let node_chart = new Chart(node_util_chart, {
+    type: 'horizontalBar',
+    data: data2,
+    options: options2
   });
 }
 
