@@ -15,19 +15,20 @@ function draw_core_usage_chart(core_util_data) {
     datasets: [
       {
         label: "Used",
-        data: [used_core*100/core_sum],
+        data: [(used_core*100/core_sum).toFixed(2)],
         backgroundColor: "#500000"
       },
       {
         label: "Free",
-        data: [free_core*100/core_sum],
-        backgroundColor: "#A9A9A9"
+        data: [(free_core*100/core_sum).toFixed(2)],
+        backgroundColor: "#D6D3C4"
       },
     ],
     borderWidth: 1
   };
 
   const options2 = {
+    maintainAspectRatio: false,
     responsive: true,
     scales: {
       yAxes: [{
@@ -113,9 +114,9 @@ function draw_node_usage_chart(node_util_data) {
   let idle_nodes = node_util_data["idle"];
   let util_data_sum = used_nodes + mixed_nodes + idle_nodes;
   // let util_data = [used_nodes*100/util_data_sum, mixed_nodes*100/util_data_sum, idle_nodes*100/util_data_sum];
-  let util_data_used = [used_nodes*100/util_data_sum];
-  let util_data_mixed = [mixed_nodes*100/util_data_sum];
-  let util_data_idle = [idle_nodes*100/util_data_sum];
+  let util_data_used = [(used_nodes*100/util_data_sum).toFixed(2)];
+  let util_data_mixed = [(mixed_nodes*100/util_data_sum).toFixed(2)];
+  let util_data_idle = [(idle_nodes*100/util_data_sum).toFixed(2)];
 
   const data2 = {
     labels: ["Node Usage"],
@@ -128,18 +129,19 @@ function draw_node_usage_chart(node_util_data) {
       {
         label: "Mixed",
         data: util_data_mixed,
-        backgroundColor: "#A9A9A9"
+        backgroundColor: "#998542"
       },
       {
         label: "Idle",
         data: util_data_idle,
-        backgroundColor: "#D3D3D3"
+        backgroundColor: "#A9A9A9"
       }
     ],
     borderWidth: 1
   };
 
   const options2 = {
+    maintainAspectRatio: false,
     responsive: true,
     scales: {
       yAxes: [{
