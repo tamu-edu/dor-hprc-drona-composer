@@ -8,50 +8,20 @@ function draw_core_usage_chart(core_util_data) {
 
   used_core = core_util_data["allocated"]
   free_core = core_util_data["idle"]
-  let core_sum = used_core + free_core;
 
-  const data2 = {
-    labels: ["Core Usage"],
-    datasets: [
-      {
-        label: "Used",
-        data: [(used_core*100/core_sum).toFixed(2)],
-        backgroundColor: "#500000"
-      },
-      {
-        label: "Free",
-        data: [(free_core*100/core_sum).toFixed(2)],
-        backgroundColor: "#D6D3C4"
-      },
-    ],
-    borderWidth: 1
+  var data2 = {
+    labels: ["Allocated", "Idle"],
+    datasets: [{
+      backgroundColor: [
+        "#500000",
+        "#A9A9A9"
+      ],
+      data: [used_core, free_core]
+    }]
   };
-
-  const options2 = {
+  var options2 = {
     maintainAspectRatio: false,
     responsive: true,
-    scales: {
-      yAxes: [{
-        stacked: true,
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }],
-      xAxes: [{
-        stacked: true,
-        ticks: {
-          beginAtZero: true,
-          min: 0,
-          max: 100
-        },
-        gridLines: {
-          display: false
-        },
-      }]
-    },
     title: {
       display: true,
       text: 'Core Utilization',
@@ -62,10 +32,10 @@ function draw_core_usage_chart(core_util_data) {
     legend: {
       display: false
     }
-  }
+  };
 
   var core_chart = new Chart(core_util_chart, {
-    type: 'horizontalBar',
+    type: 'doughnut',
     data:  data2,
     options: options2
   });
@@ -112,59 +82,23 @@ function draw_node_usage_chart(node_util_data) {
   let used_nodes = node_util_data["allocated"];
   let mixed_nodes = node_util_data["mixed"];
   let idle_nodes = node_util_data["idle"];
-  let util_data_sum = used_nodes + mixed_nodes + idle_nodes;
-  // let util_data = [used_nodes*100/util_data_sum, mixed_nodes*100/util_data_sum, idle_nodes*100/util_data_sum];
-  let util_data_used = [(used_nodes*100/util_data_sum).toFixed(2)];
-  let util_data_mixed = [(mixed_nodes*100/util_data_sum).toFixed(2)];
-  let util_data_idle = [(idle_nodes*100/util_data_sum).toFixed(2)];
+  let util_data = [used_nodes,mixed_nodes,idle_nodes];
 
   const data2 = {
-    labels: ["Node Usage"],
-    datasets: [
-      {
-        label: "Allocated",
-        data: util_data_used,
-        backgroundColor: "#500000"
-      },
-      {
-        label: "Mixed",
-        data: util_data_mixed,
-        backgroundColor: "#998542"
-      },
-      {
-        label: "Idle",
-        data: util_data_idle,
-        backgroundColor: "#A9A9A9"
-      }
-    ],
-    borderWidth: 1
+    labels: ["Allocated", "Mixed", "Idle"],
+      datasets: [{
+        backgroundColor: [
+          "#500000",
+          "#998542",
+          "#A9A9A9",
+        ],
+        data: util_data
+      }]
   };
 
   const options2 = {
     maintainAspectRatio: false,
     responsive: true,
-    scales: {
-      yAxes: [{
-        stacked: true,
-        gridLines: {
-          display: false
-        },
-        ticks: {
-          display: false
-        }
-      }],
-      xAxes: [{
-        stacked: true,
-        ticks: {
-          beginAtZero: true,
-          min: 0,
-          max: 100
-        },
-        gridLines: {
-          display: false
-        },
-      }]
-    },
     title: {
       display: true,
       text: 'Node Utilization',
@@ -178,7 +112,7 @@ function draw_node_usage_chart(node_util_data) {
   }
 
   let node_chart = new Chart(node_util_chart, {
-    type: 'horizontalBar',
+    type: 'doughnut',
     data: data2,
     options: options2
   });
