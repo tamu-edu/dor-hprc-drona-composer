@@ -49,6 +49,7 @@ $ scl enable ondemand -- bundle
 
 The Sinatra application provides some APIs that front-end application can tap into to get some information regarding the user. The application simply use [open3 gem](https://stdgems.org/open3/) to run batch script on portal node. To make the code easy to maintain, the sinatra backend simply call the backend adapter scripts ([machine_driver_scripts](./machine_driver_scripts/)) and foward the raw output of these scripts to the front-end for rendering. That being said, the sinatra backend is more like a router. The main business logic is located in [machine_driver_scripts]. 
 
+### Controllers
 This part of the application acts as a router that routes raw information from the driver to the requester. As of this writing, this part of the app is very simple. You can find all the supported routes in [controllers] folder. The organization idea behind it is as follow:
 
 - [app.rb](controllers/app.rb): this controller is the main controller of the app which serves the index page as well as provide the information regarding the "dashboard_url" so that all the JavaScript code knows where to make the call to.
@@ -99,7 +100,7 @@ put tons of words here so that it needs to be updated later. Rather, you should 
 
 - Sinatra load the base HTML files when the user access the dashboard app. (This has no content !!!)
 - Our JavaScript code will be loaded and start fetching data provided by the Sinatra backend (discussed above). All the utility JavaScript files are located inside [public/custom/js](public/custom/js) folder.
-- There is very little CSS code. Most styling is done with [Bootstrap 4](https://getbootstrap.com/) (general page layout - the grid system), [chartjs](https://www.chartjs.org/) (for cluster utility pie charts), [DataTable](https://datatables.net/) (renders all data tables with nice animation and sorting features), jQuery (dependency of Bootstrap 4).
+- There is very little CSS code. Most styling is done with [Bootstrap 4](https://getbootstrap.com/) (general page layout - the grid system), [chartjs](https://www.chartjs.org/) (for cluster utility doughnut charts), [DataTable](https://datatables.net/) (renders all data tables with nice animation and sorting features), jQuery (dependency of Bootstrap 4).
 
 ## Deployment
 
