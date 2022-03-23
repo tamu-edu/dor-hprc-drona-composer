@@ -19,14 +19,18 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col" style="position: relative;">
+    <div class="row"> 
+      <div class="col" style="width: 50%; display:inline; float: left; position: relative">
         <canvas id="node_utilization_chart"></canvas>
       </div>
+      <div class="col" style="width: 50%; display:inline; float: left; position: relative">
+        <canvas id="core_utilization_chart"></canvas>
+      </div>
+      <br>
+      <div style="text-align: center">
+        <img src="<%= url("/images/clusterStatsLegend.png") %>" alt="" style="width: 75%">
+      </div>
     </div>
-
-    <!-- Solid divider -->
-    <hr class="solid">
 
     <div class="chart-loading-indicator row">
       <div class="col">
@@ -36,12 +40,6 @@
             <span class="sr-only">Loading...</span>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col" style="position: relative;">
-        <canvas id="core_utilization_chart"></canvas>
       </div>
     </div>
 

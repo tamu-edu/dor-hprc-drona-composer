@@ -8,26 +8,36 @@ function draw_core_usage_chart(core_util_data) {
 
   used_core = core_util_data["allocated"]
   free_core = core_util_data["idle"]
-  var core_chart = new Chart(core_util_chart, {
-    type: 'pie',
-    data: {
-      labels: ["Used", "Free"],
-      datasets: [{
-        backgroundColor: [
-          "#FF0000",
-          "#00FF00"
-        ],
-        data: [used_core, free_core]
-      }]
+
+  var data2 = {
+    labels: ["Allocated", "Idle"],
+    datasets: [{
+      backgroundColor: [
+        "#500000",
+        "#A9A9A9"
+      ],
+      data: [used_core, free_core]
+    }]
+  };
+  var options2 = {
+    maintainAspectRatio: false,
+    responsive: true,
+    title: {
+      display: true,
+      text: 'Core Utilization',
+      fontColor: '#500000',
+      fontStyle: 'bold',
+      fontSize: 20
     },
-    options: {
-      title: {
-        display: true,
-        text: 'Core Utilization',
-        fontColor: '#500000',
-        fontStyle: 'bold'
-      },
+    legend: {
+      display: false
     }
+  };
+
+  var core_chart = new Chart(core_util_chart, {
+    type: 'doughnut',
+    data:  data2,
+    options: options2
   });
 }
 
@@ -65,35 +75,46 @@ function draw_node_usage_chart(node_util_data) {
   if (canvasElem == null) {
     return;
   }
-  var node_util_chart = canvasElem.getContext('2d');
 
+  var node_util_chart = canvasElem.getContext('2d');
 
   // node
   let used_nodes = node_util_data["allocated"];
   let mixed_nodes = node_util_data["mixed"];
   let idle_nodes = node_util_data["idle"];
-  let util_data = [used_nodes, mixed_nodes, idle_nodes];
-  let node_chart = new Chart(node_util_chart, {
-    type: 'pie',
-    data: {
-      labels: ["Allocated", "Mixed", "Idle"],
+  let util_data = [used_nodes,mixed_nodes,idle_nodes];
+
+  const data2 = {
+    labels: ["Allocated", "Mixed", "Idle"],
       datasets: [{
         backgroundColor: [
-          "#FF0000",
-          "#0000FF",
-          "#00FF00",
+          "#500000",
+          "#998542",
+          "#A9A9A9",
         ],
         data: util_data
       }]
+  };
+
+  const options2 = {
+    maintainAspectRatio: false,
+    responsive: true,
+    title: {
+      display: true,
+      text: 'Node Utilization',
+      fontColor: '#500000',
+      fontStyle: 'bold',
+      fontSize: 20
     },
-    options: {
-      title: {
-        display: true,
-        text: 'Node Utilization',
-        fontColor: '#500000',
-        fontStyle: 'bold'
-      }
+    legend: {
+      display: false
     }
+  }
+
+  let node_chart = new Chart(node_util_chart, {
+    type: 'doughnut',
+    data: data2,
+    options: options2
   });
 }
 
