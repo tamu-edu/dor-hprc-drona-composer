@@ -129,11 +129,14 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
         return;
       }
       
-
+      // setTimeout(sendData, 3000);
       sendData();
-
       // dismiss our modal
+      // $(modal_id).on('hidden.bs.modal', function () {
+      //   $(modal_id + ' form')[0].reset();
+      // });
       $(modal_id).modal('hide');
+      location.reload();
     });
   });
 }
