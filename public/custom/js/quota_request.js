@@ -1,3 +1,5 @@
+// Clean this Code if you have time, refactor these wet variable (Dry it out)
+
 function checkLength (value){
     var x = document.getElementById("need-PI-request");
     var bodyFields = document.getElementById("body-form-fields");
