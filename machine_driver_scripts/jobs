@@ -19,6 +19,26 @@ class Job:
 
 def job_from_list(data):
     return Job(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
+def job_from_list(data):
+    return Job(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
+
+def list_completed_jobs(args):
+    username = os.getenv('USER')
+    output_format = "%.18i %.9P %j %u %.8T %.10M %.9l %.6D %R"
+    output=subprocess.check_output(["/usr/bin/sacct --starttime=now-7days --endtime=now-1minute", '-u', username, '-o', '| grep',username,' | tail -n 20'])
+    output = output.split('\n')
+    output = output[1:] # skip the headers
+    jobs = []
+    for line in output:
+        data = line.strip().split()
+        data = map(lambda x: x.strip(), data)
+        if len(data) == 0:
+            continue
+        job = job_from_list(data)
+        jobs.append(job)
+
+    json_data = json.dumps([ob.__dict__ for ob in jobs])
+    print('{ "data": ' + json_data + '}')
 
 def list_jobs(args):
     username = os.getenv('USER')
@@ -41,6 +61,12 @@ def list_jobs(args):
 def kill_job(args):
     job_id = args.kill[0]
     output=subprocess.check_output(["/usr/bin/scancel", job_id])
+    print(output)
+
+
+def lnu_job(args):
+    job_id = args.lnu[0]
+    output=subprocess.check_output(["lnu"mjob_id])
     print(output)
 
 def tail(f, n, offset=0):
@@ -111,13 +137,16 @@ def main():
 
     # calling functions depending on type of argument 
     if args.list == True: 
-        list_jobs(args) 
+        list_jobs(args)
+    elif args.completed == True:
+        list_completed_jobs(args) 
     elif args.kill != None: 
         kill_job(args) 
     elif args.output != None:
         job_log(args)
-    elif args.error != None:
-        
+    elif args.util != None:
+        lnu_job(args)
+    elif args.error != None: 
         job_error(args)
     else:
         parser.print_help()

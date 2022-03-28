@@ -82,6 +82,29 @@ function removeElement(elementId) {
 }
 
 
+function show_utilization(job_id) {
+  show_global_loading_indicator();
+
+  let n_lines = 100;
+  let job_util_url = document.dashboard_url + `/jobs/${job_id}/util?n_lines=${n_lines}`;
+  var req = new XMLHttpRequest();
+  req.open('GET', job_log_url, true);
+  req.onload = function () {
+    hide_global_loading_indicator();
+    show_log_modal(job_id, req.response);
+  };
+  req.onerror = function () {
+    hide_global_loading_indicator();
+    alert("Failed to load job's log. Please try again.");
+  }
+
+  req.send(null);
+
+  console.log("Showing log for job " + job_id);
+}
+
+
+
 function show_job_log(job_id) {
   show_global_loading_indicator();
 
@@ -169,6 +192,7 @@ function init_job_table() {
           logButton = `<div class="btn-group" role="group" aria-label="">
                         <button type="button" class="btn btn-primary" id='log-button-${job.id}' onclick='show_job_log(${job.id})'>Log</button>
                         <button type="button" class="btn btn-danger" id='error-log-button-${job.id}' onclick='show_job_error_log(${job.id})'>Error</button>
+                        <button type="button" class="btn btn-danger" id='lnu-button-${job.id}' onclick='show_utilization${job.id})'>Utilization</button>
                       </div>`;
         } else {
           logButton = '<button type="button" class="btn btn-primary" disabled>Log</button>';
@@ -281,6 +305,28 @@ function load_job_table() {
   }
 }
 
+
+
+function load_completed_table() {
+  // toggle_refresh_job_table_loading_spinner(true);
+  let allocation_url = document.dashboard_url + "/jobs";
+  let request = new XMLHttpRequest();
+  request.open('GET', allocation_url);
+  request.responseType = 'json';
+  request.send();
+  
+  var job_table = init_job_table();
+  
+  request.onload = function () {
+    const data = request.response;
+    populate_job_table(data, job_completed_table);
+    // toggle_refresh_job_table_loading_spinner(false);
+  }
+  
+  request.onerror = function () {
+    alert("Failed to fetch your jobs details. Please try again later.");
+  }
+}
 
 function toggle_refresh_job_table_loading_spinner(show) {
   // if the spinner present, show log button should hide and vice versa
