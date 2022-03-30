@@ -82,13 +82,34 @@ function removeElement(elementId) {
 }
 
 
+function show_summary_completed(job_id) {
+  show_global_loading_indicator();
+
+  let job_util_url = document.dashboard_url + `/jobs/${job_id}/summary_completed`;
+  var req = new XMLHttpRequest();
+  req.open('GET', job_util_url, true);
+  req.onload = function () {
+    hide_global_loading_indicator();
+    show_log_modal(job_id, req.response);
+  };
+  req.onerror = function () {
+    hide_global_loading_indicator();
+    alert("Failed to load job's log. Please try again.");
+  }
+
+  req.send(null);
+
+  console.log("Showing log for job " + job_id);
+}
+
+
 function show_utilization(job_id) {
   show_global_loading_indicator();
 
   let n_lines = 100;
-  let job_util_url = document.dashboard_url + `/jobs/${job_id}/util?n_lines=${n_lines}`;
+  let job_util_url = document.dashboard_url + `/jobs/${job_id}/utilization`;
   var req = new XMLHttpRequest();
-  req.open('GET', job_log_url, true);
+  req.open('GET', job_util_url, true);
   req.onload = function () {
     hide_global_loading_indicator();
     show_log_modal(job_id, req.response);
@@ -149,6 +170,63 @@ function show_job_error_log(job_id) {
   // console.log("Showing log for job " + job_id);
 }
 
+function init_completed_table() {
+  var job_table = $('#completed_table').DataTable({
+    "destroy": true,
+    "scrollY": "200px",
+    "scrollCollapse": false,
+    "paging": false,
+    "searching": false,
+    "info": false,
+    "processing": true,
+    "columns": [{
+      "data": "id",
+      render: function (data, type, job) {
+        return job.id
+      }
+    },
+    {
+      "data": "name",
+      render: function(data, type, job) {
+        if (data.length > 10) {
+          var trimmedString = data.substring(data.length - 10);
+          return `<label title="${data}"><u>${'...' + trimmedString}</u></label>`;
+        } else {
+          return data;
+        }
+      }
+    },
+    {
+      "data": "nodes"
+    },
+    {
+      "data": "time"
+    },
+
+    {
+      "data": "state"
+    },
+
+    {
+      "data": null,
+      orderable: false,
+      render: function (data, type, job) {
+        var logButton = ""
+        logButton = `<div class="btn-group" role="group" aria-label="">
+                        <button type="button" class="btn btn-primary" id='seff-button-${job.id}' onclick='show_summary_completed(${job.id})'>Summary</button>
+                      </div>`;
+        return logButton
+      },
+    }
+    ],
+    "language": {
+      "emptyTable": "You have no recently completed jobs"
+    }
+  });
+  return job_table;
+}
+
+
 
 function init_job_table() {
   var job_table = $('#job_table').DataTable({
@@ -162,7 +240,6 @@ function init_job_table() {
     "columns": [{
       "data": "id",
       render: function (data, type, job) {
-        // return `<a href="#" data-toggle="modal" data-target="#job${job.id}Modal">${job.id}</a>`
         return job.id
       }
     },
@@ -192,7 +269,7 @@ function init_job_table() {
           logButton = `<div class="btn-group" role="group" aria-label="">
                         <button type="button" class="btn btn-primary" id='log-button-${job.id}' onclick='show_job_log(${job.id})'>Log</button>
                         <button type="button" class="btn btn-danger" id='error-log-button-${job.id}' onclick='show_job_error_log(${job.id})'>Error</button>
-                        <button type="button" class="btn btn-danger" id='lnu-button-${job.id}' onclick='show_utilization${job.id})'>Utilization</button>
+                        <button type="button" class="btn btn-danger" id='lnu-button-${job.id}' onclick='show_utilization(${job.id})'>Utilization</button>
                       </div>`;
         } else {
           logButton = '<button type="button" class="btn btn-primary" disabled>Log</button>';
@@ -217,7 +294,8 @@ function init_job_table() {
   return job_table;
 }
 
-function populate_job_table(json, table) {
+
+function populate_completed_job_table(json, table) {
   table.clear();
 
   data = json["data"];
@@ -225,9 +303,73 @@ function populate_job_table(json, table) {
     .add(data)
     .draw();
 
-  data.forEach((allocation) => {
-    insert_job_details_modal(allocation);
-  });
+  //data.forEach((allocation) => {
+  //  insert_completed_job_details_modal(allocation);
+  //});
+}
+
+function insert_completed_job_details_modal(job) {
+  template =
+    `
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-light">
+            <h4 class="modal-title">
+              Job #${job.id}
+            </h4>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th style="width: fit-content;">Job ID</th>
+                        <th>Name</th>
+                        <th>CPUS</th>
+                        <th>Walltime</th>
+                        <th>State</th>
+                    </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>${job.id}</td>
+                  <td>${job.name}</td>
+                  <td>${job.nodes}</td>
+                  <td>${job.time}</td>
+                  <td>${job.state}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" onclick="confirm_job_kill('${job.id}')">Kill</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+        </div>
+    </div>`
+
+  container = document.getElementById("main-container");
+  var div = document.createElement('div');
+  div.setAttribute('id', `job${job.id}Modal`);
+  div.setAttribute('class', "modal fade bs-example-modal-lg");
+  div.setAttribute('tabindex', "-1");
+  div.setAttribute('role', "dialog");
+  div.setAttribute('aria-labelledby', "classInfo");
+  div.setAttribute('aria-hidden', "true");
+
+  div.innerHTML = template.trim();
+  container.appendChild(div);
+}
+
+function populate_job_table(json, table) {
+  table.clear();
+
+  data = json["data"];
+  table.rows.add(data).draw();
+
+  //data.forEach((allocation) => {
+ //   insert_job_details_modal(allocation);
+ // });
 }
 
 function insert_job_details_modal(job) {
@@ -285,7 +427,7 @@ function insert_job_details_modal(job) {
 
 function load_job_table() {
   // toggle_refresh_job_table_loading_spinner(true);
-  let allocation_url = document.dashboard_url + "/jobs";
+  let allocation_url = document.dashboard_url + "/jobs/list";
 
   let request = new XMLHttpRequest();
   request.open('GET', allocation_url);
@@ -307,19 +449,19 @@ function load_job_table() {
 
 
 
-function load_completed_table() {
+function load_completed_job_table() {
   // toggle_refresh_job_table_loading_spinner(true);
-  let allocation_url = document.dashboard_url + "/jobs";
+  let allocation_url = document.dashboard_url + "/jobs/completed";
   let request = new XMLHttpRequest();
   request.open('GET', allocation_url);
   request.responseType = 'json';
   request.send();
   
-  var job_table = init_job_table();
+  var completed_table = init_completed_table();
   
   request.onload = function () {
     const data = request.response;
-    populate_job_table(data, job_completed_table);
+    populate_completed_job_table(data, completed_table);
     // toggle_refresh_job_table_loading_spinner(false);
   }
   
@@ -356,4 +498,5 @@ function toggle_refresh_job_table_loading_spinner(show) {
 
 (() => {
   load_job_table();
+  load_completed_job_table();
 })()

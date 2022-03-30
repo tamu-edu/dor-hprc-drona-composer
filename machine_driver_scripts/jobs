@@ -4,37 +4,42 @@ import json
 import os
 import argparse 
 
-
+# MP 3/29/22 adding info for completed jobs. For now just use the same Job class. It's
+#            very messy since running jobs and completed jobs have different atributes.
+#            TODO create a separate class for Completed Jobs and separate it from running jobs  
 class Job:
     def __init__(self, id, partition, name, user, state, time, time_limit, nodes, nodelist):
         self.id = id
-        self.partition = partition
+        self.partition = partition   # "" for completed
         self.name = name
-        self.user = user
+        self.user = user             # "" for completed
         self.state = state
-        self.time = time
-        self.time_limit = time_limit
-        self.nodes = nodes
-        self.nodelist = nodelist
+        self.time = time             # actual wall time for completed
+        self.time_limit = time_limit # "" for completed
+        self.nodes = nodes           # cpus for completed
+        self.nodelist = nodelist     # "" for completed
 
 def job_from_list(data):
     return Job(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
-def job_from_list(data):
-    return Job(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
+
+def completed_job_from_list(data):  
+    return Job(data[0], "",data[1], "", data[4], data[3], "", data[2], "")
 
 def list_completed_jobs(args):
     username = os.getenv('USER')
+
     output_format = "%.18i %.9P %j %u %.8T %.10M %.9l %.6D %R"
-    output=subprocess.check_output(["/usr/bin/sacct --starttime=now-7days --endtime=now-1minute", '-u', username, '-o', '| grep',username,' | tail -n 20'])
+
+    output=subprocess.check_output(["/usr/bin/sacct", '--starttime=now-7days', '--format=JobID,JobName,NCPUS,Elapsed,State', '-X'])
     output = output.split('\n')
-    output = output[1:] # skip the headers
+    output = output[2:] # skip the headers
     jobs = []
     for line in output:
         data = line.strip().split()
         data = map(lambda x: x.strip(), data)
         if len(data) == 0:
             continue
-        job = job_from_list(data)
+        job = completed_job_from_list(data)
         jobs.append(job)
 
     json_data = json.dumps([ob.__dict__ for ob in jobs])
@@ -63,10 +68,14 @@ def kill_job(args):
     output=subprocess.check_output(["/usr/bin/scancel", job_id])
     print(output)
 
+def seff_job(args):
+    job_id = args.summary_completed[0]
+    output=subprocess.check_output(["seff", job_id])
+    print(output)
 
 def lnu_job(args):
-    job_id = args.lnu[0]
-    output=subprocess.check_output(["lnu"mjob_id])
+    job_id = args.utilization[0]
+    output=subprocess.check_output(["/sw/local/bin/lnu", job_id])
     print(output)
 
 def tail(f, n, offset=0):
@@ -119,7 +128,9 @@ def main():
     parser.add_argument("-l", "--list", action='store_true',
                         help = "List all jobs for current user.")
 
-    
+    parser.add_argument("-c", "--list_completed", action='store_true',
+                        help = "List all completed jobs for current user.")
+
     parser.add_argument("-k", "--kill", nargs = 1, 
                         type = str, metavar = "job_id", default = None, 
                         help = "Kill a job with the given job id.")
@@ -132,22 +143,32 @@ def main():
                         type = str, metavar=('job_id', 'n_lines'), default = None, 
                         help = "Output the last n_lines of error log for the given job_id")
 
+    parser.add_argument("-u", "--utilization", nargs = 1,
+                        type = str, metavar=('job_id'), default = None,
+                        help = "Output the utilization (lnu command) for the given job_id")
+
+    parser.add_argument("-s", "--summary_completed", nargs = 1,
+                        type = str, metavar=('job_id'), default = None,
+                        help = "Output the summary (seff command) for the given job_id")
+
      # parse the arguments from standard input 
     args = parser.parse_args() 
 
     # calling functions depending on type of argument 
     if args.list == True: 
         list_jobs(args)
-    elif args.completed == True:
+    elif args.list_completed == True:
         list_completed_jobs(args) 
     elif args.kill != None: 
         kill_job(args) 
     elif args.output != None:
         job_log(args)
-    elif args.util != None:
-        lnu_job(args)
-    elif args.error != None: 
+    elif args.error != None:
         job_error(args)
+    elif args.utilization != None:
+        lnu_job(args)
+    elif args.summary_completed != None:
+        seff_job(args)
     else:
         parser.print_help()
 
