@@ -261,6 +261,21 @@ function init_job_table() {
       "data": "partition"
     },
     {
+      "data": "progression",
+      render: function (data, type, job) {
+        timeTokens = job.time.split(":");
+        console.log(timeTokens);
+        timeLimitTokens = job.time_limit.split(":");
+        console.log(timeLimitTokens);
+        var progress = job.time / job.time_limit;
+        console.log(progress);
+        var progressBar = `<div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow='75' aria-valuemin="0" aria-valuemax="100" style='width: 75%'></div>
+                          </div>`;
+        return progressBar
+      }
+    },
+    {
       "data": null,
       orderable: false,
       render: function (data, type, job) {
