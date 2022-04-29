@@ -266,10 +266,15 @@ function init_job_table() {
       render: function (data, type, job) {
         var logButton = ""
         if (job.state.trim() === "RUNNING") {
-          logButton = `<div class="btn-group" role="group" aria-label="">
-                        <button type="button" class="btn btn-primary" id='log-button-${job.id}' onclick='show_job_log(${job.id})'>Log</button>
-                        <button type="button" class="btn btn-danger" id='error-log-button-${job.id}' onclick='show_job_error_log(${job.id})'>Error</button>
-                        <button type="button" class="btn btn-danger" id='lnu-button-${job.id}' onclick='show_utilization(${job.id})'>Utilization</button>
+          logButton = `<div class="dropdown show">
+                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Job Info
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <a class="dropdown-item" id='log-button-${job.id}' onclick='show_job_log(${job.id})'>Log</a>
+                          <a class="dropdown-item" id='error-log-button-${job.id}' onclick='show_job_error_log(${job.id})'>Error</a>
+                          <a class="dropdown-item" id='lnu-button-${job.id}' onclick='show_utilization(${job.id})'>Utilization</a>
+                        </div>
                       </div>`;
         } else {
           logButton = '<button type="button" class="btn btn-primary" disabled>Log</button>';
