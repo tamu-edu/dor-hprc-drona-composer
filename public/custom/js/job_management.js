@@ -267,10 +267,12 @@ function init_job_table() {
         console.log(timeTokens);
         timeLimitTokens = job.time_limit.split(":");
         console.log(timeLimitTokens);
-        var progress = job.time / job.time_limit;
+        var job_time = parseInt(timeTokens[0]); // in minutes
+        var job_time_limit = parseInt(timeLimitTokens[0]) * 60 + parseInt(timeLimitTokens[1]); // in minutes
+        var progress = job_time / job_time_limit;
         console.log(progress);
         var progressBar = `<div class="progress">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow='75' aria-valuemin="0" aria-valuemax="100" style='width: 75%'></div>
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow='${progress}' aria-valuemin="0" aria-valuemax="100" style='width: ${progress}%'></div>
                           </div>`;
         return progressBar
       }
