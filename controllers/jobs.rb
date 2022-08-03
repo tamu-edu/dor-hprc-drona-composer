@@ -20,7 +20,7 @@ class JobsController < Sinatra::Base
         driver_path = "#{driver_scripts_location}/#{driver_name}"
     end
 
-    get '/jobs' do
+    get '/jobs/list' do
         jobs_command =  driver_command('jobs')
         stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -l")
         if status.success?
@@ -29,6 +29,40 @@ class JobsController < Sinatra::Base
             return stderr_str
         end
     end
+
+    get '/jobs/completed' do
+        jobs_command =  driver_command('jobs')
+        stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -c")
+        if status.success?
+            return stdout_str
+        else
+            return stderr_str
+        end
+    end
+
+    get '/jobs/:job_id/utilization' do |job_id|
+
+        jobs_command =  driver_command('jobs')
+        stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -u #{job_id}")
+        if status.success?
+            return stdout_str
+        else
+            return stderr_str
+        end
+    end
+
+
+   get '/jobs/:job_id/summary_completed' do |job_id|
+
+        jobs_command =  driver_command('jobs')
+        stdout_str, stderr_str, status = Open3.capture3("#{jobs_command} -s #{job_id}")
+        if status.success?
+            return stdout_str
+        else
+            return stderr_str
+        end
+    end
+
 
     get '/jobs/:job_id/log' do |job_id|
         n_lines = 10 # default 10 lines
