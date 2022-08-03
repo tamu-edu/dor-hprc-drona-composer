@@ -274,7 +274,7 @@ function init_job_table() {
       "data": "partition"
     },
     {
-      "data": "progression",
+      "data": "walltime",
       render: function (data, type, job) {
         console.log(job.time);
         timeTokens = job.time.split(":");
