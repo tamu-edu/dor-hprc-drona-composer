@@ -226,6 +226,19 @@ function init_completed_table() {
   return job_table;
 }
 
+function calculate_time_limit(time_limit){
+  let day=0,hour=0,min=0;
+  console.log(time_limit.split("-"));
+  timeTokens = time_limit.split("-");
+  day = timeTokens.length == 2 ? parseInt(timeTokens[0]) : 0;
+  dayTokens = timeTokens[timeTokens.length - 1].split(":");
+  hour = dayTokens.length == 3 ? parseInt(dayTokens[0]) : 0;
+  min = parseInt(dayTokens[dayTokens.length - 2]);
+  time_limit = (day * 24 * 60) + (hour * 60) + min; // in minutes
+  console.log("time limit: ",time_limit);
+  return time_limit;
+}
+
 
 
 function init_job_table() {
@@ -263,13 +276,11 @@ function init_job_table() {
     {
       "data": "progression",
       render: function (data, type, job) {
+        console.log(job.time);
         timeTokens = job.time.split(":");
-        console.log(timeTokens);
-        timeLimitTokens = job.time_limit.split(":");
-        console.log(timeLimitTokens);
-        var job_time = parseInt(timeTokens[0]); // in minutes
-        var job_time_limit = parseInt(timeLimitTokens[0]) * 60 + parseInt(timeLimitTokens[1]); // in minutes
-        var progress = job_time / job_time_limit;
+        var job_time = parseInt(timeTokens[0], 10) * 60 + parseInt(timeTokens[1], 10); // in seconds
+        job_time_limit = calculate_time_limit(job.time_limit) * 60; // in seconds
+        var progress = job_time / job_time_limit * 100;
         console.log(progress);
         var progressBar = `<div class="progress">
                             <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow='${progress}' aria-valuemin="0" aria-valuemax="100" style='width: ${progress}%'></div>

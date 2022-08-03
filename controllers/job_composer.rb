@@ -183,16 +183,39 @@ class JobComposerController < Sinatra::Base
         file_name = params[:executable_script][:filename]
         file = params[:executable_script][:tempfile]
         run_command = params[:run_command]
+        location = params['location-path']
 
         # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
         runtime = params[:runtime]
+
+        # File.write("logs/composer_log.txt", location, mode: "a")
+        # File.write("logs/quota_log.txt", "\n------------------------------------------------\n", mode: "a")
+
+        
+        # stdout_str, stderr_str, status = Open3.capture3("echo abc")    
+        # if status.success?
+        #     return stdout_str
+        # else  
+        #     return stderr_str
+        # end
+
+
 
         if walltime.nil? or total_cpu_cores.nil? or core_per_node.nil? or total_mem.nil? or file_name.nil?
             return "Invalid Job Compose Request."
         end
 
+
+
         # create job_composer folder if needed
-        storage_path = job_composer_data_path()
+        # user alternate path for job
+        storage_path = ""
+        if location.nil?
+            storage_path = job_composer_data_path()
+        else
+            storage_path = location
+        end
+        
         create_folder_if_not_exist(storage_path)
 
         # this is the script user upload

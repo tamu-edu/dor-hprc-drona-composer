@@ -68,47 +68,75 @@
           <div>Email address to receive output from your job.</div>
         </div>
       </div>
-      <!-- Module search -->
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
-        <div class="col-lg-6 ui-widget">
-          <input class="form-control" id="module-search">
-          <button type="button" id="add_module_button" class="btn btn-primary mt-2 maroon-button">Add</button>
-        </div>
 
-      </div>
-      <div class="row" id="module-list">
-        <!-- place to add modules -->
-        <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
-      </div>
+
+      
 
       <div class="form-group row">
         <label class="col-lg-3 col-form-label form-control-label">Runtime</label>
         <div class="col-lg-9">
           <select id="runtime_env" name="runtime">
-            <option selected value="shell">Shell</option>
+            <option disabled selected value> -- select an option -- </option>
+            <option value="shell">Shell</option>
             <option value="other">Other</option>
             <option value="python">Python</option>
           </select>
         </div>
       </div>
 
-      <div class="form-group row mt-2">
+      <!-- Module search -->
+      <div id="module-component" style="display:none;">
+        <div class="form-group row">
+          <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
+          <div class="col-lg-6 ui-widget">
+            <input class="form-control" id="module-search">
+            <button type="button" id="add_module_button" class="btn btn-primary mt-2 maroon-button">Add</button>
+          </div>
+
+        </div>
+        <div class="row" id="module-list">
+          <!-- place to add modules -->
+          <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
+        </div>
+
+        <!-- Check box for location component -->
+        <div class="form-group row mt-2">
+          <label class="col-lg-3 col-form-label form-control-label" for="location">Different Location</label>
+          <div class="col-lg-9">
+            <input class="form-check-input form-control" type="checkbox" name="location" onclick="show_location_component();">
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Option to run job in different directory -->
+      <div id="location-component" style="display:none;">
+        <div class="form-group row">
+          <label class="col-lg-3 col-form-label form-control-label" for="location-path">Directory</label>
+          <div class="col-lg-9">
+            <input type="text" name="location-path" class="form-control" required>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="form-group row mt-2" style="display:block;">
         <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Executable
           Script</label>
         <div class="col-lg-9">
           <input id="executable_file_input" type="file" name="executable_script" required>
           <p>You <strong>must</strong> upload an executable script to continue.</p>
-
         </div>
       </div>
-      <div id="runtime_config" style="display: none;">
+
+      <input type="file" id="ctrl" webkitdirectory directory multiple/>
+
+      <div id="runtime_config" style="display:none;">
         <div class="form-group row">
           <label class="col-lg-3 col-form-label form-control-label" for="run_command">Commands</label>
           <div class="col-lg-9">
             <textarea id="run_command" class="form-control" name="run_command"
               placeholder="Shell command to run your script." type="text" rows="5" required></textarea>
-
           </div>
         </div>
 
@@ -119,6 +147,7 @@
           </div>
         </div>
       </div>
+
     </form>
   </div>
   <div class="card-footer">

@@ -20,11 +20,11 @@ function calculate_walltime() {
     console.log(hours.value);
     console.log(mins.value);
     if (days == null || hours == null || mins == null) {
-        return `00:30`;
+        return `30:00`;
     }
 
     var runtime_hours = Number(days.value) * 24 + Number(hours.value);
-    return `${runtime_hours}:${Number(mins.value)}`;
+    return `${runtime_hours}:${Number(mins.value)}:00`;
 }
 
 function register_slurm_submit_button() {
@@ -109,6 +109,18 @@ function register_add_module_handler() {
     }
 }
 
+// Flow for the comoser
+
+function show_module_component(){
+    console.log("Howdy");
+    var runtime_env_selector = document.getElementById("runtime_env").value;
+    console.log("You Clicked " + runtime_env_selector);
+    var module_component = document.getElementById("module-component");
+    // console.log(module_component);
+    module_component.style.display = "block";
+
+}
+
 function register_autocomplete_for_module_search() {
     // this setup autocomplete input box for module search
     $("#module-search").autocomplete({
@@ -185,6 +197,9 @@ function update_run_command() {
         return;
     }
 
+    // var module_component = document.getElementById("module-component");
+    // module_component.style.display = "block";
+
     let file_picker = document.getElementById('executable_file_input');
     if (file_picker == null || file_picker.files.length === 0) {
         return;
@@ -213,12 +228,17 @@ function update_run_command() {
     }
 }
 
+function runtime_onchange(){
+    show_module_component();
+    update_run_command();
+}
+
 function register_on_runtime_change_listener() {
     var runtime_env_selector = document.getElementById("runtime_env");
     if (runtime_env_selector == null) {
         return;
     }
-    runtime_env_selector.onchange = update_run_command;
+    runtime_env_selector.onchange = runtime_onchange;
 }
 
 function add_submission_loading_indicator() {
@@ -416,6 +436,18 @@ function init_job_files_table() {
     }
 
     request.send();
+}
+
+function show_location_component(){
+    var location_component = document.getElementById("location-component");
+    if (location_component.style.display == "none")
+        location_component.style.display = "block";
+    else
+        location_component.style.display = "none";
+}
+
+function testing(){
+    console.log("Testing in Progress");
 }
 
 
