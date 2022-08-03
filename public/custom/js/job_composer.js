@@ -20,11 +20,11 @@ function calculate_walltime() {
     console.log(hours.value);
     console.log(mins.value);
     if (days == null || hours == null || mins == null) {
-        return `00:30`;
+        return `30:00`;
     }
 
     var runtime_hours = Number(days.value) * 24 + Number(hours.value);
-    return `${runtime_hours}:${Number(mins.value)}`;
+    return `${runtime_hours}:${Number(mins.value)}:00`;
 }
 
 function register_slurm_submit_button() {
