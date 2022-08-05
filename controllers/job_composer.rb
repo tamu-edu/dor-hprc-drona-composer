@@ -216,30 +216,29 @@ class JobComposerController < Sinatra::Base
 
         # create job_composer folder if needed
         # user alternate path for job
-        storage_path = ""
-        if location.nil?
-            storage_path = job_composer_data_path()
-        else
+        storage_path = job_composer_data_path()
+        if !location.empty?
             storage_path = location
         end
-
         
 
         create_folder_if_not_exist(storage_path)
         # return storage_path
 
-        for folder_file in params[:folder_file] do
-            filename = folder_file[:filename]
-            # access the header content to get the relative path of file in the uploaded directory
-            relative_path = folder_file[:head].split("\n")[0].split(";")[2].split("\"")[1]
-            relative_path.slice!(filename)
-            # return relative_path
-            
-            tempfile = folder_file[:tempfile]
-            
+        if !params[:folder_file].nil?
+            for folder_file in params[:folder_file] do
+                filename = folder_file[:filename]
+                # access the header content to get the relative path of file in the uploaded directory
+                relative_path = folder_file[:head].split("\n")[0].split(";")[2].split("\"")[1]
+                relative_path.slice!(filename)
+                # return relative_path
+                
+                tempfile = folder_file[:tempfile]
+                
 
-            save_folder_file(storage_path, job_name, relative_path, filename, tempfile)
-            # return "Hello World"
+                save_folder_file(storage_path, job_name, relative_path, filename, tempfile)
+                # return "Hello World"
+            end
         end
 
         # this is the script user upload
