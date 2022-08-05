@@ -49,6 +49,22 @@ class JobComposerController < Sinatra::Base
         return file_path
     end
 
+    def save_folder_file(parent_path, job_name, relative_path, filename, file)
+
+        job_folder_path = File.join(parent_path, job_name)
+        Dir.mkdir(job_folder_path) unless File.exists?(job_folder_path)
+
+        absolute_path = File.join(job_folder_path, relative_path)
+        Dir.mkdir(absolute_path) unless File.exists?(absolute_path)
+
+        file_path = File.join(absolute_path, filename)
+        File.open(file_path, 'wb') do |f|
+            f.write(file.read)
+        end
+
+        return
+    end
+
     def job_file_name(job_name)
         
         file_name = "#{job_name}.job"
@@ -185,20 +201,11 @@ class JobComposerController < Sinatra::Base
         run_command = params[:run_command]
         location = params['location-path']
 
+        # return nil.nil?
+
         # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
         runtime = params[:runtime]
-
-        # File.write("logs/composer_log.txt", location, mode: "a")
-        # File.write("logs/quota_log.txt", "\n------------------------------------------------\n", mode: "a")
-
         
-        # stdout_str, stderr_str, status = Open3.capture3("echo abc")    
-        # if status.success?
-        #     return stdout_str
-        # else  
-        #     return stderr_str
-        # end
-
 
 
         if walltime.nil? or total_cpu_cores.nil? or core_per_node.nil? or total_mem.nil? or file_name.nil?
@@ -215,11 +222,32 @@ class JobComposerController < Sinatra::Base
         else
             storage_path = location
         end
+
         
+
         create_folder_if_not_exist(storage_path)
+        # return storage_path
+
+        for folder_file in params[:folder_file] do
+            filename = folder_file[:filename]
+            # access the header content to get the relative path of file in the uploaded directory
+            relative_path = folder_file[:head].split("\n")[0].split(";")[2].split("\"")[1]
+            relative_path.slice!(filename)
+            # return relative_path
+            
+            tempfile = folder_file[:tempfile]
+            
+
+            save_folder_file(storage_path, job_name, relative_path, filename, tempfile)
+            # return "Hello World"
+        end
 
         # this is the script user upload
         executable_path = save_file(storage_path, job_name, file_name, file)
+
+        # upload folder/data
+        # files = params[:folder_file].map{|file| file}.join("\n")
+        
         
         # # deal with module load and go to the right directory
         job_path = File.join(storage_path, job_name)
