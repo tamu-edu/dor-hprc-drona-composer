@@ -438,12 +438,12 @@ function init_job_files_table() {
     request.send();
 }
 
-function show_location_component(){
-    var location_component = document.getElementById("location-component");
-    if (location_component.style.display == "none")
-        location_component.style.display = "block";
+function allow_edit_location(){
+    var location_component = document.getElementById("location-path");
+    if (location_component.hasAttribute("readonly") == true)
+        location_component.removeAttribute("readonly");
     else
-        location_component.style.display = "none";
+        location_component.setAttribute("readonly", true);
 }
 
 function testing(){
