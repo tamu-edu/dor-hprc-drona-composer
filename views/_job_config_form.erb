@@ -7,73 +7,18 @@
     <form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST" enctype="multipart/form-data"
       action="<%= url('/jobs/submit') %>">
 
+
+      <!-- Job Name -->
       <div class="form-group row">
         <label class="col-lg-3 col-form-label form-control-label" for="name">Job Name</label>
         <div class="col-lg-9">
-          <input type="text" name="name" class="form-control" required>
-        </div>
-      </div>
-      <div class="form-row">
-        <label class="col-lg-3 col-form-label form-control-label" for="walltime">Walltime</label>
-        <div class="col">
-          <input type="number" class="form-control" min="0" max="7" id="days" placeholder="days">
-        </div>
-        <div class="col">
-          <input type="number" class="form-control" min="0" max="23" id="hours" placeholder="hours">
-        </div>
-        <div class="col">
-          <input type="number" class="form-control" min="0" max="59" id="mins" placeholder="mins">
-        </div>
-      </div>
-      <div class="form-group row mt-2">
-        <label class="col-lg-3 col-form-label form-control-label" for="gpu">Request a GPU</label>
-        <div class="col-lg-2">
-          <input class="form-check-input form-control" type="checkbox" name="gpu">
-        </div>
-      </div>
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label form-control-label" for="cores">Total #CPUs</label>
-        <div class="col-lg-9">
-          <input class="form-control" type="number" name="cores" placeholder="e.g. 8" min="1" value="1" required>
-        </div>
-      </div>
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label form-control-label" for="cores-per-node">#CPUs/Node</label>
-        <div class="col-lg-9">
-          <input class="form-control" type="number" name="cores-per-node" value="1" min="1" max="28" required>
+          <input type="text" name="name" id="job-name" class="form-control" required>
         </div>
       </div>
 
+      <!-- Runtime Environment -->
       <div class="form-group row">
-        <label class="col-lg-3 col-form-label form-control-label" for="total-memory">Total Memory</label>
-        <div class="col-lg-9">
-          <input class="form-control" type="text" name="total-memory" pattern="^[1-9]\d*(MB|G)$"
-            placeholder="e.g. 1024MB or 2G " required>
-          <div>MB = Megabyte, G = Gigabyte</div>
-        </div>
-      </div>
-
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label form-control-label" for="project-account">Project Account</label>
-        <div class="col-lg-9">
-          <input class="form-control" name="project-account" type="text">
-          <div>If blank, use default project account</div>
-        </div>
-      </div>
-
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label form-control-label" for="email">Email</label>
-        <div class="col-lg-9">
-          <input class="form-control" name="email" placeholder="Default netid@tamu.edu" type="email">
-          <div>Email address to receive output from your job.</div>
-        </div>
-      </div>
-
-
-      
-
-      <div class="form-group row">
-        <label class="col-lg-3 col-form-label form-control-label">Runtime</label>
+        <label class="col-lg-3 col-form-label form-control-label">Environment</label>
         <div class="col-lg-9">
           <select id="runtime_env" name="runtime">
             <option disabled selected value> -- select an option -- </option>
@@ -84,40 +29,129 @@
         </div>
       </div>
 
-      <!-- Module search -->
-      <div id="module-component" style="display:none;">
-        <div class="form-group row">
-          <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
-          <div class="col-lg-6 ui-widget">
-            <input class="form-control" id="module-search">
-            <button type="button" id="add_module_button" class="btn btn-primary mt-2 maroon-button">Add</button>
-          </div>
+    <!-- Solid divider -->
+    <hr class="solid md-3 mt-3">
 
+    <!-- Module Component -->
+    <div id="module-component" style="display:none;">
+      <!-- Module Search -->
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
+        <div class="col-lg-6 ui-widget">
+          <input class="form-control" id="module-search">
+          <button type="button" id="add_module_button" class="btn btn-primary mt-2 maroon-button">Add</button>
         </div>
-        <div class="row" id="module-list">
-          <!-- place to add modules -->
-          <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
-        </div>  
       </div>
+
+      <!-- Added Module List -->
+      <div class="row" id="module_list">
+        <!-- place to add modules -->
+        <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
+      </div>  
+    </div>
+
+      <!-- Walltime -->
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="walltime">Walltime</label>
+        <div class="col-lg-9">  
+          <div class="input-group">
+            <input type="number" class="form-control" min="0" max="7" id="days" placeholder="days">
+            <input type="number" class="form-control" min="0" max="23" id="hours" placeholder="hours">
+            <input type="number" class="form-control" min="0" max="59" id="mins" placeholder="mins">
+          </div>
+          <small class="text-muted" name="note">If blank, default walltime is 2 hours.</small>
+        </div>
+      </div>
+
+      <!-- GPU -->
+      <div class="form-group row mt-2">
+        <label class="col-lg-3 col-form-label form-control-label" for="gpu">Request a GPU</label>
+        <div class="col-lg-2">
+          <input class="form-check-input form-control" type="checkbox" name="gpu">
+        </div>
+      </div>
+
+      <!-- Total Number of Cores -->
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="cores">Total CPU cores</label>
+        <div class="col-lg-9">
+          <input class="form-control" type="number" name="cores" min="1">
+          <small class="text-muted" name="note">If blank, default total CPU cores is 1.</small>
+        </div>
+      </div>
+
+      <!-- Cores per Node -->
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="cores_per_node">CPU cores per node</label>
+        <div class="col-lg-9">
+          <input class="form-control" type="number" name="cores_per_node" min="1" max="28">
+          <small class="text-muted" name="note">If blank, default CPU per node follows total CPU cores.<br><strong>Restriction:</strong> maximum 28 cores per node. </small>
+        </div>
+      </div>
+
+
+      <!-- Memory -->
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="total_memory">Total Memory</label>
+        <div class="col-lg-9">
+          <div class="input-group">
+            <input type="number" name="total_memory_number" class="form-control">
+            <div class="input-group-append">
+              <select class="" name="total_memory_unit">
+                <option selected value="MB">MB</option>
+                <option value="G">GB</optioton>
+              </select>
+            </div>
+          </div>
+          <small class="text-muted" name="note">If blank, default total memory is 2000MB * total CPU cores.</small>
+        </div>
+      </div>
+
+
+
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="project_account">Project Account</label>
+        <div class="col-lg-9">
+          <input class="form-control" name="project_account" type="text">
+          <small class="text-muted" name="note">If blank, use default project account</small>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-lg-3 col-form-label form-control-label" for="email">Email</label>
+        <div class="col-lg-9">
+          <input class="form-control" name="email" placeholder="Default netid@tamu.edu" type="email">
+          <small class="text-muted" name="note">Email address to receive output from your job.</small>
+        </div>
+      </div>
+
+
+      
+
+      
+
+
+      
 
 
       <!-- Option to run job in different directory -->
       <div id="location-component">
         <div class="form-group row">
-          <label class="col-lg-3 col-form-label form-control-label" for="location-path">Directory</label>
+          <label class="col-lg-3 col-form-label form-control-label" for="location">Directory</label>
           <div class="col-lg-9">
-            <input type="text" id="location-path" name="location-path" class="form-control" value="/scratch/user/<%= ENV['USER'] %>/job_composer" readonly>
+            <input type="text" id="location" name="location" class="form-control" value="/scratch/user/<%= ENV['USER'] %>/job_composer/">
           </div>
         </div>
       </div>
 
       <!-- Check box for location component -->
-      <div class="form-group row mt-2">
+      <!-- <div class="form-group row mt-2">
         <label class="col-lg-3 col-form-label form-control-label" for="location">Different Location</label>
         <div class="col-lg-2">
           <input class="form-check-input form-control" type="checkbox" name="location" onclick="allow_edit_location();">
         </div>
       </div>
+      -->
 
 
       <div class="form-group row mt-2">

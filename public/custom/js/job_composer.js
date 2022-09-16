@@ -16,9 +16,9 @@ function calculate_walltime() {
     var hours = document.getElementById("hours");
     var mins = document.getElementById("mins");
 
-    console.log(days.value);
-    console.log(hours.value);
-    console.log(mins.value);
+    // console.log(days.value);
+    // console.log(hours.value);
+    // console.log(mins.value);
     if (days == null || hours == null || mins == null) {
         return `30:00`;
     }
@@ -36,7 +36,7 @@ function register_slurm_submit_button() {
         // since we don't have an input element for module list,
         // we have to add it at the end just before the user submit
         $("<input />").attr("type", "hidden")
-            .attr("name", "module-list")
+            .attr("name", "module_list")
             .attr("value", collect_modules_to_load())
             .appendTo("#slurm-config-form");
 
@@ -91,12 +91,11 @@ function register_add_module_handler() {
             return;
         }
 
-        var container = document.getElementById("module-list");
+        var container = document.getElementById("module_list");
         var span = document.createElement('span');
         span.setAttribute('class', "badge badge-pill badge-primary module-to-load");
         span.innerHTML = module_to_add.trim();
-
-
+        
         var div = document.createElement('div');
         div.appendChild(span);
         div.onclick = function (event) {
@@ -109,7 +108,7 @@ function register_add_module_handler() {
     }
 }
 
-// Flow for the comoser
+// Flow for the composer
 
 function show_module_component(){
     console.log("Howdy");
@@ -450,6 +449,13 @@ function testing(){
     console.log("Testing in Progress");
 }
 
+function sync_job_name(){
+    console.log($("#job-name").val());
+    let path =  $("#location").val();
+    $("#job-name").on("input", function() { 
+        $("#location").val(path + this.value );
+    });
+}
 
 
 (() => {
@@ -460,4 +466,5 @@ function testing(){
     register_on_file_changed_listener();
     register_on_runtime_change_listener();
     init_job_files_table();
+    sync_job_name();
 })();
