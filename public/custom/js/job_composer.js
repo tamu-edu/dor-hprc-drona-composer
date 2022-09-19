@@ -19,8 +19,8 @@ function calculate_walltime() {
     // console.log(days.value);
     // console.log(hours.value);
     // console.log(mins.value);
-    if (days == null || hours == null || mins == null) {
-        return `30:00`;
+    if (days.value == 0 && hours.value == 0 && mins.value == 0) {
+        return;
     }
 
     var runtime_hours = Number(days.value) * 24 + Number(hours.value);
@@ -111,9 +111,6 @@ function register_add_module_handler() {
 // Flow for the composer
 
 function show_module_component(){
-    console.log("Howdy");
-    var runtime_env_selector = document.getElementById("runtime_env").value;
-    console.log("You Clicked " + runtime_env_selector);
     var module_component = document.getElementById("module-component");
     // console.log(module_component);
     module_component.style.display = "block";
