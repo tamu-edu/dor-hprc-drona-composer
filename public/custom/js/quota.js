@@ -95,15 +95,20 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
 
       // Bind the FormData object and the form element
       const FD = new FormData(form);
+      // var response = "";
 
       // Define what happens on successful data submission
       XHR.addEventListener("load", function (event) {
-        alert(event.target.responseText);
+        // response = event.target.responseText;
+        confirm(event.target.responseText);
+        window.location.reload();
       });
 
       // Define what happens in case of error
       XHR.addEventListener("error", function (event) {
-        alert(`Oops! ${event.target.responseText}`);
+        // response = `Oops! ${event.target.responseText}`;
+        confirm(`Oops! ${event.target.responseText}`);
+        window.location.reload();
       });
 
       // Set up our request
@@ -129,11 +134,26 @@ function setup_quota_request_sender(request_endpoint, form_id, modal_id) {
         return;
       }
       
-
+      // setTimeout(sendData, 3000);
+      // const response = sendData();
       sendData();
-
+      // const myTimeout = setTimeout(function () {console.log("Waiting For Form Validation and Submission")}, 5000);
+        
+      
+      
       // dismiss our modal
+      // $(modal_id).on('hidden.bs.modal', function (e) {
+      //   // $(modal_id + ' form')[0].reset();
+      //   $(this)
+      //     .find("input,textarea,select")
+      //       .val('')
+      //       .end()
+      //     .find("input[type=checkbox], input[type=radio]")
+      //       .prop("checked", "")
+      //       .end();
+      // });
       $(modal_id).modal('hide');
+      // window.location.reload();
     });
   });
 }
