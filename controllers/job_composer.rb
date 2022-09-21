@@ -97,11 +97,11 @@ class JobComposerController < Sinatra::Base
             unix_run_command = run_command.gsub(/\r\n?/,"\n")
             f.write("#{unix_run_command}\n")
 
-            f.write("# Send your result via email\n")
-            if email.nil? or email.empty?
-                email = "#{ENV['USER']}@tamu.edu"
-            end
-            f.write("bash #{settings.send_result_path} -p #{job_folder_path} -e #{email}\n\n")
+            # f.write("# Send your result via email\n")
+            # if email.nil? or email.empty?
+            #     email = "#{ENV['USER']}@tamu.edu"
+            # end
+            # f.write("bash #{settings.send_result_path} -p #{job_folder_path} -e #{email}\n\n")
         end
 
         return job_file_path
