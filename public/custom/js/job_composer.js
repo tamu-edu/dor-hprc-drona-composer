@@ -16,11 +16,11 @@ function calculate_walltime() {
     var hours = document.getElementById("hours");
     var mins = document.getElementById("mins");
 
-    console.log(days.value);
-    console.log(hours.value);
-    console.log(mins.value);
-    if (days == null || hours == null || mins == null) {
-        return `30:00`;
+    // console.log(days.value);
+    // console.log(hours.value);
+    // console.log(mins.value);
+    if (days.value == 0 && hours.value == 0 && mins.value == 0) {
+        return;
     }
 
     var runtime_hours = Number(days.value) * 24 + Number(hours.value);
@@ -36,7 +36,7 @@ function register_slurm_submit_button() {
         // since we don't have an input element for module list,
         // we have to add it at the end just before the user submit
         $("<input />").attr("type", "hidden")
-            .attr("name", "module-list")
+            .attr("name", "module_list")
             .attr("value", collect_modules_to_load())
             .appendTo("#slurm-config-form");
 
@@ -91,12 +91,11 @@ function register_add_module_handler() {
             return;
         }
 
-        var container = document.getElementById("module-list");
+        var container = document.getElementById("module_list");
         var span = document.createElement('span');
         span.setAttribute('class', "badge badge-pill badge-primary module-to-load");
         span.innerHTML = module_to_add.trim();
-
-
+        
         var div = document.createElement('div');
         div.appendChild(span);
         div.onclick = function (event) {
@@ -107,6 +106,15 @@ function register_add_module_handler() {
         container.appendChild(div);
         document.getElementById("module-search").value = "";
     }
+}
+
+// Flow for the composer
+
+function show_module_component(){
+    var module_component = document.getElementById("module-component");
+    // console.log(module_component);
+    module_component.style.display = "block";
+
 }
 
 function register_autocomplete_for_module_search() {
@@ -185,6 +193,9 @@ function update_run_command() {
         return;
     }
 
+    // var module_component = document.getElementById("module-component");
+    // module_component.style.display = "block";
+
     let file_picker = document.getElementById('executable_file_input');
     if (file_picker == null || file_picker.files.length === 0) {
         return;
@@ -213,12 +224,17 @@ function update_run_command() {
     }
 }
 
+function runtime_onchange(){
+    show_module_component();
+    update_run_command();
+}
+
 function register_on_runtime_change_listener() {
     var runtime_env_selector = document.getElementById("runtime_env");
     if (runtime_env_selector == null) {
         return;
     }
-    runtime_env_selector.onchange = update_run_command;
+    runtime_env_selector.onchange = runtime_onchange;
 }
 
 function add_submission_loading_indicator() {
@@ -418,6 +434,25 @@ function init_job_files_table() {
     request.send();
 }
 
+function allow_edit_location(){
+    var location_component = document.getElementById("location-path");
+    if (location_component.hasAttribute("readonly") == true)
+        location_component.removeAttribute("readonly");
+    else
+        location_component.setAttribute("readonly", true);
+}
+
+function testing(){
+    console.log("Testing in Progress");
+}
+
+function sync_job_name(){
+    console.log($("#job-name").val());
+    let path =  $("#location").val();
+    $("#job-name").on("input", function() { 
+        $("#location").val(path + this.value );
+    });
+}
 
 
 (() => {
@@ -428,4 +463,5 @@ function init_job_files_table() {
     register_on_file_changed_listener();
     register_on_runtime_change_listener();
     init_job_files_table();
+    sync_job_name();
 })();

@@ -36,9 +36,9 @@ class JobComposerController < Sinatra::Base
         return res.to_json
     end
     
-    def save_file(parent_path, job_name, filename, file)
+    def save_file(job_folder_path, filename, file)
         
-        job_folder_path = File.join(parent_path, job_name)
+        # job_folder_path = File.join(parent_path, job_name)
         Dir.mkdir(job_folder_path) unless File.exists?(job_folder_path)
 
         file_path = File.join(job_folder_path, filename)
@@ -49,6 +49,22 @@ class JobComposerController < Sinatra::Base
         return file_path
     end
 
+    def save_folder_file(job_folder_path, relative_path, filename, file)
+
+        # job_folder_path = File.join(parent_path, job_name)
+        Dir.mkdir(job_folder_path) unless File.exists?(job_folder_path)
+
+        absolute_path = File.join(job_folder_path, relative_path)
+        Dir.mkdir(absolute_path) unless File.exists?(absolute_path)
+
+        file_path = File.join(absolute_path, filename)
+        File.open(file_path, 'wb') do |f|
+            f.write(file.read)
+        end
+
+        return
+    end
+
     def job_file_name(job_name)
         
         file_name = "#{job_name}.job"
@@ -57,7 +73,6 @@ class JobComposerController < Sinatra::Base
     end
 
     def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command)
-        
         job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
         File.open(job_file_path, 'wb') do |f|
@@ -68,21 +83,25 @@ class JobComposerController < Sinatra::Base
             }
             f.write("\n")
 
+
             # move to working directory where the executable is store
             f.write("# Go to the directory where we put the script\n")
             f.write("cd #{job_folder_path}\n\n")
 
-            f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
-            f.write("dos2unix #{executable_name}\n\n")
+            if !executable_name.nil?
+                f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
+                f.write("dos2unix #{executable_name}\n\n")
+            end
 
             f.write("# Run your program using provided command.\n")
-            f.write("#{run_command}\n")
+            unix_run_command = run_command.gsub(/\r\n?/,"\n")
+            f.write("#{unix_run_command}\n")
 
-            f.write("# Send your result via email\n")
-            if email.nil? or email.empty?
-                email = "#{ENV['USER']}@tamu.edu"
-            end
-            f.write("bash #{settings.send_result_path} -p #{job_folder_path} -e #{email}\n\n")
+            # f.write("# Send your result via email\n")
+            # if email.nil? or email.empty?
+            #     email = "#{ENV['USER']}@tamu.edu"
+            # end
+            # f.write("bash #{settings.send_result_path} -p #{job_folder_path} -e #{email}\n\n")
         end
 
         return job_file_path
@@ -110,21 +129,22 @@ class JobComposerController < Sinatra::Base
     end
 
     def generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, job_file_path)
-        walltime = "-W #{walltime}"
-        need_gpu = ""
-        if use_gpu
-            need_gpu = "-gpu"
-        end
-        cores = "-n #{total_cpu_cores}"
-        cores_per_node = "-R #{core_per_node}"
-        total_mem = "-M #{total_mem}"
+        
+        # If parameters are not provided, do not include in tamubatch command
 
-        account = "-P #{project_account}"
-        if project_account.strip.empty?
-            account = ""
+        walltime = (walltime.nil? || walltime.empty?) ? "" : "-W #{walltime} "
+        use_gpu = (use_gpu.nil? || use_gpu.empty?) ? "" : "-gpu "
+        cores = (cores.nil? || cores.empty?) ? "" : "-n #{cores} "
+        cores_per_node = (cores_per_node.nil? || cores_per_node.empty?) ? "" : "-R #{cores_per_node} "
+        
+        if total_mem.strip !~ /^(MB|G)/ # if it does not start with MB or G
+            total_mem = "-M #{total_mem} "
+        else 
+            total_mem = ""
         end
+        account = (project_account.strip.empty?) ? "" : "-P #{project_account} "
 
-        return "#{settings.tamubatch_path} #{walltime} #{need_gpu} #{cores} #{cores_per_node} #{total_mem} #{account} #{job_file_path}"
+        return "#{settings.tamubatch_path} #{walltime}#{use_gpu}#{cores}#{cores_per_node}#{total_mem}#{account}#{job_file_path}"
     end
 
     def parse_module(module_list_as_str) 
@@ -166,45 +186,83 @@ class JobComposerController < Sinatra::Base
     end
     
     post '/jobs/submit' do 
+        begin
+            job_name = params[:name]
+            # whitespace is your enermy, same goes for dash ;)
+            # underscore is your friend. At least in file name
+            job_name = job_name.gsub /[- ]/, "_"
+            
+            walltime = params[:walltime]
+            use_gpu = params[:gpu]           
+            total_cpu_cores = params[:cores]
+            core_per_node = params[:cores_per_node]
+            total_mem = params[:total_memory_number] + params[:total_memory_unit]
+            module_list= params[:module_list]
+            
+            file_name = (!params[:executable_script].nil?) ? params[:executable_script][:filename] : nil
+            file = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil
 
-        walltime = params['walltime']
-        use_gpu = params['gpu']
-        job_name = params[:name]
-        # whitespace is your enermy, same goes for dash ;)
-        # underscore is your friend. At least in file name
-        job_name = job_name.gsub /[- ]/, "_"
+            run_command = params[:run_command]
 
-        total_cpu_cores = params['cores']
-        core_per_node = params['cores-per-node']
-        total_mem = params['total-memory']
-        project_account = params['project-account']
-        email = params[:email]
-        module_list= params['module-list'] 
-        file_name = params[:executable_script][:filename]
-        file = params[:executable_script][:tempfile]
-        run_command = params[:run_command]
+            project_account = params[:project_account]
+            email = params[:email]
+        
+            location = params[:location]
 
-        # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
-        runtime = params[:runtime]
+            # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
+            runtime = params[:runtime]
 
-        if walltime.nil? or total_cpu_cores.nil? or core_per_node.nil? or total_mem.nil? or file_name.nil?
+        rescue
+            return "An error ocurs, please ensure that all parameters are legal and valid."
+        end
+
+
+        if walltime.nil? or total_cpu_cores.nil? or core_per_node.nil? or total_mem.nil?
             return "Invalid Job Compose Request."
         end
 
         # create job_composer folder if needed
-        storage_path = job_composer_data_path()
-        create_folder_if_not_exist(storage_path)
+        # user alternate path for job
+        # storage_path = job_composer_data_path()
+        # return location
+        # if !location.empty?
+        # storage_path = location
+        # end
+        # return storage_path
+        
+        create_folder_if_not_exist(location)
+        
+
+        if !params[:folder_file].nil?
+            for folder_file in params[:folder_file] do
+                filename = folder_file[:filename]
+                # access the header content to get the relative path of file in the uploaded directory
+                relative_path = folder_file[:head].split("\n")[0].split(";")[2].split("\"")[1]
+                relative_path.slice!(filename)
+                # return relative_path
+                
+                tempfile = folder_file[:tempfile]
+                
+
+                save_folder_file(location, relative_path, filename, tempfile)
+                # return "Hello World"
+            end
+        end
 
         # this is the script user upload
-        executable_path = save_file(storage_path, job_name, file_name, file)
+        if !params[:executable_script].nil?
+            executable_path = save_file(location, file_name, file)
+        end
+        # upload folder/data
+        # files = params[:folder_file].map{|file| file}.join("\n")
         
         # # deal with module load and go to the right directory
-        job_path = File.join(storage_path, job_name)
-        bash_script_path = generate_bash_script(job_name, parse_module(module_list), job_path, email, file_name, run_command)
+        # job_path = File.join(storage_path, job_name)
+        bash_script_path = generate_bash_script(job_name, parse_module(module_list), location, email, file_name, run_command)
         tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
-        
+       
         stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
-    
+
         if status.success?
             return stdout_str
         else  
