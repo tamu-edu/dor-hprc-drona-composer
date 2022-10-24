@@ -9,18 +9,18 @@
       
       <ul class="nav nav-tabs mb-3", role="tablist">
         <li class="nav-item" role="presentation">
-          <a class="nav-link active" id="slurm-tab" data-toggle="tab" href="#slurm-tab-content" role="tab" aria-controls="slurm-tab-content" aria-selected="true">Slurm Parameters</a>
+          <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general-tab-content" role="tab" aria-controls="general-tab-content" aria-selected="true">General</a>
         </li>
 
         <li class="nav-item" role="presentation">
-          <a class="nav-link " id="location-tab" data-toggle="tab" href="#location-tab-content" role="tab" aria-controls="location-tab-content" aria-selected="false">Files and Location</a>
+          <a class="nav-link" id="slurm-tab" data-toggle="tab" href="#slurm-tab-content" role="tab" aria-controls="slurm-tab-content" aria-selected="false">Slurm Parameters</a>
         </li>
       </ul>
 
       <div class="tab-content" id="job-content">
-        <!-- General and Slurm Job Info Collapse Section -->
-        <!-- <a class="btn btn-link form-group row" data-toggle="collapse" href="#slurm-tab-content" role="button" aria-expanded="false" aria-controls="generalCollapse">General Job Information</a> -->
-        <div class="tab-pane fade show active" id="slurm-tab-content" role="tabpanel" aria-labelledby="slurm-tab">
+
+        <!-- General and Files Tab Section -->
+        <div class="tab-pane fade show active" id="general-tab-content" role="tabpanel" aria-labelledby="general-tab">
           <!-- Job Name -->
           <div class="form-group row">
             <label class="col-lg-3 col-form-label form-control-label" for="name">Job Name</label>
@@ -38,6 +38,7 @@
                 <option value="shell">Shell</option>
                 <option value="other">Other</option>
                 <option value="python">Python</option>
+                <option value="matlab">Matlab</option>
               </select>
             </div>
           </div>
@@ -62,11 +63,48 @@
 
           <!-- Solid divider -->
           <hr class="solid md-3 mt-3">
-        
 
-      
-          <!-- Slurm Parameter Collapse Section -->
-          <!-- <a class="btn btn-link form-group row" data-toggle="collapse" href="#slurmCollapse" role="button" aria-expanded="false" aria-controls="slurmCollapse">Slurm Job Parameters</a> -->
+          <!-- Option to run job in different directory -->
+          <div id="location-component">
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label form-control-label" for="location">Directory</label>
+              <div class="col-lg-9">
+                <input type="text" id="location" name="location" class="form-control" value="/scratch/user/<%= ENV['USER'] %>/job_composer/">
+              </div>
+            </div>
+          </div>
+
+          <!-- Check box for location component -->
+          <!-- <div class="form-group row mt-2">
+            <label class="col-lg-3 col-form-label form-control-label" for="location">Different Location</label>
+            <div class="col-lg-2">
+              <input class="form-check-input form-control" type="checkbox" name="location" onclick="allow_edit_location();">
+            </div>
+          </div> -->
+
+
+          <div class="form-group row mt-2">
+            <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Executable
+              Script</label>
+            <div class="col-lg-9">
+              <input id="executable_file_input" type="file" name="executable_script">
+            </div>
+          </div>
+
+          <!-- Upload Data/Folder option -->
+          <div class="form-group row mt-2">
+            <label class="col-lg-3 col-form-label form-control-label" for="folder_file[]">Folder Upload</label>
+            <div class="col-lg-9">
+              <input type="file" id="folder_input" name="folder_file[]" webkitdirectory directory multiple/>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Slurm Job Info Collapse Section -->
+        <div class="tab-pane fade" id="slurm-tab-content" role="tabpanel" aria-labelledby="slurm-tab">
+          
+          <!-- Slurm Parameter Tab Section -->
           <!-- Walltime -->
           <div class="form-group row">
             <label class="col-lg-3 col-form-label form-control-label" for="walltime">Walltime</label>
@@ -145,44 +183,7 @@
         </div>
 
       
-        <!-- Files and Location Collapse Section -->
-        <!-- <a class="btn btn-link form-group row" data-toggle="collapse" href="#locationCollapse" role="button" aria-expanded="false" aria-controls="locationCollapse">Files and Location</a> -->
-        <div class="tab-pane fade" id="location-tab-content" role="tabpanel" aria-labelledby="location-tab">
-          <!-- Option to run job in different directory -->
-          <div id="location-component">
-            <div class="form-group row">
-              <label class="col-lg-3 col-form-label form-control-label" for="location">Directory</label>
-              <div class="col-lg-9">
-                <input type="text" id="location" name="location" class="form-control" value="/scratch/user/<%= ENV['USER'] %>/job_composer/">
-              </div>
-            </div>
-          </div>
-
-          <!-- Check box for location component -->
-          <!-- <div class="form-group row mt-2">
-            <label class="col-lg-3 col-form-label form-control-label" for="location">Different Location</label>
-            <div class="col-lg-2">
-              <input class="form-check-input form-control" type="checkbox" name="location" onclick="allow_edit_location();">
-            </div>
-          </div> -->
-
-
-          <div class="form-group row mt-2">
-            <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Executable
-              Script</label>
-            <div class="col-lg-9">
-              <input id="executable_file_input" type="file" name="executable_script">
-            </div>
-          </div>
-
-          <!-- Upload Data/Folder option -->
-          <div class="form-group row mt-2">
-            <label class="col-lg-3 col-form-label form-control-label" for="folder_file[]">Folder Upload</label>
-            <div class="col-lg-9">
-              <input type="file" id="folder_input" name="folder_file[]" webkitdirectory directory multiple/>
-            </div>
-          </div>
-        </div>
+        
       </div>
 
 

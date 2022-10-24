@@ -211,6 +211,7 @@ class JobComposerController < Sinatra::Base
 
             # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
             runtime = params[:runtime]
+            
 
         rescue
             return "An error ocurs, please ensure that all parameters are legal and valid."
@@ -258,15 +259,19 @@ class JobComposerController < Sinatra::Base
         
         # # deal with module load and go to the right directory
         # job_path = File.join(storage_path, job_name)
-        bash_script_path = generate_bash_script(job_name, parse_module(module_list), location, email, file_name, run_command)
-        tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
-       
-        stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
+        if runtime == "matlab"
+            return "matlab is currently in development process"
+        else
+            bash_script_path = generate_bash_script(job_name, parse_module(module_list), location, email, file_name, run_command)
+            tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
+        
+            stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
 
-        if status.success?
-            return stdout_str
-        else  
-            return stderr_str
+            if status.success?
+                return stdout_str
+            else  
+                return stderr_str
+            end
         end
         
     end
