@@ -1,15 +1,16 @@
 development: &common_settings
-    cluster_name: '[cluster-name]'
-    dashboard_url: '/pun/dev/[app-name]'
+    cluster_name: 'Grace'
+    dashboard_url: '/pun/dev/duy_toolbox_app'
     file_app_url: '/pun/sys/files/fs'
     file_editor_url: '/pun/sys/file-editor/edit'
     home_page: 'https://hprc.tamu.edu'
-    request_email: '[user-name]@tamu.edu'
-    help_email: '[user-name]@tamu.edu'
+    request_email: 'duy@tamu.edu'
+    help_email: 'duy@tamu.edu'
     modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
-    driver_scripts_path: '/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts'
+    driver_scripts_path: '/var/www/ood/apps/dev/duy/gateway/duy_toolbox_app/machine_driver_scripts'
     tamubatch_path: '/sw/local/bin/tamubatch'
-    send_result_path: '/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts/send_result.sh'
+    default_matlab_module: 'Matlab/R2020b'
+    send_result_path: '/var/www/ood/apps/dev/duy/gateway/duy_toolbox_app/machine_driver_scripts/send_result.sh'
     
 production:
     <<: *common_settings

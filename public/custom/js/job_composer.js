@@ -105,6 +105,10 @@ function register_add_module_handler() {
 
         container.appendChild(div);
         document.getElementById("module-search").value = "";
+
+        // add to run command window
+        // var run_command = document.getElementById("run_command");
+        // run_command.value = "module load sth\n" + run_command.value;
     }
 }
 
@@ -211,7 +215,7 @@ function update_run_command() {
             set_run_command(`python ${file_name}`);
             break;
         case 'matlab':
-            set_run_command(`matlab ${file_name}`);
+            set_run_command(`matlabsubmit [Flags] ${file_name}`);
             break;
         case 'r':
                 set_run_command(`r -f ${file_name}`);
