@@ -121,6 +121,11 @@ function show_module_component(){
 
 }
 
+// function show_venv_component(){
+//     var venv_component = document.getElementById("venv-component");
+//     venv_component.style.display = "block";
+// }
+
 function register_autocomplete_for_module_search() {
     // this setup autocomplete input box for module search
     $("#module-search").autocomplete({
@@ -229,7 +234,12 @@ function update_run_command() {
 }
 
 function runtime_onchange(){
-    show_module_component();
+    let runtime = document.getElementById("runtime_env").value;
+    if (runtime != "matlab")
+        show_module_component();
+    // if (runtime == "python")
+    //     show_venv_component();
+        
     update_run_command();
 }
 
@@ -238,6 +248,7 @@ function register_on_runtime_change_listener() {
     if (runtime_env_selector == null) {
         return;
     }
+    // let runtime = runtime_env_selector.value;
     runtime_env_selector.onchange = runtime_onchange;
 }
 

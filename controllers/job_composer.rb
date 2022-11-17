@@ -72,18 +72,25 @@ class JobComposerController < Sinatra::Base
         return file_name 
     end
 
-    def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command)
+    def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime)
         job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
         File.open(job_file_path, 'wb') do |f|
             # load module step
             f.write("# Load your requested modules\n")
+            f.write("ml load WebProxy\n")
+
             module_list.each { |module_name| 
                 f.write("ml load #{module_name}\n")
             }
             f.write("\n")
 
-
+            if runtime == "python"
+                f.write("ml load GCCcore/10.2.0\n")
+                f.write("ml load Python/3.8.6\n")
+                f.write("source #{settings.default_python_venv}bin/activate\n")
+            end
+            
             # move to working directory where the executable is store
             f.write("# Go to the directory where we put the script\n")
             f.write("cd #{job_folder_path}\n\n")
@@ -160,6 +167,7 @@ class JobComposerController < Sinatra::Base
 
             # load module step
             f.write("# Load default matlab module\n")
+            f.write("ml load WebProxy\n")
             f.write("ml load #{settings.default_matlab_module}\n\n")
 
             # move to working directory where the executable is store
@@ -282,26 +290,11 @@ class JobComposerController < Sinatra::Base
         # job_path = File.join(storage_path, job_name)
         if runtime == "matlab"
             matlabsubmit_flags = generate_matlabsubmit_flags(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
-            # return matlabsubmit_flags
             matlabsubmit_command = run_command.gsub(" [Flags]", matlabsubmit_flags)
-            # return matlabsubmit_command
             
             bash_script_path = generate_matlabsubmit_script(job_name, location, file_name, matlabsubmit_command, matlabsubmit_flags)
-            # return bash_script_path
             submit_matlab = "bash #{bash_script_path}"
-            # return submit_matlab
-            # return matlab_module_load
-            # stdout_str, stderr_str, status = Open3.capture3(matlab_module_load)
-            # if status.success?
-            #     return stdout_str
-            # else  
-            #     return stderr_str
-            # end
-            # return "Hello"
-            # command = matlab_module_load + " && " +run_command
             stdout_str, stderr_str, status = Open3.capture3(submit_matlab)
-            # return "Hello"
-            # stdout_str, stderr_str, status = Open3.capture3(run_command)
 
             if status.success?
                 return stdout_str
@@ -309,9 +302,9 @@ class JobComposerController < Sinatra::Base
                 return stderr_str
             end
         else
-            bash_script_path = generate_bash_script(job_name, parse_module(module_list), location, email, file_name, run_command)
+            bash_script_path = generate_bash_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime)
             tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account, bash_script_path)
-        
+            # return tamubatch_command
             stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
 
             if status.success?
