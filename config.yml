@@ -9,6 +9,8 @@ development: &common_settings
     modules_db_path: '/sw/hprc/sw/portal_utils/modules.sqlite3'
     driver_scripts_path: '/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts'
     tamubatch_path: '/sw/local/bin/tamubatch'
+    default_matlab_module: 'Matlab/R2020b'
+    default_python_venv: '/sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/'
     send_result_path: '/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts/send_result.sh'
     
 production:
