@@ -13,7 +13,8 @@ class RequestsController < Sinatra::Base
 
     def send_request(subject, body, success_msg, failure_message)
         
-        body = body.strip.gsub(/\r\n?/, "\n")
+        body = body.strip.gsub(/\r\n?/,"\n")
+        body = body.gsub(/'/, "")
 
         mailer = Mailer.new(settings.request_email)
         status  = mailer.send_email(subject, body)
