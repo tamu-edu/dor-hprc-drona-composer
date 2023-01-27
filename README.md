@@ -1,4 +1,4 @@
-# Dashboard Extension for Open OnDemand designed for High Performance Research Computing
+# Job Composer for Open OnDemand designed for High Performance Research Computing
 
 ## Introduction
 
