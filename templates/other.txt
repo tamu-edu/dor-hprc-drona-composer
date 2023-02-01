@@ -1,0 +1,8 @@
+source /etc/profile
+
+ml load WebProxy
+
+cd [job folder]
+
+
+dos2unix [file name]
