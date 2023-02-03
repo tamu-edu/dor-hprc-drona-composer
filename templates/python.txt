@@ -1,0 +1,17 @@
+source /etc/profile
+module load WebProxy
+module load GCCcore/10.2.0
+module load Python/3.8.6
+module load [user modules]
+source /sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/bin/activate
+echo "Done Setup"
+cd [job folder]
+echo "Done change dir"
+dos2unix [file name]
+echo "Done converting"
+pwd
+ls
+which python
+module list
+python [file name]
+echo "Done execution"

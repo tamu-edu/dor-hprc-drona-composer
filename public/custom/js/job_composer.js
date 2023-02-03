@@ -105,6 +105,10 @@ function register_add_module_handler() {
 
         container.appendChild(div);
         document.getElementById("module-search").value = "";
+
+        // add to run command window
+        // var run_command = document.getElementById("run_command");
+        // run_command.value = "module load sth\n" + run_command.value;
     }
 }
 
@@ -116,6 +120,11 @@ function show_module_component(){
     module_component.style.display = "block";
 
 }
+
+// function show_venv_component(){
+//     var venv_component = document.getElementById("venv-component");
+//     venv_component.style.display = "block";
+// }
 
 function register_autocomplete_for_module_search() {
     // this setup autocomplete input box for module search
@@ -177,6 +186,13 @@ function set_run_command(command) {
     run_cmd_input.value = command;
 }
 
+function set_template(environment) {
+    let template = document.dashboard_url + "/jobs/composer/environment/" + environment;
+    fetch(template)
+    .then(x => x.text())
+    .then(y => set_run_command(y));
+}
+
 function set_run_command_placeholder(message) {
     var run_cmd_input = document.getElementById('run_command');
 
@@ -203,30 +219,40 @@ function update_run_command() {
     let file_name = file_picker.files.item(0).name;
 
     let runtime = runtime_env_selector.value;
-    switch (runtime) {
-        case 'shell':
-            set_run_command(`chmod +x ${file_name} && ./${file_name}`);
-            break;
-        case 'python':
-            set_run_command(`python ${file_name}`);
-            break;
-        case 'matlab':
-            set_run_command(`matlab ${file_name}`);
-            break;
-        case 'r':
-                set_run_command(`r -f ${file_name}`);
-        case 'other':
-            // console.log("Other");
-            set_run_command_placeholder(`Please enter your run command. Use `);
-            break;
-        default:
-            console.error("Runtime nort supported error.");
-    }
+    // let template = document.dashboard_url + "/jobs/composer/environment/" + runtime;
+    // fetch(template)
+    // .then(x => x.text())
+    // .then(y => console.log(y));
+    // switch (runtime) {
+    //     case 'shell':
+    //         set_run_command(`chmod +x ${file_name} && ./${file_name}`);
+    //         break;
+    //     case 'python':
+    //         set_run_command(`python ${file_name}`);
+    //         break;
+    //     case 'matlab':
+    //         set_run_command(`matlabsubmit [Flags] ${file_name}`);
+    //         break;
+    //     case 'r':
+    //             set_run_command(`r -f ${file_name}`);
+    //     case 'other':
+    //         // console.log("Other");
+    //         set_run_command_placeholder(`Please enter your run command. Use `);
+    //         break;
+    //     default:
+    //         console.error("Runtime nort supported error.");
+    // }
+    set_template(runtime);
 }
 
 function runtime_onchange(){
-    show_module_component();
-    update_run_command();
+    let runtime = document.getElementById("runtime_env").value;
+    if (runtime != "matlab")
+        show_module_component();
+    // if (runtime == "python")
+    //     show_venv_component();
+    set_template(runtime);
+    // update_run_command();
 }
 
 function register_on_runtime_change_listener() {
@@ -234,6 +260,7 @@ function register_on_runtime_change_listener() {
     if (runtime_env_selector == null) {
         return;
     }
+    // let runtime = runtime_env_selector.value;
     runtime_env_selector.onchange = runtime_onchange;
 }
 

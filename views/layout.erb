@@ -34,19 +34,10 @@
           class="d-inline-block align-top" alt="">
       </a>
       <a class="navbar-brand mx-auto" href="<%= settings.dashboard_url %>">
-        <span class="text-uppercase">TAMU DASHBOARD (<%= settings.cluster_name %>)</span>
+        <span class="text-uppercase">TAMU JOB COMPOSER (<%= settings.cluster_name %>)</span>
       </a>
-      <div class="nav-item pull-right">
-        <button type="button" class="btn btn-dark navbar-button" class="nav-link" data-toggle="modal"
-          data-target="#requestHelpModal">Create Help Ticket</button>
-      </div>
-      <div class="nav-item pull-right">
-        <button type="button" class="btn btn-dark ml-2 navbar-button" class="nav-link" data-toggle="modal"
-          data-target="#requestSoftwareModal">Request Software</button>
-      </div>
+      
 
-      <%== erb :"_software_request_form" %>
-      <%== erb :"_help_request_form" %>
     </nav>
   </header>
   <%# here we load some constants that are read from our config file (this is a hack) %>
@@ -79,6 +70,7 @@
 
   <script src="<%= url("/jquery-3.4.1/jquery-3.4.1.min.js") %>"></script>
   <script src="<%= url("/bootstrap-4.4.1/js/bootstrap.min.js") %>"></script>
+  <!-- <link href="<%= url("bootstrap-4.4.1/css/bootstrap.min.css") %>" rel="stylesheet" id="bootstrap-css"> -->
   <script type="text/javascript" src="<%= url("/DataTables/datatables.min.js") %>"></script>
   <script src="<%= url("/jquery-ui-1.12.1/jquery-ui.min.js") %>"></script>
 

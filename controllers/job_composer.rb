@@ -35,6 +35,12 @@ class JobComposerController < Sinatra::Base
         res = {'data' => a } 
         return res.to_json
     end
+
+    get '/jobs/composer/environment/:environment' do |environment|
+        template = "templates/" + environment + ".txt"
+        template_data = File.read(template)
+        return template_data
+    end
     
     def save_file(job_folder_path, filename, file)
         
@@ -72,18 +78,49 @@ class JobComposerController < Sinatra::Base
         return file_name 
     end
 
-    def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command)
+    def generate_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime)
+        job_file_path = File.join(job_folder_path, job_file_name(job_name))
+        
+        File.open(job_file_path, 'wb') do |f|
+            f.write("# Load the template with user inputs.\n")
+            unix_run_command = run_command.gsub(/\r\n?/,"\n")
+            # f.write("#{unix_run_command}\n")
+
+            modules = ""
+            module_list.each { |module_name|
+                modules += module_name + " "
+            }
+
+            unix_run_command = unix_run_command.gsub("[user modules]", modules)
+            unix_run_command = unix_run_command.gsub("[job folder]", job_folder_path)
+            unix_run_command = unix_run_command.gsub("[file name]", executable_name)
+            
+
+            f.write("#{unix_run_command}\n")
+        end
+
+        return job_file_path
+    end
+
+    def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime)
         job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
         File.open(job_file_path, 'wb') do |f|
             # load module step
             f.write("# Load your requested modules\n")
+            f.write("ml load WebProxy\n")
+
             module_list.each { |module_name| 
                 f.write("ml load #{module_name}\n")
             }
             f.write("\n")
 
-
+            if runtime == "python"
+                f.write("ml load GCCcore/10.2.0\n")
+                f.write("ml load Python/3.8.6\n")
+                f.write("source #{settings.default_python_venv}bin/activate\n")
+            end
+            
             # move to working directory where the executable is store
             f.write("# Go to the directory where we put the script\n")
             f.write("cd #{job_folder_path}\n\n")
@@ -128,13 +165,13 @@ class JobComposerController < Sinatra::Base
         end
     end
 
-    def generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, job_file_path)
+    def generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account, job_file_path)
         
         # If parameters are not provided, do not include in tamubatch command
 
         walltime = (walltime.nil? || walltime.empty?) ? "" : "-W #{walltime} "
         use_gpu = (use_gpu.nil? || use_gpu.empty?) ? "" : "-gpu "
-        cores = (cores.nil? || cores.empty?) ? "" : "-n #{cores} "
+        total_cpu_cores = (total_cpu_cores.nil? || total_cpu_cores.empty?) ? "" : "-n #{total_cpu_cores} "
         cores_per_node = (cores_per_node.nil? || cores_per_node.empty?) ? "" : "-R #{cores_per_node} "
         
         if total_mem.strip !~ /^(MB|G)/ # if it does not start with MB or G
@@ -144,7 +181,7 @@ class JobComposerController < Sinatra::Base
         end
         account = (project_account.strip.empty?) ? "" : "-P #{project_account} "
 
-        return "#{settings.tamubatch_path} #{walltime}#{use_gpu}#{cores}#{cores_per_node}#{total_mem}#{account}#{job_file_path}"
+        return "#{settings.tamubatch_path} #{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}#{account}#{job_file_path}"
     end
 
     def parse_module(module_list_as_str) 
@@ -152,12 +189,15 @@ class JobComposerController < Sinatra::Base
         return modules
     end
 
-    def generate_matlabsubmit_script(job_folder_path, job_name, matlab_script, matlabsubmit_command)
-        shell_script_name = "#{File.join(job_folder_path, job_name)}.sh"
+    def generate_matlabsubmit_script(job_name, job_folder_path, matlab_script, matlabsubmit_command, matlabsubmit_flags)
+        shell_script_path = "#{File.join(job_folder_path, job_name)}.sh"
 
-        File.open(shell_script_name, 'wb') do |f|
+        File.open(shell_script_path, 'wb') do |f|
+            f.write("source /etc/profile\n")
+
             # load module step
             f.write("# Load default matlab module\n")
+            f.write("ml load WebProxy\n")
             f.write("ml load #{settings.default_matlab_module}\n\n")
 
             # move to working directory where the executable is store
@@ -168,11 +208,30 @@ class JobComposerController < Sinatra::Base
             f.write("dos2unix #{matlab_script}\n\n")
 
             f.write("# Submit your job using matlab submit\n")
+            matlabsubmit_command.gsub(" [Flags]", matlabsubmit_flags)
             f.write("#{matlabsubmit_command}\n")
         end
+
+        return shell_script_path
     end
 
-    def matlabsubmit_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
+    def generate_matlabsubmit_flags(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
+        walltime = (walltime.nil? || walltime.empty?) ? "" : "-W #{walltime} "
+        use_gpu = (use_gpu.nil? || use_gpu.empty?) ? "" : "-g "
+        total_cpu_cores = (total_cpu_cores.nil? || total_cpu_cores.empty?) ? "" : "-n #{total_cpu_cores} "
+        cores_per_node = (cores_per_node.nil? || cores_per_node.empty?) ? "" : "-R #{cores_per_node} "
+        
+        if total_mem.strip !~ /^(MB|G)/ # if it does not start with MB or G
+            total_mem = "-M #{total_mem} "
+        else 
+            total_mem = ""
+        end
+        account = (project_account.strip.empty?) ? "" : "-b #{project_account} "
+
+        return "#{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}"
+    end
+
+    def matlabsubmit_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
         # -h Shows this message
         # -m set the amount of requested memory in MEGA bytes(e.g. -m 20000)
         # -t sets the walltime; form hh:mm (e.g. -t 03:27)
@@ -184,6 +243,8 @@ class JobComposerController < Sinatra::Base
         # -f run function call instead of script
         # -x add explicit batch scheduler option    
     end
+
+
     
     post '/jobs/submit' do 
         begin
@@ -195,14 +256,14 @@ class JobComposerController < Sinatra::Base
             walltime = params[:walltime]
             use_gpu = params[:gpu]           
             total_cpu_cores = params[:cores]
-            core_per_node = params[:cores_per_node]
+            cores_per_node = params[:cores_per_node]
             total_mem = params[:total_memory_number] + params[:total_memory_unit]
             module_list= params[:module_list]
             
             file_name = (!params[:executable_script].nil?) ? params[:executable_script][:filename] : nil
             file = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil
 
-            run_command = params[:run_command]
+            run_command = params[:run_command].gsub(/\r\n?/,"\n")
 
             project_account = params[:project_account]
             email = params[:email]
@@ -211,25 +272,17 @@ class JobComposerController < Sinatra::Base
 
             # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
             runtime = params[:runtime]
+            
 
         rescue
             return "An error ocurs, please ensure that all parameters are legal and valid."
         end
 
 
-        if walltime.nil? or total_cpu_cores.nil? or core_per_node.nil? or total_mem.nil?
+        if walltime.nil? or total_cpu_cores.nil? or cores_per_node.nil? or total_mem.nil?
             return "Invalid Job Compose Request."
         end
-
-        # create job_composer folder if needed
-        # user alternate path for job
-        # storage_path = job_composer_data_path()
-        # return location
-        # if !location.empty?
-        # storage_path = location
-        # end
-        # return storage_path
-        
+    
         create_folder_if_not_exist(location)
         
 
@@ -253,20 +306,42 @@ class JobComposerController < Sinatra::Base
         if !params[:executable_script].nil?
             executable_path = save_file(location, file_name, file)
         end
-        # upload folder/data
-        # files = params[:folder_file].map{|file| file}.join("\n")
-        
-        # # deal with module load and go to the right directory
-        # job_path = File.join(storage_path, job_name)
-        bash_script_path = generate_bash_script(job_name, parse_module(module_list), location, email, file_name, run_command)
-        tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, core_per_node, total_mem, project_account, bash_script_path)
-       
-        stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
 
-        if status.success?
-            return stdout_str
-        else  
-            return stderr_str
+        # if runtime == "matlab"
+        #     matlabsubmit_flags = generate_matlabsubmit_flags(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
+        #     matlabsubmit_command = run_command.gsub(" [Flags]", matlabsubmit_flags)
+            
+        #     bash_script_path = generate_matlabsubmit_script(job_name, location, file_name, matlabsubmit_command, matlabsubmit_flags)
+        #     submit_matlab = "bash #{bash_script_path}"
+        #     stdout_str, stderr_str, status = Open3.capture3(submit_matlab)
+
+        #     if status.success?
+        #         return stdout_str
+        #     else  
+        #         return stderr_str
+        #     end
+        # else
+        # bash_script_path = generate_bash_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime)
+        bash_script_path = generate_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime)
+        if (runtime == "matlab")
+            matlab_command = "bash #{bash_script_path}"
+            # return submit_matlab
+            stdout_str, stderr_str, status = Open3.capture3(matlab_command)
+            if status.success?
+                return stdout_str
+            else  
+                return stderr_str
+            end
+        else
+            tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account, bash_script_path)
+            # return tamubatch_command
+            stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
+
+            if status.success?
+                return stdout_str
+            else  
+                return stderr_str
+                end
         end
         
     end

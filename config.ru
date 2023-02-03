@@ -1,14 +1,10 @@
 require 'sinatra'
 
-require './controllers/resources'
-require './controllers/requests'
-require './controllers/jobs'
 require './controllers/job_composer'
 require './controllers/app'
+require './controllers/jobs'
 
-use ResourcesController
-use RequestsController
-use JobsController
 use JobComposerController
+use JobsController
 
 run Sinatra::Application

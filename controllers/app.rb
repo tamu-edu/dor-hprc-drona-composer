@@ -1,7 +1,5 @@
 require 'erubi'
 require 'json'
-require './models/request_quota.rb'
-require './models/request_software.rb'
 require 'open3'
 require "sinatra/config_file"
 

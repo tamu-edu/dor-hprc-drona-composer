@@ -1,40 +1,8 @@
-<div class="row">
-  <div class="col-md-5">
-    <div class="col mt-2">
-      <h6 class="text-uppercase col-xs-1 text-center">Cluster Statistics</h6>
-        <!-- Solid divider -->
-        <hr class="solid">
-    </div>
-    <div class="row mt-4">
-      <%== erb :"_cluster_stats" %>
-    </div>
-      <div class="row mt-4">
-      <%== erb :"_job_config_form" %>
-    </div>
+  <div class="row-md-12 mt-4">
+    <%== erb :"_job_config_form" %>
   </div>
 
-  <div class="col-md-7">
-    <div class="col mt-2">
-      <h6 class="text-uppercase col-xs-1 text-center">Summary</h6>
-      <!-- Solid divider -->
-      <hr class="solid">
-    </div>
-    <div class="row mt-4">
-      <div class="col">
-        <%== erb :"_accounting_table" %>
-      </div>
-    </div>
+  <div class="row-md-12 mt-4">
+    <%== erb :"_job_table_with_composer_button" %>
+  </div> 
 
-    <div class="row mt-4">
-      <div class="col">
-        <%== erb :"_quota_table" %>
-      </div>
-    </div>
-
-    <div class="row mt-4">
-      <div class="col">
-        <%== erb :"_job_table_with_composer_button" %>
-      </div>
-    </div>    
-  </div>
-</div>
