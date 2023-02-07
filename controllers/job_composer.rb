@@ -93,8 +93,11 @@ class JobComposerController < Sinatra::Base
 
             unix_run_command = unix_run_command.gsub("[user modules]", modules)
             unix_run_command = unix_run_command.gsub("[job folder]", job_folder_path)
-            unix_run_command = unix_run_command.gsub("[file name]", executable_name)
-            
+            if !executable_name.nil?
+                unix_run_command = unix_run_command.gsub("[file name]", executable_name)
+            else
+                unix_run_command = unix_run_command.gsub(/\n.+\[file name\]/, "")
+            end
 
             f.write("#{unix_run_command}\n")
         end
