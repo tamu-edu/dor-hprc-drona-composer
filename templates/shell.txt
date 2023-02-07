@@ -1,14 +1,7 @@
 module load WebProxy
 module load [user modules]
 
-echo "Done Setup"
 cd [job folder]
-echo "Done change dir"
 dos2unix [file name]
-echo "Done converting"
-pwd
-ls
-which python
 chmod u+x [file name]
 ./[file name]
-echo "Done execution"
