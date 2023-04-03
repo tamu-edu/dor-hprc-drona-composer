@@ -37,7 +37,7 @@ class JobComposerController < Sinatra::Base
     end
 
     get '/jobs/composer/environment/:environment' do |environment|
-        template = "templates/" + environment + ".txt"
+        template = "templates/" + settings.cluster_name + "-" + environment + ".txt"
         template_data = File.read(template)
         return template_data
     end
@@ -246,8 +246,6 @@ class JobComposerController < Sinatra::Base
         # -f run function call instead of script
         # -x add explicit batch scheduler option    
     end
-
-
     
     post '/jobs/submit' do 
         begin
@@ -379,5 +377,7 @@ class JobComposerController < Sinatra::Base
             return stderr_str
         end
     end
+
+
   
 end
