@@ -35,9 +35,16 @@
             <div class="col-lg-9">
               <select id="runtime_env" name="runtime">
                 <option disabled selected value> -- select an option -- </option>
-                <option value="shell">Shell</option>
-                <option value="python">Python</option>
-                <option value="matlab">Matlab</option>
+
+                <% dir_path = './templates' %>
+                <% pattern = /(.*).txt$/ %>
+                <% Dir.entries(dir_path).select { |name| name.match(pattern) }.each do |name| %>
+                    <% extracted_name = name.match(pattern)[1] %>
+                    <option value="<%= extracted_name %>"><%= extracted_name %></option>
+                <% end %>
+
+
+
               </select>
             </div>
           </div>

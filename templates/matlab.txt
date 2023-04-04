@@ -1,0 +1,13 @@
+source /etc/profile
+
+ml load WebProxy
+ml load Matlab/R2020b
+
+
+cd [job folder]
+
+
+dos2unix [file name]
+
+
+matlabsubmit [file name]

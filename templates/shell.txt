@@ -1,0 +1,7 @@
+module load WebProxy
+module load [user modules]
+
+cd [job folder]
+dos2unix [file name]
+chmod u+x [file name]
+./[file name]
