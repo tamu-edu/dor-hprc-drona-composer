@@ -37,7 +37,7 @@ class JobComposerController < Sinatra::Base
     end
 
     get '/jobs/composer/environment/:environment' do |environment|
-        template = "templates/" + settings.cluster_name + "-" + environment + ".txt"
+        template = "templates/" + environment + ".txt"
         template_data = File.read(template)
         return template_data
     end
