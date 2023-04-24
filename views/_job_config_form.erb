@@ -107,13 +107,31 @@
           </div>
 
           <!-- Upload Data/Folder option -->
-          <div class="form-group row mt-2">
+          <!-- <div class="form-group row mt-2">
             <label class="col-lg-3 col-form-label form-control-label" for="folder_file[]">Folder Upload</label>
             <div class="col-lg-9">
-              <input type="file" id="folder_input" name="folder_file[]" webkitdirectory directory multiple/>
+              <input type="file" id="folder_input" name="folder_file[]" directory multiple webkitdirectory mozdirectory/>
             </div>
-          </div>
+          </div> -->
+
+        
+            <div class="form-group row mt-2">
+                <label class="col-lg-3 col-form-label form-control-label" for="files[]">Uploader</label>
+                <select id="mySelect" name="mySelect">
+                    <option value="none" selected disabled>Select an option</option>
+                    <option value="file">File</option>
+                    <option value="folder">Folder</option>
+                </select>
+                <input id="fileInput" type="file" multiple style="display:none" />
+                <input id="folderInput" type="file" multiple webkitdirectory directory style="display:none" />
+                    
+                <button id="addButton" type="button">+ Add Files</button>
+                
+            </div>
+            <div class="form-group" id="myFiles" style="height:120px;border:1px solid #ccc;font:16px/26px Georgia, Garamond, Serif;overflow:auto;"></div>
         </div>
+
+        
 
 
         <!-- Slurm Job Info Collapse Section -->

@@ -247,7 +247,7 @@ class JobComposerController < Sinatra::Base
         # -x add explicit batch scheduler option    
     end
     
-    post '/jobs/submit' do 
+    post '/jobs/submit' do
         begin
             job_name = params[:name]
             # whitespace is your enermy, same goes for dash ;)
@@ -262,7 +262,7 @@ class JobComposerController < Sinatra::Base
             module_list= params[:module_list]
             
             file_name = (!params[:executable_script].nil?) ? params[:executable_script][:filename] : nil
-            file = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil
+            file_content = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil
 
             run_command = params[:run_command].gsub(/\r\n?/,"\n")
 
@@ -278,14 +278,149 @@ class JobComposerController < Sinatra::Base
         rescue
             return "An error ocurs, please ensure that all parameters are legal and valid."
         end
+        
 
-
-        if walltime.nil? or total_cpu_cores.nil? or cores_per_node.nil? or total_mem.nil?
-            return "Invalid Job Compose Request."
-        end
+        # if walltime.nil? or total_cpu_cores.nil? or cores_per_node.nil? or total_mem.nil?
+        #     return "Invalid Job Compose Request."
+        # end
     
         create_folder_if_not_exist(location)
         
+
+        if !params[:files].nil?
+            for file in params[:files] do
+                filename = file[:filename]
+                
+                # access the header content to get the relative path of file in the uploaded directory
+                # relative_path = file[:head]
+                relative_path = file[:head].split("\n")[0].split(";")[2].split("\"")[1]
+                relative_path.slice!(filename)
+                
+
+                tempfile = file[:tempfile]
+                save_folder_file(location, relative_path, filename, tempfile)
+            end
+        end
+        
+
+        # this is the script user upload
+        if !params[:executable_script].nil?
+            executable_path = save_file(location, file_name, file_content)
+        end
+
+
+        bash_script_path = generate_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime)
+        if (runtime == "matlab")
+            matlab_command = "bash #{bash_script_path}"
+            # return submit_matlab
+            stdout_str, stderr_str, status = Open3.capture3(matlab_command)
+            if status.success?
+                return stdout_str
+            else  
+                return stderr_str
+            end
+        else
+            tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account, bash_script_path)
+            # return tamubatch_command
+            stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
+
+            if status.success?
+                return stdout_str
+            else  
+                return stderr_str
+                end
+        end
+        
+    end
+
+    delete "/jobs/composer/job_files/:file_name" do |file_name|
+        get_job_files_command =  driver_command('job_submit_helper')
+        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -d #{file_name}")
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
+        end
+    end
+
+    get "/jobs/composer/submit/:file_name" do |file_name|
+        get_job_files_command =  driver_command('job_submit_helper')
+        
+        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -s #{file_name}")
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
+        end
+    end
+
+    get "/jobs/composer/job_files" do 
+        get_job_files_command =  driver_command('job_submit_helper')
+        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -j")
+        if status.success?
+            return stdout_str
+        else  
+            return stderr_str
+        end
+    end
+
+
+    post '/jobs/test' do 
+
+        # return params[:files][0]
+        # result = ""
+        # for file in params['files'] do
+        #     result += file + "\n"
+        # end
+        # return result
+        # return files.inspect
+
+        # begin
+        #     job_name = params[:name]
+        #     # whitespace is your enermy, same goes for dash ;)
+        #     # underscore is your friend. At least in file name
+        #     job_name = job_name.gsub /[- ]/, "_"
+            
+            
+        #     # file_name = (!params[:executable_script].nil?) ? params[:executable_script][:filename] : nil
+        #     # file = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil
+
+        #     # run_command = params[:run_command].gsub(/\r\n?/,"\n")
+
+        #     # project_account = params[:project_account]
+        #     # email = params[:email]
+        
+        #     # location = params[:location]
+
+        #     # # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
+        #     # runtime = params[:runtime]
+            
+
+        # rescue
+        #     return "An error ocurs, please ensure that all parameters are legal and valid."
+        # end
+
+        # return "Haha"
+        
+        location = "/scratch/user/duy/job_composer/test"
+        create_folder_if_not_exist(location)
+
+
+
+        if !params[:files].nil?
+            for file in params[:files] do
+                filename = file[:filename]
+                # access the header content to get the relative path of file in the uploaded directory
+                # relative_path = file[:head]
+                relative_path = file[:head].split("\n")[0].split(";")[2].split("\"")[1]
+                relative_path.slice!(filename)
+
+                tempfile = file[:tempfile]
+                save_folder_file(location, relative_path, filename, tempfile)
+            end
+        end
+
+        return "hehe"
 
         if !params[:folder_file].nil?
             for folder_file in params[:folder_file] do
@@ -345,37 +480,6 @@ class JobComposerController < Sinatra::Base
                 end
         end
         
-    end
-
-    delete "/jobs/composer/job_files/:file_name" do |file_name|
-        get_job_files_command =  driver_command('job_submit_helper')
-        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -d #{file_name}")
-        if status.success?
-            return stdout_str
-        else  
-            return stderr_str
-        end
-    end
-
-    get "/jobs/composer/submit/:file_name" do |file_name|
-        get_job_files_command =  driver_command('job_submit_helper')
-        
-        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -s #{file_name}")
-        if status.success?
-            return stdout_str
-        else  
-            return stderr_str
-        end
-    end
-
-    get "/jobs/composer/job_files" do 
-        get_job_files_command =  driver_command('job_submit_helper')
-        stdout_str, stderr_str, status = Open3.capture3("#{get_job_files_command} -j")
-        if status.success?
-            return stdout_str
-        else  
-            return stderr_str
-        end
     end
 
 

@@ -27,36 +27,11 @@ function calculate_walltime() {
     return `${runtime_hours}:${Number(mins.value)}:00`;
 }
 
-function register_slurm_submit_button() {
-    var slurm_form = document.getElementById('slurm-config-form');
-    if (slurm_form == null) {
-        return;
-    }
-    slurm_form.onsubmit = function (event) {
-        // since we don't have an input element for module list,
-        // we have to add it at the end just before the user submit
-        $("<input />").attr("type", "hidden")
-            .attr("name", "module_list")
-            .attr("value", collect_modules_to_load())
-            .appendTo("#slurm-config-form");
-
-        $("<input />").attr("type", "hidden")
-            .attr("name", "walltime")
-            .attr("value", calculate_walltime())
-            .appendTo("#slurm-config-form");
-
-        console.log(slurm_form);
-        submit_job(slurm_form);
-        event.preventDefault();
-        return false;
-    }
-}
-
-function submit_job(form) {
+function submit_job(action, formData) {
     var request = new XMLHttpRequest();
 
     add_submission_loading_indicator();
-    request.open('POST', form.action, true);
+    request.open('POST', action, true);
     request.onload = function (event) {
         remove_submission_loading_indicator();
         if (request.status == 200) {
@@ -72,8 +47,7 @@ function submit_job(form) {
         alert("An error has occured. Please try again!");
     }
 
-    let data = new FormData(form);
-    request.send(data);
+    request.send(formData);
 }
 
 function register_add_module_handler() {
@@ -121,10 +95,6 @@ function show_module_component(){
 
 }
 
-// function show_venv_component(){
-//     var venv_component = document.getElementById("venv-component");
-//     venv_component.style.display = "block";
-// }
 
 function register_autocomplete_for_module_search() {
     // this setup autocomplete input box for module search
@@ -481,14 +451,105 @@ function sync_job_name(){
     });
 }
 
+function setup_uploader_and_submit_button() {
+    let slurm_form = document.getElementById('slurm-config-form');
+    if (slurm_form == null) {
+        return;
+    }
+    
+
+    let inputFile = $('#fileInput');
+    let inputFolder = $('#folderInput');
+    let addButton = $('#addButton');
+    let filesContainer = $('#myFiles');
+    let files = [];
+    
+    inputFile.change(function() {
+      let newFiles = []; 
+      for(let index = 0; index < inputFile[0].files.length; index++) {
+        let file = inputFile[0].files[index];
+        newFiles.push(file);
+        files.push(file);
+      }
+      
+      newFiles.forEach(file => {
+        let fileElement = $(`<p>${file.name}</p>`);
+        fileElement.data('fileData', file);
+        filesContainer.append(fileElement);
+        
+        fileElement.click(function(event) {
+          let fileElement = $(event.target);
+          let indexToRemove = files.indexOf(fileElement.data('fileData'));
+          fileElement.remove();
+          files.splice(indexToRemove, 1);
+        });
+      });
+    });
+
+    inputFolder.change(function() {
+        let newFiles = [];
+        // console.log(inputFolder);
+        for(let index = 0; index < inputFolder[0].files.length; index++) {
+          let file = inputFolder[0].files[index];
+          newFiles.push(file);
+          files.push(file);
+        }
+        
+        newFiles.forEach(file => {
+          let fileElement = $(`<p>${file.webkitRelativePath}</p>`);
+          fileElement.data('fileData', file);
+          filesContainer.append(fileElement);
+          
+          fileElement.click(function(event) {
+            let fileElement = $(event.target);
+            let indexToRemove = files.indexOf(fileElement.data('fileData'));
+            fileElement.remove();
+            files.splice(indexToRemove, 1);
+          });
+        });
+    });
+    
+    addButton.click(function() {
+      var option = $('#mySelect').val();
+      if (option == "file") {
+        inputFile.click();
+      } else if (option == "folder") {
+        inputFolder.click();
+      } else {
+        alert("Please select a file or folder");
+      }
+    });
+    
+    // Setup Custom Submit Event
+    slurm_form.onsubmit = function(event) {
+        event.preventDefault();
+
+      $("<input />").attr("type", "hidden")
+        .attr("name", "module_list")
+        .attr("value", collect_modules_to_load())
+        .appendTo("#slurm-config-form");
+
+      $("<input />").attr("type", "hidden")
+        .attr("name", "walltime")
+        .attr("value", calculate_walltime())
+        .appendTo("#slurm-config-form");
+      let formData = new FormData(slurm_form);
+      
+      files.forEach(file => {
+        formData.append('files[]', file);
+      });
+      action = $("#slurm-config-form").prop("action");
+      submit_job(action, formData);
+    }
+}
 
 (() => {
     // setup job composer 
     register_autocomplete_for_module_search();
     register_add_module_handler();
-    register_slurm_submit_button();
     register_on_file_changed_listener();
     register_on_runtime_change_listener();
     init_job_files_table();
     sync_job_name();
+    setup_uploader_and_submit_button();
 })();
