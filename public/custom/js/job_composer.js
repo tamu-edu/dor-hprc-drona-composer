@@ -543,6 +543,59 @@ function setup_uploader_and_submit_button() {
     }
 }
 
+function setup_dynamic_form() {
+    $(document).ready(function () {
+        $('#runtime_env').change(function () {
+          var selectedType = $(this).val();
+    
+          // Fetch the corresponding JSON file from the backend
+          $.ajax({
+            url: document.dashboard_url + '/jobs/composer/schema/' + selectedType,
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+              // Clear existing form fields
+              $('#dynamicFieldsContainer').empty();
+            //   console.log(Object.keys(data));
+            //   for (field in data){
+            //       for (key in field){
+            //           console.log(key);
+            //       }
+            //   }
+    
+              // Loop through the JSON data and create form fields
+              for (var i = 0; i < Object.keys(data).length; i++) {
+                var field = data[Object.keys(data)[i]];
+
+                // Create form field based on the JSON data
+                var inputGroup = $('<div>');
+                inputGroup.attr('class', 'form-group row');
+
+                var inputLabel = $('<label>');
+                inputLabel.attr('class', 'col-lg-3 col-form-label form-control-label');
+                inputLabel.attr('for', field.name);
+                inputLabel.text(field.name);
+
+                var inputField = $('<input>');
+                inputField.attr('class', 'col-lg-9 form-control');
+                inputField.attr('type', field.type);
+                inputField.attr('name', field.name);
+                inputField.attr('placeholder', field.placeholder);
+    
+                // Add the form field to the container
+                inputGroup.append(inputLabel);
+                inputGroup.append(inputField);
+                $('#dynamicFieldsContainer').append(inputGroup);
+              }
+            },
+            error: function () {
+              console.error('Error fetching JSON data');
+            }
+          });
+        });
+      });
+}
+
 (() => {
     // setup job composer 
     register_autocomplete_for_module_search();
@@ -551,5 +604,6 @@ function setup_uploader_and_submit_button() {
     register_on_runtime_change_listener();
     init_job_files_table();
     sync_job_name();
+    setup_dynamic_form();
     setup_uploader_and_submit_button();
 })();

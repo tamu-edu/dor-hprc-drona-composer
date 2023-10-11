@@ -1,0 +1,14 @@
+{
+    "jobname": {
+        "type": "string"
+    },
+    "environment": {
+        "type": "string"
+    },
+    "directory": {
+        "type": "string"
+    },
+    "main": {
+        "type": "file"
+    }
+}

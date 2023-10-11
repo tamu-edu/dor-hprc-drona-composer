@@ -10,4 +10,4 @@ cd [job folder]
 dos2unix [file name]
 
 
-matlabsubmit [file name]
+matlabsubmit [workers] [threads] [file name]

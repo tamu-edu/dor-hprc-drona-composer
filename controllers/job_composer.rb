@@ -41,6 +41,12 @@ class JobComposerController < Sinatra::Base
         template_data = File.read(template)
         return template_data
     end
+
+    get '/jobs/composer/schema/:schema' do |schema|
+        json = "schemas/" + schema + ".json"
+        json_data = File.read(json)
+        return json_data
+    end
     
     def save_file(job_folder_path, filename, file)
         
@@ -78,7 +84,7 @@ class JobComposerController < Sinatra::Base
         return file_name 
     end
 
-    def generate_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime)
+    def generate_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime, workers, threads)
         job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
         File.open(job_file_path, 'wb') do |f|
@@ -99,53 +105,66 @@ class JobComposerController < Sinatra::Base
                 unix_run_command = unix_run_command.gsub(/\n.+\[file name\]/, "")
             end
 
+            if !workers.nil?
+                unix_run_command = unix_run_command.gsub("[workers]", "-w " + workers)
+            else
+                unix_run_command = unix_run_command.gsub(/\n.+\[workers\]/, "")
+            end
+
+            if !threads.nil?
+                unix_run_command = unix_run_command.gsub("[threads]", "-s " + threads)
+            else
+                unix_run_command = unix_run_command.gsub(/\n.+\[threads\]/, "")
+            end
+
+
             f.write("#{unix_run_command}\n")
         end
 
         return job_file_path
     end
 
-    def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime)
-        job_file_path = File.join(job_folder_path, job_file_name(job_name))
+    # def generate_bash_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime)
+    #     job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
-        File.open(job_file_path, 'wb') do |f|
-            # load module step
-            f.write("# Load your requested modules\n")
-            f.write("ml load WebProxy\n")
+    #     File.open(job_file_path, 'wb') do |f|
+    #         # load module step
+    #         f.write("# Load your requested modules\n")
+    #         f.write("ml load WebProxy\n")
 
-            module_list.each { |module_name| 
-                f.write("ml load #{module_name}\n")
-            }
-            f.write("\n")
+    #         module_list.each { |module_name| 
+    #             f.write("ml load #{module_name}\n")
+    #         }
+    #         f.write("\n")
 
-            if runtime == "python"
-                f.write("ml load GCCcore/10.2.0\n")
-                f.write("ml load Python/3.8.6\n")
-                f.write("source #{settings.default_python_venv}bin/activate\n")
-            end
+    #         if runtime == "python"
+    #             f.write("ml load GCCcore/10.2.0\n")
+    #             f.write("ml load Python/3.8.6\n")
+    #             f.write("source #{settings.default_python_venv}bin/activate\n")
+    #         end
             
-            # move to working directory where the executable is store
-            f.write("# Go to the directory where we put the script\n")
-            f.write("cd #{job_folder_path}\n\n")
+    #         # move to working directory where the executable is store
+    #         f.write("# Go to the directory where we put the script\n")
+    #         f.write("cd #{job_folder_path}\n\n")
 
-            if !executable_name.nil?
-                f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
-                f.write("dos2unix #{executable_name}\n\n")
-            end
+    #         if !executable_name.nil?
+    #             f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
+    #             f.write("dos2unix #{executable_name}\n\n")
+    #         end
 
-            f.write("# Run your program using provided command.\n")
-            unix_run_command = run_command.gsub(/\r\n?/,"\n")
-            f.write("#{unix_run_command}\n")
+    #         f.write("# Run your program using provided command.\n")
+    #         unix_run_command = run_command.gsub(/\r\n?/,"\n")
+    #         f.write("#{unix_run_command}\n")
 
-            # f.write("# Send your result via email\n")
-            # if email.nil? or email.empty?
-            #     email = "#{ENV['USER']}@tamu.edu"
-            # end
-            # f.write("bash #{settings.send_result_path} -p #{job_folder_path} -e #{email}\n\n")
-        end
+    #         # f.write("# Send your result via email\n")
+    #         # if email.nil? or email.empty?
+    #         #     email = "#{ENV['USER']}@tamu.edu"
+    #         # end
+    #         # f.write("bash #{settings.send_result_path} -p #{job_folder_path} -e #{email}\n\n")
+    #     end
 
-        return job_file_path
-    end
+    #     return job_file_path
+    # end
 
     def driver_command(driver_name)
         driver_scripts_location = settings.driver_scripts_path
@@ -192,60 +211,60 @@ class JobComposerController < Sinatra::Base
         return modules
     end
 
-    def generate_matlabsubmit_script(job_name, job_folder_path, matlab_script, matlabsubmit_command, matlabsubmit_flags)
-        shell_script_path = "#{File.join(job_folder_path, job_name)}.sh"
+    # def generate_matlabsubmit_script(job_name, job_folder_path, matlab_script, matlabsubmit_command, matlabsubmit_flags)
+    #     shell_script_path = "#{File.join(job_folder_path, job_name)}.sh"
 
-        File.open(shell_script_path, 'wb') do |f|
-            f.write("source /etc/profile\n")
+    #     File.open(shell_script_path, 'wb') do |f|
+    #         f.write("source /etc/profile\n")
 
-            # load module step
-            f.write("# Load default matlab module\n")
-            f.write("ml load WebProxy\n")
-            f.write("ml load #{settings.default_matlab_module}\n\n")
+    #         # load module step
+    #         f.write("# Load default matlab module\n")
+    #         f.write("ml load WebProxy\n")
+    #         f.write("ml load #{settings.default_matlab_module}\n\n")
 
-            # move to working directory where the executable is store
-            f.write("# Go to the directory where we put the script\n")
-            f.write("cd #{job_folder_path}/\n\n")
+    #         # move to working directory where the executable is store
+    #         f.write("# Go to the directory where we put the script\n")
+    #         f.write("cd #{job_folder_path}/\n\n")
 
-            f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
-            f.write("dos2unix #{matlab_script}\n\n")
+    #         f.write("# Strip Windows, macOS symbols to make sure your script unix compatible.\n")
+    #         f.write("dos2unix #{matlab_script}\n\n")
 
-            f.write("# Submit your job using matlab submit\n")
-            matlabsubmit_command.gsub(" [Flags]", matlabsubmit_flags)
-            f.write("#{matlabsubmit_command}\n")
-        end
+    #         f.write("# Submit your job using matlab submit\n")
+    #         matlabsubmit_command.gsub(" [Flags]", matlabsubmit_flags)
+    #         f.write("#{matlabsubmit_command}\n")
+    #     end
 
-        return shell_script_path
-    end
+    #     return shell_script_path
+    # end
 
-    def generate_matlabsubmit_flags(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
-        walltime = (walltime.nil? || walltime.empty?) ? "" : "-W #{walltime} "
-        use_gpu = (use_gpu.nil? || use_gpu.empty?) ? "" : "-g "
-        total_cpu_cores = (total_cpu_cores.nil? || total_cpu_cores.empty?) ? "" : "-n #{total_cpu_cores} "
-        cores_per_node = (cores_per_node.nil? || cores_per_node.empty?) ? "" : "-R #{cores_per_node} "
+    # def generate_matlabsubmit_flags(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
+    #     walltime = (walltime.nil? || walltime.empty?) ? "" : "-W #{walltime} "
+    #     use_gpu = (use_gpu.nil? || use_gpu.empty?) ? "" : "-g "
+    #     total_cpu_cores = (total_cpu_cores.nil? || total_cpu_cores.empty?) ? "" : "-n #{total_cpu_cores} "
+    #     cores_per_node = (cores_per_node.nil? || cores_per_node.empty?) ? "" : "-R #{cores_per_node} "
         
-        if total_mem.strip !~ /^(MB|G)/ # if it does not start with MB or G
-            total_mem = "-M #{total_mem} "
-        else 
-            total_mem = ""
-        end
-        account = (project_account.strip.empty?) ? "" : "-b #{project_account} "
+    #     if total_mem.strip !~ /^(MB|G)/ # if it does not start with MB or G
+    #         total_mem = "-M #{total_mem} "
+    #     else 
+    #         total_mem = ""
+    #     end
+    #     account = (project_account.strip.empty?) ? "" : "-b #{project_account} "
 
-        return "#{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}"
-    end
+    #     return "#{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}"
+    # end
 
-    def matlabsubmit_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
-        # -h Shows this message
-        # -m set the amount of requested memory in MEGA bytes(e.g. -m 20000)
-        # -t sets the walltime; form hh:mm (e.g. -t 03:27)
-        # -w sets the number of ADDITIONAL workers
-        # -g indicates script needs GPU  (no value needed)
-        # -b sets the billing account to use 
-        # -s set number of threads for multithreading (default: 8 ( 1  when -w > 0)
-        # -p set number of workers per node
-        # -f run function call instead of script
-        # -x add explicit batch scheduler option    
-    end
+    # def matlabsubmit_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account)
+    #     # -h Shows this message
+    #     # -m set the amount of requested memory in MEGA bytes(e.g. -m 20000)
+    #     # -t sets the walltime; form hh:mm (e.g. -t 03:27)
+    #     # -w sets the number of ADDITIONAL workers
+    #     # -g indicates script needs GPU  (no value needed)
+    #     # -b sets the billing account to use 
+    #     # -s set number of threads for multithreading (default: 8 ( 1  when -w > 0)
+    #     # -p set number of workers per node
+    #     # -f run function call instead of script
+    #     # -x add explicit batch scheduler option    
+    # end
     
     post '/jobs/submit' do
         begin
@@ -273,6 +292,10 @@ class JobComposerController < Sinatra::Base
 
             # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
             runtime = params[:runtime]
+
+
+            workers = params[:workers]
+            threads = params[:threads]
             
 
         rescue
@@ -309,7 +332,7 @@ class JobComposerController < Sinatra::Base
         end
 
 
-        bash_script_path = generate_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime)
+        bash_script_path = generate_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime, workers, threads)
         if (runtime == "matlab")
             matlab_command = "bash #{bash_script_path}"
             # return submit_matlab
