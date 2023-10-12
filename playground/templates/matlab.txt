@@ -1,0 +1,13 @@
+# this is the template to run matlab codes in the jobcomposer
+# placeholder are designated with [] around them will be 
+# automatically replaced with actual values entered in the form.
+# you are welcome to replace these placeholders directly in this 
+# template script
+
+module load Matlab/[fversion]
+
+cd [flocation]
+
+matlabsubmit [-w workers] [-s threads] [-t walltime] [fmainscript]
+
+echo "Run Finished"
