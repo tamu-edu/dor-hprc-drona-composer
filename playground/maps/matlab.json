@@ -1,9 +1,7 @@
 {
-    "template": "schema",
-    "fversion": "version",
-    "flocation": "location",
-    "-w workers": "-w workers",
-    "-s threads": "-s threads",
-    "-t walltime": "-t walltime",
-    "fmainscript": "mainscript"
+    "template": "$schema",
+    "fversion": "$version",
+    "flocation": "$location",
+    "mopts": "-w $workers -s $threads -t $walltime",
+    "fmainscript": "$mainscript"
 }

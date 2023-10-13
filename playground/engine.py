@@ -8,6 +8,13 @@ def replace_flag(match, flag_dict):
     else:
         return ""
 
+def replace_no_flag(match, flag_dict):
+    flagname = match.group(1)
+    if flagname in flag_dict:
+        return flag_dict[flagname]
+    else:
+        return ""
+
 class Engine():
     def __init__(self):
         self.enviroment = None
@@ -46,20 +53,18 @@ class Engine():
         # 2 Steps replacement
         ## 1. Replace the map values in the template with params name
         for key, value in map.items():
-            template = template.replace(key, value)
+            template = template.replace("["+key+"]", value)
         # return template
 
         ## 2. Replace the params name with the actual values in form fields
-        # Keys with no flag
-        for key, value in params.items():
-            template = template.replace("["+key+"]", value)
-
         # Keys with flag
-        pattern = r'\[-(.) (\w+)\]'
-        template = re.sub(pattern, lambda match: replace_flag(match, params), template)
-        # print(template)
+        pattern_flag = r'-(.) \$(\w+)'
+        template = re.sub(pattern_flag, lambda match: replace_flag(match, params), template)
 
-        # template = template.replace("[", "").replace("]", "")
+        # Keys with no flag
+        pattern_no_flag = r'\$(\w+)'
+        template = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), template)
+
         return template
         
     def generate_script(self, params):
@@ -78,7 +83,7 @@ map = engine.get_map()
 schema = engine.get_schema()
 
 # Assumming that we receive a params object from the sinatra app for the actual values of the schema
-params = {"version": "2019", "workers": "6", "threads": "8", "location": "/scratch/ondemand/myjob", "mainscript": "job.sh"}
+params = {"version": "2019", "workers": "4", "threads": "8", "location": "/scratch/ondemand/myjob", "mainscript": "job.sh"}
 
 # print(map)
 # print(schema)  

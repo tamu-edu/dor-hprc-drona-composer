@@ -8,6 +8,6 @@ module load Matlab/[fversion]
 
 cd [flocation]
 
-matlabsubmit [-w workers] [-s threads] [-t walltime] [fmainscript]
+matlabsubmit [mopts] [fmainscript]
 
 echo "Run Finished"
