@@ -524,6 +524,11 @@ function setup_uploader_and_submit_button() {
     slurm_form.onsubmit = function(event) {
         event.preventDefault();
 
+
+
+        $('#mainscript').val($('#executable_file_input').val().split('\\').pop());
+
+
       $("<input />").attr("type", "hidden")
         .attr("name", "module_list")
         .attr("value", collect_modules_to_load())
@@ -580,7 +585,7 @@ function setup_dynamic_form() {
                 inputField.attr('class', 'col-lg-9 form-control');
                 inputField.attr('type', field.type);
                 inputField.attr('name', field.name);
-                inputField.attr('placeholder', field.placeholder);
+                inputField.attr('value', field.value);
     
                 // Add the form field to the container
                 inputGroup.append(inputLabel);
@@ -595,6 +600,10 @@ function setup_dynamic_form() {
         });
       });
 }
+
+// anonymous function to sync the name of upload file with the value of hidden input
+
+
 
 (() => {
     // setup job composer 

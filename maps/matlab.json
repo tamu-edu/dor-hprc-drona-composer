@@ -1,0 +1,6 @@
+{
+    "fversion": "$version",
+    "flocation": "$location",
+    "mopts": "-w $workers -s $threads -t $walltime",
+    "fmainscript": "$mainscript"
+}

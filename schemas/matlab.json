@@ -2,11 +2,16 @@
     "workers": {
         "type": "number",
         "name": "workers",
-        "placeholder": "default"
+        "value": "1"
     },
     "threads": {
         "type": "number",
         "name": "threads",
-        "placeholder": "default"
+        "value": "1"
+    },
+    "version": {
+        "type": "text",
+        "name": "version",
+        "value": "R2020b"
     }
 }

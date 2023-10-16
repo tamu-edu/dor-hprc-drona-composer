@@ -1,13 +1,14 @@
+# this is the template to run matlab codes in the jobcomposer
+# placeholder are designated with [] around them will be 
+# automatically replaced with actual values entered in the form.
+# you are welcome to replace these placeholders directly in this 
+# template script
 source /etc/profile
 
-ml load WebProxy
-ml load Matlab/R2020b
+module load Matlab/[fversion]
 
+cd [flocation]
 
-cd [job folder]
+matlabsubmit [mopts] [fmainscript]
 
-
-dos2unix [file name]
-
-
-matlabsubmit [workers] [threads] [file name]
+echo "Run Finish"
