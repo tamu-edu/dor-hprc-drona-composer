@@ -84,7 +84,7 @@ class JobComposerController < Sinatra::Base
         return file_name 
     end
 
-    def generate_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime, workers, threads)
+    def generate_script(job_name, module_list, job_folder_path, email, executable_name, run_command, runtime)
         job_file_path = File.join(job_folder_path, job_file_name(job_name))
         
         File.open(job_file_path, 'wb') do |f|
@@ -105,17 +105,17 @@ class JobComposerController < Sinatra::Base
                 unix_run_command = unix_run_command.gsub(/\n.+\[file name\]/, "")
             end
 
-            if !workers.nil?
-                unix_run_command = unix_run_command.gsub("[workers]", "-w " + workers)
-            else
-                unix_run_command = unix_run_command.gsub(/\n.+\[workers\]/, "")
-            end
+            # if !workers.nil?
+            #     unix_run_command = unix_run_command.gsub("[workers]", "-w " + workers)
+            # else
+            #     unix_run_command = unix_run_command.gsub(/\n.+\[workers\]/, "")
+            # end
 
-            if !threads.nil?
-                unix_run_command = unix_run_command.gsub("[threads]", "-s " + threads)
-            else
-                unix_run_command = unix_run_command.gsub(/\n.+\[threads\]/, "")
-            end
+            # if !threads.nil?
+            #     unix_run_command = unix_run_command.gsub("[threads]", "-s " + threads)
+            # else
+            #     unix_run_command = unix_run_command.gsub(/\n.+\[threads\]/, "")
+            # end
 
 
             f.write("#{unix_run_command}\n")
@@ -203,8 +203,8 @@ class JobComposerController < Sinatra::Base
             runtime = params[:runtime]
 
 
-            workers = params[:workers]
-            threads = params[:threads]
+            # workers = params[:workers]
+            # threads = params[:threads]
 
         rescue
             return "An error ocurs, please ensure that all parameters are legal and valid."
@@ -245,8 +245,7 @@ class JobComposerController < Sinatra::Base
             executable_path = save_file(location, file_name, file_content)
         end
 
-
-        bash_script_path = generate_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime, workers, threads)
+        bash_script_path = generate_script(job_name, parse_module(module_list), location, email, file_name, run_command, runtime)
         if (runtime == "matlab")
             matlab_command = "bash #{bash_script_path}"
             # return submit_matlab

@@ -3,12 +3,11 @@ module load WebProxy
 
 module load GCCcore/10.2.0
 module load Python/3.8.6
-module load [user modules]
 
 source /sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/bin/activate
 
-cd [job folder]
+cd [flocation]
 
-dos2unix [file name]
+dos2unix [fmainscript]
 
-python [file name]
+python [fmainscript]

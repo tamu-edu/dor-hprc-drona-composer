@@ -93,10 +93,10 @@ def main():
                 engine.set_enviroment(params["runtime"])
                 print(engine.generate_script(params))
             else:
-                print("Invalid dictionary format")
+                print("Invalid dictionary format 1")
         except (SyntaxError, ValueError) as e:
             print(e)
-            print("Invalid dictionary format")
+            print("Invalid dictionary format 2")
     else:
         print("No dictionary provided.")
         parser.print_help()
