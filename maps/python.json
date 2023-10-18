@@ -1,4 +1,5 @@
 {
-    "flocation": "$location",
-    "fmainscript": "$mainscript"
+  "flocation": "$location",
+  "fmainscript": "$mainscript",
+  "fmodules": "$module_list"
 }

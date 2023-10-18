@@ -3,6 +3,7 @@ module load WebProxy
 
 module load GCCcore/10.2.0
 module load Python/3.8.6
+module load [fmodules]
 
 source /sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/bin/activate
 
