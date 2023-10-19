@@ -1,14 +1,17 @@
 {
-    "jobname": {
-        "type": "string"
-    },
-    "environment": {
-        "type": "string"
-    },
-    "directory": {
-        "type": "string"
-    },
-    "main": {
-        "type": "file"
-    }
+  "test1": {
+    "type": "number",
+    "name": "test1",
+    "value": "1"
+  },
+  "test2": {
+    "type": "number",
+    "name": "test2",
+    "value": "1"
+  },
+  "test3": {
+    "type": "text",
+    "name": "test3",
+    "value": "R2020b"
+  }
 }

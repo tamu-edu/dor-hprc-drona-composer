@@ -78,19 +78,8 @@ class JobComposerController < Sinatra::Base
     end
 
     def job_file_name(job_name)
-        
         file_name = "#{job_name}.job"
-
         return file_name 
-    end
-
-    def generate_script(job_name, job_folder_path, run_command)
-        job_file_path = File.join(job_folder_path, job_file_name(job_name))
-        
-        File.open(job_file_path, 'wb') do |f|
-            f.write("#{run_command}\n")
-        end
-        return job_file_path
     end
 
 
@@ -98,15 +87,6 @@ class JobComposerController < Sinatra::Base
         driver_scripts_location = settings.driver_scripts_path
         driver_path = "#{driver_scripts_location}/#{driver_name}"
     end
-
-    def job_composer_data_path()
-        path = File.join('/scratch/user/', ENV['USER'])
-
-        job_compose_path = 'job_composer'
-        path = File.join(path, job_compose_path)
-
-        return path
-    end 
 
     def create_folder_if_not_exist(dir_path)
         
@@ -134,64 +114,44 @@ class JobComposerController < Sinatra::Base
         return "#{settings.tamubatch_path} #{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}#{account}#{job_file_path}"
     end
 
-    def parse_module(module_list_as_str) 
-        modules = module_list_as_str.split("\t")
-        return modules
-    end
-
     
     post '/jobs/submit' do
         engine_command =  driver_command('engine')
         params_dict = params.to_json.to_s
-        # return "#{engine_command} -p \"#{params_dict}\""
-
+        # return params_dict
         begin
-            job_name = params[:name]
-            # whitespace is your enermy, same goes for dash ;)
-            # underscore is your friend. At least in file name
-            job_name = job_name.gsub /[- ]/, "_"
-            
-            walltime = params[:walltime]
-            use_gpu = params[:gpu]           
-            total_cpu_cores = params[:cores]
-            cores_per_node = params[:cores_per_node]
-            total_mem = params[:total_memory_number] + params[:total_memory_unit]
-            module_list= params[:module_list]
+            # job_name = params[:name]
+            # # whitespace is your enermy, same goes for dash ;)
+            # # underscore is your friend. At least in file name
+            # job_name = job_name.gsub /[- ]/, "_"
+            # Slurm parameters for tamubatch command
+            # walltime = params[:walltime]
+            # use_gpu = params[:gpu]           
+            # total_cpu_cores = params[:cores]
+            # cores_per_node = params[:cores_per_node]
+            # total_mem = params[:total_memory_number] + params[:total_memory_unit]
+            # project_account = params[:project_account]
+            # email = params[:email]
+            # module_list= params[:module_list]
+            # run_command = params[:run_command].gsub(/\r\n?/,"\n")
             
             file_name = (!params[:executable_script].nil?) ? params[:executable_script][:filename] : nil
             file_content = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil
 
-            run_command = params[:run_command].gsub(/\r\n?/,"\n")
-
-            project_account = params[:project_account]
-            email = params[:email]
-        
             location = params[:location]
 
             # this helps support multiple runtime backend (tamubatch, matlabsubmit and more)
             runtime = params[:runtime]
-
-
-            # workers = params[:workers]
-            # threads = params[:threads]
 
         rescue
             return "An error ocurs, please ensure that all parameters are legal and valid."
         end
 
 
-        run_command, stderr_str, status = Open3.capture3("#{engine_command} -p \'#{params_dict}\'")
-        if !status.success?
-            return stderr_str
-        end
-        # return run_command
 
-        # if walltime.nil? or total_cpu_cores.nil? or cores_per_node.nil? or total_mem.nil?
-        #     return "Invalid Job Compose Request."
-        # end
-    
-        create_folder_if_not_exist(location)
         
+    
+        create_folder_if_not_exist(location)    
 
         if !params[:files].nil?
             for file in params[:files] do
@@ -207,17 +167,19 @@ class JobComposerController < Sinatra::Base
                 save_folder_file(location, relative_path, filename, tempfile)
             end
         end
-        
-
+     
         # this is the script user upload
         if !params[:executable_script].nil?
             executable_path = save_file(location, file_name, file_content)
         end
 
-        bash_script_path = generate_script(job_name, location, run_command)
+        # bash_script_path = generate_script(job_name, location, run_command)
+        bash_script_path, stderr_str, status = Open3.capture3("#{engine_command} -p \'#{params_dict}\' -s")
+        if !status.success?
+            return stderr_str
+        end
         if (runtime == "matlab")
             matlab_command = "bash #{bash_script_path}"
-            # return submit_matlab
             stdout_str, stderr_str, status = Open3.capture3(matlab_command)
             if status.success?
                 return stdout_str
@@ -225,8 +187,11 @@ class JobComposerController < Sinatra::Base
                 return stderr_str
             end
         else
-            tamubatch_command = generate_tamubatch_command(walltime, use_gpu, total_cpu_cores, cores_per_node, total_mem, project_account, bash_script_path)
-            # return tamubatch_command
+            tamubatch_command, stderr_str, status = Open3.capture3("#{engine_command} -p \'#{params_dict}\' -t")
+            if !status.success?
+                return stderr_str
+            end
+
             stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
 
             if status.success?

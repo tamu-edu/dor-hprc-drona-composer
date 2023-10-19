@@ -554,6 +554,48 @@ function setup_uploader_and_submit_button() {
   };
 }
 
+function setup_general_form() {
+  $(document).ready(function () {
+    $ajax({
+      url: document.dashboard_url + "/jobs/composer/schema/general",
+      method: "GET",
+      dataType: "json",
+      success: function (data) {
+        for (var i = 0; i < Object.keys(data).length; i++) {
+          var field = data[Object.keys(data)[i]];
+
+          // Create form field based on the JSON data
+          var inputGroup = $("<div>");
+          inputGroup.attr("class", "form-group row");
+
+          var inputLabel = $("<label>");
+          inputLabel.attr(
+            "class",
+            "col-lg-3 col-form-label form-control-label"
+          );
+          inputLabel.attr("for", field.name);
+          inputLabel.text(field.name);
+
+          var inputContainer = $("<div>");
+          inputContainer.attr("class", "col-lg-9");
+
+          var inputField = $("<input>");
+          inputField.attr("class", "col-lg-9 form-control");
+          inputField.attr("type", field.type);
+          inputField.attr("name", field.name);
+          inputField.attr("value", field.value);
+
+          // Add the form field to the container
+          inputGroup.append(inputLabel);
+          inputContainer.append(inputField);
+          inputGroup.append(inputContainer);
+          $("#generalFieldsContainer").append(inputGroup);
+        }
+      },
+    });
+  });
+}
+
 function setup_dynamic_form() {
   $(document).ready(function () {
     $("#runtime_env").change(function () {
@@ -624,6 +666,7 @@ function setup_dynamic_form() {
   register_on_runtime_change_listener();
   init_job_files_table();
   sync_job_name();
+  setup_general_form();
   setup_dynamic_form();
   setup_uploader_and_submit_button();
 })();
