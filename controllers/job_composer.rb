@@ -179,27 +179,21 @@ class JobComposerController < Sinatra::Base
             return stderr_str
         end
         if (runtime == "matlab")
-            matlab_command = "bash #{bash_script_path}"
-            stdout_str, stderr_str, status = Open3.capture3(matlab_command)
-            if status.success?
-                return stdout_str
-            else  
-                return stderr_str
-            end
+            bash_command = "bash #{bash_script_path}"
+
         else
-            tamubatch_command, stderr_str, status = Open3.capture3("#{engine_command} -p \'#{params_dict}\' -t")
+            bash_script_path, stderr_str, status = Open3.capture3("#{engine_command} -p \'#{params_dict}\' -t")
             if !status.success?
                 return stderr_str
             end
-            # return tamubatch_command
+            bash_command = "bash #{bash_script_path}"
+        end
 
-            stdout_str, stderr_str, status = Open3.capture3(tamubatch_command)
-
-            if status.success?
-                return stdout_str
-            else  
-                return stderr_str
-                end
+        stdout_str, stderr_str, status = Open3.capture3(bash_command)
+        if status.success?
+            return stdout_str
+        else
+            return stderr_str
         end
         
     end
