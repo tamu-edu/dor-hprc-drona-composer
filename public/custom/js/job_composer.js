@@ -465,6 +465,18 @@ function setup_uploader_and_submit_button() {
     return;
   }
 
+  let uploaderCheckbox = $("#uploaderCheckbox");
+  let uploader = $("#uploader-section");
+  uploaderCheckbox.change(function () {
+    if (uploaderCheckbox.is(":checked")) {
+      uploader.show();
+      $("#run_command").attr("rows", "22");
+    } else {
+      uploader.hide();
+      $("#run_command").attr("rows", "12");
+    }
+  });
+
   let inputFile = $("#fileInput");
   let inputFolder = $("#folderInput");
   let addButton = $("#addButton");

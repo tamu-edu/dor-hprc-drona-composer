@@ -89,7 +89,7 @@ class Engine():
             return "No enviroment selected"
         else:
             # template = self.fetch_template("templates/" + self.enviroment + ".txt")
-            job_file_name = f"{params['name']replace("-", "_").replace(" ", "_")}.job"
+            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
 
             job_file_path = os.path.join(params['location'], job_file_name)
             # Create a file with the job script
@@ -120,7 +120,7 @@ class Engine():
         key = "tamubatch_path"
         tamubatch_path = get_value_from_yaml(yaml_content, f"{key}:")
 
-        job_file_name = f"{params['name']replace("-", "_").replace(" ", "_")}.job"
+        job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
         job_file_path = os.path.join(params['location'], job_file_name)
 
         return f"{tamubatch_path} {walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_path}"
