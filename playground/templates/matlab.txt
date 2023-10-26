@@ -3,7 +3,6 @@
 # automatically replaced with actual values entered in the form.
 # you are welcome to replace these placeholders directly in this 
 # template script
-source /etc/profile
 
 module load Matlab/[fversion]
 
@@ -11,4 +10,4 @@ cd [flocation]
 
 matlabsubmit [mopts] [fmainscript]
 
-echo "Run Finish"
+echo "Run Finished"

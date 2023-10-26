@@ -1,7 +1,9 @@
-module load WebProxy
-module load [user modules]
+source /etc/profile
 
-cd [job folder]
-dos2unix [file name]
-chmod u+x [file name]
-./[file name]
+module load WebProxy
+module load [fmodules]
+
+cd [flocation]
+dos2unix [fmainscript]
+chmod u+x [fmainscript]
+./[fmainscript]

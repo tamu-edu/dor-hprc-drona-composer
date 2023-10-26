@@ -1,0 +1,17 @@
+{
+    "workers": {
+        "type": "number",
+        "name": "workers",
+        "value": "1"
+    },
+    "threads": {
+        "type": "number",
+        "name": "threads",
+        "value": "1"
+    },
+    "version": {
+        "type": "text",
+        "name": "version",
+        "value": "R2020b"
+    }
+}

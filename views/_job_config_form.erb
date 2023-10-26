@@ -1,53 +1,66 @@
 <!-- form user info -->
 <div class="card shadow">
-  <div class="card-header">
-    <h6 class="maroon-header">Job Composer</h6>
-  </div>
-  <div class="card-body">
-    <form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST" enctype="multipart/form-data"
-      action="<%= url('/jobs/submit') %>">
+  	<div class="card-header">
+    	<h6 class="maroon-header">Job Composer</h6>
+  	</div>
+  	<div class="card-body">
+    	<form class="form" role="form" id="slurm-config-form" autocomplete="off" method="POST" enctype="multipart/form-data"
+      	action="<%= url('/jobs/submit') %>">
       
-      <ul class="nav nav-tabs mb-3", role="tablist">
-        <li class="nav-item" role="presentation">
-          <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general-tab-content" role="tab" aria-controls="general-tab-content" aria-selected="true">General</a>
-        </li>
+        <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-6">
+      	<ul class="nav nav-tabs mb-3", role="tablist">
+        	<li class="nav-item" role="presentation">
+          		<a class="nav-link active" id="general-tab" data-toggle="tab" href="#general-tab-content" role="tab" aria-controls="general-tab-content" aria-selected="true">General</a>
+        	</li>
 
-        <li class="nav-item" role="presentation">
-          <a class="nav-link" id="slurm-tab" data-toggle="tab" href="#slurm-tab-content" role="tab" aria-controls="slurm-tab-content" aria-selected="false">Slurm Parameters</a>
-        </li>
-      </ul>
+			<li class="nav-item" role="presentation">
+				<a class="nav-link" id="slurm-tab" data-toggle="tab" href="#slurm-tab-content" role="tab" aria-controls="slurm-tab-content" aria-selected="false">Slurm Parameters</a>
+			</li>
+      	</ul>
 
-      <div class="tab-content" id="job-content">
+      	<div class="tab-content" id="job-content">
+        
+        <!-- Dynamic Slurm Config -->
+        <div id="generalFieldsContainer">
+            <!-- generated form fields will be inserted here -->
+        </div>
+
 
         <!-- General and Files Tab Section -->
         <div class="tab-pane fade show active" id="general-tab-content" role="tabpanel" aria-labelledby="general-tab">
-          <!-- Job Name -->
-          <div class="form-group row">
-            <label class="col-lg-3 col-form-label form-control-label" for="name">Job Name</label>
-            <div class="col-lg-9">
-              <input type="text" name="name" id="job-name" class="form-control" required>
+          	<!-- Job Name -->
+          	<div class="form-group row">
+				<label class="col-lg-3 col-form-label form-control-label" for="name">Job Name</label>
+				<div class="col-lg-9">
+              		<input type="text" name="name" id="job-name" class="form-control" required>
+            	</div>
+          	</div>
+
+          	<!-- Runtime Environment -->
+          	<div class="form-group row">
+            	<label class="col-lg-3 col-form-label form-control-label">Environments</label>
+            	<div class="col-lg-9">
+                    <select id="runtime_env" name="runtime">
+                        <option disabled selected value> Select an option </option>
+                        <% dir_path = './templates' %>
+                        <% pattern = /(.*).txt$/ %>
+                        <% Dir.entries(dir_path).select { |name| name.match(pattern) }.each do |name| %>
+                            <% extracted_name = name.match(pattern)[1] %>
+                            <option value="<%= extracted_name %>"><%= extracted_name %></option>
+                        <% end %>
+                    </select>
+                </div>
             </div>
-          </div>
 
-          <!-- Runtime Environment -->
-          <div class="form-group row">
-            <label class="col-lg-3 col-form-label form-control-label">Environment</label>
-            <div class="col-lg-9">
-              <select id="runtime_env" name="runtime">
-                <option disabled selected value> -- select an option -- </option>
-
-                <% dir_path = './templates' %>
-                <% pattern = /(.*).txt$/ %>
-                <% Dir.entries(dir_path).select { |name| name.match(pattern) }.each do |name| %>
-                    <% extracted_name = name.match(pattern)[1] %>
-                    <option value="<%= extracted_name %>"><%= extracted_name %></option>
-                <% end %>
-
-
-
-              </select>
+            <!-- Dynamic Slurm Config -->
+            <div id="dynamicFieldsContainer">
+                <!-- Dynamically generated form fields will be inserted here -->
             </div>
-          </div>
+
+
+
 
           <!-- Module Component -->
           <div id="module-component" style="display:none;">
@@ -90,45 +103,42 @@
             </div>
           </div>
 
-          <!-- Check box for location component -->
-          <!-- <div class="form-group row mt-2">
-            <label class="col-lg-3 col-form-label form-control-label" for="location">Different Location</label>
-            <div class="col-lg-2">
-              <input class="form-check-input form-control" type="checkbox" name="location" onclick="allow_edit_location();">
-            </div>
-          </div> -->
 
 
+          <!-- Files and Folder Uploader -->
           <div class="form-group row mt-2">
-            <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Main Script</label>
-            <div class="col-lg-9">
-              <input id="executable_file_input" type="file" name="executable_script">
+            <label class="col-lg-3 col-form-label form-control-label" for="uploaderCheckbox">Upload Your Files</label>
+            <div class="col-lg-2">
+              <input class="form-check-input form-control" type="checkbox" name="uploaderCheckbox" id="uploaderCheckbox">
             </div>
           </div>
-
-          <!-- Upload Data/Folder option -->
-          <!-- <div class="form-group row mt-2">
-            <label class="col-lg-3 col-form-label form-control-label" for="folder_file[]">Folder Upload</label>
-            <div class="col-lg-9">
-              <input type="file" id="folder_input" name="folder_file[]" directory multiple webkitdirectory mozdirectory/>
+          <div id="uploader-section" style="display:none;">
+            <div class="form-group row mt-2">
+                <label class="col-lg-3 col-form-label form-control-label" for="executable_script">Main Script</label>
+                <div class="col-lg-9">
+                <input id="executable_file_input" type="file" name="executable_script">
+                <!-- Hidden input field to store the file name -->
+                <input type="hidden" name="mainscript" id="mainscript">
+                </div>
             </div>
-          </div> -->
 
-        
             <div class="form-group row mt-2">
                 <label class="col-lg-3 col-form-label form-control-label" for="files[]">Uploader</label>
-                <select id="mySelect" name="mySelect">
-                    <option value="none" selected disabled>Select an option</option>
-                    <option value="file">File</option>
-                    <option value="folder">Folder</option>
-                </select>
-                <input id="fileInput" type="file" multiple style="display:none" />
-                <input id="folderInput" type="file" multiple webkitdirectory directory style="display:none" />
-                    
-                <button id="addButton" type="button">+ Add Files</button>
-                
+                <div class="col-lg-9">
+                    <select id="mySelect" name="mySelect">
+                        <option value="none" selected disabled>Select an option</option>
+                        <option value="file">File</option>
+                        <option value="folder">Folder</option>
+                    </select>
+                    <input id="fileInput" type="file" multiple style="display:none" />
+                    <input id="folderInput" type="file" multiple webkitdirectory directory style="display:none" />
+                        
+                    <button id="addButton" type="button" class="maroon-button">+ Add Files</button>
+                </div>
             </div>
             <div class="form-group" id="myFiles" style="height:120px;border:1px solid #ccc;font:16px/26px Georgia, Garamond, Serif;overflow:auto;"></div>
+          </div>
+        
         </div>
 
         
@@ -214,26 +224,25 @@
           <!-- Solid divider -->
           <hr class="solid md-3 mt-3">
         </div>
-
-      
-        
+      </div>
+      </div>
+      <!-- Right Column: Job Preview Section -->
+      <div class="col-lg-6">
+          <div id="runtime_config">
+                <div class="form-group">
+                  <div>
+                    <textarea id="run_command" class="form-control" name="run_command" form="slurm-config-form"
+                      placeholder="Shell command to run your script." type="text" rows=12 required></textarea>
+                  </div>
+                </div>
+            </div>     
+      </div>
       </div>
 
 
-
-      <div id="runtime_config">
-        <div class="form-group">
-          <div>
-            <textarea id="run_command" class="form-control" name="run_command" form="slurm-config-form"
-              placeholder="Shell command to run your script." type="text" rows="5" required></textarea>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group row">
-          <label class="col-lg-3 col-form-label form-control-label"></label>
-          <div id="job-submit-button-section" class="col-lg-9">
-            <input type="submit" class="btn btn-primary" value="Submit">
+      <div class="form-group row text-center">
+          <div id="job-submit-button-section" class="col-lg-12">
+            <input type="submit" class="btn btn-primary maroon-button" value="Submit">
           </div>
       </div>
 
