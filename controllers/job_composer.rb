@@ -6,6 +6,7 @@ require 'fileutils'
 require 'erubi'
 require 'open3'
 require 'sqlite3'
+require 'etc'
 
 class JobComposerController < Sinatra::Base
     register Sinatra::ConfigFile
@@ -227,6 +228,38 @@ class JobComposerController < Sinatra::Base
         else  
             return stderr_str
         end
+
+
+    end
+
+
+    get "/jobs/composer/mainpaths" do
+        current_user = Etc.getlogin
+        group_names =  `groups #{current_user}`.split(":")[1].split(" ")
+        group_names = group_names.map{|s| s.strip}
+        paths = {"Home" => "/home/#{current_user}", "Scratch" => "/scratch/user/#{current_user}"}
+        group_names.each do |group_name|
+            groupdir = "/scratch/group/#{group_name}"
+            if Dir.exist?(groupdir)
+                paths[group_name] = groupdir
+            end
+        end
+        return paths.to_json
+
+    end
+
+    def fetch_subdirectories(path)
+        subdirectories = Dir.glob(File.join(path, '*')).select { |entry| File.directory?(entry) }
+        subdirectories = subdirectories.map{|s| File.basename(s)}
+        return subdirectories
+
+    end
+
+    get '/jobs/composer/subdirectories' do
+      content_type :json
+      fullpath = params['path']
+      subdirectories = fetch_subdirectories(fullpath)
+      return subdirectories.to_json
     end
 
 

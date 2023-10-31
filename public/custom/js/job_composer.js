@@ -566,9 +566,27 @@ function setup_uploader_and_submit_button() {
   };
 }
 
+function create_input_field(field, classes) {
+  var inputField = $("<input>");
+  inputField.attr("class", classes);
+  inputField.attr("type", field.type);
+  inputField.attr("name", field.name);
+  inputField.attr("value", field.value);
+  return inputField;
+}
+
+function create_input_label(field, classes) {
+  var inputLabel = $("<label>");
+  inputLabel.attr("class", classes);
+  inputLabel.attr("for", field.name);
+  if (field.type == "radio") inputLabel.text(field.value);
+  else inputLabel.text(field.name);
+  return inputLabel;
+}
+
 function setup_general_form() {
   $(document).ready(function () {
-    $ajax({
+    $.ajax({
       url: document.dashboard_url + "/jobs/composer/schema/general",
       method: "GET",
       dataType: "json",
@@ -580,22 +598,15 @@ function setup_general_form() {
           var inputGroup = $("<div>");
           inputGroup.attr("class", "form-group row");
 
-          var inputLabel = $("<label>");
-          inputLabel.attr(
-            "class",
+          var inputLabel = create_input_label(
+            field,
             "col-lg-3 col-form-label form-control-label"
           );
-          inputLabel.attr("for", field.name);
-          inputLabel.text(field.name);
 
           var inputContainer = $("<div>");
           inputContainer.attr("class", "col-lg-9");
 
-          var inputField = $("<input>");
-          inputField.attr("class", "col-lg-9 form-control");
-          inputField.attr("type", field.type);
-          inputField.attr("name", field.name);
-          inputField.attr("value", field.value);
+          var inputField = create_input_field(field, "col-lg-9 form-control");
 
           // Add the form field to the container
           inputGroup.append(inputLabel);
@@ -621,12 +632,7 @@ function setup_dynamic_form() {
         success: function (data) {
           // Clear existing form fields
           $("#dynamicFieldsContainer").empty();
-          //   console.log(Object.keys(data));
-          //   for (field in data){
-          //       for (key in field){
-          //           console.log(key);
-          //       }
-          //   }
+          var radioGroup = $("<div>");
 
           // Loop through the JSON data and create form fields
           for (var i = 0; i < Object.keys(data).length; i++) {
@@ -636,22 +642,15 @@ function setup_dynamic_form() {
             var inputGroup = $("<div>");
             inputGroup.attr("class", "form-group row");
 
-            var inputLabel = $("<label>");
-            inputLabel.attr(
-              "class",
+            var inputLabel = create_input_label(
+              field,
               "col-lg-3 col-form-label form-control-label"
             );
-            inputLabel.attr("for", field.name);
-            inputLabel.text(field.name);
 
             var inputContainer = $("<div>");
             inputContainer.attr("class", "col-lg-9");
 
-            var inputField = $("<input>");
-            inputField.attr("class", "col-lg-9 form-control");
-            inputField.attr("type", field.type);
-            inputField.attr("name", field.name);
-            inputField.attr("value", field.value);
+            var inputField = create_input_field(field, "col-lg-9 form-control");
 
             // Add the form field to the container
             inputGroup.append(inputLabel);
@@ -663,6 +662,103 @@ function setup_dynamic_form() {
         error: function () {
           console.error("Error fetching JSON data");
         },
+      });
+    });
+  });
+}
+
+function fetchAndPopulateSubdirectories(fullPath) {
+  $.ajax({
+    url: document.dashboard_url + "/jobs/composer/subdirectories",
+    method: "GET",
+    data: { path: fullPath },
+    dataType: "json",
+    success: function (subDirs) {
+      // Clear and populate subdirectories in a container (e.g., subdirs-container)
+      var subDirsContainer = $("#subdirs-container");
+      subDirsContainer.empty();
+
+      for (var j = 0; j < subDirs.length; j++) {
+        var subDir = subDirs[j];
+        var subDirButton = $("<button>");
+        subDirButton.attr("class", "btn btn-outline-secondary subdir-button");
+        subDirButton.text(subDir);
+        // Attach a click event handler to fetch subdirectories for the clicked subdirectory
+        subDirButton.click(function () {
+          var clickedSubDir = $(this).text();
+          var newFullPath = fullPath + "/" + clickedSubDir;
+          $("#currentPath").val(newFullPath);
+          fetchAndPopulateSubdirectories(newFullPath); // Recursively fetch subdirectories
+        });
+
+        subDirsContainer.append(subDirButton);
+      }
+    },
+    error: function () {
+      console.error("Error fetching subdirectories");
+    },
+  });
+}
+
+function setup_file_picker() {
+  $(document).ready(function () {
+    $("#file-picker-modal").on("hidden.bs.modal", function () {
+      $("#currentPath").val("");
+      $("#subdirs-container").empty();
+      $("#path-components button").removeClass("active");
+    });
+
+    $("#changeLocation").click(function () {
+      $("#location").val($("#currentPath").val());
+    });
+
+    $("#file-picker-button").click(function () {
+      $("#file-picker-modal").modal("toggle");
+
+      $.ajax({
+        url: document.dashboard_url + "/jobs/composer/mainpaths",
+        method: "GET",
+        dataType: "json",
+        success: function (data) {
+          $("#path-components").empty();
+          for (var i = 0; i < Object.keys(data).length; i++) {
+            var pathname = Object.keys(data)[i];
+            var fullpath = data[Object.keys(data)[i]];
+
+            var path = $("<button>");
+            path.attr("class", "btn btn-outline-primary subdir-button");
+            path.text(Object.keys(data)[i]);
+            path.data("fullpath", fullpath);
+
+            path.click(function () {
+              // Remove the "active" class from all buttons in the same container
+              $("#path-components button").removeClass("active");
+
+              // Add the "active" class to the clicked button
+              $(this).addClass("active");
+
+              var fullPath = $(this).data("fullpath");
+              $("#currentPath").val(fullPath);
+              $("#subdirs-container").empty();
+
+              fetchAndPopulateSubdirectories(fullPath);
+            });
+
+            $("#path-components").append(path);
+          }
+        },
+        error: function () {
+          console.error("Error fetching JSON data for paths");
+        },
+      });
+
+      var backButton = $("#backButton");
+      backButton.click(function () {
+        // Navigate to the parent directory
+        var fullPath = $("#currentPath").val();
+        var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+        $("#currentPath").val(parentPath);
+        fetchAndPopulateSubdirectories(parentPath);
       });
     });
   });
@@ -680,5 +776,6 @@ function setup_dynamic_form() {
   sync_job_name();
   setup_general_form();
   setup_dynamic_form();
+  setup_file_picker();
   setup_uploader_and_submit_button();
 })();
