@@ -9,23 +9,23 @@
       
         <div class="row">
         <!-- Left Column -->
-        <div class="col-lg-6">
-      	<ul class="nav nav-tabs mb-3", role="tablist">
-        	<li class="nav-item" role="presentation">
-          		<a class="nav-link active" id="general-tab" data-toggle="tab" href="#general-tab-content" role="tab" aria-controls="general-tab-content" aria-selected="true">General</a>
-        	</li>
+          <div class="col-lg-6">
+            <ul class="nav nav-tabs mb-3", role="tablist">
+              <li class="nav-item" role="presentation">
+                  <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general-tab-content" role="tab" aria-controls="general-tab-content" aria-selected="true">General</a>
+              </li>
 
-			<li class="nav-item" role="presentation">
-				<a class="nav-link" id="slurm-tab" data-toggle="tab" href="#slurm-tab-content" role="tab" aria-controls="slurm-tab-content" aria-selected="false">Slurm Parameters</a>
-			</li>
-      	</ul>
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" id="slurm-tab" data-toggle="tab" href="#slurm-tab-content" role="tab" aria-controls="slurm-tab-content" aria-selected="false">Slurm Parameters</a>
+              </li>
+            </ul>
 
-      	<div class="tab-content" id="job-content">
+      	  <div class="tab-content" id="job-content">
         
-        <!-- Dynamic Slurm Config -->
-        <div id="generalFieldsContainer">
-            <!-- generated form fields will be inserted here -->
-        </div>
+            <!--  Fields -->
+            <div id="generalFieldsContainer">
+                <!-- generated form fields will be inserted here -->
+            </div>
 
 
         <!-- General and Files Tab Section -->
@@ -54,7 +54,7 @@
                 </div>
             </div>
 
-            <!-- Dynamic Slurm Config -->
+            <!-- Dynamic Environment Config -->
             <div id="dynamicFieldsContainer">
                 <!-- Dynamically generated form fields will be inserted here -->
             </div>
@@ -98,7 +98,10 @@
             <div class="form-group row">
               <label class="col-lg-3 col-form-label form-control-label" for="location">Directory</label>
               <div class="col-lg-9">
-                <input type="text" id="location" name="location" class="form-control" value="/scratch/user/<%= ENV['USER'] %>/job_composer/">
+                <input type="text" id="location" name="location" class="form-control" value="/scratch/user/<%= ENV['USER'] %>/job_composer/" readonly>
+                <div id="file-picker" style="margin-top: 15px;">
+                    <button type="button" id="file-picker-button" class="btn btn-primary maroon-button">Change Location</button>
+                </div>
               </div>
             </div>
           </div>
@@ -256,3 +259,43 @@
   </div>
 </div>
 <!-- /form user info -->
+
+
+<!-- Modal for File Path Explorer -->
+<div class="modal fade bd-example-modal-lg" id="file-picker-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="form-group">
+          <label for="currentPath">Current Path</label>
+          <input type="text" class="form-control" id="currentPath" placeholder="/" readonly>
+        </div>
+        <div id="path-components"></div>
+        <div id="subdirs-container"></div>
+      </div>
+      <div class="modal-footer">
+        <div class="container">
+          <div class="row">
+            <div class="col-6">
+              <button id="backButton" class="btn btn-outline-secondary">Previous</button>
+            </div>
+            <div class="col-6 text-left">
+              <button type="button" class="btn btn-primary" data-dismiss="modal" id="changeLocation">Save changes</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+
+
+
+      </div>
+    </div>
+  </div>
+</div>

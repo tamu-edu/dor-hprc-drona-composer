@@ -33,7 +33,7 @@ h6 {
   float: left;
   text-align: center;
   padding-top: 25%;
-  opacity: .80;
+  opacity: 0.8;
 }
 
 .spinner {
@@ -78,7 +78,6 @@ h6 {
 .card-header {
   background-color: transparent;
 }
-
 
 .maroon-button {
   color: maroon;
@@ -142,4 +141,8 @@ footer {
 .modal-header {
   background-color: #500000;
   color: white !important;
+}
+
+.subdir-button {
+  margin: 5px; /* You can adjust the margin as needed */
 }
