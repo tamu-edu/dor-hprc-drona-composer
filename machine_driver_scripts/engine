@@ -4,6 +4,7 @@ import re
 import argparse
 import ast
 import os
+from utils import *
 
 def replace_flag(match, flag_dict):
     flagchar, flagname = match.group(1), match.group(2)
@@ -33,6 +34,39 @@ def get_value_from_yaml(yaml_content, key):
             value = value.replace("\"", "")
             break
     return value
+
+def preprocess_template(template, params):
+    pattern = r'!(\w+)\((.*?)\)'
+
+    matches = re.findall(pattern, template)
+
+    
+    for match in matches:
+        function_name = match[0]
+        variables = match[1].split(",")
+        variables = [variable.strip() for variable in variables]
+
+        for variable in variables:
+            # variable start with $
+            if variable[0] == "$":
+                variable = variable[1:]
+                #  replace the variable with the value in params
+                if variable in params:
+                    variables[variables.index("$"+variable)] = params[variable]
+            
+                    
+        if function_name in globals() and callable(globals()[function_name]):
+            dynamic_function = globals()[function_name]
+            
+            # Call the function dynamically with the list of values
+            result = dynamic_function(*variables)
+            # replace the function call with the result
+            template = template.replace(f"!{function_name}({match[1]})", result)
+            
+        else:
+            return (f"Function {function_name} not found or not callable.")
+        
+    return template
 
 class Engine():
     def __init__(self):
@@ -73,6 +107,8 @@ class Engine():
         ## 1. Replace the map values in the template with params name
         for key, value in map.items():
             template = template.replace("["+key+"]", value)
+        
+        template = preprocess_template(template, params)
             
         ## 2. Replace the params name with the actual values in form fields
         # Keys with flag
@@ -89,7 +125,9 @@ class Engine():
         if self.enviroment is None:
             return "No enviroment selected"
         else:
-            # template = self.fetch_template("templates/" + self.enviroment + ".txt")
+            # template = params["run_command"]
+            # script = self.custom_replace(template, self.map, params)
+            # return script
             job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
 
             job_file_path = os.path.join(params['location'], job_file_name)
