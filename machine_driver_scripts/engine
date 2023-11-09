@@ -99,8 +99,10 @@ class Engine():
         
     def set_enviroment(self, enviroment):
         self.enviroment = enviroment
-        self.set_map("maps/" + enviroment + ".json")
-        self.set_schema("schemas/" + enviroment + ".json")
+        # self.set_map("maps/" + enviroment + ".json")
+        # self.set_schema("schemas/" + enviroment + ".json")
+        self.set_map("environments/" + enviroment + "/map.json")
+        self.set_schema("environments/" + enviroment + "/schema.json")
     
     def custom_replace(self, template, map, params):
         # 2 Steps replacement
