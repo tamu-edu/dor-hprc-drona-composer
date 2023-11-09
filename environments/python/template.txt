@@ -1,10 +1,11 @@
 source /etc/profile
 module load WebProxy
 
-module load Python/3.7.4-GCCcore-8.3.0
+module load GCCcore/10.2.0
+module load Python/3.8.6
 module load [fmodules]
 
-source /sw/hprc/sw/Python/virtualenvs/Python/3.7.4-GCCcore-8.3.0/jupyterlab/bin/activate
+source /sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/bin/activate
 
 cd [flocation]
 
