@@ -38,13 +38,15 @@ class JobComposerController < Sinatra::Base
     end
 
     get '/jobs/composer/environment/:environment' do |environment|
-        template = "templates/" + environment + ".txt"
+        # template = "templates/" + environment + ".txt"
+        template = "environments/" + environment + "/template.txt"
         template_data = File.read(template)
         return template_data
     end
 
-    get '/jobs/composer/schema/:schema' do |schema|
-        json = "schemas/" + schema + ".json"
+    get '/jobs/composer/schema/:schema' do |environment|
+        # json = "schemas/" + schema + ".json"
+        json = "environments/" + environment + "/schema.json"
         json_data = File.read(json)
         return json_data
     end
@@ -78,10 +80,10 @@ class JobComposerController < Sinatra::Base
         return
     end
 
-    def job_file_name(job_name)
-        file_name = "#{job_name}.job"
-        return file_name 
-    end
+    # def job_file_name(job_name)
+    #     file_name = "#{job_name}.job"
+    #     return file_name 
+    # end
 
 
     def driver_command(driver_name)
