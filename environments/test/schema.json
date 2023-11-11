@@ -32,5 +32,20 @@
       "value": "Option 2",
       "id": "testGroup2"
     }
+  },
+  "testDropdown": {
+    "type": "select",
+    "label": "Test Dropdown",
+    "name": "testDropdown",
+    "options": [
+      {
+        "value": "Option 1",
+        "label": "Option 1"
+      },
+      {
+        "value": "Option 2",
+        "label": "Option 2"
+      }
+    ]
   }
 }

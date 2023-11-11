@@ -584,6 +584,39 @@ function create_input_label(field, classes) {
   return inputLabel;
 }
 
+function create_select_field(field, classes) {
+  var selectGroup = $("<div>");
+  selectGroup.attr("class", classes);
+
+  var selectLabel = create_input_label(
+    field,
+    "col-lg-3 col-form-label form-control-label"
+  );
+  var selectContainer = $("<div>");
+  selectContainer.attr("class", "col-lg-9");
+
+  var selectField = $("<select>");
+  selectField.attr("name", field.name);
+
+  var defaultOption = $("<option>");
+  defaultOption.text("Select an option");
+  defaultOption.attr("disabled", true);
+  defaultOption.attr("selected", true);
+  selectField.append(defaultOption);
+
+  $.each(field.options, function (key, value) {
+    var option = $("<option>");
+    option.attr("value", value.value);
+    option.text(value.label);
+    selectField.append(option);
+  });
+
+  selectContainer.append(selectField);
+  selectGroup.append(selectLabel);
+  selectGroup.append(selectContainer);
+  return selectGroup;
+}
+
 function setup_general_form() {
   $(document).ready(function () {
     $.ajax({
@@ -632,7 +665,6 @@ function create_radio_group(field, classes) {
   radioGroupContainer.attr("class", "col-lg-9");
 
   $.each(field, function (key, value) {
-    console.log(key + typeof value);
     if (typeof value == "object") {
       var radioContainer = $("<div>");
       radioContainer.attr("class", "form-check form-check-inline");
@@ -666,8 +698,11 @@ function setup_dynamic_form() {
           // Loop through the JSON data and create form fields
           for (var i = 0; i < Object.keys(data).length; i++) {
             var field = data[Object.keys(data)[i]];
-            if (field.type == "radioGroup") {
-              radioGroup = create_radio_group(field, "form-group row mt-2");
+            if (field.type == "select") {
+              selectField = create_select_field(field, "form-group row mt-2");
+              $("#dynamicFieldsContainer").append(selectField);
+            } else if (field.type == "radioGroup") {
+              radioGroup = create_radio_group(field, "form-group row");
               $("#dynamicFieldsContainer").append(radioGroup);
             } else {
               var inputGroup = $("<div>");
