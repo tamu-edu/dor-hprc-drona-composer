@@ -1,16 +1,19 @@
 {
   "workers": {
     "type": "number",
+    "label": "Workers",
     "name": "workers",
     "value": "1"
   },
   "threads": {
     "type": "number",
+    "label": "Threads",
     "name": "threads",
     "value": "1"
   },
   "version": {
     "type": "text",
+    "label": "Version",
     "name": "version",
     "value": "R2020b"
   }

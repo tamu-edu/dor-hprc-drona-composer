@@ -580,8 +580,7 @@ function create_input_label(field, classes) {
   inputLabel.attr("class", classes);
   inputLabel.attr("for", field.name);
   if (field.type == "radio") inputLabel.text(field.value);
-  else if (field.type == "radioGroup") inputLabel.text(field.labelName);
-  else inputLabel.text(field.name);
+  else inputLabel.text(field.label);
   return inputLabel;
 }
 
