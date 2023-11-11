@@ -13,25 +13,5 @@
     "type": "text",
     "name": "version",
     "value": "R2020b"
-  },
-  "gpu": {
-    "type": "checkbox",
-    "name": "gpuOption",
-    "value": "false"
-  },
-  "A100": {
-    "type": "radio",
-    "name": "gpuType",
-    "value": "A100"
-  },
-  "T4": {
-    "type": "radio",
-    "name": "gpuType",
-    "value": "T4"
-  },
-  "RTX": {
-    "type": "radio",
-    "name": "gpuType",
-    "value": "RTX"
   }
 }

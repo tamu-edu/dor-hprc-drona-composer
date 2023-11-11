@@ -580,6 +580,7 @@ function create_input_label(field, classes) {
   inputLabel.attr("class", classes);
   inputLabel.attr("for", field.name);
   if (field.type == "radio") inputLabel.text(field.value);
+  else if (field.type == "radioGroup") inputLabel.text(field.labelName);
   else inputLabel.text(field.name);
   return inputLabel;
 }
@@ -619,6 +620,36 @@ function setup_general_form() {
   });
 }
 
+function create_radio_group(field, classes) {
+  var radioGroup = $("<div>");
+  radioGroup.attr("class", classes);
+
+  var radioGroupLabel = create_input_label(
+    field,
+    "col-lg-3 col-form-label form-control-label"
+  );
+
+  var radioGroupContainer = $("<div>");
+  radioGroupContainer.attr("class", "col-lg-9");
+
+  $.each(field, function (key, value) {
+    console.log(key + typeof value);
+    if (typeof value == "object") {
+      var radioContainer = $("<div>");
+      radioContainer.attr("class", "form-check form-check-inline");
+      var radioField = create_input_field(value, "form-check-input");
+      var radioLabel = create_input_label(value, "form-check-label");
+      radioContainer.append(radioField);
+      radioContainer.append(radioLabel);
+      radioGroupContainer.append(radioContainer);
+    }
+  });
+
+  radioGroup.append(radioGroupLabel);
+  radioGroup.append(radioGroupContainer);
+  return radioGroup;
+}
+
 function setup_dynamic_form() {
   $(document).ready(function () {
     $("#runtime_env").change(function () {
@@ -632,31 +663,36 @@ function setup_dynamic_form() {
         success: function (data) {
           // Clear existing form fields
           $("#dynamicFieldsContainer").empty();
-          var radioGroup = $("<div>");
 
           // Loop through the JSON data and create form fields
           for (var i = 0; i < Object.keys(data).length; i++) {
             var field = data[Object.keys(data)[i]];
+            if (field.type == "radioGroup") {
+              radioGroup = create_radio_group(field, "form-group row mt-2");
+              $("#dynamicFieldsContainer").append(radioGroup);
+            } else {
+              var inputGroup = $("<div>");
+              inputGroup.attr("class", "form-group row");
 
-            // Create form field based on the JSON data
-            var inputGroup = $("<div>");
-            inputGroup.attr("class", "form-group row");
+              var inputLabel = create_input_label(
+                field,
+                "col-lg-3 col-form-label form-control-label"
+              );
 
-            var inputLabel = create_input_label(
-              field,
-              "col-lg-3 col-form-label form-control-label"
-            );
+              var inputContainer = $("<div>");
+              inputContainer.attr("class", "col-lg-9");
 
-            var inputContainer = $("<div>");
-            inputContainer.attr("class", "col-lg-9");
+              var inputField = create_input_field(
+                field,
+                "col-lg-9 form-control"
+              );
 
-            var inputField = create_input_field(field, "col-lg-9 form-control");
-
-            // Add the form field to the container
-            inputGroup.append(inputLabel);
-            inputContainer.append(inputField);
-            inputGroup.append(inputContainer);
-            $("#dynamicFieldsContainer").append(inputGroup);
+              // Add the form field to the container
+              inputGroup.append(inputLabel);
+              inputContainer.append(inputField);
+              inputGroup.append(inputContainer);
+              $("#dynamicFieldsContainer").append(inputGroup);
+            }
           }
         },
         error: function () {

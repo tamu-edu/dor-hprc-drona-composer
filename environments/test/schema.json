@@ -1,0 +1,33 @@
+{
+  "testNumber": {
+    "type": "number",
+    "name": "Test Number",
+    "value": "1"
+  },
+  "testText": {
+    "type": "text",
+    "name": "Test Text",
+    "value": "Default Text"
+  },
+  "testCheckbox": {
+    "type": "checkbox",
+    "name": "Test Checkbox",
+    "value": "false"
+  },
+  "testRadioGroup": {
+    "type": "radioGroup",
+    "labelName": "Test Radio Group",
+    "radio1": {
+      "type": "radio",
+      "name": "testGroup",
+      "value": "Option 1",
+      "id": "testGroup1"
+    },
+    "radio2": {
+      "type": "radio",
+      "name": "testGroup",
+      "value": "Option 2",
+      "id": "testGroup2"
+    }
+  }
+}
