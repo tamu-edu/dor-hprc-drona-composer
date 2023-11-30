@@ -123,20 +123,6 @@ class JobComposerController < Sinatra::Base
         params_dict = params.to_json.to_s
         # return params_dict
         begin
-            # job_name = params[:name]
-            # # whitespace is your enermy, same goes for dash ;)
-            # # underscore is your friend. At least in file name
-            # job_name = job_name.gsub /[- ]/, "_"
-            # Slurm parameters for tamubatch command
-            # walltime = params[:walltime]
-            # use_gpu = params[:gpu]           
-            # total_cpu_cores = params[:cores]
-            # cores_per_node = params[:cores_per_node]
-            # total_mem = params[:total_memory_number] + params[:total_memory_unit]
-            # project_account = params[:project_account]
-            # email = params[:email]
-            # module_list= params[:module_list]
-            # run_command = params[:run_command].gsub(/\r\n?/,"\n")
             
             file_name = (!params[:executable_script].nil?) ? params[:executable_script][:filename] : nil
             file_content = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil

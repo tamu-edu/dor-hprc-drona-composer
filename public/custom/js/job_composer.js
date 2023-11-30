@@ -50,53 +50,52 @@ function submit_job(action, formData) {
   request.send(formData);
 }
 
-function register_add_module_handler() {
-  var add_module_button = document.getElementById("add_module_button");
-  if (add_module_button == null) {
-    return;
-  }
+function register_add_module_handler(
+  add_module_button,
+  module_input,
+  module_list
+) {
+  //   var add_module_button = document.getElementById("add_module_button");
+  console.log("Registering add module handler");
 
-  add_module_button.onclick = function (event) {
+  add_module_button.click(function (event) {
     event.preventDefault();
 
-    let module_to_add = document.getElementById("module-search").value;
+    let module_to_add = module_input.val();
 
     if (module_to_add === "") {
       return;
     }
 
-    var container = document.getElementById("module_list");
-    var span = document.createElement("span");
-    span.setAttribute("class", "badge badge-pill badge-primary module-to-load");
-    span.innerHTML = module_to_add.trim();
+    var container = module_list;
+    var span = $("<span>", {
+      class: "badge badge-pill badge-primary module-to-load",
+      html: module_to_add.trim(),
+    });
 
-    var div = document.createElement("div");
-    div.appendChild(span);
-    div.onclick = function (event) {
+    var div = $("<div>").append(span);
+
+    div.click(function (event) {
       var elem = event.target;
-      elem.parentNode.removeChild(elem);
-    };
+      $(elem).parent().remove();
+    });
 
-    container.appendChild(div);
-    document.getElementById("module-search").value = "";
-
-    // add to run command window
-    // var run_command = document.getElementById("run_command");
-    // run_command.value = "module load sth\n" + run_command.value;
-  };
+    container.append(div);
+    module_input.val("");
+  });
 }
 
 // Flow for the composer
 
-function show_module_component() {
-  var module_component = document.getElementById("module-component");
-  // console.log(module_component);
-  module_component.style.display = "block";
-}
+// function show_module_component() {
+//   var module_component = document.getElementById("module-component");
+//   // console.log(module_component);
+//   module_component.style.display = "block";
+// }
 
-function register_autocomplete_for_module_search() {
+function register_autocomplete_for_module_search(module_input) {
   // this setup autocomplete input box for module search
-  $("#module-search").autocomplete({
+  $(module_input).autocomplete({
     delay: 40,
 
     source: function (request, response) {
@@ -216,7 +215,7 @@ function update_run_command() {
 
 function runtime_onchange() {
   let runtime = document.getElementById("runtime_env").value;
-  if (runtime != "matlab") show_module_component();
+  // if (runtime != "matlab") show_module_component();
   // if (runtime == "python")
   //     show_venv_component();
   set_template(runtime);
@@ -681,6 +680,49 @@ function create_radio_group(field, classes) {
   return radioGroup;
 }
 
+function create_module_component(label) {
+  var moduleComponent = $("<div>");
+  moduleComponent.attr("id", "module-component");
+
+  var moduleSearch = $("<div>");
+  moduleSearch.attr("class", "form-group row");
+
+  var moduleLabel = $("<label>");
+  moduleLabel.attr("class", "col-lg-3 col-form-label form-control-label");
+  moduleLabel.attr("for", "module-search");
+  moduleLabel.text(label);
+
+  var moduleContainer = $("<div>");
+  moduleContainer.attr("class", "col-lg-6 ui-widget");
+
+  var moduleInput = $("<input>");
+  moduleInput.attr("class", "form-control");
+  moduleInput.attr("id", "module-search");
+
+  var moduleButton = $("<button>");
+  moduleButton.attr("type", "button");
+  moduleButton.attr("class", "btn btn-primary mt-2 maroon-button");
+  moduleButton.attr("id", "add_module_button");
+  moduleButton.text("Add");
+
+  moduleContainer.append(moduleInput);
+  moduleContainer.append(moduleButton);
+  moduleSearch.append(moduleLabel);
+  moduleSearch.append(moduleContainer);
+
+  var moduleList = $("<div>");
+  moduleList.attr("id", "module_list");
+  moduleList.attr("class", "row");
+
+  register_autocomplete_for_module_search(moduleInput);
+  register_add_module_handler(moduleButton, moduleInput, moduleList);
+
+  moduleComponent.append(moduleSearch);
+  moduleComponent.append(moduleList);
+
+  return moduleComponent;
+}
+
 function setup_dynamic_form() {
   $(document).ready(function () {
     $("#runtime_env").change(function () {
@@ -704,6 +746,9 @@ function setup_dynamic_form() {
             } else if (field.type == "radioGroup") {
               radioGroup = create_radio_group(field, "form-group row");
               $("#dynamicFieldsContainer").append(radioGroup);
+            } else if (field.type == "module") {
+              moduleComponent = create_module_component(field.label);
+              $("#dynamicFieldsContainer").append(moduleComponent);
             } else {
               var inputGroup = $("<div>");
               inputGroup.attr("class", "form-group row");
@@ -838,13 +883,12 @@ function setup_file_picker() {
 
 (() => {
   // setup job composer
-  register_autocomplete_for_module_search();
-  register_add_module_handler();
+  //   register_autocomplete_for_module_search();
+  //   register_add_module_handler();
   register_on_file_changed_listener();
   register_on_runtime_change_listener();
   init_job_files_table();
   sync_job_name();
-  setup_general_form();
   setup_dynamic_form();
   setup_file_picker();
   setup_uploader_and_submit_button();

@@ -165,10 +165,13 @@ class Engine():
         job_file_path = os.path.join(params['location'], job_file_name)
         bash_file_path = os.path.join(params['location'], "run.sh")
         location = params['location']
+
+        if params['extra_slurm']:
+            extra_slurm = f"-x '{params['extra_slurm']}' "
         
         with open(bash_file_path, "w") as bash_file:
             # bash_file.write(f"#!/bin/bash\ncd {location}\n{tamubatch_path} {walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_path}\n")
-            bash_file.write(f"#!/bin/bash\ncd {location}\n{tamubatch_path} {walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_name}\n")
+            bash_file.write(f"#!/bin/bash\ncd {location}\n{tamubatch_path} {extra_slurm}{walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_name}\n")
         return bash_file_path
         
 

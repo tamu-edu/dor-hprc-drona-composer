@@ -62,23 +62,7 @@
 
 
 
-          <!-- Module Component -->
-          <div id="module-component" style="display:none;">
-            <!-- Module Search -->
-            <div class="form-group row">
-              <label class="col-lg-3 col-form-label form-control-label" for="module-search">Module</label>
-              <div class="col-lg-6 ui-widget">
-                <input class="form-control" id="module-search">
-                <button type="button" id="add_module_button" class="btn btn-primary mt-2 maroon-button">Add</button>
-              </div>
-            </div>
 
-            <!-- Added Module List -->
-            <div class="row" id="module_list">
-              <!-- place to add modules -->
-              <!-- The list of module to load will be added at the end just before the user submit the form. see index.js -->
-            </div>  
-          </div>
 
           <!-- Virtual Environment Component -->
           <div id="venv-component" style="display:none;">
@@ -224,11 +208,22 @@
             </div>
           </div>
 
+          <!-- Extra Configs -->
+          <div class="form-group row">
+            <label class="col-lg-3 col-form-label form-control-label" for="extra_slurm">Extra Slurm Config</label>
+            <div class="col-lg-9">
+              <input class="form-control" type="text" name="extra_slurm" min="1" max="28">
+              <small class="text-muted" name="note">Extra Slurm Config</small>
+            </div>
+          </div>
+
           <!-- Solid divider -->
           <hr class="solid md-3 mt-3">
         </div>
       </div>
       </div>
+
+
       <!-- Right Column: Job Preview Section -->
       <div class="col-lg-6">
           <div id="runtime_config">
