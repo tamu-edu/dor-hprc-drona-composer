@@ -879,6 +879,14 @@ function setup_file_picker() {
   });
 }
 
+function setup_job_script_preview() {
+  $(document).ready(function () {
+    if ($("#right-col").is(":hidden")) {
+      $("#left-col").removeClass("col-lg-6").addClass("col-lg-12");
+    }
+  });
+}
+
 // anonymous function to sync the name of upload file with the value of hidden input
 
 (() => {
@@ -892,4 +900,5 @@ function setup_file_picker() {
   setup_dynamic_form();
   setup_file_picker();
   setup_uploader_and_submit_button();
+  setup_job_script_preview();
 })();
