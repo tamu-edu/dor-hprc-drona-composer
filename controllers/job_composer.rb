@@ -117,6 +117,19 @@ class JobComposerController < Sinatra::Base
         return "#{settings.tamubatch_path} #{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}#{account}#{job_file_path}"
     end
 
+    post '/jobs/preview' do
+        engine_command =  driver_command('engine')
+        params_dict = params.to_json.to_s
+
+        preview_job_script, stderr_str, status = Open3.capture3("#{engine_command} -p \'#{params_dict}\' -j")
+        if !status.success?
+            return stderr_str
+        end
+
+        return preview_job_script
+        
+    end
+
     
     post '/jobs/submit' do
         engine_command =  driver_command('engine')
@@ -136,10 +149,6 @@ class JobComposerController < Sinatra::Base
             return "An error ocurs, please ensure that all parameters are legal and valid."
         end
 
-
-
-        
-    
         create_folder_if_not_exist(location)    
 
         if !params[:files].nil?

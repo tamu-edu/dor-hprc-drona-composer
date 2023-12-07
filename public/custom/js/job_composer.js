@@ -50,6 +50,25 @@ function submit_job(action, formData) {
   request.send(formData);
 }
 
+function preview_job(action, formData, callback) {
+  var request = new XMLHttpRequest();
+
+  request.open("POST", action, true);
+  request.onload = function (event) {
+    if (request.status == 200) {
+      var jobScript = request.responseText;
+      callback(null, jobScript); // Pass the result to the callback
+    } else {
+      callback(`Error ${request.status}. Try again!`); // Pass the error to the callback
+    }
+  };
+  request.onerror = function (event) {
+    callback("An error has occurred. Please try again!"); // Pass the error to the callback
+  };
+
+  request.send(formData);
+}
+
 function register_add_module_handler(
   add_module_button,
   module_input,
@@ -469,10 +488,8 @@ function setup_uploader_and_submit_button() {
   uploaderCheckbox.change(function () {
     if (uploaderCheckbox.is(":checked")) {
       uploader.show();
-      $("#run_command").attr("rows", "22");
     } else {
       uploader.hide();
-      $("#run_command").attr("rows", "12");
     }
   });
 
@@ -565,6 +582,51 @@ function setup_uploader_and_submit_button() {
   };
 }
 
+function setup_job_script_preview() {
+  $(document).ready(function () {
+    $("#job-preview-button").click(function () {
+      $("#job-preview-modal").modal("toggle");
+      let slurm_form = document.getElementById("slurm-config-form");
+      if (slurm_form == null) {
+        return;
+      }
+
+      $("#mainscript").val($("#executable_file_input").val().split("\\").pop());
+
+      $("<input />")
+        .attr("type", "hidden")
+        .attr("name", "module_list")
+        .attr("value", collect_modules_to_load())
+        .appendTo("#slurm-config-form");
+
+      $("<input />")
+        .attr("type", "hidden")
+        .attr("name", "walltime")
+        .attr("value", calculate_walltime())
+        .appendTo("#slurm-config-form");
+      let formData = new FormData(slurm_form);
+
+      // change the action to preview
+      action = document.dashboard_url + "/jobs/preview";
+
+      preview_job(action, formData, function (error, jobScript) {
+        if (error) {
+          alert(error);
+        } else {
+          var jobScriptContainer = $("<textarea>");
+          jobScriptContainer.attr("class", "form-control");
+          jobScriptContainer.attr("rows", "20");
+          jobScriptContainer.val(jobScript);
+          $("#run_command").empty();
+          $("#run_command").val(jobScript);
+          $("#job-preview-container").empty();
+          $("#job-preview-container").append(jobScriptContainer);
+        }
+      });
+    });
+  });
+}
+
 function create_input_field(field, classes) {
   var inputField = $("<input>");
   inputField.attr("class", classes);
@@ -614,41 +676,6 @@ function create_select_field(field, classes) {
   selectGroup.append(selectLabel);
   selectGroup.append(selectContainer);
   return selectGroup;
-}
-
-function setup_general_form() {
-  $(document).ready(function () {
-    $.ajax({
-      url: document.dashboard_url + "/jobs/composer/schema/general",
-      method: "GET",
-      dataType: "json",
-      success: function (data) {
-        for (var i = 0; i < Object.keys(data).length; i++) {
-          var field = data[Object.keys(data)[i]];
-
-          // Create form field based on the JSON data
-          var inputGroup = $("<div>");
-          inputGroup.attr("class", "form-group row");
-
-          var inputLabel = create_input_label(
-            field,
-            "col-lg-3 col-form-label form-control-label"
-          );
-
-          var inputContainer = $("<div>");
-          inputContainer.attr("class", "col-lg-9");
-
-          var inputField = create_input_field(field, "col-lg-9 form-control");
-
-          // Add the form field to the container
-          inputGroup.append(inputLabel);
-          inputContainer.append(inputField);
-          inputGroup.append(inputContainer);
-          $("#generalFieldsContainer").append(inputGroup);
-        }
-      },
-    });
-  });
 }
 
 function create_radio_group(field, classes) {
@@ -876,14 +903,6 @@ function setup_file_picker() {
         fetchAndPopulateSubdirectories(parentPath);
       });
     });
-  });
-}
-
-function setup_job_script_preview() {
-  $(document).ready(function () {
-    if ($("#right-col").is(":hidden")) {
-      $("#left-col").removeClass("col-lg-6").addClass("col-lg-12");
-    }
   });
 }
 
