@@ -561,6 +561,7 @@ function setup_uploader_and_submit_button() {
 
     $("#mainscript").val($("#executable_file_input").val().split("\\").pop());
 
+    $("#run_command").val($("#job-script-preview").val());
     $("<input />")
       .attr("type", "hidden")
       .attr("name", "module_list")
@@ -614,11 +615,10 @@ function setup_job_script_preview() {
           alert(error);
         } else {
           var jobScriptContainer = $("<textarea>");
+          jobScriptContainer.attr("id", "job-script-preview");
           jobScriptContainer.attr("class", "form-control");
           jobScriptContainer.attr("rows", "20");
           jobScriptContainer.val(jobScript);
-          $("#run_command").empty();
-          $("#run_command").val(jobScript);
           $("#job-preview-container").empty();
           $("#job-preview-container").append(jobScriptContainer);
         }
