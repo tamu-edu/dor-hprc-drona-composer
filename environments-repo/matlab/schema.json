@@ -1,0 +1,37 @@
+{
+  "version": {
+    "type": "text",
+    "label": "version",
+    "name": "version",
+    "value": "R2023a"
+  },	
+  "workers": {
+    "type": "number",
+    "label": "#workers for parallel processing",
+    "name": "workers",
+    "value": "0"
+  },
+  "threads": {
+    "type": "number",
+    "label": "#comp threads",
+    "name": "threads",
+    "value": "1"
+  },
+  "gpu": {
+    "type": "checkbox",
+    "label": "use gpu",
+    "value": "false"
+  },
+  "memory": {
+    "type": "number",
+    "label": "total mem (in MB)",
+    "name": "memory",
+    "value": ""
+  },
+  "walltime": {
+    "type": "text",
+    "label": "expected runtime (hh:mm)",
+    "name": "walltime",
+    "value": "02:00"
+  }
+}
