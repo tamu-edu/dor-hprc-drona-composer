@@ -1,0 +1,10 @@
+source /etc/profile
+
+module load WebProxy
+module load [fmodules]
+
+cd [flocation]
+
+# add any commands below hjere
+
+
