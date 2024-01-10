@@ -1,0 +1,177 @@
+#!/bin/python
+import subprocess
+import json
+import os
+import argparse 
+
+# MP 3/29/22 adding info for completed jobs. For now just use the same Job class. It's
+#            very messy since running jobs and completed jobs have different atributes.
+#            TODO create a separate class for Completed Jobs and separate it from running jobs  
+class Job:
+    def __init__(self, id, partition, name, user, state, time, time_limit, nodes, nodelist):
+        self.id = id
+        self.partition = partition   # "" for completed
+        self.name = name
+        self.user = user             # "" for completed
+        self.state = state
+        self.time = time             # actual wall time for completed
+        self.time_limit = time_limit # "" for completed
+        self.nodes = nodes           # cpus for completed
+        self.nodelist = nodelist     # "" for completed
+
+def job_from_list(data):
+    return Job(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8])
+
+def completed_job_from_list(data):  
+    return Job(data[0], "",data[1], "", data[4], data[3], "", data[2], "")
+
+def list_completed_jobs(args):
+    username = os.getenv('USER')
+
+    output_format = "%.18i %.9P %j %u %.8T %.10M %.9l %.6D %R"
+
+    output=subprocess.check_output(["/usr/bin/sacct", '--starttime=now-7days', '--format=JobID,JobName,NCPUS,Elapsed,State', '-X'])
+    output = output.split('\n')
+    output = output[2:] # skip the headers
+    jobs = []
+    for line in output:
+        data = line.strip().split()
+        data = map(lambda x: x.strip(), data)
+        if len(data) == 0:
+            continue
+        job = completed_job_from_list(data)
+        jobs.append(job)
+
+    json_data = json.dumps([ob.__dict__ for ob in jobs])
+    print('{ "data": ' + json_data + '}')
+
+def list_jobs(args):
+    username = os.getenv('USER')
+    output_format = "%.18i %.9P %j %u %.8T %.10M %.9l %.6D %R"
+    output=subprocess.check_output(["/usr/bin/squeue", '-u', username, '-o', output_format])
+    output = output.split('\n')
+    output = output[1:] # skip the headers
+    jobs = []
+    for line in output:
+        data = line.strip().split()
+        data = map(lambda x: x.strip(), data)
+        if len(data) == 0:
+            continue
+        job = job_from_list(data)
+        jobs.append(job)
+
+    json_data = json.dumps([ob.__dict__ for ob in jobs])
+    print('{ "data": ' + json_data + '}')
+
+def kill_job(args):
+    job_id = args.kill[0]
+    output=subprocess.check_output(["/usr/bin/scancel", job_id])
+    print(output)
+
+def seff_job(args):
+    job_id = args.summary_completed[0]
+    output=subprocess.check_output(["seff", job_id])
+    print(output)
+
+def lnu_job(args):
+    job_id = args.utilization[0]
+    output=subprocess.check_output(["/sw/local/bin/lnu", job_id])
+    print(output)
+
+def tail(f, n, offset=0):
+    # source: https://stackoverflow.com/questions/136168/get-last-n-lines-of-a-file-with-python-similar-to-tail
+    print(offset)
+    stdin,stdout = os.popen2("tail -n " + str(n) + " " + f)
+    stdin.close()
+    lines = stdout.readlines(); stdout.close()
+    return lines[:-offset]
+
+def job_log(args):
+    job_id = args.output[0]
+    n_lines = args.output[1]
+
+    # using shell=True is not recommended. However,
+    # since this is trusted code, should be fine
+    cmd = 'scontrol show jobid ' + job_id + '| grep StdOut | cut -d"=" -f2'
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    log_file_path = ps.communicate()[0].strip()
+
+    if os.path.exists(log_file_path):
+        last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
+        # This is just string, no json here
+        print(last_n_lines)
+    else:
+        print("Your job is not running. No log file can be found at the moment.")
+    
+def job_error(args):
+    job_id = args.error[0]
+    n_lines = args.error[1]
+
+    # using shell=True is not recommended. However,
+    # since this is trusted code, should be fine
+    cmd = 'scontrol show jobid ' + job_id + '| grep StdErr | cut -d"=" -f2'
+    ps = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    log_file_path = ps.communicate()[0].strip()
+
+    if os.path.exists(log_file_path):
+        last_n_lines = subprocess.check_output(["/usr/bin/tail", "-n", n_lines, log_file_path])
+        # This is just string, no json here
+        print(last_n_lines)
+    else:
+        print("Your job is not running. No log file can be found at the moment.")
+
+def main():
+    # create parser object 
+    parser = argparse.ArgumentParser(description = "Job utility wrapper") 
+
+    # defining arguments for parser object 
+    parser.add_argument("-l", "--list", action='store_true',
+                        help = "List all jobs for current user.")
+
+    parser.add_argument("-c", "--list_completed", action='store_true',
+                        help = "List all completed jobs for current user.")
+
+    parser.add_argument("-k", "--kill", nargs = 1, 
+                        type = str, metavar = "job_id", default = None, 
+                        help = "Kill a job with the given job id.")
+
+    parser.add_argument("-o", "--output", nargs = 2, 
+                        type = str, metavar=('job_id', 'n_lines'), default = None, 
+                        help = "Output the last n_lines of output of a given job_id")
+
+    parser.add_argument("-e", "--error", nargs = 2, 
+                        type = str, metavar=('job_id', 'n_lines'), default = None, 
+                        help = "Output the last n_lines of error log for the given job_id")
+
+    parser.add_argument("-u", "--utilization", nargs = 1,
+                        type = str, metavar=('job_id'), default = None,
+                        help = "Output the utilization (lnu command) for the given job_id")
+
+    parser.add_argument("-s", "--summary_completed", nargs = 1,
+                        type = str, metavar=('job_id'), default = None,
+                        help = "Output the summary (seff command) for the given job_id")
+
+     # parse the arguments from standard input 
+    args = parser.parse_args() 
+
+    # calling functions depending on type of argument 
+    if args.list == True: 
+        list_jobs(args)
+    elif args.list_completed == True:
+        list_completed_jobs(args) 
+    elif args.kill != None: 
+        kill_job(args) 
+    elif args.output != None:
+        job_log(args)
+    elif args.error != None:
+        job_error(args)
+    elif args.utilization != None:
+        lnu_job(args)
+    elif args.summary_completed != None:
+        seff_job(args)
+    else:
+        parser.print_help()
+
+if __name__ == "__main__": 
+    # calling the main function 
+    main()

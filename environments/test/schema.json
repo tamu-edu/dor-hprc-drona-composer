@@ -1,0 +1,51 @@
+{
+  "testNumber": {
+    "type": "number",
+    "label": "Test Number",
+    "name": "testNumber",
+    "value": "1"
+  },
+  "testText": {
+    "type": "text",
+    "label": "Test Text",
+    "name": "testText",
+    "value": "Default Text"
+  },
+  "testCheckbox": {
+    "type": "checkbox",
+    "label": "Test Checkbox",
+    "name": "testCheckbox",
+    "value": "false"
+  },
+  "testRadioGroup": {
+    "type": "radioGroup",
+    "label": "Test Radio Group",
+    "radio1": {
+      "type": "radio",
+      "name": "testGroup",
+      "value": "Option 1",
+      "id": "testGroup1"
+    },
+    "radio2": {
+      "type": "radio",
+      "name": "testGroup",
+      "value": "Option 2",
+      "id": "testGroup2"
+    }
+  },
+  "testDropdown": {
+    "type": "select",
+    "label": "Test Dropdown",
+    "name": "testDropdown",
+    "options": [
+      {
+        "value": "Option 1",
+        "label": "Option 1"
+      },
+      {
+        "value": "Option 2",
+        "label": "Option 2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+source /etc/profile
+
+module load WebProxy
+module load [fmodules]
+
+cd [flocation]
+dos2unix [fmainscript]
+chmod u+x [fmainscript]
+./[fmainscript]
