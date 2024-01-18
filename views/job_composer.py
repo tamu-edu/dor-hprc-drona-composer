@@ -111,9 +111,31 @@ def preview_job():
     preview_job_script = engine.preview_script(params)
     return preview_job_script
 
-
-
+@job_composer.route('/mainpaths')
+def get_main_paths():
+    current_user = os.getlogin()
+    group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
+    group_names = [s.strip() for s in group_names]
     
+    paths = {"Home": f"/home/{current_user}", "Scratch": f"/scratch/user/{current_user}"}
+
+    for group_name in group_names:
+        groupdir = f"/scratch/group/{group_name}"
+        if os.path.exists(groupdir):
+            paths[group_name] = groupdir
+
+    return jsonify(paths)
+
+def fetch_subdirectories(path):
+    subdirectories = [os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))]
+    return subdirectories
+
+@job_composer.route('/subdirectories')
+def get_subdirectories():
+    fullpath = request.args.get('path')
+    print(fullpath)
+    subdirectories = fetch_subdirectories(fullpath)
+    return jsonify(subdirectories)
     
 
 
