@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect
 from flask_cors import CORS
 from views.job_composer import job_composer
 import yaml
@@ -27,8 +27,13 @@ app.config['user'] = os.environ['USER']
 app.register_blueprint(job_composer, url_prefix="/jobs/composer")
 
 @app.route("/")
-def hello():
-    return render_template('layout.html')
+def index():
+    environments = get_directories("./environments")
+    return render_template("index_no_banner.html", environments=environments)
+
+def get_directories(path):
+    return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
 
 @app.route("/config")
 def config():
