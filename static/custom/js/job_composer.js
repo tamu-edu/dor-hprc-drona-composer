@@ -469,13 +469,13 @@ function testing() {
   console.log("Testing in Progress");
 }
 
-// function sync_job_name() {
-//   console.log($("#job-name").val());
-//   let path = $("#location").val();
-//   $("#job-name").on("input", function () {
-//     $("#location").val(path + this.value);
-//   });
-// }
+function sync_job_name() {
+  console.log($("#job-name").val());
+  let path = $("#location").val();
+  $("#job-name").on("input", function () {
+    $("#location").val(path + this.value);
+  });
+}
 
 function setup_uploader_and_submit_button() {
   let slurm_form = document.getElementById("slurm-config-form");
@@ -1000,8 +1000,8 @@ function setup_file_picker() {
   //   register_add_module_handler();
   register_on_file_changed_listener();
   register_on_runtime_change_listener();
-  init_job_files_table();
-  // sync_job_name();
+  // init_job_files_table();
+  sync_job_name();
   setup_dynamic_form();
   setup_file_picker();
   setup_uploader_and_submit_button();
