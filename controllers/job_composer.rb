@@ -117,7 +117,7 @@ class JobComposerController < Sinatra::Base
         return "#{settings.tamubatch_path} #{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}#{account}#{job_file_path}"
     end
 
-    post '/jobs/preview' do
+    post '/jobs/composer/preview' do
         engine_command =  driver_command('engine')
         params_dict = params.to_json.to_s
 

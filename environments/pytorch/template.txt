@@ -1,0 +1,28 @@
+# this is the template to run PyTorch models on ACES.
+# Placeholders,designated with [] around them, will be
+# automatically replaced depending on the provided input
+# values. This template is fully editable and you can
+# update it any way to suit your needs, including
+# replacing placeholders
+
+source /etc/profile
+
+module load WebProxy
+module load [fmodules]
+
+cd /scratch/group/hprc/benchmarks/Language-Modelling/BERT/
+
+# setup architecture env. The composer will insert correct
+# code to setup the Pytorch env for the particular
+# architecture that was selected
+#[setup_architecture]
+
+
+
+
+# setup PyTorch env, including updating some of the Python
+# scripts, setting env variables for provided input values.
+[setup_pytorch]
+
+# run Pytorch
+[pytorch_driver]

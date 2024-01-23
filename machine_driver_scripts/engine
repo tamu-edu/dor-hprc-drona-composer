@@ -146,7 +146,6 @@ class Engine():
             # Create a file with the job script
             with open(job_file_path, "w") as job_file:
                 self.script = params["run_command"]
-                # self.script = self.custom_replace(template, self.map, params)
                 self.script = self.script.replace("\t", " ")
                 self.script = re.sub(r'\r\n?|\r', '\n', self.script)
                 job_file.write(self.script)
