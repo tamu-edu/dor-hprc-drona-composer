@@ -47,5 +47,76 @@
         "label": "Option 2"
       }
     ]
+  },
+  "testModule": {
+    "type": "module",
+    "label": "Test Module"
+  },
+  "testDependRadio": {
+    "type": "radioGroup",
+    "label": "Test Depend Radio",
+    "dependencyType": "master",
+    "dependencyGroup": "A",
+    "radio1": {
+      "type": "radio",
+      "name": "dependGroup",
+      "value": "Option 1",
+      "id": "testGroup1",
+      "dependFor": "testTextDepend1"
+    },
+    "radio2": {
+      "type": "radio",
+      "name": "dependGroup",
+      "value": "Option 2",
+      "id": "testGroup2",
+      "dependFor": "testTextDepend2"
+    }
+  },
+  "testTextDepend1": {
+    "type": "text",
+    "label": "Test Text Depend 1",
+    "name": "testTextDepend1",
+    "value": "Default Text 1",
+    "dependencyType": "slave"
+  },
+  "testTextDepend2": {
+    "type": "text",
+    "label": "Test Text Depend 2",
+    "name": "testTextDepend2",
+    "value": "Default Text 2",
+    "dependencyType": "slave"
+  },
+  "testDependDropdown": {
+    "type": "select",
+    "label": "Test Depend Dropdown",
+    "name": "testDependDropdown",
+    "dependencyType": "master",
+    "dependencyGroup": "B",
+    "options": [
+      {
+        "value": "Option 3",
+        "label": "Option 3",
+        "dependFor": "testTextDepend3"
+      },
+      {
+        "value": "Option 4",
+        "label": "Option 4",
+        "dependFor": "testTextDepend4"
+      }
+    ]
+  },
+  "testTextDepend3": {
+    "type": "text",
+    "label": "Test Text Depend 3",
+    "name": "testTextDepend3",
+    "value": "Default Text 3",
+    "dependencyType": "slave"
+  },
+  "testTextDepend4": {
+    "type": "text",
+    "label": "Test Text Depend 4",
+    "name": "testTextDepend4",
+    "value": "Default Text 4",
+    "dependencyType": "slave"
   }
 }

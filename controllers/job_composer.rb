@@ -117,26 +117,25 @@ class JobComposerController < Sinatra::Base
         return "#{settings.tamubatch_path} #{walltime}#{use_gpu}#{total_cpu_cores}#{cores_per_node}#{total_mem}#{account}#{job_file_path}"
     end
 
+    post '/jobs/composer/preview' do
+        engine_command =  driver_command('engine')
+        params_dict = params.to_json.to_s
+
+        preview_job_script, stderr_str, status = Open3.capture3("#{engine_command} -p \'#{params_dict}\' -j")
+        if !status.success?
+            return stderr_str
+        end
+
+        return preview_job_script
+        
+    end
+
     
     post '/jobs/submit' do
         engine_command =  driver_command('engine')
         params_dict = params.to_json.to_s
         # return params_dict
         begin
-            # job_name = params[:name]
-            # # whitespace is your enermy, same goes for dash ;)
-            # # underscore is your friend. At least in file name
-            # job_name = job_name.gsub /[- ]/, "_"
-            # Slurm parameters for tamubatch command
-            # walltime = params[:walltime]
-            # use_gpu = params[:gpu]           
-            # total_cpu_cores = params[:cores]
-            # cores_per_node = params[:cores_per_node]
-            # total_mem = params[:total_memory_number] + params[:total_memory_unit]
-            # project_account = params[:project_account]
-            # email = params[:email]
-            # module_list= params[:module_list]
-            # run_command = params[:run_command].gsub(/\r\n?/,"\n")
             
             file_name = (!params[:executable_script].nil?) ? params[:executable_script][:filename] : nil
             file_content = (!params[:executable_script].nil?) ? params[:executable_script][:tempfile] : nil
@@ -150,10 +149,6 @@ class JobComposerController < Sinatra::Base
             return "An error ocurs, please ensure that all parameters are legal and valid."
         end
 
-
-
-        
-    
         create_folder_if_not_exist(location)    
 
         if !params[:files].nil?

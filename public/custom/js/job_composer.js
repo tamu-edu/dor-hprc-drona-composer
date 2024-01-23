@@ -50,53 +50,71 @@ function submit_job(action, formData) {
   request.send(formData);
 }
 
-function register_add_module_handler() {
-  var add_module_button = document.getElementById("add_module_button");
-  if (add_module_button == null) {
-    return;
-  }
+function preview_job(action, formData, callback) {
+  var request = new XMLHttpRequest();
 
-  add_module_button.onclick = function (event) {
+  request.open("POST", action, true);
+  request.onload = function (event) {
+    if (request.status == 200) {
+      var jobScript = request.responseText;
+      callback(null, jobScript); // Pass the result to the callback
+    } else {
+      callback(`Error ${request.status}. Try again!`); // Pass the error to the callback
+    }
+  };
+  request.onerror = function (event) {
+    callback("An error has occurred. Please try again!"); // Pass the error to the callback
+  };
+
+  request.send(formData);
+}
+
+function register_add_module_handler(
+  add_module_button,
+  module_input,
+  module_list
+) {
+  //   var add_module_button = document.getElementById("add_module_button");
+  console.log("Registering add module handler");
+
+  add_module_button.click(function (event) {
     event.preventDefault();
 
-    let module_to_add = document.getElementById("module-search").value;
+    let module_to_add = module_input.val();
 
     if (module_to_add === "") {
       return;
     }
 
-    var container = document.getElementById("module_list");
-    var span = document.createElement("span");
-    span.setAttribute("class", "badge badge-pill badge-primary module-to-load");
-    span.innerHTML = module_to_add.trim();
+    var container = module_list;
+    var span = $("<span>", {
+      class: "badge badge-pill badge-primary module-to-load",
+      html: module_to_add.trim(),
+    });
 
-    var div = document.createElement("div");
-    div.appendChild(span);
-    div.onclick = function (event) {
+    var div = $("<div>").append(span);
+
+    div.click(function (event) {
       var elem = event.target;
-      elem.parentNode.removeChild(elem);
-    };
+      $(elem).parent().remove();
+    });
 
-    container.appendChild(div);
-    document.getElementById("module-search").value = "";
-
-    // add to run command window
-    // var run_command = document.getElementById("run_command");
-    // run_command.value = "module load sth\n" + run_command.value;
-  };
+    container.append(div);
+    module_input.val("");
+  });
 }
 
 // Flow for the composer
 
-function show_module_component() {
-  var module_component = document.getElementById("module-component");
-  // console.log(module_component);
-  module_component.style.display = "block";
-}
+// function show_module_component() {
+//   var module_component = document.getElementById("module-component");
+//   // console.log(module_component);
+//   module_component.style.display = "block";
+// }
 
-function register_autocomplete_for_module_search() {
+function register_autocomplete_for_module_search(module_input) {
   // this setup autocomplete input box for module search
-  $("#module-search").autocomplete({
+  $(module_input).autocomplete({
     delay: 40,
 
     source: function (request, response) {
@@ -216,7 +234,7 @@ function update_run_command() {
 
 function runtime_onchange() {
   let runtime = document.getElementById("runtime_env").value;
-  if (runtime != "matlab") show_module_component();
+  // if (runtime != "matlab") show_module_component();
   // if (runtime == "python")
   //     show_venv_component();
   set_template(runtime);
@@ -470,10 +488,8 @@ function setup_uploader_and_submit_button() {
   uploaderCheckbox.change(function () {
     if (uploaderCheckbox.is(":checked")) {
       uploader.show();
-      $("#run_command").attr("rows", "22");
     } else {
       uploader.hide();
-      $("#run_command").attr("rows", "12");
     }
   });
 
@@ -545,6 +561,7 @@ function setup_uploader_and_submit_button() {
 
     $("#mainscript").val($("#executable_file_input").val().split("\\").pop());
 
+    $("#run_command").val($("#job-script-preview").val());
     $("<input />")
       .attr("type", "hidden")
       .attr("name", "module_list")
@@ -566,12 +583,57 @@ function setup_uploader_and_submit_button() {
   };
 }
 
+function setup_job_script_preview() {
+  $(document).ready(function () {
+    $("#job-preview-button").click(function () {
+      $("#job-preview-modal").modal("toggle");
+      let slurm_form = document.getElementById("slurm-config-form");
+      if (slurm_form == null) {
+        return;
+      }
+
+      $("#mainscript").val($("#executable_file_input").val().split("\\").pop());
+
+      $("<input />")
+        .attr("type", "hidden")
+        .attr("name", "module_list")
+        .attr("value", collect_modules_to_load())
+        .appendTo("#slurm-config-form");
+
+      $("<input />")
+        .attr("type", "hidden")
+        .attr("name", "walltime")
+        .attr("value", calculate_walltime())
+        .appendTo("#slurm-config-form");
+      let formData = new FormData(slurm_form);
+
+      // change the action to preview
+      action = document.dashboard_url + "/jobs/composer/preview";
+
+      preview_job(action, formData, function (error, jobScript) {
+        if (error) {
+          alert(error);
+        } else {
+          var jobScriptContainer = $("<textarea>");
+          jobScriptContainer.attr("id", "job-script-preview");
+          jobScriptContainer.attr("class", "form-control");
+          jobScriptContainer.attr("rows", "20");
+          jobScriptContainer.val(jobScript);
+          $("#job-preview-container").empty();
+          $("#job-preview-container").append(jobScriptContainer);
+        }
+      });
+    });
+  });
+}
+
 function create_input_field(field, classes) {
   var inputField = $("<input>");
   inputField.attr("class", classes);
   inputField.attr("type", field.type);
   inputField.attr("name", field.name);
   inputField.attr("value", field.value);
+  // if (field.dependsOn)
   return inputField;
 }
 
@@ -585,6 +647,9 @@ function create_input_label(field, classes) {
 }
 
 function create_select_field(field, classes) {
+  if (field.dependencyType && field.dependencyType == "master") {
+    dependencyControl[field.dependencyGroup] = [];
+  }
   var selectGroup = $("<div>");
   selectGroup.attr("class", classes);
 
@@ -610,49 +675,44 @@ function create_select_field(field, classes) {
     option.text(value.label);
     selectField.append(option);
   });
+  if (field.dependencyType && field.dependencyType == "master") {
+    selectField.on("change", function () {
+      selection = $(this).val();
+      // get option matching selection
+      matchOption = field.options.find((option) => option.value == selection);
+      dependentField = matchOption.dependFor;
 
+      console.log(dependentField);
+      if (!dependencyControl[field.dependencyGroup].includes(dependentField)) {
+        for (
+          var index = dependencyControl[field.dependencyGroup].length - 1;
+          index >= 0;
+          index--
+        ) {
+          var fieldName = dependencyControl[field.dependencyGroup][index];
+          console.log(fieldName);
+          dependencyControl[field.dependencyGroup].splice(index, 1);
+          $("#" + fieldName).remove();
+        }
+        createdField = create_field(
+          fields[dependentField],
+          (ignoreDependency = true)
+        );
+        dependencyControl[field.dependencyGroup].push(dependentField);
+        $("#dynamicFieldsContainer").append(createdField);
+      }
+    });
+  }
   selectContainer.append(selectField);
   selectGroup.append(selectLabel);
   selectGroup.append(selectContainer);
   return selectGroup;
 }
 
-function setup_general_form() {
-  $(document).ready(function () {
-    $.ajax({
-      url: document.dashboard_url + "/jobs/composer/schema/general",
-      method: "GET",
-      dataType: "json",
-      success: function (data) {
-        for (var i = 0; i < Object.keys(data).length; i++) {
-          var field = data[Object.keys(data)[i]];
-
-          // Create form field based on the JSON data
-          var inputGroup = $("<div>");
-          inputGroup.attr("class", "form-group row");
-
-          var inputLabel = create_input_label(
-            field,
-            "col-lg-3 col-form-label form-control-label"
-          );
-
-          var inputContainer = $("<div>");
-          inputContainer.attr("class", "col-lg-9");
-
-          var inputField = create_input_field(field, "col-lg-9 form-control");
-
-          // Add the form field to the container
-          inputGroup.append(inputLabel);
-          inputContainer.append(inputField);
-          inputGroup.append(inputContainer);
-          $("#generalFieldsContainer").append(inputGroup);
-        }
-      },
-    });
-  });
-}
-
 function create_radio_group(field, classes) {
+  if (field.dependencyType && field.dependencyType == "master") {
+    dependencyControl[field.dependencyGroup] = [];
+  }
   var radioGroup = $("<div>");
   radioGroup.attr("class", classes);
 
@@ -669,6 +729,30 @@ function create_radio_group(field, classes) {
       var radioContainer = $("<div>");
       radioContainer.attr("class", "form-check form-check-inline");
       var radioField = create_input_field(value, "form-check-input");
+      if (field.dependencyType && field.dependencyType == "master") {
+        radioField.on("click", function () {
+          if (
+            !dependencyControl[field.dependencyGroup].includes(value.dependFor)
+          ) {
+            for (
+              var index = dependencyControl[field.dependencyGroup].length - 1;
+              index >= 0;
+              index--
+            ) {
+              var fieldName = dependencyControl[field.dependencyGroup][index];
+              console.log(fieldName);
+              dependencyControl[field.dependencyGroup].splice(index, 1);
+              $("#" + fieldName).remove();
+            }
+            createdField = create_field(
+              fields[value.dependFor],
+              (ignoreDependency = true)
+            );
+            dependencyControl[field.dependencyGroup].push(value.dependFor);
+            $("#dynamicFieldsContainer").append(createdField);
+          }
+        });
+      }
       var radioLabel = create_input_label(value, "form-check-label");
       radioContainer.append(radioField);
       radioContainer.append(radioLabel);
@@ -681,8 +765,96 @@ function create_radio_group(field, classes) {
   return radioGroup;
 }
 
+function create_module_component(label) {
+  var moduleComponent = $("<div>");
+  moduleComponent.attr("id", "module-component");
+
+  var moduleSearch = $("<div>");
+  moduleSearch.attr("class", "form-group row");
+
+  var moduleLabel = $("<label>");
+  moduleLabel.attr("class", "col-lg-3 col-form-label form-control-label");
+  moduleLabel.attr("for", "module-search");
+  moduleLabel.text(label);
+
+  var moduleContainer = $("<div>");
+  moduleContainer.attr("class", "col-lg-6 ui-widget");
+
+  var moduleInput = $("<input>");
+  moduleInput.attr("class", "form-control");
+  moduleInput.attr("id", "module-search");
+
+  var moduleButton = $("<button>");
+  moduleButton.attr("type", "button");
+  moduleButton.attr("class", "btn btn-primary mt-2 maroon-button");
+  moduleButton.attr("id", "add_module_button");
+  moduleButton.text("Add");
+
+  moduleContainer.append(moduleInput);
+  moduleContainer.append(moduleButton);
+  moduleSearch.append(moduleLabel);
+  moduleSearch.append(moduleContainer);
+
+  var moduleList = $("<div>");
+  moduleList.attr("id", "module_list");
+  moduleList.attr("class", "row");
+
+  register_autocomplete_for_module_search(moduleInput);
+  register_add_module_handler(moduleButton, moduleInput, moduleList);
+
+  moduleComponent.append(moduleSearch);
+  moduleComponent.append(moduleList);
+
+  return moduleComponent;
+}
+
+function create_field(field, ignoreDependency) {
+  if (
+    ignoreDependency == false &&
+    field.dependencyType &&
+    field.dependencyType == "slave"
+  ) {
+    return;
+  }
+
+  if (field.type == "select") {
+    selectField = create_select_field(field, "form-group row mt-2");
+    return selectField;
+  } else if (field.type == "radioGroup") {
+    radioGroup = create_radio_group(field, "form-group row");
+    return radioGroup;
+  } else if (field.type == "module") {
+    moduleComponent = create_module_component(field.label);
+    return moduleComponent;
+  } else {
+    var inputGroup = $("<div>");
+    inputGroup.attr("class", "form-group row");
+    inputGroup.attr("id", field.name);
+
+    var inputLabel = create_input_label(
+      field,
+      "col-lg-3 col-form-label form-control-label"
+    );
+
+    var inputContainer = $("<div>");
+    inputContainer.attr("class", "col-lg-9");
+
+    var inputField = create_input_field(field, "col-lg-9 form-control");
+
+    // Add the form field to the container
+    inputGroup.append(inputLabel);
+    inputContainer.append(inputField);
+    inputGroup.append(inputContainer);
+    return inputGroup;
+  }
+}
+
+var fields = {};
+var dependencyControl = {};
+
 function setup_dynamic_form() {
   $(document).ready(function () {
+    // var fields = {};
     $("#runtime_env").change(function () {
       var selectedType = $(this).val();
 
@@ -692,41 +864,20 @@ function setup_dynamic_form() {
         method: "GET",
         dataType: "json",
         success: function (data) {
+          fields = data;
+          console.log(fields);
           // Clear existing form fields
           $("#dynamicFieldsContainer").empty();
 
           // Loop through the JSON data and create form fields
-          for (var i = 0; i < Object.keys(data).length; i++) {
-            var field = data[Object.keys(data)[i]];
-            if (field.type == "select") {
-              selectField = create_select_field(field, "form-group row mt-2");
-              $("#dynamicFieldsContainer").append(selectField);
-            } else if (field.type == "radioGroup") {
-              radioGroup = create_radio_group(field, "form-group row");
-              $("#dynamicFieldsContainer").append(radioGroup);
-            } else {
-              var inputGroup = $("<div>");
-              inputGroup.attr("class", "form-group row");
+          // for (var i = 0; i < Object.keys(data).length; i++) {
+          for (var fieldname in fields) {
+            // var field = data[Object.keys(data)[i]];
+            // console.log(fieldname);
+            var field = fields[fieldname];
 
-              var inputLabel = create_input_label(
-                field,
-                "col-lg-3 col-form-label form-control-label"
-              );
-
-              var inputContainer = $("<div>");
-              inputContainer.attr("class", "col-lg-9");
-
-              var inputField = create_input_field(
-                field,
-                "col-lg-9 form-control"
-              );
-
-              // Add the form field to the container
-              inputGroup.append(inputLabel);
-              inputContainer.append(inputField);
-              inputGroup.append(inputContainer);
-              $("#dynamicFieldsContainer").append(inputGroup);
-            }
+            var createdField = create_field(field, (ignoreDependency = false));
+            $("#dynamicFieldsContainer").append(createdField);
           }
         },
         error: function () {
@@ -735,6 +886,13 @@ function setup_dynamic_form() {
       });
     });
   });
+}
+
+function printFields() {
+  console.log(fields);
+}
+function printDependencyControl() {
+  console.log(dependencyControl);
 }
 
 function fetchAndPopulateSubdirectories(fullPath) {
@@ -838,14 +996,14 @@ function setup_file_picker() {
 
 (() => {
   // setup job composer
-  register_autocomplete_for_module_search();
-  register_add_module_handler();
+  //   register_autocomplete_for_module_search();
+  //   register_add_module_handler();
   register_on_file_changed_listener();
   register_on_runtime_change_listener();
   init_job_files_table();
   sync_job_name();
-  setup_general_form();
   setup_dynamic_form();
   setup_file_picker();
   setup_uploader_and_submit_button();
+  setup_job_script_preview();
 })();
