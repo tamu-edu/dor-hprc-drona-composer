@@ -29,7 +29,7 @@ app.register_blueprint(job_composer, url_prefix="/jobs/composer")
 @app.route("/")
 def index():
     environments = get_directories("./environments")
-    return render_template("index_no_banner.html", environments=environments)
+    return render_template("index.html", environments=environments)
 
 def get_directories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]

@@ -10,7 +10,7 @@ job_composer = Blueprint("job_composer", __name__)
 @job_composer.route("/")
 def composer():
     environments = get_directories("./environments")
-    return render_template("index.html", environments=environments)
+    return render_template("index_no_banner.html", environments=environments)
 
 def get_directories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
@@ -82,7 +82,7 @@ def submit_job():
     engine.set_environment(params.get('runtime'))
 
     # Saving Files
-    executable_script = save_file(files.get('executable_script'), params.get('location'))
+    # executable_script = save_file(files.get('executable_script'), params.get('location'))
     extra_files = files.getlist('files[]')
     for file in extra_files:
         save_file(file, params.get('location'))
@@ -111,9 +111,9 @@ def preview_job():
     preview_job_script = engine.preview_script(params)
     return preview_job_script
 
-@job_composer.route('/mainpaths')
+@job_composer.route('/mainpaths', methods=['GET'])
 def get_main_paths():
-    current_user = os.getlogin()
+    current_user = os.getenv("USER")
     group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
     group_names = [s.strip() for s in group_names]
     
@@ -130,12 +130,13 @@ def fetch_subdirectories(path):
     subdirectories = [os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))]
     return subdirectories
 
-@job_composer.route('/subdirectories')
+@job_composer.route('/subdirectories', methods=['GET'])
 def get_subdirectories():
     fullpath = request.args.get('path')
     print(fullpath)
     subdirectories = fetch_subdirectories(fullpath)
     return jsonify(subdirectories)
+
     
 
 

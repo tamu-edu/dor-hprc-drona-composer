@@ -1,8 +1,9 @@
 # this is the template to run matlab codes in the jobcomposer
-# placeholder are designated with [] around them will be 
+# placeholders are designated with [] around them will be 
 # automatically replaced with actual values entered in the form.
-# you are welcome to replace these placeholders directly in this 
-# template script
+# you are welcome to edit this template in any way to suit your 
+# needs, including replacing placeholders  
+
 source /etc/profile
 
 module load Matlab/[fversion]
@@ -11,4 +12,4 @@ cd [flocation]
 
 matlabsubmit [mopts] [fmainscript]
 
-echo "Run Finish"
+

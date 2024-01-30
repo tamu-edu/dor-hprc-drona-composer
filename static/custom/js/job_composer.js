@@ -559,8 +559,6 @@ function setup_uploader_and_submit_button() {
   slurm_form.onsubmit = function (event) {
     event.preventDefault();
 
-    $("#mainscript").val($("#executable_file_input").val().split("\\").pop());
-
     $("#run_command").val($("#job-script-preview").val());
     $("<input />")
       .attr("type", "hidden")
@@ -591,8 +589,6 @@ function setup_job_script_preview() {
       if (slurm_form == null) {
         return;
       }
-
-      $("#mainscript").val($("#executable_file_input").val().split("\\").pop());
 
       $("<input />")
         .attr("type", "hidden")
