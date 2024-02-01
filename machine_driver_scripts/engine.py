@@ -154,7 +154,6 @@ class Engine():
             return job_file_path
         
     def generate_tamubatch_command(self, params):
-
         walltime = f"-W {params['walltime']} " if 'walltime' in params and params['walltime'] else ""
         use_gpu = "-gpu " if 'gpu' in params and params['gpu'] else ""
         total_cpu_cores = f"-n {params['cores']} " if 'cores' in params and params["cores"] else ""

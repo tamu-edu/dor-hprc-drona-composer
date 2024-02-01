@@ -11,7 +11,7 @@ app = Flask(__name__)
 # DEVELOPMENT
 CORS(app)
 # env = os.environ["RACK_ENV"]
-env = 'development'
+env = 'production'
 
 def load_config(config_file='config.yml'):
     with open(config_file, 'r') as file:
