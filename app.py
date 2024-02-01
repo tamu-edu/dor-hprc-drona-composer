@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, jsonify
 from flask_cors import CORS
 from views.job_composer import job_composer
 import yaml
@@ -8,10 +8,19 @@ import re
 
 app = Flask(__name__)
 
+def detect_env():
+    path = os.getcwd()
+    if "dev" in path:
+        return "development"
+    elif "sys" in path:
+        return "production"
+    else:
+        return "unknown"
+
 # DEVELOPMENT
 CORS(app)
 # env = os.environ["RACK_ENV"]
-env = 'production'
+env = detect_env()
 
 def load_config(config_file='config.yml'):
     with open(config_file, 'r') as file:
@@ -37,7 +46,7 @@ def get_directories(path):
 
 @app.route("/config")
 def config():
-    return app.config["cluster_name"]
+    return detect_env()
         
 
 if __name__ == "__main__":
