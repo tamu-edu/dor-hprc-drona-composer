@@ -159,10 +159,8 @@ class Engine():
         total_cpu_cores = f"-n {params['cores']} " if 'cores' in params and params["cores"] else ""
         cores_per_node = f"-R {params['cores_per_node']} " if 'cores_per_node' in params and params['cores_per_node'] else ""
         extra_slurm = f"-x '{params['extra_slurm']}' " if 'extra_slurm' in params and params['extra_slurm'] else ""
-
-        if 'total_memory_number' in params and 'total_memory_unit' in params:
-            total_mem = params['total_memory_number'] + params['total_memory_unit']
-            total_mem = f"-M {total_mem} " if not re.match(r'^(MB|G)', total_mem) else ""
+        total_mem = f"-M '{params['total_memory']}' " if 'total_memory' in params and params['total_memory'] else ""
+        
 
         account = f"-P {params['project_account']} " if 'project_account' in params and params['project_account'].strip() else ""
         
