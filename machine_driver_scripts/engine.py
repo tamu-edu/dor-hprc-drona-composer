@@ -34,38 +34,30 @@ def get_value_from_yaml(yaml_content, key):
             break
     return value
 
-def preprocess_template(template, params):
+def process_function(value):
     pattern = r'!(\w+)\((.*?)\)'
 
-    matches = re.findall(pattern, template)
+    matches = re.findall(pattern, value)
 
     
     for match in matches:
         function_name = match[0]
         variables = match[1].split(",")
         variables = [variable.strip() for variable in variables]
-
-        for variable in variables:
-            # variable start with $
-            if variable[0] == "$":
-                variable = variable[1:]
-                #  replace the variable with the value in params
-                if variable in params:
-                    variables[variables.index("$"+variable)] = params[variable]
             
-                    
         if function_name in globals() and callable(globals()[function_name]):
             dynamic_function = globals()[function_name]
             
             # Call the function dynamically with the list of values
             result = dynamic_function(*variables)
             # replace the function call with the result
-            template = template.replace(f"!{function_name}({match[1]})", result)
+            value = value.replace(f"!{function_name}({match[1]})", result)
             
         else:
             return (f"Function {function_name} not found or not callable.")
         
-    return template
+    return value
+
 
 class Engine():
     def __init__(self):
@@ -103,25 +95,25 @@ class Engine():
         self.set_map("environments/" + environment + "/map.json")
         self.set_schema("environments/" + environment + "/schema.json")
 
-        
+    def evaluate_map(self, map, params):
+        for key, value in map.items():
+            ## 2. Replace the params name with the actual values in form fields
+            # Keys with flag
+            pattern_flag = r'-(.) \$(\w+)'
+            value = re.sub(pattern_flag, lambda match: replace_flag(match, params), value)
+
+            # Keys with no flag
+            pattern_no_flag = r'\$(\w+)'
+            value = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), value)
+
+            value = process_function(value)
+            map[key] = value
+        return map
     
     def custom_replace(self, template, map, params):
-        # 2 Steps replacement
-        ## 1. Replace the map values in the template with params name
+        map = self.evaluate_map(map, params)
         for key, value in map.items():
             template = template.replace("["+key+"]", value)
-        
-        template = preprocess_template(template, params)
-            
-        ## 2. Replace the params name with the actual values in form fields
-        # Keys with flag
-        pattern_flag = r'-(.) \$(\w+)'
-        template = re.sub(pattern_flag, lambda match: replace_flag(match, params), template)
-
-        # Keys with no flag
-        pattern_no_flag = r'\$(\w+)'
-        template = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), template)
-
         return template
     
     def preview_script(self, params):
