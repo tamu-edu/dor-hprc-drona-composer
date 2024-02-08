@@ -647,12 +647,12 @@ function create_select_field(field, classes) {
   });
   if (field.dependencyType && field.dependencyType == "master") {
     selectField.on("change", function () {
-      selection = $(this).val();
+      var selection = $(this).val();
       // get option matching selection
-      matchOption = field.options.find((option) => option.value == selection);
-      dependentField = matchOption.dependFor;
+      var matchOption = field.options.find((option) => option.value == selection);
+      var dependentField = matchOption.dependFor;
 
-      console.log(dependentField);
+      console.log("Adding: " + dependentField);
       if (!dependencyControl[field.dependencyGroup].includes(dependentField)) {
         for (
           var index = dependencyControl[field.dependencyGroup].length - 1;
@@ -660,7 +660,7 @@ function create_select_field(field, classes) {
           index--
         ) {
           var fieldName = dependencyControl[field.dependencyGroup][index];
-          console.log(fieldName);
+          console.log("Removing: " + fieldName);
           dependencyControl[field.dependencyGroup].splice(index, 1);
           $("#" + fieldName).remove();
         }
@@ -669,7 +669,7 @@ function create_select_field(field, classes) {
           (ignoreDependency = true)
         );
         dependencyControl[field.dependencyGroup].push(dependentField);
-        $("#dynamicFieldsContainer").append(createdField);
+        createdField.insertAfter(selectGroup);
       }
     });
   }
@@ -719,7 +719,7 @@ function create_radio_group(field, classes) {
               (ignoreDependency = true)
             );
             dependencyControl[field.dependencyGroup].push(value.dependFor);
-            $("#dynamicFieldsContainer").append(createdField);
+            createdField.insertAfter(radioGroup);
           }
         });
       }
