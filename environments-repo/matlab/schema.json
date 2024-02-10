@@ -3,8 +3,8 @@
     "type": "text",
     "label": "version",
     "name": "version",
-    "value": "R2023a"
-  },	
+    "value": "R2023b"
+  },
   "workers": {
     "type": "number",
     "label": "#workers for parallel processing",
@@ -20,18 +20,13 @@
   "gpu": {
     "type": "checkbox",
     "label": "use gpu",
+    "name": "gpu",
     "value": "false"
   },
-  "memory": {
-    "type": "number",
-    "label": "total mem (in MB)",
-    "name": "memory",
-    "value": ""
-  },
-  "walltime": {
+  "mainscript": {
     "type": "text",
-    "label": "expected runtime (hh:mm)",
-    "name": "walltime",
-    "value": "02:00"
+    "label": "Main Script",
+    "name": "mainscript",
+    "value": "Your File Here"
   }
 }
