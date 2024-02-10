@@ -1,0 +1,13 @@
+source /etc/profile
+
+module purge
+
+module load WebProxy
+module load foss/2023b
+source /sw/hprc/sw/Python/virtualenvs/3.11.5/default_dashboard_python-env/bin/activate
+
+
+cd [flocation]
+
+
+python [fmainscript]

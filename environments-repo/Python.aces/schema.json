@@ -1,0 +1,8 @@
+{ 
+  "mainscript": {
+    "type": "text",
+    "label": "Main Script",
+    "name": "mainscript",
+    "value": "Your File Here"
+  }
+}
