@@ -6,7 +6,7 @@
     "options": [
       {
         "value": "4.2.2",
-        "label": "R_tamu/4.2.2"
+        "label": "R_tamu/4.2.2 (default)"
       }
     ]
   },
@@ -59,7 +59,7 @@
 
   "Memory": {
     "type": "text",
-    "label": "TOTAL memory (G or M)",
+    "label": "TOTAL memory (MB or G)",
     "name": "memory",
     "value": ""
   }
