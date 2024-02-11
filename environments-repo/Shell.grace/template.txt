@@ -1,0 +1,14 @@
+# this is a template for a standard shell env
+
+# load modules
+module purge
+
+module load WebProxy
+[MODULES]
+
+cd [flocation]
+
+# ADD YOUR COMMANDS BELOW
+
+
+

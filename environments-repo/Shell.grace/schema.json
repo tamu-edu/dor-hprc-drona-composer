@@ -1,0 +1,36 @@
+{
+  "ShellModule": {
+    "type": "module",
+    "label": "Modules to add"
+  },
+  "tasksNumber": {
+    "type": "number",
+    "label": "How many tasks?",
+    "name": "cores",
+    "value": "1"
+  },
+  "tasksNodeNumber": {
+    "type": "number",
+    "label": "How many tasks per node?",
+    "name": "cores_per_node",
+    "value": "1"
+  },
+  "MemoryText": {
+    "type": "text",
+    "label": "Approximate total memory (MB or G)?",
+    "name": "total_memory",
+    "value": ""
+  },
+  "walltimeText": {
+    "type": "text",
+    "label": "Approximate time (HH:MM)?",
+    "name": "walltime",
+    "value": "02:00"
+  },
+  "extraText": {
+    "type": "text",
+    "label": "Any additional Slurm parameters?",
+    "name": "extra_slurm",
+    "value": ""
+  }
+}
