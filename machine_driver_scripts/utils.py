@@ -32,3 +32,18 @@ def retrieve_loaded_modules(modules):
         return "module load foss/2023a " + modules
 
 
+
+def retrieve_R_version_grace(version):
+    if version == "4.1.2":
+        return f"module load foss/2021b R_tamu/4.1.2"
+    elif version == "4.2.0":
+        return f"module load foss/2021b R_tamu/4.2.0"
+    else:
+        return f"module load foss/2022b R_tamu/4.3.1"
+
+
+def retrieve_loaded_modules_grace(modules):
+    if modules == "":
+        return f""
+    else:
+        return "module load foss/2023a " + modules
