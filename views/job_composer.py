@@ -88,11 +88,8 @@ def submit_job():
         save_file(file, params.get('location'))
 
     bash_script_path = engine.generate_script(params)
-    if params.get('runtime') == 'matlab':
-        bash_command = f"bash {bash_script_path}"
-    else:
-        bash_script_path = engine.generate_tamubatch_command(params)
-        bash_command = f"bash {bash_script_path}"
+    driver_script_path = engine.generate_driver_script(params)
+    bash_command = f"bash {driver_script_path}"
     
     try:
         result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)

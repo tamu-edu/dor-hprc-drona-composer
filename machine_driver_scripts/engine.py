@@ -65,6 +65,7 @@ class Engine():
         self.schema = None
         self.map = None
         self.script = None
+        self.driver = None
     
     def set_schema(self, schema_path):
         with open(schema_path) as json_file:
@@ -73,6 +74,10 @@ class Engine():
     def set_map(self, map_path):
         with open(map_path) as json_file:
             self.map = json.load(json_file)
+    
+    def set_driver(self, driver_path):
+        with open(driver_path) as shell_script:
+            self.driver = shell_script.read()
 
     def get_environment(self):
         return self.environment
@@ -82,6 +87,9 @@ class Engine():
     
     def get_map(self):
         return self.map
+
+    def get_driver(self):
+        return self.driver
     
     def fetch_template(self, template_path):
         with open(template_path) as text_file:
@@ -94,6 +102,7 @@ class Engine():
         # self.set_schema("schemas/" + environment + ".json")
         self.set_map("environments/" + environment + "/map.json")
         self.set_schema("environments/" + environment + "/schema.json")
+        self.set_driver("environments/" + environment + "/driver.sh")
 
     def evaluate_map(self, map, params):
         for key, value in map.items():
@@ -170,6 +179,23 @@ class Engine():
            # bash_file.write(f"#!/bin/bash\ncd {location}\n{tamubatch_path} {walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_path}\n")
             bash_file.write(f"#!/bin/bash\nsource /etc/profile\ncd {location}\n{tamubatch_path} {extra_slurm}{walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_name}\n")
         return bash_file_path
+    
+    def generate_driver_script(self, params):
+        if self.environment is None:
+            return "No environment selected"
+        else:
+            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
+            bash_file_path = os.path.join(params['location'], "run.sh")
+            with open(bash_file_path, "w") as bash_file:
+                self.driver = self.custom_replace(self.driver, self.map, params)
+                self.driver = self.driver.replace("[job-file-name]", job_file_name)
+                self.driver = self.driver.replace("\t", " ")
+                self.driver = re.sub(r'\r\n?|\r', '\n', self.driver)
+                bash_file.write(self.driver)
+
+            return bash_file_path
+
+
         
 
 
