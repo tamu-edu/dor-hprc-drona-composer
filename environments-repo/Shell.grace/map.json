@@ -1,0 +1,4 @@
+{
+  "flocation": "$location",
+  "MODULES": "!retrieve_loaded_modules_grace($module_list)"
+}
