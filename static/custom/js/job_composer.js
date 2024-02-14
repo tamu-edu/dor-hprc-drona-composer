@@ -20,15 +20,16 @@ function submit_job(action, formData) {
     remove_submission_loading_indicator();
     if (request.status == 200) {
       alert(request.responseText);
-      init_job_files_table();
-      load_job_table();
+      window.location.reload();
     } else {
       alert(`Error ${request.status}. Try again!`);
+      window.location.reload();
     }
   };
   request.onerror = function (event) {
     remove_submission_loading_indicator();
     alert("An error has occured. Please try again!");
+    window.location.reload();
   };
 
   request.send(formData);
@@ -277,13 +278,13 @@ function delete_job_file(file_name) {
   request.onload = function () {
     hide_global_loading_indicator();
     $("#job-file-modal").modal("toggle");
-    init_job_files_table();
+    // init_job_files_table();
   };
 
   request.onerror = function () {
     hide_global_loading_indicator();
     alert("Failed to fetch your job file: " + file_name);
-    init_job_files_table();
+    // init_job_files_table();
   };
 
   request.send(null);
@@ -310,7 +311,6 @@ function submit_job_file(file_name) {
     hide_global_loading_indicator();
     $("#job-file-modal").modal("toggle");
     alert(request.responseText);
-    load_job_table();
   };
 
   request.onerror = function () {
