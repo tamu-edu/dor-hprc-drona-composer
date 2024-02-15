@@ -1,3 +1,6 @@
+var fields = {};
+var dependencyControl = {};
+
 function collect_modules_to_load() {
   var module_elems = document.getElementsByClassName("module-to-load");
   var module_list = "";
@@ -9,6 +12,15 @@ function collect_modules_to_load() {
   }
   // console.log(module_list);
   return module_list;
+}
+
+function calculate_walltime(days, hours, mins) {
+  if (days.value == 0 && hours.value == 0 && mins.value == 0) {
+    return;
+  }
+
+  var runtime_hours = Number(days.value) * 24 + Number(hours.value);
+  return `${runtime_hours}:${Number(mins.value)}:00`;
 }
 
 function submit_job(action, formData) {
@@ -550,6 +562,32 @@ function setup_uploader_and_submit_button() {
       .attr("value", collect_modules_to_load())
       .appendTo("#slurm-config-form");
 
+    for (let fieldName in fields) {
+      let field = fields[fieldName];
+      if (field.type == "time") {
+        let days = document.querySelector("#" + field.name + " input[name=days]");
+        let hours = document.querySelector("#" + field.name + " input[name=hours]");
+        let mins = document.querySelector("#" + field.name + " input[name=minutes]");
+        let walltime = calculate_walltime(days, hours, mins);
+        $("<input />")
+          .attr("type", "hidden")
+          .attr("name", field.name)
+          .attr("value", walltime)
+          .appendTo("#slurm-config-form");
+      }
+
+      if (field.type == "unit") {
+        let number = document.querySelector("#" + field.name + " input[name=" + field.name + "_number]");
+        let unit = document.querySelector("#" + field.name + " select[name=" + field.name + "_unit]");
+        let value = number.value + unit.value;
+        $("<input />")
+          .attr("type", "hidden")
+          .attr("name", field.name)
+          .attr("value", value)
+          .appendTo("#slurm-config-form");
+      }
+    }
+
     let formData = new FormData(slurm_form);
 
     files.forEach((file) => {
@@ -574,6 +612,32 @@ function setup_job_script_preview() {
         .attr("name", "module_list")
         .attr("value", collect_modules_to_load())
         .appendTo("#slurm-config-form");
+
+      for (let fieldName in fields) {
+        let field = fields[fieldName];
+        if (field.type == "time") {
+          let days = document.querySelector("#" + field.name + " input[name=days]");
+          let hours = document.querySelector("#" + field.name + " input[name=hours]");
+          let mins = document.querySelector("#" + field.name + " input[name=minutes]");
+          let walltime = calculate_walltime(days, hours, mins);
+          $("<input />")
+            .attr("type", "hidden")
+            .attr("name", field.name)
+            .attr("value", walltime)
+            .appendTo("#slurm-config-form");
+        }
+
+        if (field.type == "unit") {
+          let number = document.querySelector("#" + field.name + " input[name=" + field.name + "_number]");
+          let unit = document.querySelector("#" + field.name + " select[name=" + field.name + "_unit]");
+          let value = number.value + unit.value;
+          $("<input />")
+            .attr("type", "hidden")
+            .attr("name", field.name)
+            .attr("value", value)
+            .appendTo("#slurm-config-form");
+        }
+      }
 
       let formData = new FormData(slurm_form);
 
@@ -778,6 +842,101 @@ function create_module_component(label) {
   return moduleComponent;
 }
 
+function create_time_component(field) {
+  var timeComponent = $("<div>");
+  timeComponent.attr("class", "form-group row");
+
+  var timeLabel = create_input_label(
+    field,
+    "col-lg-3 col-form-label form-control-label"
+  );
+
+  var timeContainer = $("<div>");
+  timeContainer.attr("class", "col-lg-9");
+
+  var timeGroups = $("<div>");
+  timeGroups.attr("class", "input-group");
+  timeGroups.attr("id", field.name);
+
+  var days = $("<input>");
+  days.attr("type", "number");
+  days.attr("name", "days");
+  days.attr("class", "form-control");
+  days.attr("min", "0");
+  days.attr("max", "7");
+  days.attr("placeholder", "Days");
+
+  var hours = $("<input>");
+  hours.attr("type", "number");
+  hours.attr("name", "hours");
+  hours.attr("class", "form-control");
+  hours.attr("min", "0");
+  hours.attr("max", "23");
+  hours.attr("placeholder", "Hours");
+
+  var minutes = $("<input>");
+  minutes.attr("type", "number");
+  minutes.attr("name", "minutes");
+  minutes.attr("class", "form-control");
+  minutes.attr("min", "0");
+  minutes.attr("max", "59");
+  minutes.attr("placeholder", "Minutes");
+
+  timeGroups.append(days);
+  timeGroups.append(hours);
+  timeGroups.append(minutes);
+
+  timeContainer.append(timeGroups);
+  timeComponent.append(timeLabel);
+  timeComponent.append(timeContainer);
+
+  return timeComponent;
+}
+
+function create_unit_component(field) {
+  var unitComponent = $("<div>");
+  unitComponent.attr("class", "form-group row");
+
+  var unitLabel = create_input_label(
+    field,
+    "col-lg-3 col-form-label form-control-label"
+  );
+
+  var unitContainer = $("<div>");
+  unitContainer.attr("class", "col-lg-9");
+
+  var unitGroup = $("<div>");
+  unitGroup.attr("class", "input-group");
+  unitGroup.attr("id", field.name);
+
+  var numberField = $("<input>");
+  numberField.attr("type", "number");
+  numberField.attr("name", field.name + "_number");
+  numberField.attr("class", "form-control");
+
+  var div = $("<div>");
+  div.attr("class", "input-group-append");
+  var unitField = $("<select>");
+  unitField.attr("name", field.name + "_unit");
+  $.each(field.units, function (key, value) {
+    var option = $("<option>");
+    option.attr("value", value.value);
+    option.text(value.label);
+    unitField.append(option);
+  });
+
+
+  unitGroup.append(numberField);
+  div.append(unitField);
+  unitGroup.append(div);
+
+  unitContainer.append(unitGroup);
+  unitComponent.append(unitLabel);
+  unitComponent.append(unitContainer);
+
+  return unitComponent;
+}
+
 function create_field(field, ignoreDependency) {
   if (
     ignoreDependency == false &&
@@ -796,6 +955,12 @@ function create_field(field, ignoreDependency) {
   } else if (field.type == "module") {
     moduleComponent = create_module_component(field.label);
     return moduleComponent;
+  } else if (field.type == "time") {
+    timeComponent = create_time_component(field);
+    return timeComponent;
+  } else if (field.type == "unit") {
+    unitComponent = create_unit_component(field);
+    return unitComponent;
   } else {
     var inputGroup = $("<div>");
     inputGroup.attr("class", "form-group row");
@@ -818,9 +983,6 @@ function create_field(field, ignoreDependency) {
     return inputGroup;
   }
 }
-
-var fields = {};
-var dependencyControl = {};
 
 function setup_dynamic_form() {
   $(document).ready(function () {
