@@ -20,7 +20,7 @@ function calculate_walltime(days, hours, mins) {
   }
 
   var runtime_hours = Number(days.value) * 24 + Number(hours.value);
-  return `${runtime_hours}:${Number(mins.value)}:00`;
+  return `${runtime_hours}:${Number(mins.value)}`;
 }
 
 function submit_job(action, formData) {
