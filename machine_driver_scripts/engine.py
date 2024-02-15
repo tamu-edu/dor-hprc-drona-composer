@@ -49,7 +49,10 @@ def process_function(value):
             dynamic_function = globals()[function_name]
             
             # Call the function dynamically with the list of values
-            result = dynamic_function(*variables)
+            try:
+                result = dynamic_function(*variables)
+            except Exception as e:
+                result = f"Error: {e}"
             # replace the function call with the result
             value = value.replace(f"!{function_name}({match[1]})", result)
             
