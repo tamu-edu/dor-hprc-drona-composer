@@ -47,3 +47,61 @@ def retrieve_loaded_modules_grace(modules):
         return f""
     else:
         return "module load foss/2023a " + modules
+
+def retrieve_mpi_mode_abaqus(cores, limit ):
+    if cores > limit:
+        return f"mp_mode=mpi"
+    else:
+        return f""
+
+def retrieve_umat_abaqus(umat ):
+    if umat != "":
+        return f"user="+umat+" "
+    else:
+        return f""
+
+
+def retrieve_ncpus(cores,parallel):
+    if parallel == "yes":
+        return f"ncpus=" +cores
+    else:
+        return f""
+
+def retrieve_tamubatch_opts(cores,memory,walltime,extra_slurm="",gpu=""):
+    options_string=""
+    additional=extra_slurm + " " + gpu
+    if  cores != "":
+        options_string=options_string+"-n " + cores + " "
+    if walltime != "":
+        times=walltime.split(':')
+        if int(times[0]) > 168:
+            additional=additional+ " --partition xlong " 
+        options_string=options_string+"-W " + walltime + " "
+    if memory.find("MB") > 0 or memory.find("G") > 0:
+        options_string=options_string+"-M " + memory + " "
+    if additional != "":
+        options_string="-x '" + additional + "' " + options_string
+    return f"" + options_string
+
+
+
+def retrieve_mopts(workers,threads,walltime,memory,extra_params):
+    options_string=""
+    additional=extra_params = exta_params + " " + gpu + " "
+    if workers != "" and workers != "0":
+        options_string="-w " + workers + " " + options_string
+    if threads != "" :
+        options_string="-s " + threads + " " + options_string
+    if walltime != "":
+        times=walltime.split(':')
+        if int(times[0]) > 168:
+            aditional=additional+ "--partition xlong "
+        options_string="-t " + walltime + " " + options_string
+    if memory != "MB":
+        memory=memory[:-2]
+        options_string="-m " + memory + " " + options_string
+    if extra_params != "":
+        options_string="-x '" + additional + "' " + options_string
+    return f"" + options_string
+
+
