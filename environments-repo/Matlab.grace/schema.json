@@ -1,0 +1,63 @@
+{
+  "versionDropdown": {
+    "type": "select",
+    "label": "Matlab version",
+    "name": "version",
+    "options": [
+      {
+        "value": "R2023b",
+        "label": "Matlab/R2023b"
+      },
+      {
+        "value": "R2022a",
+        "label": "Matlab/R2022a"
+      }
+    ]
+  },
+  "mainscript": {
+    "type": "text",
+    "label": "Main Script",
+    "name": "mainscript",
+    "value": ""
+  },
+  "workers": {
+    "type": "number",
+    "label": "#workers for parallel processing",
+    "name": "workers",
+    "value": "0"
+  },
+
+  "threads": {
+    "type": "number",
+    "label": "#comp threads",
+    "name": "threads",
+    "value": "1"
+  },
+
+  "gpu": {
+    "type": "checkbox",
+    "label": "use gpu",
+    "name": "extra_params",
+    "value": "--gres=gpu:1"
+  },
+
+    "memory": {
+    "type": "unit",
+    "label": "Memory",
+    "name": "memory",
+    "units": [
+      {
+        "label": "MB",
+        "value": "MB"
+      }
+    ]
+  },
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected time needed to run",
+    "name": "walltime",
+    "value": ""
+  }
+
+}
