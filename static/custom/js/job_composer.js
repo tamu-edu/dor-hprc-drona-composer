@@ -607,6 +607,7 @@ function setup_job_script_preview() {
         return;
       }
 
+      $(slurm_form).find("input[name=module_list]").remove();
       $("<input />")
         .attr("type", "hidden")
         .attr("name", "module_list")
@@ -620,6 +621,7 @@ function setup_job_script_preview() {
           let hours = document.querySelector("#" + field.name + " input[name=hours]");
           let mins = document.querySelector("#" + field.name + " input[name=minutes]");
           let walltime = calculate_walltime(days, hours, mins);
+          $(slurm_form).find("input[name=" + field.name + "]").remove();
           $("<input />")
             .attr("type", "hidden")
             .attr("name", field.name)
@@ -631,6 +633,7 @@ function setup_job_script_preview() {
           let number = document.querySelector("#" + field.name + " input[name=" + field.name + "_number]");
           let unit = document.querySelector("#" + field.name + " select[name=" + field.name + "_unit]");
           let value = number.value + unit.value;
+          $(slurm_form).find("input[name=" + field.name + "]").remove();
           $("<input />")
             .attr("type", "hidden")
             .attr("name", field.name)
@@ -863,7 +866,6 @@ function create_time_component(field) {
   days.attr("name", "days");
   days.attr("class", "form-control");
   days.attr("min", "0");
-  days.attr("max", "7");
   days.attr("placeholder", "Days");
 
   var hours = $("<input>");
