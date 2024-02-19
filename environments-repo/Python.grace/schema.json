@@ -4,5 +4,36 @@
     "label": "Main Python script",
     "name": "mainscript",
     "value": ""
+  },
+
+ 
+  "cores": {
+    "type": "number",
+    "label": "Number of cores to use (if not sure, keep at 1)",
+    "name": "cores",
+    "value": "1"
+  }, 
+
+  "memory": {
+    "type": "unit",
+    "label": "Memory",
+    "name": "memory",
+    "units": [
+      {
+        "label": "MB",
+        "value": "MB"
+      },
+      {
+        "label": "GB",
+        "value": "G"
+      }
+    ]
+  },
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected time needed to run",
+    "name": "walltime",
+    "value": ""
   }
 }

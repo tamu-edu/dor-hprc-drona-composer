@@ -1,35 +1,72 @@
 {
   "ShellModule": {
     "type": "module",
-    "label": "Modules to add"
+    "label": "Modules to add (under foss/2023a)"
   },
-  "tasksNumber": {
+
+  "cores": {
     "type": "number",
-    "label": "How many tasks?",
+    "label": "Number of cores to use (if not sure, keep at 1)",
     "name": "cores",
     "value": "1"
+  }, 
+
+  "gpuDropdown": {
+    "type": "select",
+    "label": "Request GPU",
+    "name": "gpu",
+    "options": [
+      {
+        "value": "",
+        "label": "NO GPU"
+      },
+      {    
+        "value": "--gres=gpu",
+        "label": "ANY GPU"
+      },
+      {
+        "value": "--gres=gpu:a100",
+        "label": "A100"
+      },
+      {
+        "value": "--gres=gpu:rtx",
+        "label": "RTX 6000"
+      },
+      {
+        "value": "--gres=gpu:t4",
+        "label": "T4"
+      },
+      {
+        "value": "--gres=gpu:a40",
+        "label": "A40"
+      }
+    ]
   },
-  "tasksNodeNumber": {
-    "type": "number",
-    "label": "How many tasks per node?",
-    "name": "cores_per_node",
-    "value": "1"
+  "memory": {
+    "type": "unit",
+    "label": "Memory",
+    "name": "memory",
+    "units": [
+      {
+        "label": "MB",
+        "value": "MB"
+      },
+      {
+        "label": "GB",
+        "value": "G"
+      }
+    ]
   },
-  "MemoryText": {
-    "type": "text",
-    "label": "Approximate total memory (MB or G)?",
-    "name": "total_memory",
-    "value": ""
-  },
-  "walltimeText": {
-    "type": "text",
-    "label": "Approximate time (HH:MM)?",
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected time needed to run",
     "name": "walltime",
-    "value": "02:00"
+    "value": ""
   },
   "extraText": {
     "type": "text",
-    "label": "Any additional Slurm parameters?",
+    "label": "Any additional Slurm parameters (e.g. --ntasks-per-node)?",
     "name": "extra_slurm",
     "value": ""
   }

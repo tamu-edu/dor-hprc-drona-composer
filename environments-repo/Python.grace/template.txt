@@ -1,14 +1,11 @@
 source /etc/profile
 module load WebProxy
 
-module load GCCcore/10.2.0
-module load Python/3.8.6
-module load [fmodules]
+module purge
+module load GCCcore/13.2.0 Python/3.11.5
 
-source /sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/bin/activate
+source /sw/hprc/sw/Python/virtualenvs/Python/3.11.5/default_dashboard_python-env/bin/activate
 
 cd [flocation]
-
-dos2unix [fmainscript]
 
 python [fmainscript]

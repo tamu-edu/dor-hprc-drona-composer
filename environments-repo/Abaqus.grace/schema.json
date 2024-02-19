@@ -2,50 +2,45 @@
 {
   "VersionDropdown": {
     "type": "select",
-    "label": "R_tamu version",
+    "label": "Abaqus version",
     "name": "version",
     "options": [
       {
-        "value": "4.1.2",
-        "label": "R_tamu/4.1.2"
+        "value": "ABAQUS/2021",
+        "label": "ABAQUS/2021"
       },
       {    
-        "value": "4.2.0",
-        "label": "R_tamu/4.2.0"
+        "value": "ABAQUS/2022",
+        "label": "ABAQUS/2022"
       },
       {
-        "value": "4.3.1",
-        "label": "R_tamu/4.3.1"
+        "value": "ABAQUS/2023",
+        "label": "ABAQUS/2023"
       }
     ]
   },
 
-  "mainscript": {
+   "mainscript": {
     "type": "text",
-    "label": "Name of Main R Script",
+    "label": "Input file (.inp)",
     "name": "mainscript",
     "value": ""
   },
 
-  "ParallelDependDropdown": {
+   "ParallelDependDropdown": {
     "type": "select",
-    "label": "Does your R script create a parallel cluster",
+    "label": "Run in parallel",
     "name": "parallel",
     "dependencyType": "master",
     "dependencyGroup": "B",
     "options": [
       {
-        "value": "none",
-        "label": "No parallel processing"
+        "value": "no",
+        "label": "NO"
       },
       {
-        "value": "sock",
-        "label": "Cluster using SOCK",
-        "dependFor": "cores"
-      },
-      {
-        "value": "mpi",
-        "label": "Cluster using MPI",
+        "value": "yes",
+        "label": "YES",
         "dependFor": "cores"
       }
     ]
@@ -53,13 +48,13 @@
 
   "cores": {
     "type": "number",
-    "label": "#Workers requested when creating cluster",
+    "label": "ncpus value",
     "name": "cores",
     "value": "1",
     "dependencyType": "slave"
   },
   
-   "memory": {
+    "memory": {
     "type": "unit",
     "label": "Memory",
     "name": "memory",

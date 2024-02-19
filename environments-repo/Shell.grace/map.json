@@ -1,4 +1,5 @@
 {
+  "batchopts" : "!retrieve_tamubatch_opts($cores,$memory,$walltime,$extra_slurm,$gpu)",
   "flocation": "$location",
   "MODULES": "!retrieve_loaded_modules_grace($module_list)"
 }
