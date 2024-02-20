@@ -4,6 +4,7 @@ import argparse
 import ast
 import os
 from machine_driver_scripts.utils import *
+import importlib.util
 
 def replace_flag(match, flag_dict):
     flagchar, flagname = match.group(1), match.group(2)
@@ -34,30 +35,41 @@ def get_value_from_yaml(yaml_content, key):
             break
     return value
 
-def process_function(value):
+def process_function(value, environment):
     pattern = r'!(\w+)\((.*?)\)'
 
     matches = re.findall(pattern, value)
 
-    
     for match in matches:
         function_name = match[0]
-        variables = match[1].split(",")
-        variables = [variable.strip() for variable in variables]
-            
-        if function_name in globals() and callable(globals()[function_name]):
-            dynamic_function = globals()[function_name]
-            
-            # Call the function dynamically with the list of values
-            try:
-                result = dynamic_function(*variables)
-            except Exception as e:
-                result = f"Error: {e}"
-            # replace the function call with the result
-            value = value.replace(f"!{function_name}({match[1]})", result)
-            
+        # variables = match[1].split(",")
+        # variables = [variable.strip() for variable in variables]
+        variables = [variable.strip() for variable in match[1].split(",")] if match[1] else []
+        
+        function_path = f"environments/{environment}/utils.py"
+        if os.path.exists(function_path):
+            spec = importlib.util.spec_from_file_location("utils", function_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            if function_name in dir(module) and callable(getattr(module, function_name)):
+                dynamic_function = getattr(module, function_name)
+                try:
+                    result = dynamic_function(*variables)
+                except Exception as e:
+                    result = f"Error: {e}"
+                # replace the function call with the result
+                value = value.replace(f"!{function_name}({match[1]})", result)
         else:
-            return (f"Function {function_name} not found or not callable.")
+            if function_name in globals() and callable(globals()[function_name]):
+                dynamic_function = globals()[function_name]
+                try:
+                    result = dynamic_function(*variables)
+                except Exception as e:
+                    result = f"Error: {e}"
+                # replace the function call with the result
+                value = value.replace(f"!{function_name}({match[1]})", result)
+            else:
+                return (f"Function {function_name} not found or not callable.")
         
     return value
 
@@ -94,6 +106,9 @@ class Engine():
     def get_driver(self):
         return self.driver
     
+    def get_globals(self):
+        return globals()
+    
     def fetch_template(self, template_path):
         with open(template_path) as text_file:
             template = text_file.read()
@@ -101,11 +116,10 @@ class Engine():
         
     def set_environment(self, environment):
         self.environment = environment
-        # self.set_map("maps/" + environment + ".json")
-        # self.set_schema("schemas/" + environment + ".json")
         self.set_map("environments/" + environment + "/map.json")
         self.set_schema("environments/" + environment + "/schema.json")
         self.set_driver("environments/" + environment + "/driver.sh")
+
 
     def evaluate_map(self, map, params):
         for key, value in map.items():
@@ -118,7 +132,7 @@ class Engine():
             pattern_no_flag = r'\$(\w+)'
             value = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), value)
 
-            value = process_function(value)
+            value = process_function(value, self.environment)
             map[key] = value
         return map
     
