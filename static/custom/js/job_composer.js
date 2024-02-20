@@ -669,7 +669,10 @@ function create_input_field(field, classes) {
   inputField.attr("class", classes);
   inputField.attr("type", field.type);
   inputField.attr("name", field.name);
-  inputField.attr("value", field.value);
+  if (field.value) inputField.attr("value", field.value);
+  if (field.placeholder) inputField.attr("placeholder", field.placeholder);
+  if (field.min)  inputField.attr("min", field.min);
+  if (field.max)  inputField.attr("max", field.max);
   // if (field.dependsOn)
   return inputField;
 }
