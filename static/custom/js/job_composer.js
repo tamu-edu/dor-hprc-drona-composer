@@ -473,83 +473,85 @@ function sync_job_name() {
   });
 }
 
+uploadedFiles = [];
+
 function setup_uploader_and_submit_button() {
   let slurm_form = document.getElementById("slurm-config-form");
   if (slurm_form == null) {
     return;
   }
 
-  let uploaderCheckbox = $("#uploaderCheckbox");
-  let uploader = $("#uploader-section");
-  uploaderCheckbox.change(function () {
-    if (uploaderCheckbox.is(":checked")) {
-      uploader.show();
-    } else {
-      uploader.hide();
-    }
-  });
+  // let uploaderCheckbox = $("#uploaderCheckbox");
+  // let uploader = $("#uploader-section");
+  // uploaderCheckbox.change(function () {
+  //   if (uploaderCheckbox.is(":checked")) {
+  //     uploader.show();
+  //   } else {
+  //     uploader.hide();
+  //   }
+  // });
 
-  let inputFile = $("#fileInput");
-  let inputFolder = $("#folderInput");
-  let addButton = $("#addButton");
-  let filesContainer = $("#myFiles");
-  let files = [];
+  // let inputFile = $("#fileInput");
+  // let inputFolder = $("#folderInput");
+  // let addButton = $("#addButton");
+  // let filesContainer = $("#myFiles");
+  // let files = [];
 
-  inputFile.change(function () {
-    let newFiles = [];
-    for (let index = 0; index < inputFile[0].files.length; index++) {
-      let file = inputFile[0].files[index];
-      newFiles.push(file);
-      files.push(file);
-    }
+  // inputFile.change(function () {
+  //   let newFiles = [];
+  //   for (let index = 0; index < inputFile[0].files.length; index++) {
+  //     let file = inputFile[0].files[index];
+  //     newFiles.push(file);
+  //     files.push(file);
+  //   }
 
-    newFiles.forEach((file) => {
-      let fileElement = $(`<p>${file.name}</p>`);
-      fileElement.data("fileData", file);
-      filesContainer.append(fileElement);
+  //   newFiles.forEach((file) => {
+  //     let fileElement = $(`<p>${file.name}</p>`);
+  //     fileElement.data("fileData", file);
+  //     filesContainer.append(fileElement);
 
-      fileElement.click(function (event) {
-        let fileElement = $(event.target);
-        let indexToRemove = files.indexOf(fileElement.data("fileData"));
-        fileElement.remove();
-        files.splice(indexToRemove, 1);
-      });
-    });
-  });
+  //     fileElement.click(function (event) {
+  //       let fileElement = $(event.target);
+  //       let indexToRemove = files.indexOf(fileElement.data("fileData"));
+  //       fileElement.remove();
+  //       files.splice(indexToRemove, 1);
+  //     });
+  //   });
+  // });
 
-  inputFolder.change(function () {
-    let newFiles = [];
-    // console.log(inputFolder);
-    for (let index = 0; index < inputFolder[0].files.length; index++) {
-      let file = inputFolder[0].files[index];
-      newFiles.push(file);
-      files.push(file);
-    }
+  // inputFolder.change(function () {
+  //   let newFiles = [];
+  //   // console.log(inputFolder);
+  //   for (let index = 0; index < inputFolder[0].files.length; index++) {
+  //     let file = inputFolder[0].files[index];
+  //     newFiles.push(file);
+  //     files.push(file);
+  //   }
 
-    newFiles.forEach((file) => {
-      let fileElement = $(`<p>${file.webkitRelativePath}</p>`);
-      fileElement.data("fileData", file);
-      filesContainer.append(fileElement);
+  //   newFiles.forEach((file) => {
+  //     let fileElement = $(`<p>${file.webkitRelativePath}</p>`);
+  //     fileElement.data("fileData", file);
+  //     filesContainer.append(fileElement);
 
-      fileElement.click(function (event) {
-        let fileElement = $(event.target);
-        let indexToRemove = files.indexOf(fileElement.data("fileData"));
-        fileElement.remove();
-        files.splice(indexToRemove, 1);
-      });
-    });
-  });
+  //     fileElement.click(function (event) {
+  //       let fileElement = $(event.target);
+  //       let indexToRemove = files.indexOf(fileElement.data("fileData"));
+  //       fileElement.remove();
+  //       files.splice(indexToRemove, 1);
+  //     });
+  //   });
+  // });
 
-  addButton.click(function () {
-    var option = $("#mySelect").val();
-    if (option == "file") {
-      inputFile.click();
-    } else if (option == "folder") {
-      inputFolder.click();
-    } else {
-      alert("Please select a file or folder");
-    }
-  });
+  // addButton.click(function () {
+  //   var option = $("#mySelect").val();
+  //   if (option == "file") {
+  //     inputFile.click();
+  //   } else if (option == "folder") {
+  //     inputFolder.click();
+  //   } else {
+  //     alert("Please select a file or folder");
+  //   }
+  // });
 
   // Setup Custom Submit Event
   slurm_form.onsubmit = function (event) {
@@ -565,10 +567,19 @@ function setup_uploader_and_submit_button() {
     for (let fieldName in fields) {
       let field = fields[fieldName];
       if (field.type == "time") {
-        let days = document.querySelector("#" + field.name + " input[name=days]");
-        let hours = document.querySelector("#" + field.name + " input[name=hours]");
-        let mins = document.querySelector("#" + field.name + " input[name=minutes]");
+        let days = document.querySelector(
+          "#" + field.name + " input[name=days]"
+        );
+        let hours = document.querySelector(
+          "#" + field.name + " input[name=hours]"
+        );
+        let mins = document.querySelector(
+          "#" + field.name + " input[name=minutes]"
+        );
         let walltime = calculate_walltime(days, hours, mins);
+        $(slurm_form)
+          .find("input[name=" + field.name + "]")
+          .remove();
         $("<input />")
           .attr("type", "hidden")
           .attr("name", field.name)
@@ -577,9 +588,16 @@ function setup_uploader_and_submit_button() {
       }
 
       if (field.type == "unit") {
-        let number = document.querySelector("#" + field.name + " input[name=" + field.name + "_number]");
-        let unit = document.querySelector("#" + field.name + " select[name=" + field.name + "_unit]");
+        let number = document.querySelector(
+          "#" + field.name + " input[name=" + field.name + "_number]"
+        );
+        let unit = document.querySelector(
+          "#" + field.name + " select[name=" + field.name + "_unit]"
+        );
         let value = number.value + unit.value;
+        $(slurm_form)
+          .find("input[name=" + field.name + "]")
+          .remove();
         $("<input />")
           .attr("type", "hidden")
           .attr("name", field.name)
@@ -590,7 +608,7 @@ function setup_uploader_and_submit_button() {
 
     let formData = new FormData(slurm_form);
 
-    files.forEach((file) => {
+    uploadedFiles.forEach((file) => {
       formData.append("files[]", file);
     });
     action = $("#slurm-config-form").prop("action");
@@ -617,11 +635,19 @@ function setup_job_script_preview() {
       for (let fieldName in fields) {
         let field = fields[fieldName];
         if (field.type == "time") {
-          let days = document.querySelector("#" + field.name + " input[name=days]");
-          let hours = document.querySelector("#" + field.name + " input[name=hours]");
-          let mins = document.querySelector("#" + field.name + " input[name=minutes]");
+          let days = document.querySelector(
+            "#" + field.name + " input[name=days]"
+          );
+          let hours = document.querySelector(
+            "#" + field.name + " input[name=hours]"
+          );
+          let mins = document.querySelector(
+            "#" + field.name + " input[name=minutes]"
+          );
           let walltime = calculate_walltime(days, hours, mins);
-          $(slurm_form).find("input[name=" + field.name + "]").remove();
+          $(slurm_form)
+            .find("input[name=" + field.name + "]")
+            .remove();
           $("<input />")
             .attr("type", "hidden")
             .attr("name", field.name)
@@ -630,10 +656,16 @@ function setup_job_script_preview() {
         }
 
         if (field.type == "unit") {
-          let number = document.querySelector("#" + field.name + " input[name=" + field.name + "_number]");
-          let unit = document.querySelector("#" + field.name + " select[name=" + field.name + "_unit]");
+          let number = document.querySelector(
+            "#" + field.name + " input[name=" + field.name + "_number]"
+          );
+          let unit = document.querySelector(
+            "#" + field.name + " select[name=" + field.name + "_unit]"
+          );
           let value = number.value + unit.value;
-          $(slurm_form).find("input[name=" + field.name + "]").remove();
+          $(slurm_form)
+            .find("input[name=" + field.name + "]")
+            .remove();
           $("<input />")
             .attr("type", "hidden")
             .attr("name", field.name)
@@ -671,8 +703,8 @@ function create_input_field(field, classes) {
   inputField.attr("name", field.name);
   if (field.value) inputField.attr("value", field.value);
   if (field.placeholder) inputField.attr("placeholder", field.placeholder);
-  if (field.min)  inputField.attr("min", field.min);
-  if (field.max)  inputField.attr("max", field.max);
+  if (field.min) inputField.attr("min", field.min);
+  if (field.max) inputField.attr("max", field.max);
   // if (field.dependsOn)
   return inputField;
 }
@@ -719,7 +751,9 @@ function create_select_field(field, classes) {
     selectField.on("change", function () {
       var selection = $(this).val();
       // get option matching selection
-      var matchOption = field.options.find((option) => option.value == selection);
+      var matchOption = field.options.find(
+        (option) => option.value == selection
+      );
       var dependentField = matchOption.dependFor;
 
       console.log("Adding: " + dependentField);
@@ -930,7 +964,6 @@ function create_unit_component(field) {
     unitField.append(option);
   });
 
-
   unitGroup.append(numberField);
   div.append(unitField);
   unitGroup.append(div);
@@ -940,6 +973,131 @@ function create_unit_component(field) {
   unitComponent.append(unitContainer);
 
   return unitComponent;
+}
+
+function create_uploader(field) {
+  var uploader = $("<div>");
+  uploader.attr("class", "form-group row mt-2");
+
+  var uploaderLabel = create_input_label(
+    field,
+    "col-lg-3 col-form-label form-control-label"
+  );
+
+  var uploaderContainer = $("<div>");
+  uploaderContainer.attr("class", "col-lg-9");
+
+  var fileTypes = $("<select>");
+  fileTypes.attr("name", "mySelect");
+
+  var defaultOption = $("<option>");
+  defaultOption.attr("value", "none");
+  defaultOption.text("Select an option");
+  defaultOption.attr("disabled", true);
+  defaultOption.attr("selected", true);
+
+  var fileOption = $("<option>");
+  fileOption.attr("value", "file");
+  fileOption.text("File");
+
+  var folderOption = $("<option>");
+  folderOption.attr("value", "folder");
+  folderOption.text("Folder");
+
+  fileTypes.append(defaultOption);
+  fileTypes.append(fileOption);
+  fileTypes.append(folderOption);
+
+  var fileInput = $("<input>");
+  fileInput.attr("type", "file");
+  fileInput.attr("style", "display: none;");
+  fileInput.attr("multiple", true);
+
+  var folderInput = $("<input>");
+  folderInput.attr("type", "file");
+  folderInput.attr("multiple", true);
+  folderInput.attr("webkitdirectory", true);
+  folderInput.attr("directory", true);
+  folderInput.attr("style", "display: none;");
+
+  var addButton = $("<button>");
+  addButton.attr("type", "button");
+  addButton.attr("class", "maroon-button");
+  addButton.text("Add");
+
+  var filesContainer = $("<div>");
+  filesContainer.attr("class", "form-group");
+  filesContainer.attr(
+    "style",
+    "height: 120px; border: 1px solid #ccc; font: 16px/26px Georgia, Garamond, Serif; overflow: auto;"
+  );
+
+  uploaderContainer.append(fileTypes);
+  uploaderContainer.append(fileInput);
+  uploaderContainer.append(folderInput);
+  uploaderContainer.append(addButton);
+  uploaderContainer.append(filesContainer);
+
+  uploader.append(uploaderLabel);
+  uploader.append(uploaderContainer);
+
+  // Setup Uploader
+  fileInput.change(function () {
+    let newFiles = [];
+    for (let index = 0; index < fileInput[0].files.length; index++) {
+      let file = fileInput[0].files[index];
+      newFiles.push(file);
+      uploadedFiles.push(file);
+    }
+
+    newFiles.forEach((file) => {
+      let fileElement = $(`<p>${file.name}</p>`);
+      fileElement.data("fileData", file);
+      filesContainer.append(fileElement);
+
+      fileElement.click(function (event) {
+        let fileElement = $(event.target);
+        let indexToRemove = uploadedFiles.indexOf(fileElement.data("fileData"));
+        fileElement.remove();
+        uploadedFiles.splice(indexToRemove, 1);
+      });
+    });
+  });
+
+  folderInput.change(function () {
+    let newFiles = [];
+    for (let index = 0; index < folderInput[0].files.length; index++) {
+      let file = folderInput[0].files[index];
+      newFiles.push(file);
+      uploadedFiles.push(file);
+    }
+
+    newFiles.forEach((file) => {
+      let fileElement = $(`<p>${file.webkitRelativePath}</p>`);
+      fileElement.data("fileData", file);
+      filesContainer.append(fileElement);
+
+      fileElement.click(function (event) {
+        let fileElement = $(event.target);
+        let indexToRemove = uploadedFiles.indexOf(fileElement.data("fileData"));
+        fileElement.remove();
+        uploadedFiles.splice(indexToRemove, 1);
+      });
+    });
+  });
+
+  addButton.click(function () {
+    var option = $(fileTypes).val();
+    if (option == "file") {
+      fileInput.click();
+    } else if (option == "folder") {
+      folderInput.click();
+    } else {
+      alert("Please select a file or folder");
+    }
+  });
+
+  return uploader;
 }
 
 function create_field(field, ignoreDependency) {
@@ -966,6 +1124,9 @@ function create_field(field, ignoreDependency) {
   } else if (field.type == "unit") {
     unitComponent = create_unit_component(field);
     return unitComponent;
+  } else if (field.type == "uploader") {
+    uploader = create_uploader(field);
+    return uploader;
   } else {
     var inputGroup = $("<div>");
     inputGroup.attr("class", "form-group row");

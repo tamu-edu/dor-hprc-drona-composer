@@ -3,7 +3,9 @@
     "type": "number",
     "label": "Test Number",
     "name": "testNumber",
-    "value": "1"
+    "min": 1,
+    "max": 10,
+    "placeholder": "1-10"
   },
   "testText": {
     "type": "text",
@@ -51,6 +53,14 @@
   "testModule": {
     "type": "module",
     "label": "Test Module"
+  },
+  "testUploader": {
+    "type": "uploader",
+    "label": "Test Uploader"
+  },
+  "testUploader2": {
+    "type": "uploader",
+    "label": "Test Uploader 2"
   },
   "testDependRadio": {
     "type": "radioGroup",
