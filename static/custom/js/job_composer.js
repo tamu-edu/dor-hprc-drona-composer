@@ -1313,6 +1313,7 @@ function setup_dynamic_form() {
           console.log(fields);
           // Clear existing form fields
           $("#dynamicFieldsContainer").empty();
+          $("#dynamicModalContainer").empty();
 
           // Loop through the JSON data and create form fields
           // for (var i = 0; i < Object.keys(data).length; i++) {
