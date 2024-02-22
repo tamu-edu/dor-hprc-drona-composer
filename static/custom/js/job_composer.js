@@ -1100,6 +1100,150 @@ function create_uploader(field) {
   return uploader;
 }
 
+function create_file_picker(field) {
+  var modal = $("<div>");
+  modal.attr("class", "modal fade bd-example-modal-lg");
+  modal.attr("id", "file-picker-modal");
+  modal.attr("tabindex", "-1");
+  modal.attr("role", "dialog");
+  modal.attr("aria-labelledby", "filePickerModal");
+  modal.attr("aria-hidden", "true");
+
+  var modalDialog = $("<div>");
+  modalDialog.attr("class", "modal-dialog modal-lg");
+
+  var modalContent = $("<div>");
+  modalContent.attr("class", "modal-content");
+
+  var modalHeader = $("<div>");
+  modalHeader.attr("class", "modal-header");
+
+  var modalTitle = $("<h5>");
+  modalTitle.attr("class", "modal-title");
+  modalTitle.text(field.label);
+
+  var modalCloseButton = $("<button>");
+  modalCloseButton.attr("type", "button");
+  modalCloseButton.attr("class", "close");
+  modalCloseButton.attr("data-dismiss", "modal");
+  modalCloseButton.attr("aria-label", "Close");
+
+  var modalCloseButtonSpan = $("<span>");
+  modalCloseButtonSpan.attr("aria-hidden", "true");
+  modalCloseButtonSpan.html("&times;");
+  modalCloseButton.append(modalCloseButtonSpan);
+
+  modalHeader.append(modalTitle);
+  modalHeader.append(modalCloseButton);
+
+  var modalBody = $("<div>");
+  modalBody.attr("class", "modal-body");
+
+  var div = $("<div>");
+  div.attr("class", "form-group");
+
+  var label = $("<label>");
+  label.text(field.label);
+
+  var currentPath = $("<input>");
+  currentPath.attr("type", "text");
+  currentPath.attr("class", "form-control");
+  currentPath.attr("placeholder", "/");
+  currentPath.attr("readonly", true);
+
+  div.append(label);
+  div.append(currentPath);
+
+  var pathComponents = $("<div>");
+  // pathComponents.attr("id", "path-components");
+
+  var subDirsContainer = $("<div>");
+  // subDirsContrainer.attr("id", "subdirs-container");
+
+  modalBody.append(div);
+  modalBody.append(pathComponents);
+  modalBody.append(subDirsContainer);
+
+  var modalFooter = $("<div>");
+  modalFooter.attr("class", "modal-footer");
+
+  var container = $("<div>");
+  container.attr("class", "container");
+  var row = $("<div>");
+  row.attr("class", "row");
+  var col6_1 = $("<div>");
+  col6_1.attr("class", "col-6");
+  var col6_2 = $("<div>");
+  col6_2.attr("class", "col-6 text-left");
+
+  var backButton = $("<button>");
+  backButton.attr("class", "btn btn-outline-secondary");
+  backButton.text("Previous");
+  col6_1.append(backButton);
+
+  var saveChange = $("<button>");
+  saveChange.attr("class", "btn btn-primary");
+  saveChange.text("Save Changes");
+  var close = $("<button>");
+  close.attr("class", "btn btn-secondary");
+  close.attr("data-dismiss", "modal");
+  close.text("Close");
+  col6_2.append(saveChange);
+  col6_2.append(close);
+
+  row.append(col6_1);
+  row.append(col6_2);
+  container.append(row);
+  modalFooter.append(container);
+
+  modalContent.append(modalHeader);
+  modalContent.append(modalBody);
+  modalContent.append(modalFooter);
+  modalDialog.append(modalContent);
+  modal.append(modalDialog);
+
+  // Form Field
+  var formGroup = $("<div>");
+  formGroup.attr("class", "form-group row");
+
+  var formLabel = $("<label>");
+  formLabel.attr("class", "col-lg-3 col-form-label form-control-label");
+  formLabel.text(field.label);
+
+  var formContainer = $("<div>");
+  formContainer.attr("class", "col-lg-9");
+
+  var formInput = $("<input>");
+  formInput.attr("type", "text");
+  formInput.attr("class", "form-control");
+  formInput.attr("name", field.name);
+  formInput.attr("readonly", true);
+
+  var filePickerButton = $("<button>");
+  filePickerButton.attr("type", "button");
+  filePickerButton.attr("class", "btn btn-primary maroon-button");
+  filePickerButton.attr("style", "margin-top: 15px;");
+  filePickerButton.text(field.buttonLabel);
+
+  formContainer.append(formInput);
+  formContainer.append(filePickerButton);
+  formGroup.append(formLabel);
+  formGroup.append(formContainer);
+
+  setup_file_picker(
+    modal,
+    currentPath,
+    subDirsContainer,
+    pathComponents,
+    saveChange,
+    formInput,
+    backButton,
+    filePickerButton
+  );
+
+  return [formGroup, modal];
+}
+
 function create_field(field, ignoreDependency) {
   if (
     ignoreDependency == false &&
@@ -1127,6 +1271,9 @@ function create_field(field, ignoreDependency) {
   } else if (field.type == "uploader") {
     uploader = create_uploader(field);
     return uploader;
+  } else if (field.type == "picker") {
+    filePicker = create_file_picker(field);
+    return filePicker;
   } else {
     var inputGroup = $("<div>");
     inputGroup.attr("class", "form-group row");
@@ -1174,8 +1321,17 @@ function setup_dynamic_form() {
             // console.log(fieldname);
             var field = fields[fieldname];
 
-            var createdField = create_field(field, (ignoreDependency = false));
-            $("#dynamicFieldsContainer").append(createdField);
+            if (field.type == "picker") {
+              [createdField, modal] = create_field(
+                field,
+                (ignoreDependency = false)
+              );
+              $("#dynamicModalContainer").append(modal);
+              $("#dynamicFieldsContainer").append(createdField);
+            } else {
+              createdField = create_field(field, (ignoreDependency = false));
+              $("#dynamicFieldsContainer").append(createdField);
+            }
           }
         },
         error: function () {
@@ -1193,31 +1349,54 @@ function printDependencyControl() {
   console.log(dependencyControl);
 }
 
-function fetchAndPopulateSubdirectories(fullPath) {
+function fetchAndPopulateSubdirectories(
+  fullPath,
+  currentPath,
+  subDirsContainer
+) {
   $.ajax({
     url: document.dashboard_url + "/jobs/composer/subdirectories",
     method: "GET",
     data: { path: fullPath },
     dataType: "json",
-    success: function (subDirs) {
+    success: function (response) {
+      console.log(response);
       // Clear and populate subdirectories in a container (e.g., subdirs-container)
-      var subDirsContainer = $("#subdirs-container");
+      subDirs = response.subdirectories;
+      subFiles = response.subfiles;
       subDirsContainer.empty();
 
       for (var j = 0; j < subDirs.length; j++) {
         var subDir = subDirs[j];
         var subDirButton = $("<button>");
-        subDirButton.attr("class", "btn btn-outline-secondary subdir-button");
+        subDirButton.attr("class", "btn btn-outline-primary subdir-button");
         subDirButton.text(subDir);
         // Attach a click event handler to fetch subdirectories for the clicked subdirectory
         subDirButton.click(function () {
           var clickedSubDir = $(this).text();
           var newFullPath = fullPath + "/" + clickedSubDir;
-          $("#currentPath").val(newFullPath);
-          fetchAndPopulateSubdirectories(newFullPath); // Recursively fetch subdirectories
+          $(currentPath).val(newFullPath);
+          fetchAndPopulateSubdirectories(
+            newFullPath,
+            currentPath,
+            subDirsContainer
+          ); // Recursively fetch subdirectories
         });
-
         subDirsContainer.append(subDirButton);
+      }
+
+      for (var j = 0; j < subFiles.length; j++) {
+        var subFile = subFiles[j];
+        var subFileButton = $("<button>");
+        subFileButton.attr("class", "btn btn-outline-secondary subdir-button");
+        subFileButton.text(subFile);
+        // Attach a click event handler to fetch subdirectories for the clicked subdirectory
+        subFileButton.click(function () {
+          var clickedSubFile = $(this).text();
+          var newFullPath = fullPath + "/" + clickedSubFile;
+          $(currentPath).val(newFullPath);
+        });
+        subDirsContainer.append(subFileButton);
       }
     },
     error: function () {
@@ -1226,69 +1405,144 @@ function fetchAndPopulateSubdirectories(fullPath) {
   });
 }
 
-function setup_file_picker() {
-  $(document).ready(function () {
-    $("#file-picker-modal").on("hidden.bs.modal", function () {
-      $("#currentPath").val("");
-      $("#subdirs-container").empty();
-      $("#path-components button").removeClass("active");
+function setup_file_picker(
+  modal,
+  currentPath,
+  subDirsContainer,
+  pathComponents,
+  saveChange,
+  formInput,
+  backButton,
+  filePickerButton
+) {
+  $(modal).on("hidden.bs.modal", function () {
+    $(currentPath).val("");
+    $(subDirsContainer).empty();
+    pathComponents.find("button").removeClass("active");
+  });
+
+  $(saveChange).click(function () {
+    $(formInput).val($(currentPath).val());
+  });
+
+  $(filePickerButton).click(function () {
+    $(modal).modal("toggle");
+
+    $.ajax({
+      url: document.dashboard_url + "/jobs/composer/mainpaths",
+      method: "GET",
+      dataType: "json",
+      success: function (data) {
+        $(pathComponents).empty();
+        for (var i = 0; i < Object.keys(data).length; i++) {
+          var pathname = Object.keys(data)[i];
+          var fullpath = data[Object.keys(data)[i]];
+          console.log(fullpath);
+
+          var path = $("<button>");
+          path.attr("class", "btn btn-primary subdir-button");
+          path.text(Object.keys(data)[i]);
+          path.data("fullpath", fullpath);
+
+          path.click(function () {
+            // Remove the "active" class from all buttons in the same container
+            $(pathComponents).find("button").removeClass("active");
+
+            // Add the "active" class to the clicked button
+            $(this).addClass("active");
+
+            var fullPath = $(this).data("fullpath");
+            $(currentPath).val(fullPath);
+            $(subDirsContainer).empty();
+
+            fetchAndPopulateSubdirectories(
+              fullPath,
+              currentPath,
+              subDirsContainer
+            );
+          });
+
+          $(pathComponents).append(path);
+        }
+      },
+      error: function () {
+        console.error("Error fetching JSON data for paths");
+      },
     });
 
-    $("#changeLocation").click(function () {
-      $("#location").val($("#currentPath").val());
-    });
-
-    $("#file-picker-button").click(function () {
-      $("#file-picker-modal").modal("toggle");
-
-      $.ajax({
-        url: document.dashboard_url + "/jobs/composer/mainpaths",
-        method: "GET",
-        dataType: "json",
-        success: function (data) {
-          $("#path-components").empty();
-          for (var i = 0; i < Object.keys(data).length; i++) {
-            var pathname = Object.keys(data)[i];
-            var fullpath = data[Object.keys(data)[i]];
-
-            var path = $("<button>");
-            path.attr("class", "btn btn-outline-primary subdir-button");
-            path.text(Object.keys(data)[i]);
-            path.data("fullpath", fullpath);
-
-            path.click(function () {
-              // Remove the "active" class from all buttons in the same container
-              $("#path-components button").removeClass("active");
-
-              // Add the "active" class to the clicked button
-              $(this).addClass("active");
-
-              var fullPath = $(this).data("fullpath");
-              $("#currentPath").val(fullPath);
-              $("#subdirs-container").empty();
-
-              fetchAndPopulateSubdirectories(fullPath);
-            });
-
-            $("#path-components").append(path);
-          }
-        },
-        error: function () {
-          console.error("Error fetching JSON data for paths");
-        },
-      });
-
-      var backButton = $("#backButton");
-      backButton.click(function () {
-        // Navigate to the parent directory
-        var fullPath = $("#currentPath").val();
-        var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
-        $("#currentPath").val(parentPath);
-        fetchAndPopulateSubdirectories(parentPath);
-      });
+    backButton.click(function () {
+      // Navigate to the parent directory
+      var fullPath = $(currentPath).val();
+      var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+      $(currentPath).val(parentPath);
+      fetchAndPopulateSubdirectories(parentPath, currentPath, subDirsContainer);
     });
   });
 }
+
+// function setup_file_picker() {
+//   $(document).ready(function () {
+//     $("#file-picker-modal").on("hidden.bs.modal", function () {
+//       $("#currentPath").val("");
+//       $("#subdirs-container").empty();
+//       $("#path-components button").removeClass("active");
+//     });
+
+//     $("#changeLocation").click(function () {
+//       $("#location").val($("#currentPath").val());
+//     });
+
+//     $("#file-picker-button").click(function () {
+//       $("#file-picker-modal").modal("toggle");
+
+//       $.ajax({
+//         url: document.dashboard_url + "/jobs/composer/mainpaths",
+//         method: "GET",
+//         dataType: "json",
+//         success: function (data) {
+//           $("#path-components").empty();
+//           for (var i = 0; i < Object.keys(data).length; i++) {
+//             var pathname = Object.keys(data)[i];
+//             var fullpath = data[Object.keys(data)[i]];
+
+//             var path = $("<button>");
+//             path.attr("class", "btn btn-primary subdir-button");
+//             path.text(Object.keys(data)[i]);
+//             path.data("fullpath", fullpath);
+
+//             path.click(function () {
+//               // Remove the "active" class from all buttons in the same container
+//               $("#path-components button").removeClass("active");
+
+//               // Add the "active" class to the clicked button
+//               $(this).addClass("active");
+
+//               var fullPath = $(this).data("fullpath");
+//               $("#currentPath").val(fullPath);
+//               $("#subdirs-container").empty();
+
+//               fetchAndPopulateSubdirectories(fullPath);
+//             });
+
+//             $("#path-components").append(path);
+//           }
+//         },
+//         error: function () {
+//           console.error("Error fetching JSON data for paths");
+//         },
+//       });
+
+//       var backButton = $("#backButton");
+//       backButton.click(function () {
+//         // Navigate to the parent directory
+//         var fullPath = $("#currentPath").val();
+//         var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+//         $("#currentPath").val(parentPath);
+//         fetchAndPopulateSubdirectories(parentPath);
+//       });
+//     });
+//   });
+// }
 
 // anonymous function to sync the name of upload file with the value of hidden input
 

@@ -125,14 +125,15 @@ def get_main_paths():
 
 def fetch_subdirectories(path):
     subdirectories = [os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))]
-    return subdirectories
+    subfiles = [os.path.basename(entry) for entry in os.listdir(path) if os.path.isfile(os.path.join(path, entry))]
+    return {"subdirectories": subdirectories, "subfiles": subfiles}
 
 @job_composer.route('/subdirectories', methods=['GET'])
 def get_subdirectories():
     fullpath = request.args.get('path')
     print(fullpath)
     subdirectories = fetch_subdirectories(fullpath)
-    return jsonify(subdirectories)
+    return subdirectories
 
     
 
