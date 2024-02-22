@@ -47,36 +47,6 @@
                 </div>
               </div>
 
-              <!-- Option to run job in different directory -->
-              <div id="location-component">
-                <div class="form-group row">
-                  <label
-                    class="col-lg-3 col-form-label form-control-label"
-                    for="location"
-                    >Job Directory</label
-                  >
-                  <div class="col-lg-9">
-                    <input
-                      type="text"
-                      id="location"
-                      name="location"
-                      class="form-control"
-                      value="/scratch/user/{{ config.user }}/job_composer/"
-                      readonly
-                    />
-                    <div id="file-picker" style="margin-top: 15px">
-                      <button
-                        type="button"
-                        id="file-picker-button"
-                        class="btn btn-primary maroon-button"
-                      >
-                        Change Location
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <!-- Runtime Environment -->
               <div class="form-group row">
                 <label class="col-lg-3 col-form-label form-control-label"
@@ -152,74 +122,6 @@
 
 <!-- Dynamic Modal -->
 <div id="dynamicModalContainer"></div>
-
-<!-- Modal for File Path Explorer -->
-<div
-  class="modal fade bd-example-modal-lg"
-  id="file-picker-modal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="myLargeModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Path Explorer</h5>
-        <button
-          type="button"
-          class="close"
-          data-dismiss="modal"
-          aria-label="Close"
-        >
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="currentPath">Current Path</label>
-          <input
-            type="text"
-            class="form-control"
-            id="currentPath"
-            placeholder="/"
-            readonly
-          />
-        </div>
-        <div id="path-components"></div>
-        <div id="subdirs-container"></div>
-      </div>
-      <div class="modal-footer">
-        <div class="container">
-          <div class="row">
-            <div class="col-6">
-              <button id="backButton" class="btn btn-outline-secondary">
-                Previous
-              </button>
-            </div>
-            <div class="col-6 text-left">
-              <button
-                type="button"
-                class="btn btn-primary"
-                data-dismiss="modal"
-                id="changeLocation"
-              >
-                Save changes
-              </button>
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-dismiss="modal"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Modal for Job Preview -->
 <div
