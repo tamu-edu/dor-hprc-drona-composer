@@ -15,13 +15,13 @@
   },
   "testCheckbox": {
     "type": "checkbox",
-    "label": "Test Checkbox",
+    "label": "Checkbox Element",
     "name": "testCheckbox",
     "value": "false"
   },
   "testRadioGroup": {
     "type": "radioGroup",
-    "label": "Test Radio Group",
+    "label": "Radio Group Element",
     "radio1": {
       "type": "radio",
       "name": "testGroup",
@@ -33,11 +33,17 @@
       "name": "testGroup",
       "value": "Option 2",
       "id": "testGroup2"
+    },
+    "radio3": {
+      "type": "radio",
+      "name": "testGroup",
+      "value": "Option 3",
+      "id": "testGroup3"
     }
   },
   "testDropdown": {
     "type": "select",
-    "label": "Test Dropdown",
+    "label": "Select Dropdown Element",
     "name": "testDropdown",
     "options": [
       {
@@ -52,7 +58,7 @@
   },
   "testModule": {
     "type": "module",
-    "label": "Test Module"
+    "label": "Module Element"
   },
   "testUploader": {
     "type": "uploader",
@@ -128,5 +134,12 @@
     "name": "testTextDepend4",
     "value": "Default Text 4",
     "dependencyType": "slave"
+  },
+  "testPicker": {
+    "type": "picker",
+    "label": "Picker Element",
+    "name": "testPicker",
+    "remoteLabel": "Uploaded",
+    "localLabel": "Cluster"
   }
 }
