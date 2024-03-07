@@ -1211,8 +1211,8 @@ function create_picker_modal(field, endpoint) {
 }
 
 function create_file_picker(field) {
-  remote = create_picker_modal(field, "remote");
-  local = create_picker_modal(field, "local");
+  var remote = create_picker_modal(field, "remote");
+  var local = create_picker_modal(field, "local");
 
   // Form Field
   var formGroup = $("<div>");
@@ -1233,12 +1233,14 @@ function create_file_picker(field) {
 
   var remoteButton = $("<button>");
   remoteButton.attr("type", "button");
+  remoteButton.attr("id", "remote-button-" + field.name);
   remoteButton.attr("class", "btn btn-primary maroon-button");
   remoteButton.attr("style", "margin-top: 15px;");
   remoteButton.text("Remote");
 
   var localButton = $("<button>");
   localButton.attr("type", "button");
+  localButton.attr("id", "local-button-" + field.name);
   localButton.attr("class", "btn btn-primary maroon-button");
   localButton.attr("style", "margin-top: 15px;");
   localButton.text("Local");
@@ -1251,7 +1253,7 @@ function create_file_picker(field) {
 
   setup_file_picker(remote, local, formInput, remoteButton, localButton);
 
-  return [formGroup, remoteModal, localModal];
+  return [formGroup, remote[0], local[0]];
 }
 
 function create_field(field, ignoreDependency) {
@@ -1517,144 +1519,172 @@ function setup_file_picker(
     localBackButton,
   ] = local;
 
-  $(remoteModal).on("hidden.bs.modal", function () {
-    $(remoteCurrentPath).val("");
-    $(remoteSubDirsContainer).empty();
-    remotePathComponents.find("button").removeClass("active");
-  });
+  $(remoteSaveChange).click(
+    (function (formInput, CurrentPath, modal) {
+      return function () {
+        $(formInput).val($(CurrentPath).val());
+        $(modal).modal("toggle");
+      };
+    })(formInput, remoteCurrentPath, remoteModal)
+  );
 
-  $(localModal).on("hidden.bs.modal", function () {
-    $(localCurrentPath).val("");
-    $(localSubDirsContainer).empty();
-    localPathComponents.find("button").removeClass("active");
-  });
+  $(localSaveChange).click(
+    (function (formInput, CurrentPath, modal) {
+      return function () {
+        $(formInput).val($(CurrentPath).val());
+        $(modal).modal("toggle");
+      };
+    })(formInput, localCurrentPath, localModal)
+  );
 
-  $(remoteSaveChange).click(function () {
-    $(formInput).val($(remoteCurrentPath).val());
-    $(remoteModal).modal("toggle");
-  });
+  $(localButton).click(
+    (function (
+      localModal,
+      localCurrentPath,
+      localSubDirsContainer,
+      localPathComponents,
+      localBackButton
+    ) {
+      return function () {
+        $(localModal).modal("toggle");
+        $.ajax({
+          url: document.dashboard_url + "/jobs/composer/mainpaths",
+          method: "GET",
+          dataType: "json",
+          success: function (data) {
+            $(localPathComponents).empty();
+            for (var i = 0; i < Object.keys(data).length; i++) {
+              var pathname = Object.keys(data)[i];
+              var fullpath = data[Object.keys(data)[i]];
 
-  $(localSaveChange).click(function () {
-    $(formInput).val($(localCurrentPath).val());
-    $(localModal).modal("toggle");
-  });
+              var path = $("<button>");
+              path.attr("class", "btn btn-primary subdir-button");
+              path.text(Object.keys(data)[i]);
+              path.data("fullpath", fullpath);
 
-  $(localButton).click(function () {
-    $(localModal).modal("toggle");
-    $.ajax({
-      url: document.dashboard_url + "/jobs/composer/mainpaths",
-      method: "GET",
-      dataType: "json",
-      success: function (data) {
-        $(localPathComponents).empty();
-        for (var i = 0; i < Object.keys(data).length; i++) {
-          var pathname = Object.keys(data)[i];
-          var fullpath = data[Object.keys(data)[i]];
+              path.click(function () {
+                // Remove the "active" class from all buttons in the same container
+                $(localPathComponents).find("button").removeClass("active");
 
+                // Add the "active" class to the clicked button
+                $(this).addClass("active");
+
+                var fullPath = $(this).data("fullpath");
+                $(localCurrentPath).val(fullPath);
+                $(localSubDirsContainer).empty();
+
+                fetchAndPopulateSubdirectories(
+                  fullPath,
+                  localCurrentPath,
+                  localSubDirsContainer,
+                  "local"
+                );
+              });
+
+              $(localPathComponents).append(path);
+            }
+          },
+          error: function () {
+            console.error("Error fetching JSON data for paths");
+          },
+        });
+
+        localBackButton.click(function () {
+          // Navigate to the parent directory
+          var fullPath = $(localCurrentPath).val();
+          var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+          $(localCurrentPath).val(parentPath);
+          fetchAndPopulateSubdirectories(
+            parentPath,
+            localCurrentPath,
+            localSubDirsContainer,
+            "local"
+          );
+        });
+      };
+    })(
+      localModal,
+      localCurrentPath,
+      localSubDirsContainer,
+      localPathComponents,
+      localBackButton
+    )
+  );
+
+  $(remoteButton).click(
+    (function (
+      remoteModal,
+      remoteCurrentPath,
+      remoteSubDirsContainer,
+      remotePathComponents,
+      remoteBackButton
+    ) {
+      return function () {
+        $(remoteModal).modal("toggle");
+        let paths = construct_remote_path();
+        $(remotePathComponents).empty();
+        for (var i = 0; i < Object.keys(paths).length; i++) {
+          var fullpath = Object.keys(paths)[i];
+
+          if (fullpath === "type") {
+            continue;
+          }
           var path = $("<button>");
-          path.attr("class", "btn btn-primary subdir-button");
-          path.text(Object.keys(data)[i]);
+          if (paths[fullpath].type === "directory") {
+            path.attr("class", "btn btn-primary subdir-button");
+          } else {
+            path.attr("class", "btn btn-outline-secondary subdir-button");
+          }
+          path.text(Object.keys(paths)[i]);
           path.data("fullpath", fullpath);
 
           path.click(function () {
             // Remove the "active" class from all buttons in the same container
-            $(localPathComponents).find("button").removeClass("active");
+            $(remotePathComponents).find("button").removeClass("active");
 
             // Add the "active" class to the clicked button
             $(this).addClass("active");
 
             var fullPath = $(this).data("fullpath");
-            $(localCurrentPath).val(fullPath);
-            $(localSubDirsContainer).empty();
+            $(remoteCurrentPath).val(fullPath);
+            $(remoteSubDirsContainer).empty();
 
             fetchAndPopulateSubdirectories(
               fullPath,
-              localCurrentPath,
-              localSubDirsContainer,
-              "local"
+              remoteCurrentPath,
+              remoteSubDirsContainer,
+              "remote"
             );
           });
 
-          $(localPathComponents).append(path);
+          $(remotePathComponents).append(path);
         }
-      },
-      error: function () {
-        console.error("Error fetching JSON data for paths");
-      },
-    });
-
-    localBackButton.click(function () {
-      // Navigate to the parent directory
-      var fullPath = $(localCurrentPath).val();
-      var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
-      $(localCurrentPath).val(parentPath);
-      fetchAndPopulateSubdirectories(
-        parentPath,
-        localCurrentPath,
-        localSubDirsContainer,
-        "local"
-      );
-    });
-  });
-
-  $(remoteButton).click(function () {
-    $(remoteModal).modal("toggle");
-    let paths = construct_remote_path();
-    $(remotePathComponents).empty();
-    for (var i = 0; i < Object.keys(paths).length; i++) {
-      var fullpath = Object.keys(paths)[i];
-
-      if (fullpath === "type") {
-        continue;
-      }
-      var path = $("<button>");
-      if (paths[fullpath].type === "directory") {
-        path.attr("class", "btn btn-primary subdir-button");
-      } else {
-        path.attr("class", "btn btn-outline-secondary subdir-button");
-      }
-      path.text(Object.keys(paths)[i]);
-      path.data("fullpath", fullpath);
-
-      path.click(function () {
-        // Remove the "active" class from all buttons in the same container
-        $(remotePathComponents).find("button").removeClass("active");
-
-        // Add the "active" class to the clicked button
-        $(this).addClass("active");
-
-        var fullPath = $(this).data("fullpath");
-        $(remoteCurrentPath).val(fullPath);
-        $(remoteSubDirsContainer).empty();
-
-        fetchAndPopulateSubdirectories(
-          fullPath,
-          remoteCurrentPath,
-          remoteSubDirsContainer,
-          "remote"
-        );
-      });
-
-      $(remotePathComponents).append(path);
-    }
-    remoteBackButton.click(function () {
-      // Navigate to the parent directory
-      var fullPath = $(remoteCurrentPath).val();
-      var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
-      if (parentPath === "") {
-        return;
-      }
-      console.log(fullPath);
-      console.log(parentPath);
-      $(remoteCurrentPath).val(parentPath);
-      fetchAndPopulateSubdirectories(
-        parentPath,
-        remoteCurrentPath,
-        remoteSubDirsContainer,
-        "remote"
-      );
-    });
-  });
+        remoteBackButton.click(function () {
+          // Navigate to the parent directory
+          var fullPath = $(remoteCurrentPath).val();
+          var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+          if (parentPath === "") {
+            return;
+          }
+          console.log(fullPath);
+          console.log(parentPath);
+          $(remoteCurrentPath).val(parentPath);
+          fetchAndPopulateSubdirectories(
+            parentPath,
+            remoteCurrentPath,
+            remoteSubDirsContainer,
+            "remote"
+          );
+        });
+      };
+    })(
+      remoteModal,
+      remoteCurrentPath,
+      remoteSubDirsContainer,
+      remotePathComponents,
+      remoteBackButton
+    )
+  );
 }
 
 // function setup_file_picker() {
