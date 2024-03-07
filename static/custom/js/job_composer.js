@@ -1285,7 +1285,7 @@ function create_file_picker(field) {
   formGroup.append(formContainer);
 
   // setup_file_picker(remote, local, formInput, remoteButton, localButton);
-  setup_file_picker(local, formInput, localButton);
+  setup_file_picker(local, formInput, remoteInput, localButton);
 
   return [formGroup, local[0]];
 }
@@ -1534,6 +1534,7 @@ function setup_file_picker(
   local,
   formInput,
   // remoteButton,
+  remoteInput,
   localButton
 ) {
   // [
@@ -1563,12 +1564,18 @@ function setup_file_picker(
   // );
 
   $(localSaveChange).click(
-    (function (formInput, CurrentPath, modal) {
+    (function (formInput, CurrentPath, modal, remoteInput) {
       return function () {
+        let currentFiles = remoteInput[0].files;
+        for (let index = 0; index < currentFiles.length; index++) {
+          let file = currentFiles[index];
+          let indexToRemove = uploadedFiles.indexOf(file);
+          uploadedFiles.splice(indexToRemove, 1);
+        }
         $(formInput).val($(CurrentPath).val());
         $(modal).modal("toggle");
       };
-    })(formInput, localCurrentPath, localModal)
+    })(formInput, localCurrentPath, localModal, remoteInput)
   );
 
   $(localButton).click(
