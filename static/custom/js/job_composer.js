@@ -1224,6 +1224,7 @@ function create_file_picker(field) {
 
   var formContainer = $("<div>");
   formContainer.attr("class", "col-lg-9");
+  formContainer.css("display", "flex");
 
   var formInput = $("<input>");
   formInput.attr("type", "text");
@@ -1235,14 +1236,14 @@ function create_file_picker(field) {
   remoteButton.attr("type", "button");
   remoteButton.attr("id", "remote-button-" + field.name);
   remoteButton.attr("class", "btn btn-primary maroon-button");
-  remoteButton.attr("style", "margin-top: 15px;");
+  remoteButton.attr("style", "margin-left: 5px;");
   remoteButton.text("Remote");
 
   var localButton = $("<button>");
   localButton.attr("type", "button");
   localButton.attr("id", "local-button-" + field.name);
   localButton.attr("class", "btn btn-primary maroon-button");
-  localButton.attr("style", "margin-top: 15px;");
+  localButton.attr("style", "margin-left: 5px;");
   localButton.text("Local");
 
   formContainer.append(formInput);
