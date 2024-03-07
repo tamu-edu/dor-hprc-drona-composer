@@ -140,6 +140,12 @@
     "label": "Picker Element",
     "name": "testPicker",
     "remoteLabel": "Uploaded",
-    "localLabel": "Cluster"
+    "localLabel": "Cluster",
+    "files": "True"
+  },
+  "testPicker2": {
+    "type": "picker",
+    "label": "Picker Element 2",
+    "name": "testPicker2"
   }
 }

@@ -1232,19 +1232,49 @@ function create_file_picker(field) {
   formInput.attr("name", field.name);
   formInput.attr("readonly", true);
 
-  var remoteButton = $("<button>");
-  remoteButton.attr("type", "button");
-  remoteButton.attr("id", "remote-button-" + field.name);
-  remoteButton.attr("class", "btn btn-primary maroon-button");
-  remoteButton.attr("style", "margin-left: 5px;");
-  if (field.remoteLabel) remoteButton.text(field.remoteLabel);
-  else remoteButton.text("Remote");
+  if (field.files && field.files == "True") {
+    var remoteButton = $("<button>");
+    remoteButton.attr("type", "button");
+    remoteButton.attr("id", "remote-button-" + field.name);
+    remoteButton.attr("class", "btn btn-primary maroon-button");
+    remoteButton.attr("style", "margin-right: 5px;");
+    if (field.remoteLabel) remoteButton.text(field.remoteLabel);
+    else remoteButton.text("Remote");
+
+    var remoteInput = $("<input>");
+    remoteInput.attr("type", "file");
+    remoteInput.attr("style", "display: none;");
+    remoteInput.attr("multiple", true);
+
+    $(remoteButton).click(function () {
+      let currentFiles = remoteInput[0].files;
+      for (let index = 0; index < currentFiles.length; index++) {
+        let file = currentFiles[index];
+        let indexToRemove = uploadedFiles.indexOf(file);
+        uploadedFiles.splice(indexToRemove, 1);
+      }
+      remoteInput.click();
+    });
+
+    remoteInput.change(function () {
+      let newFiles = [];
+      for (let index = 0; index < remoteInput[0].files.length; index++) {
+        let file = remoteInput[0].files[index];
+        newFiles.push(file);
+        uploadedFiles.push(file);
+      }
+
+      newFiles.forEach((file) => {
+        formInput.val(file.name);
+      });
+    });
+  }
 
   var localButton = $("<button>");
   localButton.attr("type", "button");
   localButton.attr("id", "local-button-" + field.name);
   localButton.attr("class", "btn btn-primary maroon-button");
-  localButton.attr("style", "margin-left: 5px;margin-right: 5px;");
+  localButton.attr("style", "margin-right: 5px;");
   if (field.localLabel) localButton.text(field.localLabel);
   else localButton.text("Local");
 
@@ -1254,9 +1284,10 @@ function create_file_picker(field) {
   formGroup.append(formLabel);
   formGroup.append(formContainer);
 
-  setup_file_picker(remote, local, formInput, remoteButton, localButton);
+  // setup_file_picker(remote, local, formInput, remoteButton, localButton);
+  setup_file_picker(local, formInput, localButton);
 
-  return [formGroup, remote[0], local[0]];
+  return [formGroup, local[0]];
 }
 
 function create_field(field, ignoreDependency) {
@@ -1337,11 +1368,11 @@ function setup_dynamic_form() {
             var field = fields[fieldname];
 
             if (field.type == "picker") {
-              [createdField, remoteModal, localModal] = create_field(
+              [createdField, localModal] = create_field(
                 field,
                 (ignoreDependency = false)
               );
-              $("#dynamicModalContainer").append(remoteModal);
+              // $("#dynamicModalContainer").append(remoteModal);
               $("#dynamicModalContainer").append(localModal);
               $("#dynamicFieldsContainer").append(createdField);
             } else {
@@ -1499,20 +1530,20 @@ function fetch_path(paths, path) {
 }
 
 function setup_file_picker(
-  remote,
+  // remote,
   local,
   formInput,
-  remoteButton,
+  // remoteButton,
   localButton
 ) {
-  [
-    remoteModal,
-    remoteCurrentPath,
-    remoteSubDirsContainer,
-    remotePathComponents,
-    remoteSaveChange,
-    remoteBackButton,
-  ] = remote;
+  // [
+  //   remoteModal,
+  //   remoteCurrentPath,
+  //   remoteSubDirsContainer,
+  //   remotePathComponents,
+  //   remoteSaveChange,
+  //   remoteBackButton,
+  // ] = remote;
   [
     localModal,
     localCurrentPath,
@@ -1522,14 +1553,14 @@ function setup_file_picker(
     localBackButton,
   ] = local;
 
-  $(remoteSaveChange).click(
-    (function (formInput, CurrentPath, modal) {
-      return function () {
-        $(formInput).val($(CurrentPath).val());
-        $(modal).modal("toggle");
-      };
-    })(formInput, remoteCurrentPath, remoteModal)
-  );
+  // $(remoteSaveChange).click(
+  //   (function (formInput, CurrentPath, modal) {
+  //     return function () {
+  //       $(formInput).val($(CurrentPath).val());
+  //       $(modal).modal("toggle");
+  //     };
+  //   })(formInput, remoteCurrentPath, remoteModal)
+  // );
 
   $(localSaveChange).click(
     (function (formInput, CurrentPath, modal) {
@@ -1614,80 +1645,80 @@ function setup_file_picker(
     )
   );
 
-  $(remoteButton).click(
-    (function (
-      remoteModal,
-      remoteCurrentPath,
-      remoteSubDirsContainer,
-      remotePathComponents,
-      remoteBackButton
-    ) {
-      return function () {
-        $(remoteModal).modal("toggle");
-        let paths = construct_remote_path();
-        $(remotePathComponents).empty();
-        for (var i = 0; i < Object.keys(paths).length; i++) {
-          var fullpath = Object.keys(paths)[i];
+  // $(remoteButton).click(
+  //   (function (
+  //     remoteModal,
+  //     remoteCurrentPath,
+  //     remoteSubDirsContainer,
+  //     remotePathComponents,
+  //     remoteBackButton
+  //   ) {
+  //     return function () {
+  //       $(remoteModal).modal("toggle");
+  //       let paths = construct_remote_path();
+  //       $(remotePathComponents).empty();
+  //       for (var i = 0; i < Object.keys(paths).length; i++) {
+  //         var fullpath = Object.keys(paths)[i];
 
-          if (fullpath === "type") {
-            continue;
-          }
-          var path = $("<button>");
-          if (paths[fullpath].type === "directory") {
-            path.attr("class", "btn btn-primary subdir-button");
-          } else {
-            path.attr("class", "btn btn-outline-secondary subdir-button");
-          }
-          path.text(Object.keys(paths)[i]);
-          path.data("fullpath", fullpath);
+  //         if (fullpath === "type") {
+  //           continue;
+  //         }
+  //         var path = $("<button>");
+  //         if (paths[fullpath].type === "directory") {
+  //           path.attr("class", "btn btn-primary subdir-button");
+  //         } else {
+  //           path.attr("class", "btn btn-outline-secondary subdir-button");
+  //         }
+  //         path.text(Object.keys(paths)[i]);
+  //         path.data("fullpath", fullpath);
 
-          path.click(function () {
-            // Remove the "active" class from all buttons in the same container
-            $(remotePathComponents).find("button").removeClass("active");
+  //         path.click(function () {
+  //           // Remove the "active" class from all buttons in the same container
+  //           $(remotePathComponents).find("button").removeClass("active");
 
-            // Add the "active" class to the clicked button
-            $(this).addClass("active");
+  //           // Add the "active" class to the clicked button
+  //           $(this).addClass("active");
 
-            var fullPath = $(this).data("fullpath");
-            $(remoteCurrentPath).val(fullPath);
-            $(remoteSubDirsContainer).empty();
+  //           var fullPath = $(this).data("fullpath");
+  //           $(remoteCurrentPath).val(fullPath);
+  //           $(remoteSubDirsContainer).empty();
 
-            fetchAndPopulateSubdirectories(
-              fullPath,
-              remoteCurrentPath,
-              remoteSubDirsContainer,
-              "remote"
-            );
-          });
+  //           fetchAndPopulateSubdirectories(
+  //             fullPath,
+  //             remoteCurrentPath,
+  //             remoteSubDirsContainer,
+  //             "remote"
+  //           );
+  //         });
 
-          $(remotePathComponents).append(path);
-        }
-        remoteBackButton.click(function () {
-          // Navigate to the parent directory
-          var fullPath = $(remoteCurrentPath).val();
-          var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
-          if (parentPath === "") {
-            return;
-          }
-          console.log(fullPath);
-          console.log(parentPath);
-          $(remoteCurrentPath).val(parentPath);
-          fetchAndPopulateSubdirectories(
-            parentPath,
-            remoteCurrentPath,
-            remoteSubDirsContainer,
-            "remote"
-          );
-        });
-      };
-    })(
-      remoteModal,
-      remoteCurrentPath,
-      remoteSubDirsContainer,
-      remotePathComponents,
-      remoteBackButton
-    )
-  );
+  //         $(remotePathComponents).append(path);
+  //       }
+  //       remoteBackButton.click(function () {
+  //         // Navigate to the parent directory
+  //         var fullPath = $(remoteCurrentPath).val();
+  //         var parentPath = fullPath.substring(0, fullPath.lastIndexOf("/"));
+  //         if (parentPath === "") {
+  //           return;
+  //         }
+  //         console.log(fullPath);
+  //         console.log(parentPath);
+  //         $(remoteCurrentPath).val(parentPath);
+  //         fetchAndPopulateSubdirectories(
+  //           parentPath,
+  //           remoteCurrentPath,
+  //           remoteSubDirsContainer,
+  //           "remote"
+  //         );
+  //       });
+  //     };
+  //   })(
+  //     remoteModal,
+  //     remoteCurrentPath,
+  //     remoteSubDirsContainer,
+  //     remotePathComponents,
+  //     remoteBackButton
+  //   )
+  // );
 }
 
 // function setup_file_picker() {
