@@ -1237,18 +1237,20 @@ function create_file_picker(field) {
   remoteButton.attr("id", "remote-button-" + field.name);
   remoteButton.attr("class", "btn btn-primary maroon-button");
   remoteButton.attr("style", "margin-left: 5px;");
-  remoteButton.text("Remote");
+  if (field.remoteLabel) remoteButton.text(field.remoteLabel);
+  else remoteButton.text("Remote");
 
   var localButton = $("<button>");
   localButton.attr("type", "button");
   localButton.attr("id", "local-button-" + field.name);
   localButton.attr("class", "btn btn-primary maroon-button");
   localButton.attr("style", "margin-left: 5px;");
-  localButton.text("Local");
+  if (field.localLabel) localButton.text(field.localLabel);
+  else localButton.text("Local");
 
-  formContainer.append(formInput);
   formContainer.append(remoteButton);
   formContainer.append(localButton);
+  formContainer.append(formInput);
   formGroup.append(formLabel);
   formGroup.append(formContainer);
 
