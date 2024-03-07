@@ -1244,7 +1244,7 @@ function create_file_picker(field) {
   localButton.attr("type", "button");
   localButton.attr("id", "local-button-" + field.name);
   localButton.attr("class", "btn btn-primary maroon-button");
-  localButton.attr("style", "margin-left: 5px;");
+  localButton.attr("style", "margin-left: 5px;margin-right: 5px;");
   if (field.localLabel) localButton.text(field.localLabel);
   else localButton.text("Local");
 
