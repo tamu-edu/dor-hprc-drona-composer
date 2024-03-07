@@ -1566,11 +1566,13 @@ function setup_file_picker(
   $(localSaveChange).click(
     (function (formInput, CurrentPath, modal, remoteInput) {
       return function () {
-        let currentFiles = remoteInput[0].files;
-        for (let index = 0; index < currentFiles.length; index++) {
-          let file = currentFiles[index];
-          let indexToRemove = uploadedFiles.indexOf(file);
-          uploadedFiles.splice(indexToRemove, 1);
+        if (remoteInput) {
+          let currentFiles = remoteInput[0].files;
+          for (let index = 0; index < currentFiles.length; index++) {
+            let file = currentFiles[index];
+            let indexToRemove = uploadedFiles.indexOf(file);
+            uploadedFiles.splice(indexToRemove, 1);
+          }
         }
         $(formInput).val($(CurrentPath).val());
         $(modal).modal("toggle");
