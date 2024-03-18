@@ -1230,6 +1230,13 @@ function create_file_picker(field) {
   formInput.attr("type", "text");
   formInput.attr("class", "form-control");
   formInput.attr("name", field.name);
+  if (field.name == "location") {
+    formInput.val("/scratch/user/" + document.user + "/job_composer/");
+    let path = formInput.val();
+    $("#job-name").on("input", function () {
+      formInput.val(path + this.value);
+    });
+  }
   formInput.attr("readonly", true);
 
   if (field.files && field.files == "True") {
@@ -1285,7 +1292,8 @@ function create_file_picker(field) {
   formGroup.append(formContainer);
 
   // setup_file_picker(remote, local, formInput, remoteButton, localButton);
-  setup_file_picker(local, formInput, remoteInput, localButton);
+  var isShowFiles = field.showFiles ? field.showFiles : "False";
+  setup_file_picker(local, formInput, remoteInput, localButton, isShowFiles);
 
   return [formGroup, local[0]];
 }
@@ -1400,7 +1408,8 @@ function fetchAndPopulateSubdirectories(
   fullPath,
   currentPath,
   subDirsContainer,
-  endpoint
+  endpoint,
+  isShowFiles
 ) {
   if (endpoint == "local") {
     $.ajax({
@@ -1428,65 +1437,68 @@ function fetchAndPopulateSubdirectories(
               newFullPath,
               currentPath,
               subDirsContainer,
-              endpoint
+              endpoint,
+              isShowFiles
             ); // Recursively fetch subdirectories
           });
           subDirsContainer.append(subDirButton);
         }
-
-        for (var j = 0; j < subFiles.length; j++) {
-          var subFile = subFiles[j];
-          var subFileButton = $("<button>");
-          subFileButton.attr(
-            "class",
-            "btn btn-outline-secondary subdir-button"
-          );
-          subFileButton.text(subFile);
-          // Attach a click event handler to fetch subdirectories for the clicked subdirectory
-          subFileButton.click(function () {
-            var clickedSubFile = $(this).text();
-            var newFullPath = fullPath + "/" + clickedSubFile;
-            $(currentPath).val(newFullPath);
-          });
-          subDirsContainer.append(subFileButton);
+        if (isShowFiles == "True") {
+          for (var j = 0; j < subFiles.length; j++) {
+            var subFile = subFiles[j];
+            var subFileButton = $("<button>");
+            subFileButton.attr(
+              "class",
+              "btn btn-outline-secondary subdir-button"
+            );
+            subFileButton.text(subFile);
+            // Attach a click event handler to fetch subdirectories for the clicked subdirectory
+            subFileButton.click(function () {
+              var clickedSubFile = $(this).text();
+              var newFullPath = fullPath + "/" + clickedSubFile;
+              $(currentPath).val(newFullPath);
+            });
+            subDirsContainer.append(subFileButton);
+          }
         }
       },
       error: function () {
         console.error("Error fetching subdirectories");
       },
     });
-  } else if (endpoint == "remote") {
-    let paths = construct_remote_path();
-    let current = fetch_path(paths, fullPath);
-    subDirsContainer.empty();
-    let keys = Object.keys(current);
-    for (let i in keys) {
-      if (keys[i] === "type") {
-        continue;
-      }
-      let subDir = keys[i];
-      let subDirButton = $("<button>");
-      if (current[subDir].type === "directory") {
-        subDirButton.attr("class", "btn btn-outline-primary subdir-button");
-      } else {
-        subDirButton.attr("class", "btn btn-outline-secondary subdir-button");
-      }
-      subDirButton.text(subDir);
-      // Attach a click event handler to fetch subdirectories for the clicked subdirectory
-      subDirButton.click(function () {
-        let clickedSubDir = $(this).text();
-        let newFullPath = fullPath + "/" + clickedSubDir;
-        $(currentPath).val(newFullPath);
-        fetchAndPopulateSubdirectories(
-          newFullPath,
-          currentPath,
-          subDirsContainer,
-          endpoint
-        ); // Recursively fetch subdirectories
-      });
-      subDirsContainer.append(subDirButton);
-    }
   }
+  // else if (endpoint == "remote") {
+  //   let paths = construct_remote_path();
+  //   let current = fetch_path(paths, fullPath);
+  //   subDirsContainer.empty();
+  //   let keys = Object.keys(current);
+  //   for (let i in keys) {
+  //     if (keys[i] === "type") {
+  //       continue;
+  //     }
+  //     let subDir = keys[i];
+  //     let subDirButton = $("<button>");
+  //     if (current[subDir].type === "directory") {
+  //       subDirButton.attr("class", "btn btn-outline-primary subdir-button");
+  //     } else {
+  //       subDirButton.attr("class", "btn btn-outline-secondary subdir-button");
+  //     }
+  //     subDirButton.text(subDir);
+  //     // Attach a click event handler to fetch subdirectories for the clicked subdirectory
+  //     subDirButton.click(function () {
+  //       let clickedSubDir = $(this).text();
+  //       let newFullPath = fullPath + "/" + clickedSubDir;
+  //       $(currentPath).val(newFullPath);
+  //       fetchAndPopulateSubdirectories(
+  //         newFullPath,
+  //         currentPath,
+  //         subDirsContainer,
+  //         endpoint
+  //       ); // Recursively fetch subdirectories
+  //     });
+  //     subDirsContainer.append(subDirButton);
+  //   }
+  // }
 }
 
 function construct_remote_path() {
@@ -1535,7 +1547,8 @@ function setup_file_picker(
   formInput,
   // remoteButton,
   remoteInput,
-  localButton
+  localButton,
+  isShowFiles
 ) {
   // [
   //   remoteModal,
@@ -1586,7 +1599,8 @@ function setup_file_picker(
       localCurrentPath,
       localSubDirsContainer,
       localPathComponents,
-      localBackButton
+      localBackButton,
+      isShowFiles
     ) {
       return function () {
         $(localModal).modal("toggle");
@@ -1620,7 +1634,8 @@ function setup_file_picker(
                   fullPath,
                   localCurrentPath,
                   localSubDirsContainer,
-                  "local"
+                  "local",
+                  isShowFiles
                 );
               });
 
@@ -1641,7 +1656,8 @@ function setup_file_picker(
             parentPath,
             localCurrentPath,
             localSubDirsContainer,
-            "local"
+            "local",
+            isShowFiles
           );
         });
       };
@@ -1650,7 +1666,8 @@ function setup_file_picker(
       localCurrentPath,
       localSubDirsContainer,
       localPathComponents,
-      localBackButton
+      localBackButton,
+      isShowFiles
     )
   );
 
