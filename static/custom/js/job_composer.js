@@ -465,12 +465,16 @@ function testing() {
   console.log("Testing in Progress");
 }
 
-function sync_job_name() {
-  console.log($("#job-name").val());
-  let path = $("#location").val();
-  $("#job-name").on("input", function () {
-    $("#location").val(path + this.value);
-  });
+function setup_location() {
+  field = {
+    type: "picker",
+    label: "Job Directory",
+    name: "location",
+    localLabel: "Change",
+  };
+  [createdField, localModal] = create_field(field, (ignoreDependency = false));
+  $("#dynamicModalContainer").append(localModal);
+  $("#generalFieldsContainer").append(createdField);
 }
 
 uploadedFiles = [];
@@ -1820,7 +1824,7 @@ function setup_file_picker(
   register_on_file_changed_listener();
   register_on_runtime_change_listener();
   // init_job_files_table();
-  sync_job_name();
+  setup_location();
   setup_dynamic_form();
   // setup_file_picker();
   setup_uploader_and_submit_button();
