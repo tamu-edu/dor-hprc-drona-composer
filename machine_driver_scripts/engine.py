@@ -146,8 +146,10 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
+            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
             template = params["run_command"]
             self.script = self.custom_replace(template, self.map, params)
+            self.script = self.script.replace("[job-file-name]", job_file_name)
             self.script = self.script.replace("\t", " ")
             self.script = re.sub(r'\r\n?|\r', '\n', self.script)
             return self.script
