@@ -1291,6 +1291,10 @@ function create_file_picker(field) {
   else localButton.text("Local");
 
   formContainer.append(remoteButton);
+  if (remoteButton)
+    formContainer.append(
+      $("<span>OR</span>").attr("style", "margin-right: 5px;")
+    );
   formContainer.append(localButton);
   formContainer.append(formInput);
   formGroup.append(formLabel);
