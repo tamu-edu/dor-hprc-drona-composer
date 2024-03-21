@@ -146,3 +146,8 @@ footer {
 .subdir-button {
   margin: 5px; /* You can adjust the margin as needed */
 }
+
+.move-left {
+  width: 2em;
+  height: 2em;
+}

@@ -703,6 +703,7 @@ function setup_job_script_preview() {
 function create_input_field(field, classes) {
   var inputField = $("<input>");
   inputField.attr("class", classes);
+  if (field.type == "checkbox") inputField.addClass("move-left");
   inputField.attr("type", field.type);
   inputField.attr("name", field.name);
   if (field.value) inputField.attr("value", field.value);
