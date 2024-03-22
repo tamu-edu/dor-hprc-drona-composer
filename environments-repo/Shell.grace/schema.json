@@ -1,19 +1,32 @@
 {
+
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload files (optional)"
+  },
+
   "ShellModule": {
     "type": "module",
-    "label": "Modules to add (under foss/2023a)"
+    "label": "Add modules"
   },
 
   "cores": {
     "type": "number",
-    "label": "Number of cores to use (if not sure, keep at 1)",
+    "label": "Number of cores (if not sure, keep at 1)",
     "name": "cores",
     "value": "1"
   }, 
 
+  "nodes": {
+    "type": "number",
+    "label": "Number of nodes (if not sure, leave as 0)",
+    "name": "nodes",
+    "value": "0"
+  },
+
   "gpuDropdown": {
     "type": "select",
-    "label": "Request GPU",
+    "label": "Use GPU",
     "name": "gpu",
     "options": [
       {
@@ -44,12 +57,12 @@
   },
   "memory": {
     "type": "unit",
-    "label": "Memory",
+    "label": "TOTAL Memory",
     "name": "memory",
     "units": [
       {
         "label": "MB",
-        "value": "MB"
+        "value": "M"
       },
       {
         "label": "GB",
@@ -60,13 +73,21 @@
   
   "Walltime": {
     "type": "time",
-    "label": "Expected time needed to run",
+    "label": "Expected run time",
     "name": "walltime",
     "value": ""
   },
+
+  "account": {
+    "type": "text",
+    "label": "Account (leave blank if using default)?",
+    "name": "account",
+    "value": ""
+  },
+
   "extraText": {
     "type": "text",
-    "label": "Any additional Slurm parameters (e.g. --ntasks-per-node)?",
+    "label": "Additional Slurm parameters?",
     "name": "extra_slurm",
     "value": ""
   }
