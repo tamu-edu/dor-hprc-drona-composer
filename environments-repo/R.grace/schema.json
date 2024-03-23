@@ -20,11 +20,18 @@
     ]
   },
 
-  "mainscript": {
-    "type": "text",
-    "label": "Name of Main R Script",
+  "mainscriptPicker": {
+    "type": "picker",
+    "label": "Select main R script",
     "name": "mainscript",
-    "value": ""
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "files": "True"
+  },
+  
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload files/data (optional)"
   },
 
   "ParallelDependDropdown": {
