@@ -14,15 +14,24 @@
       }
     ]
   },
-  "mainscript": {
-    "type": "text",
-    "label": "Main Script",
+
+  "mainscriptPicker": {
+    "type": "picker",
+    "label": "Main Matlab script",
     "name": "mainscript",
-    "value": ""
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "files": "True"
   },
+
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload additional scripts and data (optional)"
+  },
+
   "workers": {
     "type": "number",
-    "label": "#workers for parallel processing",
+    "label": "#workers for parallel processing (max 48)",
     "name": "workers",
     "value": "0"
   },
@@ -34,12 +43,38 @@
     "value": "1"
   },
 
-  "gpu": {
-    "type": "checkbox",
-    "label": "use gpu",
-    "name": "extra_params",
-    "value": "--gres=gpu:1"
+  "gpuDropdown": {
+    "type": "select",
+    "label": "Use GPU",
+    "name": "gpu",
+    "options": [
+      {
+        "value": "",
+        "label": "NO GPU"
+      },
+      {    
+        "value": "--gres=gpu",
+        "label": "ANY GPU"
+      },
+      {
+        "value": "--gres=gpu:a100",
+        "label": "A100"
+      },
+      {
+        "value": "--gres=gpu:rtx",
+        "label": "RTX 6000"
+      },
+      {
+        "value": "--gres=gpu:t4",
+        "label": "T4"
+      },
+      {
+        "value": "--gres=gpu:a40",
+        "label": "A40"
+      }
+    ]
   },
+
 
     "memory": {
     "type": "unit",

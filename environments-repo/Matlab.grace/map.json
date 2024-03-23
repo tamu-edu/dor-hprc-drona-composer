@@ -1,8 +1,9 @@
 {
   "fversion": "$version",
   "flocation": "$location",
-  "mopts" : "!retrieve_mopts($workers,$threads,$walltime,$memory,$extra_params)",
-  "fmainscript": "$mainscript"
+  "mopts" : "!retrieve_mopts($workers,$threads,$walltime,$memory,$gpu)",
+  "fmainscript": "$mainscript",
+  "warningmessage": "!retrieve_warning($workers)"
 }
 
 

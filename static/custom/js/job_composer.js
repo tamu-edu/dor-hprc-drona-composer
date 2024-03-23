@@ -1293,7 +1293,7 @@ function create_file_picker(field) {
   formContainer.append(remoteButton);
   if (remoteButton)
     formContainer.append(
-      $("<span>OR</span>").attr("style", "margin-right: 5px;")
+      $("<span> </span>").attr("style", "margin-right: 5px;")
     );
   formContainer.append(localButton);
   formContainer.append(formInput);
