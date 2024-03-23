@@ -1,8 +1,0 @@
-{
-  "fversion": "$version",
-  "flocation": "$location",
-  "mopts": "!retrieve_workers($workers, 1) -s $threads -t $walltime -m $memory -x '$extra_params'",
-  "fmainscript": "$mainscript"
-}
-
-
