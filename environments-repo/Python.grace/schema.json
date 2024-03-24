@@ -1,12 +1,31 @@
 {
-  "mainscript": {
-    "type": "text",
-    "label": "Main Python script",
-    "name": "mainscript",
-    "value": ""
+  "VersionDropdown": {
+    "type": "select",
+    "label": "Python version",
+    "name": "version",
+    "options": [
+      {
+        "value": "3.11.5",
+        "label": "3.11.5"
+      }
+    ]
   },
 
- 
+  "mainscriptPicker": {
+    "type": "picker",
+    "label": "Main Python script",
+    "name": "mainscript",
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "files": "True"
+  },
+
+
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload scripts & data (optional)"
+  },
+
   "cores": {
     "type": "number",
     "label": "Number of cores to use (if not sure, keep at 1)",
