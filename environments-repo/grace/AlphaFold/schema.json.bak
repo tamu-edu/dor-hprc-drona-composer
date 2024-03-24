@@ -1,0 +1,67 @@
+  {
+   "FASTAText": {
+    "type": "text",
+    "label": "Protein FASTA",
+    "name": "proteinfasta",
+    "value": "/scratch/data/bio/alphafold/example_data/T1083_T1084_multimer.fasta"
+  },
+  "DATEText": {
+    "type": "text",
+    "label": "Max Template",
+    "name": "maxtemplate",
+    "value": "2023-1-1"
+  },
+   "ModelPresetDropdown": {
+    "type": "select",
+    "label": "Model Preset",
+    "name": "modelpreset",
+    "options": [
+      {
+        "value": "monomer",
+        "label": "monomer"
+      },
+      {
+        "value": "monomer_casp14",
+        "label": "monomer_casp14"
+      },
+      {
+        "value": "monomer_ptm",
+        "label": "monomer_ptm"
+      },
+      {
+        "value": "multimer",
+        "label": "multimer"
+      }
+    ]
+  },
+  "DBPresetDropdown": {
+    "type": "select",
+    "label": "DB Preset",
+    "name": "dbpreset",
+    "options": [
+      {
+        "value": "full_dbs",
+        "label": "full_dbs"
+      },
+      {
+        "value": "reduced_dbs",
+        "label": "reduced_dbs"
+      }
+    ]
+  },
+  
+  "OUTPUTText": {
+    "type": "text",
+    "label": "Output Directory",
+    "name": "outputdir",
+    "value": "alphafold_2.3.1"
+  },
+
+  "pickleCheckbox": {
+    "type": "checkbox",
+    "label": "Run Alphapickle",
+    "name": "pickle",
+    "value": "true"
+  }
+
+}

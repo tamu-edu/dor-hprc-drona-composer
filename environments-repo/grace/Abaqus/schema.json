@@ -1,0 +1,97 @@
+
+{
+  "VersionDropdown": {
+    "type": "select",
+    "label": "Abaqus version",
+    "name": "version",
+    "options": [
+      {
+        "value": "ABAQUS/2021",
+        "label": "ABAQUS/2021"
+      },
+      {    
+        "value": "ABAQUS/2022",
+        "label": "ABAQUS/2022"
+      },
+      {
+        "value": "ABAQUS/2023",
+        "label": "ABAQUS/2023"
+      }
+    ]
+  },
+
+
+  "mainscriptPicker": {
+    "type": "picker",
+    "label": "Select Input file (.inp)",
+    "name": "mainscript",
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "files": "True"
+  },
+
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload any other data (optional)"
+  },
+
+   "ParallelDependDropdown": {
+    "type": "select",
+    "label": "Run in parallel",
+    "name": "parallel",
+    "dependencyType": "master",
+    "dependencyGroup": "B",
+    "options": [
+      {
+        "value": "no",
+        "label": "NO"
+      },
+      {
+        "value": "yes",
+        "label": "YES",
+        "dependFor": "cores"
+      }
+    ]
+  },
+
+  "cores": {
+    "type": "number",
+    "label": "ncpus value",
+    "name": "cores",
+    "value": "1",
+    "dependencyType": "slave"
+  },
+
+
+ "umatPicker": {
+    "type": "picker",
+    "label": "Select User Subroutine (optional)",
+    "name": "umat",
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "files": "True"
+  },
+  
+    "memory": {
+    "type": "unit",
+    "label": "Memory",
+    "name": "memory",
+    "units": [
+      {
+        "label": "MB",
+        "value": "MB"
+      },
+      {
+        "label": "GB",
+        "value": "G"
+      }
+    ]
+  },
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected time needed to run",
+    "name": "walltime",
+    "value": ""
+  }
+}

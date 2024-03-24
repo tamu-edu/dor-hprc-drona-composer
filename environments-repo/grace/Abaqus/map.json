@@ -1,0 +1,12 @@
+{
+  "batchopts" : "!retrieve_tamubatch_opts($cores,$memory,$walltime)",
+  "LOADR": "module load $version",
+  "MEM": "$memory",
+  "CPUS": "!retrieve_ncpus($cores,$parallel)",
+  "MPIMODE" : "!retrieve_mpi_mode_abaqus($cores,48)",
+  "UMAT" : "!retrieve_umat_abaqus($umat)",
+  "flocation": "$location",
+  "INPUT": "$mainscript",
+  "JOBNAME": "!retrieve_jobname($mainscript)"
+}
+

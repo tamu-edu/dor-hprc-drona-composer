@@ -1,0 +1,12 @@
+{
+  "flocation": "$location",
+  "batchopts" : "!retrieve_tamubatch_opts($cores,$memory,$cputime,$gputime,$parallel)", 
+  "PROTEIN_FASTA": "$proteinfasta",
+  "MAX_TEMPLATE": "$maxtemplate",
+  "MODEL_PRESET": "$modelpreset",
+  "DB_PRESET": "$dbpreset",
+  "OUTPUT_DIR": "$outputdir",
+  "GPU_RELAX": "!retrieve_gpurelax($parallel)",
+  "ALPHAPICKLE": "!retrieve_alphapickle($modelpreset, $proteinfasta, $outputdir)",
+  "UNIREF":     "!retrieve_uniref($dbpreset)"
+}
