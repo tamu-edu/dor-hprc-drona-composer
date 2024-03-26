@@ -19,21 +19,6 @@ def replace_no_flag(match, flag_dict):
         return flag_dict[flagname]
     else:
         return ""
-    
-def get_value_from_yaml(yaml_content, key):
-    lines = yaml_content.splitlines()
-    value = None
-    key_found = False
-
-    for line in lines:
-        if key in line:
-            key_found = True
-        if key_found:
-            value = line.split(":")[1].strip()
-            value = value.replace("\'", "")
-            value = value.replace("\"", "")
-            break
-    return value
 
 def process_function(value, environment):
     pattern = r'!(\w+)\((.*?)\)'
@@ -81,6 +66,8 @@ class Engine():
         self.map = None
         self.script = None
         self.driver = None
+        self.drona_job_name = None
+        self.drona_job_location = None
     
     def set_schema(self, schema_path):
         with open(schema_path) as json_file:
@@ -172,32 +159,6 @@ class Engine():
                 job_file.write(self.script)
 
             return job_file_path
-        
-    def generate_tamubatch_command(self, params):
-        walltime = f"-W {params['walltime']} " if 'walltime' in params and params['walltime'] else ""
-        use_gpu = "-gpu " if 'gpu' in params and params['gpu'] else ""
-        total_cpu_cores = f"-n {params['cores']} " if 'cores' in params and params["cores"] else ""
-        cores_per_node = f"-R {params['cores_per_node']} " if 'cores_per_node' in params and params['cores_per_node'] else ""
-        extra_slurm = f"-x '{params['extra_slurm']}' " if 'extra_slurm' in params and params['extra_slurm'] else ""
-        total_mem = f"-M '{params['total_memory']}' " if 'total_memory' in params and params['total_memory'] else ""
-        
-
-        account = f"-P {params['project_account']} " if 'project_account' in params and params['project_account'].strip() else ""
-        
-        with open("config.yml", "r") as config_file:
-            yaml_content = config_file.read()
-        key = "tamubatch_path"
-        tamubatch_path = get_value_from_yaml(yaml_content, f"{key}:")
-
-        job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
-        job_file_path = os.path.join(params['location'], job_file_name)
-        bash_file_path = os.path.join(params['location'], "run.sh")
-        location = params['location']
-        
-        with open(bash_file_path, "w") as bash_file:
-           # bash_file.write(f"#!/bin/bash\ncd {location}\n{tamubatch_path} {walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_path}\n")
-            bash_file.write(f"#!/bin/bash\nsource /etc/profile\ncd {location}\n{tamubatch_path} {extra_slurm}{walltime}{use_gpu}{total_cpu_cores}{cores_per_node}{total_mem}{account}{job_file_name}\n")
-        return bash_file_path
     
     def generate_driver_script(self, params):
         if self.environment is None:
