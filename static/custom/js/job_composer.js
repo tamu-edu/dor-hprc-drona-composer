@@ -473,6 +473,7 @@ function setup_location() {
     localLabel: "Change",
   };
   [createdField, localModal] = create_field(field, (ignoreDependency = false));
+  createdField.find('input[type="text"]').attr("readonly", false);
   $("#dynamicModalContainer").append(localModal);
   $("#generalFieldsContainer").append(createdField);
 }
