@@ -19,8 +19,6 @@ def retrieve_mopts(workers,threads,walltime,memory,extra_params="",gpu=""):
         options_string="-t " + walltime + " " + options_string
     if memory != "MB":
         memory=memory[:-2]
-        if (int(memory)*1024 > 360000):
-            aditional=additional+ "--partition bigmem "
         options_string="-m " + memory + " " + options_string
     if extra_params != "":
         options_string="-x '" + additional + "' " + options_string
@@ -43,8 +41,7 @@ def retrieve_thread_warning(workers,threads):
         return f""
 
 
-
-def retrieve_conflict(walltime,memory="",gpu=""):
+def retrieve_conflict(time,memory="",gpu=""):
     # conflicts: bigmem and time more than 2 days
     #            bigmem and request gpu
     #            gpu and more than 4 days
@@ -54,20 +51,15 @@ def retrieve_conflict(walltime,memory="",gpu=""):
             if gpu != "":
                 return f"Cannot request bigmem node and gpu "
             if walltime == "":
-                return "0"
+                return ""
             else:
                #bigmem and time is set
                times=walltime.split(':')
                if int(times[0]) > 48:
                    return f"limit for bigmem queue is 2 days, requested "+walltime
-        else:
-            return f"0"
     else:
         # check for walltime and gpu
         if walltime != "" and int((walltime.split(':'))[0]) > 96:
-            return f"limit for gpu jobs is 4 days, requested "+walltime
+            return f"limit for gpu jobs is 4 days, requested "+walltime   
         else:
-            return f"0"
-
-
-
+            return f""

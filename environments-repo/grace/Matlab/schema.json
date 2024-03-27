@@ -21,6 +21,7 @@
     "name": "mainscript",
     "remoteLabel": "local",
     "localLabel": "cluster",
+    "showFiles": "True",
     "files": "True"
   },
 

@@ -5,7 +5,8 @@
   "fmainscript": "$mainscript",
   "warningmessage": "!retrieve_warning($workers)",
   "warningthreads": "!retrieve_thread_warning($workers,$threads)",
-  "conflict": "!retrieve_conflict($walltime,$memory,$gpu)"
+  "conflict": "!retrieve_conflict($walltime,$memory,$gpu),
+  "warningmessage": "!retrieve_warning($workers)"
 }
 
 
