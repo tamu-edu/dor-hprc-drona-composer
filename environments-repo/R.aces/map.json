@@ -1,0 +1,8 @@
+{
+  "LOADR": "!retrieve_R_version($version)",
+  "DRIVER": "!retrieve_R_driver($parallel)",
+  "flocation": "$location",
+  "fmainscript": "$mainscript"
+}
+
+

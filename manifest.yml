@@ -1,4 +1,5 @@
-name: [cluster-name] Dashboard
-description: [cluster-name] Dashboard utilites
-icon: fa://columns
-category: Dashboard
+---
+name: Duy Flask
+category: Jobs
+description: Duy Job Composer Flask
+icon: ''

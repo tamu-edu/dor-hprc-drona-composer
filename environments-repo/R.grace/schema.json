@@ -1,0 +1,91 @@
+
+{
+  "VersionDropdown": {
+    "type": "select",
+    "label": "R_tamu version",
+    "name": "version",
+    "options": [
+      {
+        "value": "4.1.2",
+        "label": "R_tamu/4.1.2"
+      },
+      {    
+        "value": "4.2.0",
+        "label": "R_tamu/4.2.0"
+      },
+      {
+        "value": "4.3.1",
+        "label": "R_tamu/4.3.1"
+      }
+    ]
+  },
+
+  "mainscriptPicker": {
+    "type": "picker",
+    "label": "Select main R script",
+    "name": "mainscript",
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "files": "True"
+  },
+  
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload files/data (optional)"
+  },
+
+  "ParallelDependDropdown": {
+    "type": "select",
+    "label": "Does your R script create a parallel cluster",
+    "name": "parallel",
+    "dependencyType": "master",
+    "dependencyGroup": "B",
+    "options": [
+      {
+        "value": "none",
+        "label": "No parallel processing"
+      },
+      {
+        "value": "sock",
+        "label": "Cluster using SOCK",
+        "dependFor": "cores"
+      },
+      {
+        "value": "mpi",
+        "label": "Cluster using MPI",
+        "dependFor": "cores"
+      }
+    ]
+  },
+
+  "cores": {
+    "type": "number",
+    "label": "#Workers requested when creating cluster",
+    "name": "cores",
+    "value": "1",
+    "dependencyType": "slave"
+  },
+  
+   "memory": {
+    "type": "unit",
+    "label": "Memory",
+    "name": "memory",
+    "units": [
+      {
+        "label": "MB",
+        "value": "MB"
+      },
+      {
+        "label": "GB",
+        "value": "G"
+      }
+    ]
+  },
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected time needed to run",
+    "name": "walltime",
+    "value": ""
+  }
+}
