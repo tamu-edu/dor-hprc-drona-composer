@@ -68,6 +68,7 @@ class Engine():
         self.driver = None
         self.drona_job_name = None
         self.drona_job_location = None
+        self.additional_files=None
     
     def set_schema(self, schema_path):
         with open(schema_path) as json_file:
@@ -80,6 +81,23 @@ class Engine():
     def set_driver(self, driver_path):
         with open(driver_path) as shell_script:
             self.driver = shell_script.read()
+
+    def set_additional_files(self,files_path):
+        self.additional_files= {}
+        filename = os.path.join(files_path, "additional_files")
+        if os.path.isfile(filename):
+            self.additional_files= {}
+            keys=[]
+            with open(filename) as additional_script:
+                keys = additional_script.readlines()
+            for nkey in keys:
+                keystring = nkey.strip()
+                nfile= os.path.join(files_path,keystring)
+                if os.path.isfile(nfile):
+                    with open(nfile) as nshell_script:
+                        self.additional_files[keystring] = nshell_script.read()
+        else:
+            self.additional_files= {}
 
     def get_environment(self):
         return self.environment
@@ -106,7 +124,7 @@ class Engine():
         self.set_map("environments/" + environment + "/map.json")
         self.set_schema("environments/" + environment + "/schema.json")
         self.set_driver("environments/" + environment + "/driver.sh")
-
+        self.set_additional_files("environments/" + environment)
 
     def evaluate_map(self, map, params):
         for key, value in map.items():
@@ -145,11 +163,7 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
-            # template = params["run_command"]
-            # script = self.custom_replace(template, self.map, params)
-            # return script
             job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
-
             job_file_path = os.path.join(params['location'], job_file_name)
             # Create a file with the job script
             with open(job_file_path, "w") as job_file:
@@ -157,6 +171,17 @@ class Engine():
                 self.script = self.script.replace("\t", " ")
                 self.script = re.sub(r'\r\n?|\r', '\n', self.script)
                 job_file.write(self.script)
+
+            for fname, content in self.additional_files.items():
+                # Copy  files with the job script
+                nfile=content
+                additional_job_file_path = os.path.join(params['location'], fname)
+                with open(additional_job_file_path, "w") as ajob_file:
+                    nfile = self.custom_replace(nfile, self.map, params)
+                    nfile = nfile.replace("[job-file-name]", job_file_name)
+                    nfile = nfile.replace("\t", " ")
+                    nfile = re.sub(r'\r\n?|\r', '\n', nfile)
+                    ajob_file.write(nfile)
 
             return job_file_path
     
@@ -226,3 +251,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
