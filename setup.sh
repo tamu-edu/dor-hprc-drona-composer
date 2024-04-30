@@ -22,7 +22,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-npm init
-npm install webpack webpack-cli --save-dev
-npm install react react-dom
+
+
 npm install -D babel-loader @babel/core @babel/preset-react
+npm run build
