@@ -18,8 +18,12 @@ def get_directories(path):
 @job_composer.route('/modules', methods=['GET'])
 def get_modules():
     query = request.args.get('query')
-    modules_db_path = app.config['modules_db_path']
+    toolchain = request.args.get('toolchain')
+    print(query)
+    print(toolchain)
+    modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
     print(modules_db_path)
+    print("/n/n/n")
 
     with sqlite3.connect(modules_db_path) as modules_db:
         cursor = modules_db.cursor()

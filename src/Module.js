@@ -5,6 +5,7 @@ function Module(props) {
   const [modules, setModules] = useState([]);
   const moduleSearchRef = useRef(null);
   const moduleAddRef = useRef(null);
+  const [toolchain, setToolchain] = useState("modules");
 
   useEffect(() => {
     if (moduleSearchRef.current) {
@@ -15,7 +16,9 @@ function Module(props) {
           //http://api.railwayapi.com/suggest_train/trains/190/apikey/1234567892/
           // The above url did not work for me so using some existing one
           var suggestURL =
-            document.dashboard_url + "/jobs/composer/modules?query=%QUERY";
+            document.dashboard_url +
+            "/jobs/composer/modules?query=%QUERY&toolchain=" +
+            toolchain;
           suggestURL = suggestURL.replace("%QUERY", request.term);
 
           // JSONP Request
@@ -31,7 +34,7 @@ function Module(props) {
         },
       });
     }
-  }, []);
+  }, [toolchain]);
 
   function handleAddModule() {
     if (moduleSearchRef.current) {
@@ -51,17 +54,35 @@ function Module(props) {
     setValue(module_list);
   }, [modules]);
 
+  function handleToolchain(event) {
+    setToolchain(event.target.value);
+  }
+
+  const toolchains = props.toolchains.map((toolchain) => (
+    <option key={toolchain.value} value={toolchain.value}>
+      {toolchain.label}
+    </option>
+  ));
+
   return (
     <div className="form-group row">
       <label className="col-lg-3 col-form-label form-control-label">
         {props.label}
       </label>
       <div className="col-lg-9 ui-widget">
-        <input
-          ref={moduleSearchRef}
-          className="form-control ui-autoComplete-input"
-          autoComplete="off"
-        />
+        <div className="input-group">
+          <input
+            ref={moduleSearchRef}
+            className="form-control ui-autoComplete-input"
+            autoComplete="off"
+          />
+
+          <div className="input-group-append">
+            <select className="form-control" onChange={handleToolchain}>
+              {toolchains}
+            </select>
+          </div>
+        </div>
         <button
           type="button"
           ref={moduleAddRef}

@@ -131,7 +131,17 @@
   },
   "testModule1": {
     "type": "module",
-    "label": "Test Module 1"
+    "label": "Test Module 1",
+    "toolchains": [
+      {
+        "label": "Default Toolchain",
+        "value": "modules"
+      },
+      {
+        "label": "Foss/2023a Toolchain",
+        "value": "modules-foss2023a"
+      }
+    ]
   },
   "testTime1": {
     "type": "time",
