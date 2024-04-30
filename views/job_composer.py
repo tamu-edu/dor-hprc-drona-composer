@@ -19,11 +19,7 @@ def get_directories(path):
 def get_modules():
     query = request.args.get('query')
     toolchain = request.args.get('toolchain')
-    print(query)
-    print(toolchain)
     modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
-    print(modules_db_path)
-    print("/n/n/n")
 
     with sqlite3.connect(modules_db_path) as modules_db:
         cursor = modules_db.cursor()
@@ -117,11 +113,9 @@ def test_submit():
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
-    print(params)
     engine = Engine()
     engine.set_environment(params.get('runtime'))
     preview_job_script = engine.preview_script(params)
-    print(preview_job_script)
     return preview_job_script
 
 @job_composer.route('/mainpaths', methods=['GET'])
