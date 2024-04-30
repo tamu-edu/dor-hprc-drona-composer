@@ -3,7 +3,6 @@ import { GlobalFilesContext } from "./index.js";
 
 function Uploader(props) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [value, setValue] = useState(props.value || "");
 
   const { globalFiles, setGlobalFiles } = useContext(GlobalFilesContext);
 

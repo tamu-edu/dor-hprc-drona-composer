@@ -1,9 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
+import { GlobalFilesContext } from "./index.js";
 
 function Picker(props) {
-  const defaultLocation = "/scratch/user/" + document.user + "/job_composer/";
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  useEffect(() => {
+    setValue(props.defaultLocation);
+  }, [props.defaultLocation]);
+
   const [value, setValue] = useState(
-    props.name == "location" ? defaultLocation : ""
+    props.name == "location" ? props.defaultLocation : ""
   );
 
   function handleValueChange(event) {
@@ -11,11 +17,27 @@ function Picker(props) {
     if (props.onChange) props.onChange(props.index, event.target.value);
   }
 
+  const { globalFiles, setGlobalFiles } = useContext(GlobalFilesContext);
+
   const [currentPath, setCurrentPath] = useState("");
 
   const [mainPaths, setMainPaths] = useState([]);
   const [subDirs, setSubDirs] = useState([]);
   const [subFiles, setSubFiles] = useState([]);
+
+  const remoteInput = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    let currentFile = remoteInput.current.files[0];
+    if (currentFile) {
+      let path = currentFile.webkitRelativePath
+        ? currentFile.webkitRelativePath
+        : currentFile.name;
+      inputRef.current.value = path;
+      setGlobalFiles((prevFiles) => [...prevFiles, currentFile]);
+    }
+  }, [uploadedFiles]);
 
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/mainpaths")
@@ -123,9 +145,55 @@ function Picker(props) {
   function handleSaveChange() {
     setValue(currentPath);
     if (props.onChange) props.onChange(props.index, currentPath);
+    // clean up if previous use remote files
+    let currentFiles = remoteInput.current.files;
+    for (let i = 0; i < currentFiles.length; i++) {
+      setUploadedFiles((prevFiles) => {
+        let fileToRemove = currentFiles[i];
+        let indexToRemove = prevFiles.indexOf(fileToRemove);
+        prevFiles.splice(indexToRemove, 1);
+        return prevFiles;
+      });
+      setGlobalFiles((prevFiles) => {
+        let fileToRemove = currentFiles[i];
+        let indexToRemove = prevFiles.indexOf(fileToRemove);
+        prevFiles.splice(indexToRemove, 1);
+        return prevFiles;
+      });
+    }
+  }
+
+  function handleFileChange(files) {
+    const filesArray = Array.from(files);
+    let newFiles = [];
+    filesArray.forEach((file) => {
+      newFiles.push(file);
+      setUploadedFiles((prevFiles) => [...prevFiles, file]);
+    });
+  }
+
+  function handleRemoteClick() {
+    let currentFiles = remoteInput.current.files;
+    for (let i = 0; i < currentFiles.length; i++) {
+      setUploadedFiles((prevFiles) => {
+        let fileToRemove = currentFiles[i];
+        let indexToRemove = prevFiles.indexOf(fileToRemove);
+        prevFiles.splice(indexToRemove, 1);
+        return prevFiles;
+      });
+      setGlobalFiles((prevFiles) => {
+        let fileToRemove = currentFiles[i];
+        let indexToRemove = prevFiles.indexOf(fileToRemove);
+        prevFiles.splice(indexToRemove, 1);
+        return prevFiles;
+      });
+    }
+
+    remoteInput.current.click();
   }
 
   const isShowFiles = props.showFiles == true ? true : false;
+  const showRemoteLabel = props.remoteLabel ? true : false;
 
   return (
     <div>
@@ -137,6 +205,23 @@ function Picker(props) {
           {props.label}
         </label>
         <div className="col-lg-9" style={{ display: "flex" }}>
+          {showRemoteLabel && (
+            <button
+              type="button"
+              className="btn btn-primary maroon-button"
+              style={{ marginRight: "2px" }}
+              onClick={handleRemoteClick}
+            >
+              {props.remoteLabel}
+            </button>
+          )}
+          <input
+            type="file"
+            style={{ display: "none" }}
+            multiple
+            ref={remoteInput}
+            onChange={(e) => handleFileChange(e.target.files)}
+          />
           <button
             type="button"
             className="btn btn-primary maroon-button"
@@ -144,15 +229,17 @@ function Picker(props) {
             data-target={"#local-file-picker-modal-" + props.name}
             style={{ marginRight: "2px" }}
           >
-            Button
+            {props.localLabel}
           </button>
           <input
             type="text"
             name={props.name}
             id={props.id}
+            // value={value}
             value={value}
             className="form-control"
             onChange={handleValueChange}
+            ref={inputRef}
           />
         </div>
       </div>

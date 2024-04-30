@@ -1,0 +1,7 @@
+source /etc/profile
+module load WebProxy
+
+module load [fmodules]
+source /sw/hprc/sw/Python/virtualenvs/Python/3.10.8/default_dashboard_python-env/bin/activate
+
+[testUnit1]

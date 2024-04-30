@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef, createContext } from "react";
 
 import ReactDOM from "react-dom";
-import Whatever from "./Whatever";
-import Counter from "./Counter";
 import Text from "./Text";
 import Select from "./Select";
+import Picker from "./Picker";
 import Composer from "./Composer";
 
 export const GlobalFilesContext = createContext();
@@ -19,6 +18,10 @@ function App() {
   const previewRef = useRef(null);
   const runCommandRef = useRef(null);
 
+  const [defaultLocation, setDefaultLocation] = useState(
+    "/scratch/user/" + document.user + "/job_composer"
+  );
+
   const [environments, setEnvironments] = useState([]);
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
@@ -30,6 +33,12 @@ function App() {
         console.error("Error fetching JSON data");
       });
   }, []);
+
+  function sync_job_name(name) {
+    setDefaultLocation(
+      "/scratch/user/" + document.user + "/job_composer/" + name
+    );
+  }
 
   function handleEnvChange(key, env) {
     setEnvironment(env);
@@ -165,18 +174,28 @@ function App() {
             <div className="row">
               <div className="col-lg-12">
                 <div id="job-content">
-                  <h2>React Elements</h2>
-                  <Text name="name" id="job-name" label="Job Name" />
-                  <Select
-                    key="env_select"
-                    name="runtime"
-                    label="Environments"
-                    options={environments}
-                    onChange={handleEnvChange}
-                  />
                   <GlobalFilesContext.Provider
                     value={{ globalFiles, setGlobalFiles }}
                   >
+                    <Text
+                      name="name"
+                      id="job-name"
+                      label="Job Name"
+                      onNameChange={(name) => sync_job_name(name)}
+                    />
+                    <Picker
+                      name="location"
+                      label="Location"
+                      localLabel="Change"
+                      defaultLocation={defaultLocation}
+                    />
+                    <Select
+                      key="env_select"
+                      name="runtime"
+                      label="Environments"
+                      options={environments}
+                      onChange={handleEnvChange}
+                    />
                     <Composer
                       environment={environment}
                       fields={fields}

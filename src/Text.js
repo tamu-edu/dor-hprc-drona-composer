@@ -6,6 +6,7 @@ function Text(props) {
   function handleValueChange(event) {
     setValue(event.target.value);
     if (props.onChange) props.onChange(props.index, event.target.value);
+    if (props.onNameChange) props.onNameChange(event.target.value);
   }
 
   return (
