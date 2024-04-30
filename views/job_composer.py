@@ -19,6 +19,7 @@ def get_directories(path):
 def get_modules():
     query = request.args.get('query')
     modules_db_path = app.config['modules_db_path']
+    print(modules_db_path)
 
     with sqlite3.connect(modules_db_path) as modules_db:
         cursor = modules_db.cursor()
@@ -99,13 +100,24 @@ def submit_job():
             return result.stderr
     except subprocess.CalledProcessError as e:
         return e.stderr
+    
+@job_composer.route('/test_submit', methods=['POST'])
+def test_submit():
+    params = request.form
+    files = request.files
+    print(params)
+    print(files)
+    return "Success"
+
 
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
+    print(params)
     engine = Engine()
     engine.set_environment(params.get('runtime'))
     preview_job_script = engine.preview_script(params)
+    print(preview_job_script)
     return preview_job_script
 
 @job_composer.route('/mainpaths', methods=['GET'])
@@ -135,7 +147,9 @@ def get_subdirectories():
     subdirectories = fetch_subdirectories(fullpath)
     return subdirectories
 
+@job_composer.route('/environments', methods=['GET'])
+def get_environments():
+    environments = get_directories("./environments")
+    return jsonify(environments)
+
     
-
-
-
