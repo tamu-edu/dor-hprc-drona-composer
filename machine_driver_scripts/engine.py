@@ -152,7 +152,8 @@ class Engine():
             return "No environment selected"
         else:
             job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
-            template = params["run_command"]
+            template = self.fetch_template("environments/" + self.environment + "/template.txt")
+            # template = params["run_command"] user edit after generate preview
             self.script = self.custom_replace(template, self.map, params)
             self.script = self.script.replace("[job-file-name]", job_file_name)
             self.script = self.script.replace("\t", " ")
