@@ -104,24 +104,7 @@ function Module(props) {
           Add
         </button>
         <input type="hidden" name="module_list" value={value} />
-        <button
-          type="button"
-          className="btn btn-primary mt-2 maroon-button"
-          onClick={() => {
-            console.log(modules);
-          }}
-        >
-          Show Modules
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary mt-2 maroon-button"
-          onClick={() => {
-            console.log(value);
-          }}
-        >
-          Show Param
-        </button>
+
         {modules.map((module, index) => (
           <span
             key={index}
