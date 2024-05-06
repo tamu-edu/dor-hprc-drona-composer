@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 
 function Module(props) {
   const [value, setValue] = useState("");
-  const [modules, setModules] = useState([]);
+  const [modules, setModules] = useState([""]);
   const moduleSearchRef = useRef(null);
   const moduleAddRef = useRef(null);
   const [toolchain, setToolchain] = useState("modules");
@@ -39,10 +39,22 @@ function Module(props) {
   function handleAddModule() {
     if (moduleSearchRef.current) {
       const moduleName = $(moduleSearchRef.current).val();
+      const toolchainName = getToolchainName(toolchain);
+
       if (moduleName) {
-        setModules([...modules, moduleName]);
+        const updatedModules = [toolchainName, ...modules.slice(1), moduleName];
+        setModules(updatedModules);
       }
       moduleSearchRef.current.value = "";
+    }
+  }
+
+  function getToolchainName(str) {
+    let parts = str.split("-");
+    if (parts.length > 1) {
+      return parts[1];
+    } else {
+      return "";
     }
   }
 
@@ -92,6 +104,24 @@ function Module(props) {
           Add
         </button>
         <input type="hidden" name="module_list" value={value} />
+        <button
+          type="button"
+          className="btn btn-primary mt-2 maroon-button"
+          onClick={() => {
+            console.log(modules);
+          }}
+        >
+          Show Modules
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary mt-2 maroon-button"
+          onClick={() => {
+            console.log(value);
+          }}
+        >
+          Show Param
+        </button>
         {modules.map((module, index) => (
           <span
             key={index}
