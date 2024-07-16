@@ -1,5 +1,27 @@
 import os
 
+def retrieve_R_driver(mpistring=""):
+    if mpistring == "mpi":
+        return f"mpirun -np 1 "
+    else:
+        return f""
+
+
+def retrieve_R_version_grace(version=""):
+    if version == "4.1.2":
+        return f"module load foss/2021b R_tamu/4.1.2"
+    elif version == "4.2.0":
+        return f"module load foss/2021b R_tamu/4.2.0"
+    else:
+        return f"module load foss/2022b R_tamu/4.3.1"
+
+
+def retrieve_loaded_modules_grace(modules=""):
+    if modules == "":
+        return f""
+    else:
+        return "module load foss/2023a " + modules
+
 def retrieve_tamubatch_opts(cores,memory,walltime,extra_slurm="",gpu=""):
     options_string=""
     additional=extra_slurm + " " + gpu
@@ -15,33 +37,5 @@ def retrieve_tamubatch_opts(cores,memory,walltime,extra_slurm="",gpu=""):
     if additional != "":
         options_string="-x '" + additional + "' " + options_string
     return f"" + options_string
-
-
-
-def retrieve_mpi_mode_abaqus(cores, limit ):
-    if cores > limit:
-        return f"mp_mode=mpi"
-    else:
-        return f""
-
-def retrieve_umat_abaqus(umat="" ):
-    if umat != "":
-        return f"user="+umat+" "
-    else:
-        return f""
-
-
-def retrieve_ncpus(cores,parallel):
-    if parallel == "yes":
-        return f"cpus=" +cores
-    else:
-        return f""
-
-
-def retrieve_jobname(inp_file):
-    str_name = os.path.basename(inp_file)
-    if str_name.endswith(".inp"):
-        str_name = str_name[ :-4 ]
-    return f""+str_name
 
 

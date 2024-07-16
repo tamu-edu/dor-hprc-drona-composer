@@ -9,6 +9,9 @@ def retrieve_nodes(nodes,cores):
    if nodes == "0":
        result= ((int(cores)+47) // 48) 
        return f""+str(result)
+   # result = ((int(scores)+47) // 48)
+   # if (int(nodes) < result)
+   #    return f""+str(result)
    else:
        return f""+nodes
 
