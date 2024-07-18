@@ -3,7 +3,6 @@ import json
 import sqlite3
 import re
 import os
-import sys
 from machine_driver_scripts.engine import Engine
 import subprocess
 
