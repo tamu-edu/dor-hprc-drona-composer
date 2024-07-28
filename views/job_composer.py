@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, current_app as app
+import json
 import sqlite3
 import re
 import os
@@ -40,7 +41,30 @@ def get_environment(environment):
 def get_schema(environment):
     schema = os.path.join('environments', environment, 'schema.json')
     schema_data = open(schema, 'r').read()
-    return schema_data
+    
+    schema_dict = json.loads(schema_data)
+
+    for key in schema_dict:
+        if schema_dict[key]["type"] == "dynamic_select":
+            
+            retriever_path = os.path.join('environments', environment, schema_dict[key]["retriever"])
+            bash_command = f"bash {retriever_path}"
+
+            try:
+                result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                if result.returncode == 0:
+                    options = json.loads(result.stdout)
+                else:
+                    return result.stderr
+            except subprocess.CalledProcessError as e:
+                return e.stderr
+            
+            schema_dict[key]["type"] = "select" 
+            schema_dict[key]["options"] = options
+
+
+    return schema_dict
+
 
 @job_composer.route('/map/<environment>', methods=['GET'])
 def get_map(environment):
