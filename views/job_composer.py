@@ -33,21 +33,45 @@ def get_modules():
 
 @job_composer.route('/environment/<environment>', methods=['GET'])
 def get_environment(environment):
-    template = os.path.join('environments', environment, 'template.txt')
-    template_data = open(template, 'r').read()
+    user_envs_path = request.args.get("user_envs_path")
+    if user_envs_path is None:
+        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+
+    user_template_path = os.path.join(user_envs_path, environment, 'template.txt')
+    system_template_path = os.path.join('environments', environment, 'template.txt')
+
+    if os.path.exists(user_template_path):
+        template_data = open(user_template_path, 'r').read()
+    elif os.path.exists(system_template_path):
+        template_data = open(system_template_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(environment, 'template.txt')} not found")
     return template_data
 
 @job_composer.route('/schema/<environment>', methods=['GET'])
 def get_schema(environment):
-    schema = os.path.join('environments', environment, 'schema.json')
-    schema_data = open(schema, 'r').read()
+    user_envs_path = request.args.get("user_envs_path")
+    if user_envs_path is None:
+        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+
+    user_schema_path = os.path.join(user_envs_path, environment, 'schema.json')
+    system_schema_path = os.path.join('environments', environment, 'schema.json')
+
+    if os.path.exists(user_schema_path):
+        schema_data = open(user_schema_path, 'r').read()
+        environment_path = os.path.join(user_envs_path, environment)
+    elif os.path.exists(system_schema_path):
+        schema_data = open(system_schema_path, 'r').read()
+        environment_path = os.path.join('environments', environment)
+    else:
+        raise FileNotFoundError(f"{os.path.join(environment, 'schema.json')} not found")
     
     schema_dict = json.loads(schema_data)
 
     for key in schema_dict:
         if schema_dict[key]["type"] == "dynamic_select":
             
-            retriever_path = os.path.join('environments', environment, schema_dict[key]["retriever"])
+            retriever_path = os.path.join(environment_path, schema_dict[key]["retriever"])
             bash_command = f"bash {retriever_path}"
 
             try:
@@ -62,13 +86,25 @@ def get_schema(environment):
             schema_dict[key]["type"] = "select" 
             schema_dict[key]["options"] = options
 
-
     return schema_dict
 
 
 @job_composer.route('/map/<environment>', methods=['GET'])
 def get_map(environment):
-    map = os.path.join('environments', environment, 'map.json')
+    user_envs_path = request.args.get("user_envs_path")
+    if user_envs_path is None:
+        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+
+    user_map_path = os.path.join(user_envs_path, environment, 'map.json')
+    system_map_path = os.path.join('environments', environment, 'map.json')
+
+    if os.path.exists(user_map_path):
+        map_data = open(user_map_path, 'r').read()
+    elif os.path.exists(system_map_path):
+        map_data = open(system_map_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(environment, 'map.json')} not found")
+
     map_data = open(map, 'r').read()
     return map_data
 
