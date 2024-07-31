@@ -171,7 +171,21 @@ def get_subdirectories():
 
 @job_composer.route('/environments', methods=['GET'])
 def get_environments():
-    environments = get_directories("./environments")
-    return jsonify(environments)
+    system_environments = get_directories("./environments")
+    
+    user_envs_path = request.args.get("user_envs_path")
 
+    if user_envs_path is None:
+        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments" 
+
+    user_environments = []
+    try:
+        user_environments = get_directories(user_envs_path)
+    except OSError as e:
+        print(f"The path {user_envs_path} for user environments is invalid")
+        print(e)
+    
+    environments = system_environments + user_environments
+
+    return jsonify(environments)
     
