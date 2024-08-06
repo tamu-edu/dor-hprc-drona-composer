@@ -10,7 +10,7 @@ export const GlobalFilesContext = createContext();
 
 function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
-  const [environment, setEnvironment] = useState("");
+  const [environment, setEnvironment] = useState({env: "", src: ""});
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
 
@@ -26,9 +26,9 @@ function App() {
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
-      .then((data) =>
-        setEnvironments(data.map((env) => ({ value: env, label: env })))
-      )
+      .then((data) => {
+        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src })))
+      })
       .catch((error) => {
         console.error("Error fetching JSON data");
       });
@@ -40,9 +40,13 @@ function App() {
     );
   }
 
-  function handleEnvChange(key, env) {
+ function handleEnvChange(key, option) {
+    const env = option.getAttribute("value") 
+    const src = option.getAttribute("src");
+
     setEnvironment(env);
-    fetch(document.dashboard_url + "/jobs/composer/schema/" + env)
+	 
+    fetch(document.dashboard_url + "/jobs/composer/schema/" + env + "?src=" + src)
       .then((response) => response.json())
       .then((data) => setFields(data))
       .catch((error) => {

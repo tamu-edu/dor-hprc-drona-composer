@@ -10,7 +10,7 @@ job_composer = Blueprint("job_composer", __name__)
 
 @job_composer.route("/")
 def composer():
-    environments = get_directories("./environments")
+    environments = _get_environments() 
     return render_template("index_no_banner.html", environments=environments)
 
 def get_directories(path):
@@ -33,45 +33,38 @@ def get_modules():
 
 @job_composer.route('/environment/<environment>', methods=['GET'])
 def get_environment(environment):
-    user_envs_path = request.args.get("user_envs_path")
-    if user_envs_path is None:
-        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-
-    user_template_path = os.path.join(user_envs_path, environment, 'template.txt')
-    system_template_path = os.path.join('environments', environment, 'template.txt')
-
-    if os.path.exists(user_template_path):
-        template_data = open(user_template_path, 'r').read()
-    elif os.path.exists(system_template_path):
-        template_data = open(system_template_path, 'r').read()
+    env_dir = request.args.get("src")
+    if env_dir is None:
+        template_path = os.path.join('environments', environment, 'template.txt')
     else:
-        raise FileNotFoundError(f"{os.path.join(environment, 'template.txt')} not found")
+        template_path = os.path.join(env_dir, environment, 'template.txt')
+
+    if os.path.exists(template_path):
+        template_data = open(template_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'template.txt')} not found")
+    
     return template_data
 
 @job_composer.route('/schema/<environment>', methods=['GET'])
 def get_schema(environment):
-    user_envs_path = request.args.get("user_envs_path")
-    if user_envs_path is None:
-        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-
-    user_schema_path = os.path.join(user_envs_path, environment, 'schema.json')
-    system_schema_path = os.path.join('environments', environment, 'schema.json')
-
-    if os.path.exists(user_schema_path):
-        schema_data = open(user_schema_path, 'r').read()
-        environment_path = os.path.join(user_envs_path, environment)
-    elif os.path.exists(system_schema_path):
-        schema_data = open(system_schema_path, 'r').read()
-        environment_path = os.path.join('environments', environment)
+    env_dir = request.args.get("src")
+    if env_dir is None:
+        schema_path = os.path.join('environments', environment, 'schema.json')
     else:
-        raise FileNotFoundError(f"{os.path.join(environment, 'schema.json')} not found")
+        schema_path = os.path.join(env_dir, environment, 'schema.json')
+
+    if os.path.exists(schema_path):
+        schema_data = open(schema_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'schema.json')} not found")
     
     schema_dict = json.loads(schema_data)
 
     for key in schema_dict:
         if schema_dict[key]["type"] == "dynamic_select":
             
-            retriever_path = os.path.join(environment_path, schema_dict[key]["retriever"])
+            retriever_path = os.path.join(env_dir, environment, schema_dict[key]["retriever"])
             bash_command = f"bash {retriever_path}"
 
             try:
@@ -91,21 +84,17 @@ def get_schema(environment):
 
 @job_composer.route('/map/<environment>', methods=['GET'])
 def get_map(environment):
-    user_envs_path = request.args.get("user_envs_path")
-    if user_envs_path is None:
-        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-
-    user_map_path = os.path.join(user_envs_path, environment, 'map.json')
-    system_map_path = os.path.join('environments', environment, 'map.json')
-
-    if os.path.exists(user_map_path):
-        map_data = open(user_map_path, 'r').read()
-    elif os.path.exists(system_map_path):
-        map_data = open(system_map_path, 'r').read()
+    env_dir = request.args.get("src")
+    if env_dir is None:
+        map_path = os.path.join('environments', environment, 'map.json')
     else:
-        raise FileNotFoundError(f"{os.path.join(environment, 'map.json')} not found")
+        map_path = os.path.join(env_dir, environment, 'map.json')
 
-    map_data = open(map, 'r').read()
+    if os.path.exists(map_path):
+        map_data = open(map_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'map.json')} not found")
+    
     return map_data
 
 def create_folder_if_not_exist(dir_path):
@@ -207,7 +196,13 @@ def get_subdirectories():
 
 @job_composer.route('/environments', methods=['GET'])
 def get_environments():
+    environments = _get_environments()
+    return jsonify(environments)
+
+
+def _get_environments():
     system_environments = get_directories("./environments")
+    system_environments = [{"env": env, "src": "./environments"} for env in system_environments]
     
     user_envs_path = request.args.get("user_envs_path")
 
@@ -217,11 +212,11 @@ def get_environments():
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
+        user_environments = [{"env": env, "src": user_envs_path} for env in user_environments]
     except OSError as e:
-        print(f"The path {user_envs_path} for user environments is invalid")
         print(e)
-    
+        
     environments = system_environments + user_environments
 
-    return jsonify(environments)
-    
+    return environments
+
