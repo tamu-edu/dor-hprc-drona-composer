@@ -129,7 +129,7 @@ def submit_job():
     create_folder_if_not_exist(params.get('location'))
 
     engine = Engine()
-    engine.set_environment(params.get('runtime'))
+    engine.set_environment(params.get('runtime'), params.get('env_dir'))
 
     # Saving Files
     # executable_script = save_file(files.get('executable_script'), params.get('location'))
@@ -163,7 +163,7 @@ def test_submit():
 def preview_job():
     params = request.form
     engine = Engine()
-    engine.set_environment(params.get('runtime'))
+    engine.set_environment(params.get('runtime'), params.get('env_dir'))
     preview_job_script = engine.preview_script(params)
     return preview_job_script
 

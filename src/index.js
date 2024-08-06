@@ -44,7 +44,7 @@ function App() {
     const env = option.getAttribute("value") 
     const src = option.getAttribute("src");
 
-    setEnvironment(env);
+    setEnvironment({env: env, src: src});
 	 
     fetch(document.dashboard_url + "/jobs/composer/schema/" + env + "?src=" + src)
       .then((response) => response.json())
@@ -61,8 +61,10 @@ function App() {
 
   function preview_job(action, formData, callback) {
     var request = new XMLHttpRequest();
-
+    formData.append("env_dir", environment.src)
+	  
     request.open("POST", action, true);
+	  
     request.onload = function (event) {
       if (request.status == 200) {
         var jobScript = request.responseText;
@@ -118,6 +120,8 @@ function App() {
 
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
+
+    formData.append("env_dir", environment.src)
 
     add_submission_loading_indicator();
     request.open("POST", action, true);
