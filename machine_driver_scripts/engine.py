@@ -84,13 +84,16 @@ class Engine():
 
     def set_additional_files(self,files_path):
         self.additional_files= {}
-        filename = os.path.join(files_path, "additional_files")
+        filename = os.path.join(files_path, "additional_files.json")
         if os.path.isfile(filename):
-            self.additional_files= {}
-            keys=[]
-            with open(filename) as additional_script:
-                keys = additional_script.readlines()
-            for nkey in keys:
+            with open(filename) as additional_scripts:
+                try:
+                    additional_scripts = json.load(additional_scripts)
+                except json.JSONDecodeError:
+                    print(f"Error: The file '{filename}' contains invalid JSON.")
+                    return
+
+            for nkey in additional_scripts["files"]:
                 keystring = nkey.strip()
                 nfile= os.path.join(files_path,keystring)
                 if os.path.isfile(nfile):
