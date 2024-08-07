@@ -104,4 +104,12 @@ def retrieve_mopts(workers,threads,walltime,memory,extra_params):
         options_string="-x '" + additional + "' " + options_string
     return f"" + options_string
 
+def check_my_code(cores, memory):
+    warnings = []
+    if memory == "":
+        warnings.append("The memory is unspecified")
 
+    if cores == "":
+        warnings.append("The number of cores are unspecified")
+
+    return str(warnings)

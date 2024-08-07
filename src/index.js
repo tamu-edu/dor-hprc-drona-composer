@@ -13,6 +13,7 @@ function App() {
   const [environment, setEnvironment] = useState({env: "", src: ""});
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
+  const [warningMessages, setWarningMessages] = useState([])
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
@@ -61,13 +62,15 @@ function App() {
 
   function preview_job(action, formData, callback) {
     var request = new XMLHttpRequest();
+    
+    request.responseType = "json";
     formData.append("env_dir", environment.src)
 	  
     request.open("POST", action, true);
 	  
     request.onload = function (event) {
       if (request.status == 200) {
-        var jobScript = request.responseText;
+        var jobScript = request.response;
         callback(null, jobScript); // Pass the result to the callback
       } else {
         callback(`Error ${request.status}. Try again!`); // Pass the error to the callback
@@ -89,7 +92,8 @@ function App() {
       if (error) {
         alert(error);
       } else {
-        setJobScript(jobScript);
+        setJobScript(jobScript["script"]);
+	setWarningMessages(jobScript["warnings"])
       }
     });
   }
@@ -283,6 +287,18 @@ function App() {
               </button>
             </div>
             <div className="modal-body">
+	     <div
+               id="warning-messages"
+               className="alert alert-warning mt-3"
+               style={{ display: (warningMessages.length != 0) ? 'block' : 'none' }}
+             >
+	       <h6 className="alert-heading">The script was generated with the following warnings:</h6>
+	        <ul>
+                  {warningMessages.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
+             </div>
               <div id="job-preview-container">
                 <textarea
                   id="job-script-preview"

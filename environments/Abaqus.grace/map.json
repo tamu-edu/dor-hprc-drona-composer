@@ -5,6 +5,7 @@
   "CPUS": "!retrieve_ncpus($cores,$parallel)",
   "MPIMODE" : "!retrieve_mpi_mode_abaqus($cores,48)",
   "flocation": "$location",
-  "INPUT": "$mainscript"
+  "INPUT": "$mainscript",
+  "drona_warnings": "!check_my_code($cores,$memory)"
 }
 

@@ -166,7 +166,12 @@ class Engine():
             self.script = self.script.replace("[job-file-name]", job_file_name)
             self.script = self.script.replace("\t", " ")
             self.script = re.sub(r'\r\n?|\r', '\n', self.script)
-            return self.script
+
+           
+            warnings = ast.literal_eval(self.map["drona_warnings"])
+
+            preview_job = {"script": self.script, "warnings":  warnings}
+            return preview_job
         
     def generate_script(self, params):
         if self.environment is None:

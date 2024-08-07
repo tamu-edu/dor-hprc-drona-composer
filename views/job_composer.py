@@ -163,10 +163,11 @@ def test_submit():
 def preview_job():
     params = request.form
     engine = Engine()
+    
     engine.set_environment(params.get('runtime'), params.get('env_dir'))
-    preview_job_script = engine.preview_script(params)
-    return preview_job_script
+    preview_job = engine.preview_script(params)
 
+    return jsonify(preview_job)
 @job_composer.route('/mainpaths', methods=['GET'])
 def get_main_paths():
     current_user = os.getenv("USER")
