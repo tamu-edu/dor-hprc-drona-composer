@@ -20,7 +20,7 @@ def replace_no_flag(match, flag_dict):
     else:
         return ""
 
-def process_function(value, environment):
+def process_function(value, environment, env_dir):
     pattern = r'!(\w+)\((.*?)\)'
 
     matches = re.findall(pattern, value)
@@ -31,7 +31,7 @@ def process_function(value, environment):
         # variables = [variable.strip() for variable in variables]
         variables = [variable.strip() for variable in match[1].split(",")] if match[1] else []
         
-        function_path = f"environments/{environment}/utils.py"
+        function_path = os.path.join(env_dir, environment, "utils.py")
         if os.path.exists(function_path):
             spec = importlib.util.spec_from_file_location("utils", function_path)
             module = importlib.util.module_from_spec(spec)
@@ -62,6 +62,7 @@ def process_function(value, environment):
 class Engine():
     def __init__(self):
         self.environment = None
+        self.env_dir = None
         self.schema = None
         self.map = None
         self.script = None
@@ -105,6 +106,9 @@ class Engine():
     def get_environment(self):
         return self.environment
 
+    def get_env_dir(self):
+        return self.env_dir
+
     def get_schema(self):
         return self.schema
     
@@ -122,12 +126,13 @@ class Engine():
             template = text_file.read()
             return template
         
-    def set_environment(self, environment):
+    def set_environment(self, environment, env_dir):
         self.environment = environment
-        self.set_map("environments/" + environment + "/map.json")
-        self.set_schema("environments/" + environment + "/schema.json")
-        self.set_driver("environments/" + environment + "/driver.sh")
-        self.set_additional_files("environments/" + environment)
+        self.env_dir = env_dir
+        self.set_map(os.path.join(env_dir, environment, "map.json"))
+        self.set_schema(os.path.join(env_dir, environment, "schema.json"))
+        self.set_driver(os.path.join(env_dir, environment, "driver.sh"))
+        self.set_additional_files(os.path.join(env_dir, environment))
 
     def evaluate_map(self, map, params):
         for key, value in map.items():
@@ -140,7 +145,7 @@ class Engine():
             pattern_no_flag = r'\$(\w+)'
             value = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), value)
 
-            value = process_function(value, self.environment)
+            value = process_function(value, self.environment, self.env_dir)
             map[key] = value
         return map
     
@@ -155,7 +160,7 @@ class Engine():
             return "No environment selected"
         else:
             job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
-            template = self.fetch_template("environments/" + self.environment + "/template.txt")
+            template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
             # template = params["run_command"] user edit after generate preview
             self.script = self.custom_replace(template, self.map, params)
             self.script = self.script.replace("[job-file-name]", job_file_name)
@@ -228,7 +233,7 @@ def main():
         try:
             params = ast.literal_eval(args.params)  # Safely parse the dictionary string
             if isinstance(params, dict):
-                engine.set_environment(params["runtime"])
+                engine.set_environment(params["runtime"], params["env_dir"])
             else:
                 print("Invalid dictionary format 1")
         except (SyntaxError, ValueError) as e:

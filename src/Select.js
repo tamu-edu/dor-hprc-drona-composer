@@ -4,14 +4,15 @@ function Select(props) {
   const [value, setValue] = useState("");
 
   const optionList = props.options.map((option) => (
-    <option key={option.value} value={option.value}>
+    <option key={option.value} value={option.value} {...option}>
       {option.label}
     </option>
   ));
 
   function handleValueChange(event) {
-    setValue(event.target.value);
-    if (props.onChange) props.onChange(props.index, event.target.value);
+    const select = event.target
+    setValue(select.value);
+    if (props.onChange) props.onChange(props.index, select.options[select.selectedIndex]);
   }
 
   return (
