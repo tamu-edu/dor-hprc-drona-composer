@@ -13,6 +13,7 @@ function App() {
   const [environment, setEnvironment] = useState("");
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
+  const [warningMessage, setWarningMessage] = useState("")
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
@@ -57,11 +58,12 @@ function App() {
 
   function preview_job(action, formData, callback) {
     var request = new XMLHttpRequest();
-
+    
+    request.responseType = "json";
     request.open("POST", action, true);
     request.onload = function (event) {
       if (request.status == 200) {
-        var jobScript = request.responseText;
+        var jobScript = request.response;
         callback(null, jobScript); // Pass the result to the callback
       } else {
         callback(`Error ${request.status}. Try again!`); // Pass the error to the callback
@@ -83,7 +85,8 @@ function App() {
       if (error) {
         alert(error);
       } else {
-        setJobScript(jobScript);
+        setJobScript(jobScript["script"]);
+	setWarningMessage(jobScript["warning"])
       }
     });
   }
@@ -275,6 +278,14 @@ function App() {
               </button>
             </div>
             <div className="modal-body">
+	     <div
+               id="warning-message"
+               className="alert alert-warning mt-3"
+               style={{ display: warningMessage ? 'block' : 'none' }}
+             >
+	       <h6 className="alert-heading">The script was generated with the following warnings:</h6>
+               {warningMessage}
+             </div>
               <div id="job-preview-container">
                 <textarea
                   id="job-script-preview"

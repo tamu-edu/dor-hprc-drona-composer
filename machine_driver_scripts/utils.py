@@ -1,5 +1,4 @@
 import os
-
 def retrieve_workers(workers, default):
     if workers:
         return f"-w {workers}"
@@ -104,4 +103,6 @@ def retrieve_mopts(workers,threads,walltime,memory,extra_params):
         options_string="-x '" + additional + "' " + options_string
     return f"" + options_string
 
-
+def check_my_code():
+    warnings = ["The memory requested exceeds the maximum", "The memory is unspecified"]
+    return warnings[0]
