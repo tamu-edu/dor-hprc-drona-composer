@@ -10,7 +10,7 @@ export const GlobalFilesContext = createContext();
 
 function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
-  const [environment, setEnvironment] = useState("");
+  const [environment, setEnvironment] = useState({env: "", src: ""});
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
   const [warningMessages, setWarningMessages] = useState([])
@@ -27,9 +27,9 @@ function App() {
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
-      .then((data) =>
-        setEnvironments(data.map((env) => ({ value: env, label: env })))
-      )
+      .then((data) => {
+        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src })))
+      })
       .catch((error) => {
         console.error("Error fetching JSON data");
       });
@@ -41,9 +41,13 @@ function App() {
     );
   }
 
-  function handleEnvChange(key, env) {
-    setEnvironment(env);
-    fetch(document.dashboard_url + "/jobs/composer/schema/" + env)
+ function handleEnvChange(key, option) {
+    const env = option.getAttribute("value") 
+    const src = option.getAttribute("src");
+
+    setEnvironment({env: env, src: src});
+	 
+    fetch(document.dashboard_url + "/jobs/composer/schema/" + env + "?src=" + src)
       .then((response) => response.json())
       .then((data) => setFields(data))
       .catch((error) => {
@@ -60,7 +64,10 @@ function App() {
     var request = new XMLHttpRequest();
     
     request.responseType = "json";
+    formData.append("env_dir", environment.src)
+	  
     request.open("POST", action, true);
+	  
     request.onload = function (event) {
       if (request.status == 200) {
         var jobScript = request.response;
@@ -117,6 +124,8 @@ function App() {
 
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
+
+    formData.append("env_dir", environment.src)
 
     add_submission_loading_indicator();
     request.open("POST", action, true);
