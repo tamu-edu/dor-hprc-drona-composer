@@ -84,10 +84,17 @@ function App() {
   }
 
   function handlePreview() {
+    
+    const formData = new FormData(formRef.current);
+    
+    if(!formData.has("runtime")){
+    	alert("Environment is required.")
+	return 
+    }
+
     const modal = new bootstrap.Modal(previewRef.current);
     modal.toggle();
     const action = document.dashboard_url + "/jobs/composer/preview";
-    const formData = new FormData(formRef.current);
     preview_job(action, formData, function (error, jobScript) {
       if (error) {
         alert(error);
@@ -150,9 +157,16 @@ function App() {
 
   function handleSubmit(event) {
     event.preventDefault();
+	 
+    const formData = new FormData(formRef.current);
+    
+    if(formData.get("name") === ''){
+    	alert("Job name is required.");
+	return
+    }
+	  
     const runCommand = runCommandRef.current;
     runCommand.value = jobScript;
-    const formData = new FormData(formRef.current);
 
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
