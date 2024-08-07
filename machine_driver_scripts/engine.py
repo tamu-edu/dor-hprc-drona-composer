@@ -159,7 +159,10 @@ class Engine():
             self.script = self.script.replace("\t", " ")
             self.script = re.sub(r'\r\n?|\r', '\n', self.script)
 
-            preview_job = {"script": self.script, "warning": self.map["drona_warning"]}
+           
+            warnings = ast.literal_eval(self.map["drona_warnings"])
+
+            preview_job = {"script": self.script, "warnings":  warnings}
             return preview_job
         
     def generate_script(self, params):

@@ -13,7 +13,7 @@ function App() {
   const [environment, setEnvironment] = useState("");
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
-  const [warningMessage, setWarningMessage] = useState("")
+  const [warningMessages, setWarningMessages] = useState([])
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
@@ -86,7 +86,7 @@ function App() {
         alert(error);
       } else {
         setJobScript(jobScript["script"]);
-	setWarningMessage(jobScript["warning"])
+	setWarningMessages(jobScript["warnings"])
       }
     });
   }
@@ -279,12 +279,16 @@ function App() {
             </div>
             <div className="modal-body">
 	     <div
-               id="warning-message"
+               id="warning-messages"
                className="alert alert-warning mt-3"
-               style={{ display: warningMessage ? 'block' : 'none' }}
+               style={{ display: (warningMessages.length != 0) ? 'block' : 'none' }}
              >
 	       <h6 className="alert-heading">The script was generated with the following warnings:</h6>
-               {warningMessage}
+	        <ul>
+                  {warningMessages.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
              </div>
               <div id="job-preview-container">
                 <textarea
