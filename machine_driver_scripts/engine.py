@@ -154,23 +154,38 @@ class Engine():
         for key, value in map.items():
             template = template.replace("["+key+"]", value)
         return template
+
+    def replace_placeholders(self, input_script, map, params):
+        job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
+        output = self.custom_replace(input_script, map, params)
+        output = output.replace("[job-file-name]", job_file_name)
+        output = output.replace("\t", " ")
+        output = re.sub(r'\r\n?|\r', '\n', output)
+
+        return output
+    
     
     def preview_script(self, params):
         if self.environment is None:
             return "No environment selected"
         else:
-            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
-            # template = params["run_command"] user edit after generate preview
-            self.script = self.custom_replace(template, self.map, params)
-            self.script = self.script.replace("[job-file-name]", job_file_name)
-            self.script = self.script.replace("\t", " ")
-            self.script = re.sub(r'\r\n?|\r', '\n', self.script)
+            self.script = self.replace_placeholders(template, self.map, params)
+            self.driver = self.replace_placeholders(self.driver, self.map, params)
+            
+            for fname, content in self.additional_files.items():
+                content = self.replace_placeholders(content, self.map, params)
+                self.additional_files[fname] = content
 
-           
             warnings = ast.literal_eval(self.map["drona_warnings"])
-
-            preview_job = {"script": self.script, "warnings":  warnings}
+         
+            preview_job = {
+                    "driver": self.driver, 
+                    "script": self.script, 
+                    "warnings":  warnings,
+                    "additional_files": self.additional_files 
+            }
+            
             return preview_job
         
     def generate_script(self, params):
@@ -191,10 +206,7 @@ class Engine():
                 nfile=content
                 additional_job_file_path = os.path.join(params['location'], fname)
                 with open(additional_job_file_path, "w") as ajob_file:
-                    nfile = self.custom_replace(nfile, self.map, params)
-                    nfile = nfile.replace("[job-file-name]", job_file_name)
-                    nfile = nfile.replace("\t", " ")
-                    nfile = re.sub(r'\r\n?|\r', '\n', nfile)
+                    nfile = self.replace_placeholders(nfile, self.map, params)
                     ajob_file.write(nfile)
 
             return job_file_path
@@ -203,13 +215,9 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
-            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
             bash_file_path = os.path.join(params['location'], "run.sh")
             with open(bash_file_path, "w") as bash_file:
-                self.driver = self.custom_replace(self.driver, self.map, params)
-                self.driver = self.driver.replace("[job-file-name]", job_file_name)
-                self.driver = self.driver.replace("\t", " ")
-                self.driver = re.sub(r'\r\n?|\r', '\n', self.driver)
+                self.driver = self.replace_placeholders(self.driver, self.map, params)
                 bash_file.write(self.driver)
 
             return bash_file_path

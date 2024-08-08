@@ -5,7 +5,7 @@ import Text from "./Text";
 import Select from "./Select";
 import Picker from "./Picker";
 import Composer from "./Composer";
-
+import MultiPaneTextArea from "./MultiPaneTextArea"
 export const GlobalFilesContext = createContext();
 
 function App() {
@@ -14,6 +14,7 @@ function App() {
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
   const [warningMessages, setWarningMessages] = useState([])
+  const [panes, setPanes] = useState([{name: "Template.txt",content: jobScript}, {name: 'Driver.sh', content: ''}])
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
@@ -100,6 +101,15 @@ function App() {
         alert(error);
       } else {
         setJobScript(jobScript["script"]);
+	
+	const panes = [{name: "template.txt", content: jobScript["script"]},
+	         {name: "driver.sh", content: jobScript["driver"]}]
+	
+	for(const [fname, content] of Object.entries(jobScript["additional_files"])){
+	  panes.push({name: fname, content: content})
+	}
+        setPanes(panes); 
+
 	setWarningMessages(jobScript["warnings"])
       }
     });
@@ -314,13 +324,7 @@ function App() {
                 </ul>
              </div>
               <div id="job-preview-container">
-                <textarea
-                  id="job-script-preview"
-                  className="form-control"
-                  rows="20"
-                  value={jobScript}
-                  onChange={handleJobScriptChange}
-                ></textarea>
+	          <MultiPaneTextArea panes={panes} setPanes={setPanes} />
               </div>
             </div>
             <div className="modal-footer">
