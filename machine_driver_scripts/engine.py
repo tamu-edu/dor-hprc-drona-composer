@@ -177,7 +177,9 @@ class Engine():
                 content = self.replace_placeholders(content, self.map, params)
                 self.additional_files[fname] = content
 
-            warnings = ast.literal_eval(self.map["drona_warnings"])
+            warnings = []
+            if "drona_warnings" in self.map:
+                warnings = ast.literal_eval(self.map["drona_warnings"])
          
             preview_job = {
                     "driver": self.driver, 
