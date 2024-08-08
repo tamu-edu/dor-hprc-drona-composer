@@ -50,6 +50,14 @@ function MultiPaneTextArea({ panes, setPanes }) {
   const paneContentStyle = {
     padding: '10px',
   };
+  
+  const textareaStyle = { 
+	  border: 'none',
+	  outline: 'none',
+	  width: '100%',
+	  boxSizing: 'border-box',
+	  borderRadius: '5px'
+  }
 
   return (
     <div style={containerStyle}>
@@ -74,8 +82,9 @@ function MultiPaneTextArea({ panes, setPanes }) {
           value={panes[activePane].content}
           onChange={handleTextChange}
           placeholder={`${panes[activePane].name} content`}
-          style={{ width: '100%', boxSizing: 'border-box', borderRadius: '5px' }}
-        />
+          style={textareaStyle} 
+	/>
+	  
       </div>
     </div>
   );
