@@ -58,9 +58,9 @@ def get_schema(environment):
         schema_data = open(schema_path, 'r').read()
     else:
         raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'schema.json')} not found")
-    
+   
     schema_dict = json.loads(schema_data)
-
+    
     for key in schema_dict:
         if schema_dict[key]["type"] == "dynamic_select":
             
@@ -79,7 +79,7 @@ def get_schema(environment):
             schema_dict[key]["type"] = "select" 
             schema_dict[key]["options"] = options
 
-    return schema_dict
+    return json.dumps(schema_dict)
 
 
 @job_composer.route('/map/<environment>', methods=['GET'])
