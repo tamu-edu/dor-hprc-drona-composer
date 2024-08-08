@@ -30,6 +30,10 @@ function Composer(props) {
     });
   }
 
+  function handleSelectValueChange(index, selectedOption) {
+    handleValueChange(index, selectedOption.value)
+  }
+
   function showFields() {
     console.log(fields);
   }
@@ -141,7 +145,7 @@ function Composer(props) {
               key={index}
               index={index}
               {...attributes}
-              onChange={handleValueChange}
+              onChange={handleSelectValueChange}
             />
           )
         );
