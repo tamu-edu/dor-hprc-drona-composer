@@ -14,11 +14,13 @@ function App() {
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
   const [warningMessages, setWarningMessages] = useState([])
-  const [panes, setPanes] = useState([{name: "Template.txt",content: jobScript}, {name: 'Driver.sh', content: ''}])
+
+
+  const [panes, setPanes] = useState([{title: "", name: "",content: ""}])
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
-  const runCommandRef = useRef(null);
+  const multiPaneRef = useRef(null);
 
   const [defaultLocation, setDefaultLocation] = useState(
     "/scratch/user/" + document.user + "/job_composer"
@@ -102,13 +104,13 @@ function App() {
       } else {
         setJobScript(jobScript["script"]);
 	
-	const panes = [{name: "template.txt", content: jobScript["script"]},
-	         {name: "driver.sh", content: jobScript["driver"]}]
+	const panes = [{title: "template.txt", content: jobScript["script"], name: "run_command"},
+	         {title: "driver.sh", content: jobScript["driver"], name: "driver"}]
 	
 	for(const [fname, content] of Object.entries(jobScript["additional_files"])){
-	  panes.push({name: fname, content: content})
+	    panes.push({title: fname, content: content, name: fname})
 	}
-        setPanes(panes); 
+        setPanes(panes) 
 
 	setWarningMessages(jobScript["warnings"])
       }
@@ -173,11 +175,25 @@ function App() {
     if(formData.get("name") === ''){
     	alert("Job name is required.");
 	return
-    }
-	  
-    const runCommand = runCommandRef.current;
-    runCommand.value = jobScript;
+    } 
+    const paneRefs = multiPaneRef.current.getPaneRefs();
+    const additional_files = {};
+    paneRefs.forEach(ref => {
+      if (ref.current) {
+	const current = ref.current;
 
+	const name = current.getAttribute("name");
+	if(name === "driver" || name === "run_command") {
+	    formData.append(current.getAttribute("name"), current.value)
+        }
+	else {
+	    additional_files[name] = current.value;
+	}
+
+      }
+    });
+    formData.append("additional_files", JSON.stringify(additional_files));
+	  
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
@@ -242,31 +258,7 @@ function App() {
                   </GlobalFilesContext.Provider>
                 </div>
               </div>
-
-              <div
-                id="right-col"
-                className="col-lg-6"
-                style={{ display: "none" }}
-              >
-                <div id="runtime_config">
-                  <div className="form-group">
-                    <div>
-                      <textarea
-                        ref={runCommandRef}
-                        id="run_command"
-                        className="form-control"
-                        name="run_command"
-                        form="slurm-config-form"
-                        placeholder="Shell command to run your script."
-                        type="text"
-                        rows="12"
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+	  </div>
             <div className="form-group row text-center">
               <div id="job-preview-button-section" className="col-lg-12">
                 <input
@@ -324,7 +316,7 @@ function App() {
                 </ul>
              </div>
               <div id="job-preview-container">
-	          <MultiPaneTextArea panes={panes} setPanes={setPanes} />
+	          <MultiPaneTextArea ref={multiPaneRef}  panes={panes} setPanes={setPanes} />
               </div>
             </div>
             <div className="modal-footer">

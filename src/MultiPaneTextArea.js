@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 
-function MultiPaneTextArea({ panes, setPanes }) {
+const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
   const [activePane, setActivePane] = useState(0);
+  const paneRefs = useRef([]);
+
+  if (paneRefs.current.length !== panes.length) {
+    paneRefs.current = panes.map((_, i) => paneRefs.current[i] || React.createRef());
+  }
+
+  useImperativeHandle(ref, () => ({
+	  getPaneRefs: () => paneRefs.current,
+  }));
 
   const handlePaneChange = (index) => {
     setActivePane(index);
   };
 
-  const handleTextChange = (e) => {
+  const handleTextChange = (e, index) => {
     const updatedPanes = [...panes];
-    updatedPanes[activePane].content = e.target.value;
+    updatedPanes[index].content = e.target.value;
     setPanes(updatedPanes);
+    if(panes[index].onChange) panes[index].onChange(e);
   };
 
   const containerStyle = {
@@ -50,14 +60,14 @@ function MultiPaneTextArea({ panes, setPanes }) {
   const paneContentStyle = {
     padding: '10px',
   };
-  
+
   const textareaStyle = { 
-	  border: 'none',
-	  outline: 'none',
-	  width: '100%',
-	  boxSizing: 'border-box',
-	  borderRadius: '5px'
-  }
+    border: 'none',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+    borderRadius: '5px'
+  };
 
   return (
     <div style={containerStyle}>
@@ -74,20 +84,31 @@ function MultiPaneTextArea({ panes, setPanes }) {
           </button>
         ))}
       </div>
-      <div style={paneContentStyle}>
-        <textarea
-          id={`pane-${activePane}`}
-          className="form-control"
-          rows="20"
-          value={panes[activePane].content}
-          onChange={handleTextChange}
-          placeholder={`${panes[activePane].name} content`}
-          style={textareaStyle} 
-	/>
-	  
-      </div>
+      {panes.map((pane, index) => (
+        <div
+          key={index}
+          id={`pane-${index}`}
+          style={{
+            ...paneContentStyle,
+            display: activePane === index ? 'block' : 'none',
+          }}
+        >
+          <textarea
+            className="form-control"
+            rows="20"
+            ref={paneRefs.current[index]}
+            id={pane.name}
+            value={pane.content}
+            name={pane.name}
+            onChange={(e) => handleTextChange(e, index)}
+            placeholder={`${pane.title} content`}
+            style={textareaStyle}
+          />
+        </div>
+      ))}
     </div>
   );
-}
+});
 
 export default MultiPaneTextArea;
+

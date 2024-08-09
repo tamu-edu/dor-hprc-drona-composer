@@ -203,6 +203,7 @@ class Engine():
                 self.script = re.sub(r'\r\n?|\r', '\n', self.script)
                 job_file.write(self.script)
 
+            self.additional_files = json.loads(params["additional_files"])
             for fname, content in self.additional_files.items():
                 # Copy  files with the job script
                 nfile=content
@@ -219,19 +220,16 @@ class Engine():
         else:
             bash_file_path = os.path.join(params['location'], "run.sh")
             with open(bash_file_path, "w") as bash_file:
-                self.driver = self.replace_placeholders(self.driver, self.map, params)
+                self.driver = params["driver"]
+                self.driver = self.driver.replace("\t", " ")
+                self.driver = re.sub(r'\r\n?|\r', '\n', self.driver)
+
                 bash_file.write(self.driver)
 
             return bash_file_path
 
 
-        
-
-
-        
             
-
-
 def main():
     parser = argparse.ArgumentParser(description = "Engine")
 
