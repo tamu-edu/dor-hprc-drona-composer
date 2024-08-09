@@ -177,8 +177,7 @@ function App() {
 	return
     } 
     const paneRefs = multiPaneRef.current.getPaneRefs();
-    console.log(paneRefs)
-    const additional_files = [];
+    const additional_files = {};
     paneRefs.forEach(ref => {
       if (ref.current) {
 	const current = ref.current;
@@ -188,8 +187,9 @@ function App() {
 	    formData.append(current.getAttribute("name"), current.value)
         }
 	else {
-	    additional_files.push({name:name, content:current.value});
+	    additional_files[name] = current.value;
 	}
+
       }
     });
     formData.append("additional_files", JSON.stringify(additional_files));
