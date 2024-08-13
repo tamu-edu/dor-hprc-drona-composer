@@ -96,7 +96,7 @@ class Engine():
 
             for nkey in additional_scripts["files"]:
                 keystring = nkey.strip()
-                nfile= os.path.join(files_path,keystring)
+                nfile= os.path.join(files_path,"additional_files", keystring)
                 if os.path.isfile(nfile):
                     with open(nfile) as nshell_script:
                         self.additional_files[keystring] = nshell_script.read()
@@ -197,7 +197,7 @@ class Engine():
             self.script = self.replace_placeholders(template, self.map, params)
             self.driver = self.replace_placeholders(self.driver, self.map, params)
             
-            self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment), self.map, params)
+            self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment, "additional_files"), self.map, params)
             
             for fname, content in self.additional_files.items():
                 content = self.replace_placeholders(content, self.map, params)
@@ -238,7 +238,7 @@ class Engine():
                 # Copy  files with the job script
                 nfile=content
                 additional_job_file_path = os.path.join(params['location'], fname)
-                with open(additional_job_file_path, "w") as ajob_file:
+                with open(os.path.join(additional_job_file_path), "w") as ajob_file:
                     nfile = self.replace_placeholders(nfile, self.map, params)
                     ajob_file.write(nfile)
 
