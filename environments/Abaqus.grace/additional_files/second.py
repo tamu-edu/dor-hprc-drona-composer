@@ -1,1 +1,1 @@
-print("Loaction: [flocation]")
+print("Location: [flocation]")

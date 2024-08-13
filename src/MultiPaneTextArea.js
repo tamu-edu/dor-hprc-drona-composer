@@ -69,6 +69,10 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
     borderRadius: '5px'
   };
 
+  if(activePane >= panes.length){
+  	setActivePane(0);
+  }
+
   return (
     <div style={containerStyle}>
       <div style={paneSelectorStyle}>

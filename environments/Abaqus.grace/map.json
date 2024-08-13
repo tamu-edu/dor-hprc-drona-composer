@@ -6,6 +6,7 @@
   "MPIMODE" : "!retrieve_mpi_mode_abaqus($cores,48)",
   "flocation": "$location",
   "INPUT": "$mainscript",
-  "drona_warnings": "!check_my_code($cores,$memory)"
+  "drona_warnings": "!check_my_code($cores,$memory)",
+  "additional_files": "!drona_add_additional_files($cores)"
 }
 
