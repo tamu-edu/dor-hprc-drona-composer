@@ -91,7 +91,7 @@ class Engine():
                 try:
                     additional_scripts = json.load(additional_scripts)
                 except json.JSONDecodeError:
-                    print(f"Error: The file '{filename}' contains invalid JSON.")
+                    print(f"Error: the file '{filename}' contains invalid JSON.")
                     return
 
             for nkey in additional_scripts["files"]:
@@ -102,6 +102,30 @@ class Engine():
                         self.additional_files[keystring] = nshell_script.read()
         else:
             self.additional_files= {}
+
+    def set_dynamic_additional_files(self, files_path,  map, params):
+        map = self.evaluate_map(map, params)
+
+        self.dynamic_additional_files = {}
+        
+        if "additional_files" not in map:
+            return
+        
+        try:
+            additional_scripts = json.loads(map["additional_files"])
+        except json.JSONDecodeError:
+            print(f"Error: the file '{filename}' contains invalid JSON.")
+            return
+
+        if "files" in additional_scripts:
+            for nkey in additional_scripts["files"]:
+                keystring = nkey.strip()
+                nfile= os.path.join(files_path,keystring)
+                if os.path.isfile(nfile):
+                    with open(nfile) as nshell_script:
+                        self.dynamic_additional_files[keystring] = nshell_script.read()
+
+
 
     def get_environment(self):
         return self.environment
@@ -133,7 +157,7 @@ class Engine():
         self.set_schema(os.path.join(env_dir, environment, "schema.json"))
         self.set_driver(os.path.join(env_dir, environment, "driver.sh"))
         self.set_additional_files(os.path.join(env_dir, environment))
-
+        
     def evaluate_map(self, map, params):
         for key, value in map.items():
             ## 2. Replace the params name with the actual values in form fields
@@ -173,14 +197,20 @@ class Engine():
             self.script = self.replace_placeholders(template, self.map, params)
             self.driver = self.replace_placeholders(self.driver, self.map, params)
             
+            self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment), self.map, params)
+            
             for fname, content in self.additional_files.items():
                 content = self.replace_placeholders(content, self.map, params)
                 self.additional_files[fname] = content
 
+            for fname, content in self.dynamic_additional_files.items():
+                content = self.replace_placeholders(content, self.map, params)
+                self.additional_files[fname] = content
+            
             warnings = []
             if "drona_warnings" in self.map:
                 warnings = ast.literal_eval(self.map["drona_warnings"])
-         
+
             preview_job = {
                     "driver": self.driver, 
                     "script": self.script, 

@@ -1,4 +1,5 @@
 import os
+import json
 
 def retrieve_workers(workers, default):
     if workers:
@@ -113,3 +114,11 @@ def check_my_code(cores, memory):
         warnings.append("The number of cores are unspecified")
 
     return str(warnings)
+
+def drona_add_additional_files(cores):
+    dynamic_additional_files = {}
+
+    if cores == "1":
+        dynamic_additional_files["files"] = ["testing_dynamic.txt"]
+
+    return json.dumps(dynamic_additional_files) 
