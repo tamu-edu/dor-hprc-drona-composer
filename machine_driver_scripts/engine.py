@@ -2,6 +2,7 @@ import json
 import re
 import argparse
 import ast
+import shutil
 import os
 from machine_driver_scripts.utils import *
 import importlib.util
@@ -52,7 +53,8 @@ def process_function(value, environment, env_dir):
                 except Exception as e:
                     result = f"Error: {e}"
                 # replace the function call with the result
-                value = value.replace(f"!{function_name}({match[1]})", result)
+                if result is not None:
+                    value = value.replace(f"!{function_name}({match[1]})", result)
             else:
                 return (f"Function {function_name} not found or not callable.")
         
@@ -124,9 +126,26 @@ class Engine():
                 if os.path.isfile(nfile):
                     with open(nfile) as nshell_script:
                         self.dynamic_additional_files[keystring] = nshell_script.read()
+                        
+    def set_dynamic_additional_files_v2(self, params):
+        self.dynamic_additional_files = {}
+        additional_files_path = os.path.join(params["location"], "meta", "additional_files.json")
+        
+        if not os.path.exists(additional_files_path):
+            return 
 
+        with open(additional_files_path, 'r') as file: 
+            additional_scripts = json.load(file)
+ 
+        if "files" in additional_scripts:
+            for nkey in additional_scripts["files"]:
+                keystring = nkey.strip()
+                if os.path.isfile(keystring):
+                    with open(keystring) as nshell_script:
+                        self.dynamic_additional_files[os.path.basename(keystring)] = nshell_script.read()
 
-
+        if os.path.exists(additional_files_path):
+            os.remove(additional_files_path)
     def get_environment(self):
         return self.environment
 
@@ -174,7 +193,6 @@ class Engine():
         return map
     
     def custom_replace(self, template, map, params):
-        map = self.evaluate_map(map, params)
         for key, value in map.items():
             template = template.replace("["+key+"]", value)
         return template
@@ -193,18 +211,20 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
+            evaluated_map = self.evaluate_map(self.map, params)
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
-            self.script = self.replace_placeholders(template, self.map, params)
-            self.driver = self.replace_placeholders(self.driver, self.map, params)
+            self.script = self.replace_placeholders(template, evaluated_map, params)
+            self.driver = self.replace_placeholders(self.driver, evaluated_map, params)
             
-            self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment, "additional_files"), self.map, params)
+            self.set_dynamic_additional_files_v2(params)
             
             for fname, content in self.additional_files.items():
-                content = self.replace_placeholders(content, self.map, params)
+                content = self.replace_placeholders(content, evaluated_map, params)
                 self.additional_files[fname] = content
 
             for fname, content in self.dynamic_additional_files.items():
-                content = self.replace_placeholders(content, self.map, params)
+
+                content = self.replace_placeholders(content, evaluated_map, params)
                 self.additional_files[fname] = content
             
             warnings = []

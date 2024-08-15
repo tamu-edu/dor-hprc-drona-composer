@@ -7,6 +7,6 @@
   "flocation": "$location",
   "INPUT": "$mainscript",
   "drona_warnings": "!check_my_code($cores,$memory)",
-  "additional_files": "!drona_add_additional_files($cores)"
+  "additional_filesv2": "!drona_add_additional_files($location, $cores)"
 }
 

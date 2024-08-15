@@ -1,4 +1,5 @@
 import os
+import shutil
 import json
 
 def retrieve_workers(workers, default):
@@ -115,10 +116,46 @@ def check_my_code(cores, memory):
 
     return str(warnings)
 
-def drona_add_additional_files(cores):
-    dynamic_additional_files = {}
+import time
 
+def drona_add_additional_files(location, cores):
+    start_time = time.time() 
+
+    drona_add_additional_file(location, "/var/www/ood/apps/dev/a11155/gateway/dor-hprc-web-tamudashboard-jobwizzard/environments/Abaqus.grace/additional_files/testing_dynamic.txt")
+    end_time = time.time() 
+    
+    print("Time first: ", end_time - start_time)
+    
+    start_time = time.time() 
+    
     if cores == "1":
-        dynamic_additional_files["files"] = ["testing_dynamic.txt"]
+       drona_add_additional_file(location, "/scratch/user/a11155/pose_cfg.yaml")
 
-    return json.dumps(dynamic_additional_files) 
+    
+    end_time = time.time() 
+
+    print("Time second: ", end_time - start_time)
+    #dynamic_additional_files = {}
+
+    #if cores == "1":
+    #    dynamic_additional_files["files"] = ["testing_dynamic.txt"]
+
+    #return json.dumps(dynamic_additional_files) 
+
+def drona_add_additional_file(job_location, new_file_path):
+    meta_dir = os.path.join(job_location, "meta")
+   
+    if not os.path.exists(meta_dir):
+        os.makedirs(meta_dir)
+    file_path = os.path.join(meta_dir, "additional_files.json")
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            additional_files = json.load(file)
+    else:
+        additional_files = {'files': []}    
+    additional_files['files'].append(new_file_path)
+    print("Opening the file")
+    with open(file_path, "w") as file:
+        print("Opened file")
+        json.dump(additional_files, file)
+
