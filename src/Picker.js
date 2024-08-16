@@ -191,8 +191,9 @@ function Picker(props) {
 
     remoteInput.current.click();
   }
-
-  const isShowFiles = props.showFiles == true ? true : false;
+    
+  // Returns false if showFiles is undefined, returns true if showFiles is boolean and true or is a string its toLowerCase is "true"
+  const isShowFiles = Boolean(props.showFiles) && props.showFiles.toString().toLowerCase() === "true";
   const showRemoteLabel = props.remoteLabel ? true : false;
 
   return (
