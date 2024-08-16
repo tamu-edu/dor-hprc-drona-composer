@@ -85,9 +85,9 @@ class Engine():
         with open(driver_path) as shell_script:
             self.driver = shell_script.read()
 
-    def set_additional_files(self,files_path):
+    def set_additional_files(self,env_path):
         self.additional_files= {}
-        filename = os.path.join(files_path, "additional_files.json")
+        filename = os.path.join(env_path, "additional_files.json")
         if os.path.isfile(filename):
             with open(filename) as additional_scripts:
                 try:
@@ -98,38 +98,17 @@ class Engine():
 
             for nkey in additional_scripts["files"]:
                 keystring = nkey.strip()
-                nfile= os.path.join(files_path,"additional_files", keystring)
+                nfile= os.path.join(env_path,"additional_files", keystring)
                 if os.path.isfile(nfile):
                     with open(nfile) as nshell_script:
                         self.additional_files[keystring] = nshell_script.read()
         else:
             self.additional_files= {}
 
-    def set_dynamic_additional_files(self, files_path,  map, params):
-        map = self.evaluate_map(map, params)
-
+    def set_dynamic_additional_files(self, env_path, params):
         self.dynamic_additional_files = {}
-        
-        if "additional_files" not in map:
-            return
-        
-        try:
-            additional_scripts = json.loads(map["additional_files"])
-        except json.JSONDecodeError:
-            print(f"Error: the file '{filename}' contains invalid JSON.")
-            return
-
-        if "files" in additional_scripts:
-            for nkey in additional_scripts["files"]:
-                keystring = nkey.strip()
-                nfile= os.path.join(files_path,keystring)
-                if os.path.isfile(nfile):
-                    with open(nfile) as nshell_script:
-                        self.dynamic_additional_files[keystring] = nshell_script.read()
-                        
-    def set_dynamic_additional_files_v2(self, params):
-        self.dynamic_additional_files = {}
-        additional_files_path = os.path.join(params["location"], "meta", "additional_files.json")
+        files_path = os.path.join(env_path, "additional_files")
+        additional_files_path = os.path.join("/tmp", f"{self.drona_job_name}.additional_files")
         
         if not os.path.exists(additional_files_path):
             return 
@@ -140,12 +119,13 @@ class Engine():
         if "files" in additional_scripts:
             for nkey in additional_scripts["files"]:
                 keystring = nkey.strip()
-                if os.path.isfile(keystring):
-                    with open(keystring) as nshell_script:
+                nfile = os.path.join(files_path, keystring)
+                if os.path.isfile(nfile):
+                    with open(nfile) as nshell_script:
                         self.dynamic_additional_files[os.path.basename(keystring)] = nshell_script.read()
 
-        if os.path.exists(additional_files_path):
-            os.remove(additional_files_path)
+        os.remove(additional_files_path)
+            
     def get_environment(self):
         return self.environment
 
@@ -211,12 +191,13 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
+            self.drona_job_name = params["name"]
             evaluated_map = self.evaluate_map(self.map, params)
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
             self.script = self.replace_placeholders(template, evaluated_map, params)
             self.driver = self.replace_placeholders(self.driver, evaluated_map, params)
             
-            self.set_dynamic_additional_files_v2(params)
+            self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment) ,params)
             
             for fname, content in self.additional_files.items():
                 content = self.replace_placeholders(content, evaluated_map, params)
