@@ -189,6 +189,7 @@ function Composer(props) {
               key={index}
               index={index}
               {...attributes}
+	      showFiles={true}
               onChange={handleValueChange}
             />
           )
