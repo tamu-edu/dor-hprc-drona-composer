@@ -106,16 +106,14 @@ def retrieve_mopts(workers,threads,walltime,memory,extra_params):
         options_string="-x '" + additional + "' " + options_string
     return f"" + options_string
 
-def check_my_code(cores, memory):
+def check_my_code(job_name, cores, memory):
     warnings = []
     if memory == "":
-        warnings.append("The memory is unspecified")
-
+        drona_add_warning(job_name, "The memory is unspecified")
     if cores == "":
-        warnings.append("The number of cores are unspecified")
+        drona_add_warning(job_name, "The number of cores are unspecified")
 
-    return str(warnings)
-
+    return ""
 def drona_add_additional_files(job_name, cores):
     drona_add_additional_file(job_name, "testing_dynamic.txt")
     if cores == "1":
@@ -132,3 +130,17 @@ def drona_add_additional_file(job_name, additional_file):
     additional_files['files'].append(additional_file)
     with open(additional_files_path, "w") as file:
         json.dump(additional_files, file)
+
+
+def drona_add_warning(job_name, warning):
+    warnings_path = os.path.join("/tmp", f"{job_name}.warnings")
+    if os.path.exists(warnings_path):
+        with open(warnings_path, 'r') as file:
+            warnings = json.load(file)
+    else:
+        warnings = {'warnings': []}    
+    
+    warnings['warnings'].append(warning)
+    with open(warnings_path, "w") as file:
+        json.dump(warnings, file)
+

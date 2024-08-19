@@ -143,7 +143,26 @@ class Engine():
     
     def get_globals(self):
         return globals()
-    
+   
+    def get_warnings(self, params):
+        warnings_path = os.path.join("/tmp", f"{self.drona_job_name}.warnings")
+        if not os.path.exists(warnings_path):
+            return []
+
+        warnings = []
+        
+        with open(warnings_path, 'r') as file: 
+            warnings_dict = json.load(file)
+ 
+        if "warnings" in warnings_dict:
+            warnings = warnings_dict["warnings"] 
+
+        os.remove(warnings_path)
+
+        return warnings
+        
+
+
     def fetch_template(self, template_path):
         with open(template_path) as text_file:
             template = text_file.read()
@@ -208,9 +227,7 @@ class Engine():
                 content = self.replace_placeholders(content, evaluated_map, params)
                 self.additional_files[fname] = content
             
-            warnings = []
-            if "drona_warnings" in self.map:
-                warnings = ast.literal_eval(self.map["drona_warnings"])
+            warnings = self.get_warnings(params)
 
             preview_job = {
                     "driver": self.driver, 
