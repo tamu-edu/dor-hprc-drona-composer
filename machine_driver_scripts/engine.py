@@ -2,6 +2,7 @@ import json
 import re
 import argparse
 import ast
+import shutil
 import os
 from machine_driver_scripts.utils import *
 import importlib.util
@@ -52,7 +53,8 @@ def process_function(value, environment, env_dir):
                 except Exception as e:
                     result = f"Error: {e}"
                 # replace the function call with the result
-                value = value.replace(f"!{function_name}({match[1]})", result)
+                if result is not None:
+                    value = value.replace(f"!{function_name}({match[1]})", result)
             else:
                 return (f"Function {function_name} not found or not callable.")
         
@@ -83,26 +85,47 @@ class Engine():
         with open(driver_path) as shell_script:
             self.driver = shell_script.read()
 
-    def set_additional_files(self,files_path):
+    def set_additional_files(self,env_path):
         self.additional_files= {}
-        filename = os.path.join(files_path, "additional_files.json")
+        filename = os.path.join(env_path, "additional_files.json")
         if os.path.isfile(filename):
             with open(filename) as additional_scripts:
                 try:
                     additional_scripts = json.load(additional_scripts)
                 except json.JSONDecodeError:
-                    print(f"Error: The file '{filename}' contains invalid JSON.")
+                    print(f"Error: the file '{filename}' contains invalid JSON.")
                     return
 
             for nkey in additional_scripts["files"]:
                 keystring = nkey.strip()
-                nfile= os.path.join(files_path,keystring)
+                nfile= os.path.join(env_path,"additional_files", keystring)
                 if os.path.isfile(nfile):
                     with open(nfile) as nshell_script:
                         self.additional_files[keystring] = nshell_script.read()
         else:
             self.additional_files= {}
 
+    def set_dynamic_additional_files(self, env_path, params):
+        self.dynamic_additional_files = {}
+        files_path = os.path.join(env_path, "additional_files")
+        additional_files_path = os.path.join("/tmp", f"{self.drona_job_name}.additional_files")
+        
+        if not os.path.exists(additional_files_path):
+            return 
+
+        with open(additional_files_path, 'r') as file: 
+            additional_scripts = json.load(file)
+ 
+        if "files" in additional_scripts:
+            for nkey in additional_scripts["files"]:
+                keystring = nkey.strip()
+                nfile = os.path.join(files_path, keystring)
+                if os.path.isfile(nfile):
+                    with open(nfile) as nshell_script:
+                        self.dynamic_additional_files[os.path.basename(keystring)] = nshell_script.read()
+
+        os.remove(additional_files_path)
+            
     def get_environment(self):
         return self.environment
 
@@ -133,7 +156,7 @@ class Engine():
         self.set_schema(os.path.join(env_dir, environment, "schema.json"))
         self.set_driver(os.path.join(env_dir, environment, "driver.sh"))
         self.set_additional_files(os.path.join(env_dir, environment))
-
+        
     def evaluate_map(self, map, params):
         for key, value in map.items():
             ## 2. Replace the params name with the actual values in form fields
@@ -150,7 +173,6 @@ class Engine():
         return map
     
     def custom_replace(self, template, map, params):
-        map = self.evaluate_map(map, params)
         for key, value in map.items():
             template = template.replace("["+key+"]", value)
         return template
@@ -169,18 +191,27 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
+            self.drona_job_name = params["name"]
+            evaluated_map = self.evaluate_map(self.map, params)
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
-            self.script = self.replace_placeholders(template, self.map, params)
-            self.driver = self.replace_placeholders(self.driver, self.map, params)
+            self.script = self.replace_placeholders(template, evaluated_map, params)
+            self.driver = self.replace_placeholders(self.driver, evaluated_map, params)
+            
+            self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment) ,params)
             
             for fname, content in self.additional_files.items():
-                content = self.replace_placeholders(content, self.map, params)
+                content = self.replace_placeholders(content, evaluated_map, params)
                 self.additional_files[fname] = content
 
+            for fname, content in self.dynamic_additional_files.items():
+
+                content = self.replace_placeholders(content, evaluated_map, params)
+                self.additional_files[fname] = content
+            
             warnings = []
             if "drona_warnings" in self.map:
                 warnings = ast.literal_eval(self.map["drona_warnings"])
-         
+
             preview_job = {
                     "driver": self.driver, 
                     "script": self.script, 
@@ -208,7 +239,7 @@ class Engine():
                 # Copy  files with the job script
                 nfile=content
                 additional_job_file_path = os.path.join(params['location'], fname)
-                with open(additional_job_file_path, "w") as ajob_file:
+                with open(os.path.join(additional_job_file_path), "w") as ajob_file:
                     nfile = self.replace_placeholders(nfile, self.map, params)
                     ajob_file.write(nfile)
 
