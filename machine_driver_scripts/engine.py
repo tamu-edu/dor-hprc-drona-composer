@@ -23,41 +23,46 @@ def replace_no_flag(match, flag_dict):
 
 def process_function(value, environment, env_dir):
     pattern = r'!(\w+)\((.*?)\)'
-
     matches = re.findall(pattern, value)
 
+    global_utils_path = os.path.join("machine_driver_scripts", "utils.py")
+    
+    spec = importlib.util.spec_from_file_location("global_utils", global_utils_path)
+    global_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(global_module)
+    
     for match in matches:
         function_name = match[0]
-        # variables = match[1].split(",")
-        # variables = [variable.strip() for variable in variables]
         variables = [variable.strip() for variable in match[1].split(",")] if match[1] else []
         
-        function_path = os.path.join(env_dir, environment, "utils.py")
-        if os.path.exists(function_path):
-            spec = importlib.util.spec_from_file_location("utils", function_path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            if function_name in dir(module) and callable(getattr(module, function_name)):
-                dynamic_function = getattr(module, function_name)
-                try:
-                    result = dynamic_function(*variables)
-                except Exception as e:
-                    result = f"Error: {e}"
-                # replace the function call with the result
-                value = value.replace(f"!{function_name}({match[1]})", result)
-        else:
-            if function_name in globals() and callable(globals()[function_name]):
-                dynamic_function = globals()[function_name]
-                try:
-                    result = dynamic_function(*variables)
-                except Exception as e:
-                    result = f"Error: {e}"
-                # replace the function call with the result
-                if result is not None:
-                    value = value.replace(f"!{function_name}({match[1]})", result)
-            else:
-                return (f"Function {function_name} not found or not callable.")
+        local_function_path = os.path.join(env_dir, environment, "utils.py")
         
+        local_module = None
+        if os.path.exists(local_function_path):
+            spec = importlib.util.spec_from_file_location("utils", local_function_path)
+            local_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(local_module)
+            
+            for func_name in dir(global_module):
+                if callable(getattr(global_module, func_name)):
+                    setattr(local_module, func_name, getattr(global_module, func_name))
+        
+        if local_module and function_name in dir(local_module) and callable(getattr(local_module, function_name)):
+            dynamic_function = getattr(local_module, function_name)
+        elif function_name in dir(global_module) and callable(getattr(global_module, function_name)):
+            dynamic_function = getattr(global_module, function_name)
+        else:
+            return (f"Function {function_name} not found in local or global utils.py.")
+        
+        try:
+            result = dynamic_function(*variables)
+        except Exception as e:
+            result = f"Error: {e}"
+        
+        if result is None:
+            return ""
+
+        value = value.replace(f"!{function_name}({match[1]})", result) 
     return value
 
 
