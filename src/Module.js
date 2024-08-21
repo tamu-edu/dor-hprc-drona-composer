@@ -79,7 +79,7 @@ function Module(props) {
 
   return (
     <div className="form-group row">
-      <Label name={props.name} label={props.label}/>
+      <Label name={props.name} label={props.label} help={props.help}/>
       <div className="col-lg-9 ui-widget">
         <div className="input-group">
           <input

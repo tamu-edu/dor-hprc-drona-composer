@@ -1,10 +1,10 @@
 import React from 'react';
   
-const Label = ({ name, label, helpText }) => {
+const Label = ({ name, label, help }) => {
   return (
     <label className="col-lg-3 col-form-label form-control-label" htmlFor={name}>
       {label}
-            {helpText && (
+            {help && (
         <span
           style={{
             marginLeft: '3px',
@@ -18,7 +18,7 @@ const Label = ({ name, label, helpText }) => {
             alignItems: 'center',
             transform: 'translateY(2px)',
           }}
-          title={helpText}
+          title={help}
           onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
           onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.6)}
         >   

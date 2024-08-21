@@ -193,6 +193,7 @@ function Picker(props) {
     remoteInput.current.click();
   }
     
+  
   // Returns false if showFiles is undefined, returns true if showFiles is boolean and true or is a string its toLowerCase is "true"
   const isShowFiles = Boolean(props.showFiles) && props.showFiles.toString().toLowerCase() === "true";
   const showRemoteLabel = props.remoteLabel ? true : false;
@@ -200,7 +201,7 @@ function Picker(props) {
   return (
     <div>
       <div className="form-group row">
-	<Label name={props.name} label={props.label}/>
+	<Label name={props.name} label={props.label} help={props.help}/>
         <div className="col-lg-9" style={{ display: "flex" }}>
           {showRemoteLabel && (
             <button
