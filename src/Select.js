@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Label from "./Label"
 
 function Select(props) {
   const [value, setValue] = useState("");
@@ -17,12 +18,7 @@ function Select(props) {
 
   return (
     <div className="form-group row">
-      <label
-        className="col-lg-3 col-form-label form-control-label"
-        htmlFor={props.name}
-      >
-        {props.label}
-      </label>
+      <Label name={props.name} label={props.label}/>
       <div className="col-lg-9">
         <select
           name={props.name}

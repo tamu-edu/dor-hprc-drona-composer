@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Label from "./Label"
 
 function RadioGroup(props) {
   const [value, setValue] = useState("");
@@ -25,9 +26,7 @@ function RadioGroup(props) {
 
   return (
     <div className="form-group row">
-      <label className="col-lg-3 col-form-label form-control-label">
-        {props.label}
-      </label>
+      <Label name={props.name} label={props.label}/>
       <div className="col-lg-9">{optionList}</div>
     </div>
   );

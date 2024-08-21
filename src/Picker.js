@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
 import { GlobalFilesContext } from "./index.js";
+import Label from "./Label"
 
 function Picker(props) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -199,12 +200,7 @@ function Picker(props) {
   return (
     <div>
       <div className="form-group row">
-        <label
-          className="col-lg-3 col-form-label form-control-label"
-          htmlFor={props.name}
-        >
-          {props.label}
-        </label>
+	<Label name={props.name} label={props.label}/>
         <div className="col-lg-9" style={{ display: "flex" }}>
           {showRemoteLabel && (
             <button
