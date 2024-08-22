@@ -4,6 +4,7 @@
     "type": "dynamic_select",
     "label": "Abaqus version",
     "name": "version",
+    "help": "Allows to select one of the available Abaqus versions",
     "retriever" : "retriever.sh"
   },
 

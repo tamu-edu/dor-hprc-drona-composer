@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Label from "./Label"
 
 function Unit(props) {
   const [value, setValue] = useState("");
@@ -28,9 +29,7 @@ function Unit(props) {
 
   return (
     <div className="form-group row">
-      <label className="col-lg-3 col-form-label form-control-label">
-        {props.label}
-      </label>
+      <Label name={props.name} label={props.label} help={props.help}/>
       <div className="col-lg-9">
         <div className="input-group">
           <input

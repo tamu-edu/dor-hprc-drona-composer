@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { GlobalFilesContext } from "./index.js";
+import Label from "./Label"
 
 function Uploader(props) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -57,12 +58,7 @@ function Uploader(props) {
 
   return (
     <div className="form-group row">
-      <label
-        className="col-lg-3 col-form-label form-control-label"
-        htmlFor={props.name}
-      >
-        {props.label}
-      </label>
+      <Label name={props.name} label={props.label} help={props.help}/>
       <div className="col-lg-9">
         <select defaultValue={"default"} ref={selectRef}>
           <option value="default" disabled>
