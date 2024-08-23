@@ -221,6 +221,7 @@ function App() {
             method="POST"
             encType="multipart/form-data"
             onSubmit={handleSubmit}
+	    onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
             action={document.dashboard_url + "/jobs/composer/submit"}
           >
             <div className="row">

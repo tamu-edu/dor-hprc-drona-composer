@@ -111,9 +111,11 @@ class Engine():
             self.additional_files= {}
 
     def set_dynamic_additional_files(self, env_path, params):
+        user_id = os.getenv('USER')
+
         self.dynamic_additional_files = {}
         files_path = os.path.join(env_path, "additional_files")
-        additional_files_path = os.path.join("/tmp", f"{self.drona_job_name}.additional_files")
+        additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
         
         if not os.path.exists(additional_files_path):
             return 
@@ -150,7 +152,8 @@ class Engine():
         return globals()
    
     def get_warnings(self, params):
-        warnings_path = os.path.join("/tmp", f"{self.drona_job_name}.warnings")
+        user_id = os.getenv('USER')
+        warnings_path = os.path.join("/tmp", f"{user_id}.warnings")
         if not os.path.exists(warnings_path):
             return []
 
