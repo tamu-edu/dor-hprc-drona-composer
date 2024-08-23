@@ -107,8 +107,10 @@ def retrieve_mopts(workers,threads,walltime,memory,extra_params):
     return f"" + options_string
 
 
-def drona_add_additional_file(job_name, additional_file):
-    additional_files_path = os.path.join("/tmp", f"{job_name}.additional_files")
+def drona_add_additional_file(additional_file):
+    user_id = os.getenv('USER')
+
+    additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
     if os.path.exists(additional_files_path):
         with open(additional_files_path, 'r') as file:
             additional_files = json.load(file)
@@ -120,8 +122,10 @@ def drona_add_additional_file(job_name, additional_file):
         json.dump(additional_files, file)
 
 
-def drona_add_warning(job_name, warning):
-    warnings_path = os.path.join("/tmp", f"{job_name}.warnings")
+def drona_add_warning(warning):
+    user_id = os.getenv('USER')
+
+    warnings_path = os.path.join("/tmp", f"{user_id}.warnings")
     if os.path.exists(warnings_path):
         with open(warnings_path, 'r') as file:
             warnings = json.load(file)
