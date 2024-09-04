@@ -1,0 +1,255 @@
+{
+  "x": {
+    "type": "select",
+    "label": "x",
+    "name": "x",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ]
+  },
+  "y": {
+    "type": "select",
+    "label": "y",
+    "name": "y",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ]
+  },
+  
+  "z": {
+    "type": "select",
+    "label": "z",
+    "name": "z",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ]
+  },
+
+  "q": {
+    "type": "select",
+    "label": "q",
+    "name": "q",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ]
+  },
+
+  "Test1": {
+    "type": "select",
+    "label": "!x",
+    "name": "!x",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition":"!x.true" 
+  },
+
+  
+  "Test2": {
+    "type": "select",
+    "label": "x || y && z",
+    "name": "!x",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition":"x.true || y.true && z.true" 
+  },
+
+  "Test20": {
+    "type": "select",
+    "label": "(x || y) && z",
+    "name": "!x",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition":"   (   x.true|| y.true )&&z.true " 
+  },
+  "Test3": {
+    "type": "select",
+    "label": "x && !y",
+    "name": "test3",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "x.true && !y.true"
+  },
+
+  "Test4": {
+    "type": "select",
+    "label": "!x || y",
+    "name": "test4",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "!x.true || y.true"
+  },
+
+  "Test5": {
+    "type": "select",
+    "label": "x ^ y",
+    "name": "test5",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "x.true ^ y.true"
+  },
+
+  "Test6": {
+    "type": "select",
+    "label": "!(x && y)",
+    "name": "test6",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "!(x.true && y.true)"
+  },
+
+  "Test7": {
+    "type": "select",
+    "label": "x || (y && !z)",
+    "name": "test7",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "x.true || (y.true && !z.true)"
+  },
+
+  "Test8": {
+    "type": "select",
+    "label": "x && y ^ z",
+    "name": "test8",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "x.true && y.true ^ z.true"
+  },
+
+  "Test9": {
+    "type": "select",
+    "label": "(x ^ y) && z",
+    "name": "test9",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "(x.true ^ y.true) && z.true"
+  },
+
+  "Test10": {
+    "type": "select",
+    "label": "!(((x.true && y))) || (z && q)",
+    "name": "test10",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ],
+    "condition": "!(((x.true && y.true))) || (z.true && q.true)"
+  
+  }
+  
+
+
+}
