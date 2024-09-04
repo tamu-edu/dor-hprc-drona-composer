@@ -329,6 +329,16 @@ function App() {
                     value="Submit"
                     form="slurm-config-form"
                   />
+
+	        <button
+        	  type="button"
+        	  className="btn btn-secondary maroon-button"
+                  data-dismiss="modal"
+                  aria-label="Close"
+	          style={{ marginLeft: '10px' }}
+     		 >
+        	  Cancel
+     		 </button>
                 </div>
               </div>
             </div>
