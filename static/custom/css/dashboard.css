@@ -93,6 +93,19 @@ h6 {
   border-color: maroon;
 }
 
+.maroon-button-filled {
+  border-radius: 8px 8px 8px 8px !important;
+  color: white;
+  background-color: maroon;
+  border-color: maroon;
+}
+.maroon-button-filled:hover,
+.maroon-button-filled:focus {
+	  border-color: #b0aca0; /* Bright contrasting outline */
+  background-color: maroon;
+  box-shadow: 0 0 10px #b0aca0; /* Glowing effect */
+}
+
 .request-maroon-button {
   color: white;
   background-color: maroon;

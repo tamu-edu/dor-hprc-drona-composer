@@ -325,9 +325,10 @@ function App() {
                 <div id="job-submit-button-section" className="col-lg-12">
                   <input
                     type="submit"
-                    className="btn btn-primary maroon-button"
+                    className="btn btn-primary maroon-button-filled"
                     value="Submit"
                     form="slurm-config-form"
+	            style={{ marginRight: '10px' }}
                   />
 
 	        <button
@@ -335,7 +336,7 @@ function App() {
         	  className="btn btn-secondary maroon-button"
                   data-dismiss="modal"
                   aria-label="Close"
-	          style={{ marginLeft: '10px' }}
+	  	  style={{ marginRight: '-15px'}}
      		 >
         	  Cancel
      		 </button>
