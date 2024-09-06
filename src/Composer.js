@@ -77,39 +77,100 @@ function Composer(props) {
     setCurrentValues(values);
   }, [props.fields]);
 
-  // useEffect for currentValues
   const evaluateCondition = ({ index, condition }) => {
-    condition = condition.trim();
-    const [depender, value] = condition.split(".");
-    const dependerIndex = fields.findIndex((field) => field[0] === depender);
-    const currentValue = currentValues[dependerIndex];
-    if (currentValue === value) {
-      setFields((prevFields) => {
-        const newFields = [...prevFields];
-        newFields[index][2] = true;
-        return newFields;
-      });
-    } else {
-      if (currentValues[index] !== null) {
-        setCurrentValues((prevValues) => {
-          const newValues = [...prevValues];
-          newValues[index] = null;
-          return newValues;
-        });
+    const evaluateAtomicCondition = (expr) => {
+      const [depender, value] = expr.split(".");
+      const dependerIndex = fields.findIndex((field) => field[0] === depender);
+      const currentValue = currentValues[dependerIndex];
+      return currentValue === value;
+    };
+
+    const evaluateExpression = (expr) => {
+
+    // Splits expr string into an array of tokens e.g. " (A &&B)  " -> ["(", "A", "&&", "B", "C"]
+    const tokens = expr.match(/(\|\||&&|\(|\)|!|\^|[^\s\|\&\(\)]+)/g);
+    const valuesStack = [];
+    const operatorsStack = [];
+	
+    // Operators with higher precedence are applied first.
+    const precedence = { '||': 1, '&&': 3, '!': 4, '^': 2 };
+
+    const applyOperator = () => {
+      const operator = operatorsStack.pop();
+      if (operator === '!') {
+        const value = valuesStack.pop();
+        valuesStack.push(!value);
+      } else {
+        const right = valuesStack.pop();
+        const left = valuesStack.pop();
+        if (operator === '&&') {
+          valuesStack.push(left && right);
+        } else if (operator === '||') {
+          valuesStack.push(left || right);
+        } else if (operator === '^') {
+          valuesStack.push(left ^ right);  
+        }
       }
-      setFields((prevFields) => {
-        const newFields = [...prevFields];
-        newFields[index][2] = false;
-        return newFields;
-      });
+    };
+
+    tokens.forEach(token => {
+      if (token === '&&' || token === '||' || token === '^') {
+        while (operatorsStack.length && precedence[operatorsStack[operatorsStack.length - 1]] >= precedence[token]) {
+          applyOperator();
+        }
+        operatorsStack.push(token);
+      } else if (token === '!') {
+  	operatorsStack.push(token);
+      } else if (token === '(') {
+        operatorsStack.push(token);
+      } else if (token === ')') {
+        while (operatorsStack.length && operatorsStack[operatorsStack.length - 1] !== '(') {
+          applyOperator();
+        }
+        operatorsStack.pop(); // remove the '('
+      } else {
+        valuesStack.push(evaluateAtomicCondition(token));
+      }
+    });
+
+    while (operatorsStack.length) {
+      applyOperator();
     }
+
+    return valuesStack[0];
   };
 
-  useEffect(() => {
-    for (const field of conditionFields) {
-      evaluateCondition(field);
+  const isVisible = evaluateExpression(condition.trim());
+
+  if (isVisible) {
+    setFields((prevFields) => {
+      const newFields = [...prevFields];
+      newFields[index][2] = true;
+      return newFields;
+    });
+  } else {
+    if (currentValues[index] !== null) {
+      setCurrentValues((prevValues) => {
+        const newValues = [...prevValues];
+        newValues[index] = null;
+        return newValues;
+      });
     }
-  }, [currentValues]);
+    setFields((prevFields) => {
+      const newFields = [...prevFields];
+      newFields[index][2] = false;
+      return newFields;
+    });
+  }
+};
+
+// useEffect for currentValues
+useEffect(() => {
+  for (const field of conditionFields) {
+    evaluateCondition(field);
+  }
+}, [currentValues]);
+
 
   const toggleVisibility = (index) => {
     setFields((prevFields) => {
