@@ -45,6 +45,8 @@ function CustomSelect(props) {
       '&:hover': {
         backgroundColor: '#e9ecef', // Matches hover effect
       },
+
+      ...state.data.styles
     }),
     dropdownIndicator: (provided) => ({
       ...provided,
@@ -65,7 +67,7 @@ function CustomSelect(props) {
           options={props.options}
           name={props.name}
 	  styles={customSelectStyles}
-          defaultValue="-- Choose an option --"
+          placeholder="-- Choose an option --"
         >
         </Select>
       </div>

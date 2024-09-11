@@ -203,7 +203,7 @@ def get_environments():
 
 def _get_environments():
     system_environments = get_directories("./environments")
-    system_environments = [{"env": env, "src": "./environments"} for env in system_environments]
+    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
     
     user_envs_path = request.args.get("user_envs_path")
 
@@ -213,7 +213,7 @@ def _get_environments():
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env, "src": user_envs_path} for env in user_environments]
+        user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
     except OSError as e:
         print(e)
         

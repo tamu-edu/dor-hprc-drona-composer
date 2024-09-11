@@ -31,7 +31,8 @@ function App() {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
       .then((data) =>
-        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src})))
+        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src,
+					styles: {color : env.is_user_env ? "#3B71CA" : "" }})))
       )
       .catch((error) => {
         console.error("Error fetching JSON data");
