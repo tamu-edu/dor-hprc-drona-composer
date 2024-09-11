@@ -30,9 +30,10 @@ function App() {
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
-      .then((data) => {
-        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src })))
-      })
+      .then((data) =>
+        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src,
+					styles: {color : env.is_user_env ? "#3B71CA" : "" }})))
+      )
       .catch((error) => {
         console.error("Error fetching JSON data");
       });
@@ -45,8 +46,8 @@ function App() {
   }
 
  function handleEnvChange(key, option) {
-    const env = option.getAttribute("value") 
-    const src = option.getAttribute("src");
+    const env = option.value; 
+    const src = option.src;
 
     setEnvironment({env: env, src: src});
 	 
@@ -325,10 +326,21 @@ function App() {
                 <div id="job-submit-button-section" className="col-lg-12">
                   <input
                     type="submit"
-                    className="btn btn-primary maroon-button"
+                    className="btn btn-primary maroon-button-filled"
                     value="Submit"
                     form="slurm-config-form"
+	            style={{ marginRight: '10px' }}
                   />
+
+	        <button
+        	  type="button"
+        	  className="btn btn-secondary maroon-button-secondary"
+                  data-dismiss="modal"
+                  aria-label="Close"
+	  	  style={{ marginRight: '-15px'}}
+     		 >
+        	  Cancel
+     		 </button>
                 </div>
               </div>
             </div>
