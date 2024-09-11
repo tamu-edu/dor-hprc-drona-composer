@@ -45,8 +45,8 @@ function App() {
   }
 
  function handleEnvChange(key, option) {
-    const env = option.getAttribute("value") 
-    const src = option.getAttribute("src");
+    const env = option.value; 
+    const src = option.src;
 
     setEnvironment({env: env, src: src});
 	 
