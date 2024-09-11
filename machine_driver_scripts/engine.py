@@ -133,6 +133,23 @@ class Engine():
 
         os.remove(additional_files_path)
             
+    def get_dynamic_map(self):
+        user_id = os.getenv('USER')
+
+        dynamic_map = os.path.join("/tmp", f"{user_id}.map")
+        
+        if not os.path.exists(dynamic_map):
+            return {}
+
+        with open(dynamic_map, 'r') as file:
+            map_dict = json.load(file)
+
+        os.remove(dynamic_map)
+
+        return map_dict
+
+   
+
     def get_environment(self):
         return self.environment
 
@@ -220,6 +237,12 @@ class Engine():
         else:
             self.drona_job_name = params["name"]
             evaluated_map = self.evaluate_map(self.map, params)
+            
+            dynamic_map = self.get_dynamic_map()
+            dynamic_evaluated_map = self.evaluate_map(dynamic_map, params)
+
+            evaluated_map = {**evaluated_map, **dynamic_evaluated_map}
+
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
             self.script = self.replace_placeholders(template, evaluated_map, params)
             self.driver = self.replace_placeholders(self.driver, evaluated_map, params)
