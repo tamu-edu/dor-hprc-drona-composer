@@ -30,9 +30,9 @@ function App() {
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
-      .then((data) => {
-        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src })))
-      })
+      .then((data) =>
+        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src})))
+      )
       .catch((error) => {
         console.error("Error fetching JSON data");
       });
@@ -333,7 +333,7 @@ function App() {
 
 	        <button
         	  type="button"
-        	  className="btn btn-secondary maroon-button"
+        	  className="btn btn-secondary maroon-button-secondary"
                   data-dismiss="modal"
                   aria-label="Close"
 	  	  style={{ marginRight: '-15px'}}
