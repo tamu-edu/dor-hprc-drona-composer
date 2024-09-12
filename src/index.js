@@ -5,21 +5,21 @@ import Text from "./Text";
 import Select from "./Select";
 import Picker from "./Picker";
 import Composer from "./Composer";
-import MultiPaneTextArea from "./MultiPaneTextArea"
+import MultiPaneTextArea from "./MultiPaneTextArea";
 export const GlobalFilesContext = createContext();
 
 function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
-  const [environment, setEnvironment] = useState({env: "", src: ""});
+  const [environment, setEnvironment] = useState({ env: "", src: "" });
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
-  const [warningMessages, setWarningMessages] = useState([])
+  const [warningMessages, setWarningMessages] = useState([]);
 
-
-  const [panes, setPanes] = useState([{title: "", name: "",content: ""}])
+  const [panes, setPanes] = useState([{ title: "", name: "", content: "" }]);
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
+  const envModalRef = useRef(null);
   const multiPaneRef = useRef(null);
 
   const [defaultLocation, setDefaultLocation] = useState(
@@ -31,8 +31,16 @@ function App() {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
       .then((data) =>
-        setEnvironments(data.map((env) => ({ value: env.env, label: env.env, src: env.src,
-					styles: {color : env.is_user_env ? "#3B71CA" : "" }})))
+        setEnvironments(
+          data
+            .filter((env) => env.is_user_env)
+            .map((env) => ({
+              value: env.env,
+              label: env.env,
+              src: env.src,
+              styles: { color: env.is_user_env ? "#3B71CA" : "" },
+            }))
+        )
       )
       .catch((error) => {
         console.error("Error fetching JSON data");
@@ -45,13 +53,15 @@ function App() {
     );
   }
 
- function handleEnvChange(key, option) {
-    const env = option.value; 
+  function handleEnvChange(key, option) {
+    const env = option.value;
     const src = option.src;
 
-    setEnvironment({env: env, src: src});
-	 
-    fetch(document.dashboard_url + "/jobs/composer/schema/" + env + "?src=" + src)
+    setEnvironment({ env: env, src: src });
+
+    fetch(
+      document.dashboard_url + "/jobs/composer/schema/" + env + "?src=" + src
+    )
       .then((response) => response.json())
       .then((data) => setFields(data))
       .catch((error) => {
@@ -66,12 +76,12 @@ function App() {
 
   function preview_job(action, formData, callback) {
     var request = new XMLHttpRequest();
-    
+
     request.responseType = "json";
-    formData.append("env_dir", environment.src)
-	  
+    formData.append("env_dir", environment.src);
+
     request.open("POST", action, true);
-	  
+
     request.onload = function (event) {
       if (request.status == 200) {
         var jobScript = request.response;
@@ -88,12 +98,11 @@ function App() {
   }
 
   function handlePreview() {
-    
     const formData = new FormData(formRef.current);
-    
-    if(!formData.has("runtime")){
-    	alert("Environment is required.")
-	return 
+
+    if (!formData.has("runtime")) {
+      alert("Environment is required.");
+      return;
     }
 
     const modal = new bootstrap.Modal(previewRef.current);
@@ -104,18 +113,89 @@ function App() {
         alert(error);
       } else {
         setJobScript(jobScript["script"]);
-	
-	const panes = [{title: "template.txt", content: jobScript["script"], name: "run_command"},
-	         {title: "driver.sh", content: jobScript["driver"], name: "driver"}]
-	
-	for(const [fname, content] of Object.entries(jobScript["additional_files"])){
-	    panes.push({title: fname, content: content, name: fname})
-	}
-        setPanes(panes) 
 
-	setWarningMessages(jobScript["warnings"])
+        const panes = [
+          {
+            title: "template.txt",
+            content: jobScript["script"],
+            name: "run_command",
+          },
+          { title: "driver.sh", content: jobScript["driver"], name: "driver" },
+        ];
+
+        for (const [fname, content] of Object.entries(
+          jobScript["additional_files"]
+        )) {
+          panes.push({ title: fname, content: content, name: fname });
+        }
+        setPanes(panes);
+
+        setWarningMessages(jobScript["warnings"]);
       }
     });
+  }
+
+  function handleAddEnv() {
+    // fetch system environments
+    fetch(document.dashboard_url + "/jobs/composer/environments")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        data = data.filter((env) => !env.is_user_env);
+        console.log(data);
+        const envModalBody = document.querySelector(
+          "#env-add-modal .modal-body"
+        );
+        envModalBody.innerHTML = "";
+
+        data.forEach((env) => {
+          console.log(env.env);
+          const envLine = document.createElement("div");
+          envLine.className = "row";
+          envLine.innerHTML = env.env;
+          const envButton = document.createElement("button");
+          envButton.className = "btn btn-primary";
+          envButton.innerHTML = "Add";
+          envButton.addEventListener("click", function () {
+            // send post request to add environment
+            const formData = new FormData();
+            formData.append("env", env.env);
+            formData.append("src", env.src);
+            fetch(document.dashboard_url + "/jobs/composer/add_environment", {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.status === "Success") {
+                  alert("Environment added successfully");
+                  setEnvironments([
+                    ...environments,
+                    {
+                      value: env.env,
+                      label: env.env,
+                      src: env.src,
+                      styles: { color: "#3B71CA" },
+                    },
+                  ]);
+                } else {
+                  alert("Error adding environment");
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+                console.error("Error fetching JSON data");
+              });
+          });
+
+          envLine.appendChild(envButton);
+
+          envModalBody.appendChild(envLine);
+        });
+
+        const modal = new bootstrap.Modal(envModalRef.current);
+        modal.toggle();
+      });
   }
 
   function add_submission_loading_indicator() {
@@ -145,7 +225,7 @@ function App() {
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
 
-    formData.append("env_dir", environment.src)
+    formData.append("env_dir", environment.src);
 
     add_submission_loading_indicator();
     request.open("POST", action, true);
@@ -170,31 +250,29 @@ function App() {
 
   function handleSubmit(event) {
     event.preventDefault();
-	 
+
     const formData = new FormData(formRef.current);
-    
-    if(formData.get("name") === ''){
-    	alert("Job name is required.");
-	return
-    } 
+
+    if (formData.get("name") === "") {
+      alert("Job name is required.");
+      return;
+    }
     const paneRefs = multiPaneRef.current.getPaneRefs();
     const additional_files = {};
-    paneRefs.forEach(ref => {
+    paneRefs.forEach((ref) => {
       if (ref.current) {
-	const current = ref.current;
+        const current = ref.current;
 
-	const name = current.getAttribute("name");
-	if(name === "driver" || name === "run_command") {
-	    formData.append(current.getAttribute("name"), current.value)
+        const name = current.getAttribute("name");
+        if (name === "driver" || name === "run_command") {
+          formData.append(current.getAttribute("name"), current.value);
+        } else {
+          additional_files[name] = current.value;
         }
-	else {
-	    additional_files[name] = current.value;
-	}
-
       }
     });
     formData.append("additional_files", JSON.stringify(additional_files));
-	  
+
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
@@ -222,7 +300,9 @@ function App() {
             method="POST"
             encType="multipart/form-data"
             onSubmit={handleSubmit}
-	    onKeyDown={(e) => { e.key === 'Enter' && e.preventDefault(); }}
+            onKeyDown={(e) => {
+              e.key === "Enter" && e.preventDefault();
+            }}
             action={document.dashboard_url + "/jobs/composer/submit"}
           >
             <div className="row">
@@ -249,6 +329,8 @@ function App() {
                       label="Environments"
                       options={environments}
                       onChange={handleEnvChange}
+                      showAddMore={true}
+                      onAddMore={handleAddEnv}
                     />
                     <Composer
                       environment={environment}
@@ -260,7 +342,7 @@ function App() {
                   </GlobalFilesContext.Provider>
                 </div>
               </div>
-	  </div>
+            </div>
             <div className="form-group row text-center">
               <div id="job-preview-button-section" className="col-lg-12">
                 <input
@@ -279,6 +361,42 @@ function App() {
             ⚠️ Cautions: Job files will overwrite existing files with the same
             name. The same principle applies for your executable scripts.
           </small>
+        </div>
+      </div>
+
+      {/* Modal for add more environments */}
+      <div
+        ref={envModalRef}
+        className="modal fade bd-example-modal-lg"
+        id="env-add-modal"
+        tabIndex="-1"
+        role="dialog"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Add More Environments</h5>
+              <button
+                type="button"
+                className="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div className="modal-body"></div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                data-dismiss="modal"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -305,20 +423,28 @@ function App() {
               </button>
             </div>
             <div className="modal-body">
-	     <div
-               id="warning-messages"
-               className="alert alert-warning mt-3"
-               style={{ display: (warningMessages.length != 0) ? 'block' : 'none' }}
-             >
-	       <h6 className="alert-heading">The script was generated with the following warnings:</h6>
-	        <ul>
+              <div
+                id="warning-messages"
+                className="alert alert-warning mt-3"
+                style={{
+                  display: warningMessages.length != 0 ? "block" : "none",
+                }}
+              >
+                <h6 className="alert-heading">
+                  The script was generated with the following warnings:
+                </h6>
+                <ul>
                   {warningMessages.map((warning, index) => (
                     <li key={index}>{warning}</li>
                   ))}
                 </ul>
-             </div>
+              </div>
               <div id="job-preview-container">
-	          <MultiPaneTextArea ref={multiPaneRef}  panes={panes} setPanes={setPanes} />
+                <MultiPaneTextArea
+                  ref={multiPaneRef}
+                  panes={panes}
+                  setPanes={setPanes}
+                />
               </div>
             </div>
             <div className="modal-footer">
@@ -329,18 +455,18 @@ function App() {
                     className="btn btn-primary maroon-button-filled"
                     value="Submit"
                     form="slurm-config-form"
-	            style={{ marginRight: '10px' }}
+                    style={{ marginRight: "10px" }}
                   />
 
-	        <button
-        	  type="button"
-        	  className="btn btn-secondary maroon-button-secondary"
-                  data-dismiss="modal"
-                  aria-label="Close"
-	  	  style={{ marginRight: '-15px'}}
-     		 >
-        	  Cancel
-     		 </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary maroon-button-secondary"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                    style={{ marginRight: "-15px" }}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             </div>
