@@ -11,7 +11,7 @@ def retrieve_alphapickle(pickle, proteinfasta, outputdir):
        return f""
 
 
-def drona_add_additional_file(additional_file):
+def drona_add_additional_file(additional_file, preview_name = "", preview_order = 0):
     user_id = os.getenv('USER')
 
     additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
@@ -19,9 +19,14 @@ def drona_add_additional_file(additional_file):
         with open(additional_files_path, 'r') as file:
             additional_files = json.load(file)
     else:
-        additional_files = {'files': []}    
+        additional_files = []
+
+    additional_files.append({
+        "file_name": additional_file, 
+        "preview_name": preview_name,
+        "preview_order": preview_order
+    })
     
-    additional_files['files'].append(additional_file)
     with open(additional_files_path, "w") as file:
         json.dump(additional_files, file)
 

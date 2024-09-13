@@ -121,15 +121,23 @@ class Engine():
             return 
 
         with open(additional_files_path, 'r') as file: 
-            additional_scripts = json.load(file)
+            additional_files = json.load(file)
  
-        if "files" in additional_scripts:
-            for nkey in additional_scripts["files"]:
-                keystring = nkey.strip()
-                nfile = os.path.join(files_path, keystring)
-                if os.path.isfile(nfile):
-                    with open(nfile) as nshell_script:
-                        self.dynamic_additional_files[os.path.basename(keystring)] = nshell_script.read()
+        for additional_file  in additional_files:
+                file_name  = additional_file["file_name"].strip()
+                preview_name = additional_file["preview_name"].strip()
+                
+                preview_order = additional_file["preview_order"]
+                preview_order = 0 if preview_order < -1 else preview_order
+
+                file_path = os.path.join(files_path, file_name)
+                if os.path.isfile(file_path):
+                    with open(file_path) as file:
+                        self.dynamic_additional_files[os.path.basename(file_name)] = {
+                                "content": file.read(),
+                                "preview_name": preview_name,
+                                "preview_order": preview_order
+                        }
 
         os.remove(additional_files_path)
             
@@ -239,8 +247,8 @@ class Engine():
             evaluated_map = self.evaluate_map(self.map, params)
             
             dynamic_map = self.get_dynamic_map()
+            
             dynamic_evaluated_map = self.evaluate_map(dynamic_map, params)
-
             evaluated_map = {**evaluated_map, **dynamic_evaluated_map}
 
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
@@ -253,10 +261,10 @@ class Engine():
                 content = self.replace_placeholders(content, evaluated_map, params)
                 self.additional_files[fname] = content
 
-            for fname, content in self.dynamic_additional_files.items():
+            for fname, file_obj in self.dynamic_additional_files.items():
 
-                content = self.replace_placeholders(content, evaluated_map, params)
-                self.additional_files[fname] = content
+                content = self.replace_placeholders(file_obj["content"], evaluated_map, params)
+                self.additional_files[fname] = file_obj["content"]
             
             warnings = self.get_warnings(params)
 
