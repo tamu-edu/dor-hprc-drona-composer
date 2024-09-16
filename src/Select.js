@@ -75,7 +75,7 @@ function CustomSelect(props) {
           <button
             type="button"
             className="btn btn-primary maroon-button"
-            style={{ marginLeft: "1px" }}
+            style={{ marginLeft: "2px" }}
             onClick={props.onAddMore}
           >
             +
