@@ -59,23 +59,26 @@ function CustomSelect(props) {
   return (
     <div className="form-group row">
       <Label name={props.name} label={props.label} help={props.help} />
-      <div className="col-lg-9">
+      <div className="col-lg-9" style={{ display: "flex" }}>
         <Select
           value={value}
           onChange={handleValueChange}
           options={props.options}
           name={props.name}
-          styles={customSelectStyles}
+          styles={{
+            ...customSelectStyles,
+            container: (base) => ({ ...base, flexGrow: 1 }),
+          }}
           placeholder="-- Choose an option --"
         ></Select>
         {props.showAddMore && (
           <button
             type="button"
             className="btn btn-primary maroon-button"
-            style={{ marginLeft: "2px" }}
+            style={{ marginLeft: "1px" }}
             onClick={props.onAddMore}
           >
-            Add More
+            +
           </button>
         )}
       </div>

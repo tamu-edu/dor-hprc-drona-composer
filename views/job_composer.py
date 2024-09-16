@@ -5,6 +5,7 @@ import re
 import os
 from machine_driver_scripts.engine import Engine
 import subprocess
+import yaml
 
 job_composer = Blueprint("job_composer", __name__)
 
@@ -204,7 +205,7 @@ def get_environments():
 @job_composer.route('/add_environment', methods=['POST'])
 def add_environment():
     env = request.form.get("env")
-    src = request.form.get("src")
+    src = "./environments"
     env_dir = os.path.join(src, env)
     # copy the environment to the user's environment directory
     user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
@@ -212,6 +213,24 @@ def add_environment():
     os.system(f"cp -r {env_dir} {user_envs_path}")
 
     return jsonify({"status": "Success"})
+
+@job_composer.route('/get_system_envs_info', methods=['GET'])
+def get_system_envs_info():
+    system_environments = get_directories("./environments")
+    # get info from manifest.yml of each environment
+    system_envs_info = []
+    for env in system_environments:
+        env_dir = os.path.join("./environments", env)
+        manifest_path = os.path.join(env_dir, "manifest.yml")
+        if os.path.exists(manifest_path):
+            with open(manifest_path, 'r') as f:
+                manifest = yaml.safe_load(f)
+                system_envs_info.append(manifest)
+        else:
+            system_envs_info.append({"env": env, "description": "No description available"})
+    return jsonify(system_envs_info)
+
+
 
 
 def _get_environments():
@@ -234,4 +253,5 @@ def _get_environments():
     environments = system_environments + user_environments
 
     return environments
+
 

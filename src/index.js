@@ -137,30 +137,52 @@ function App() {
 
   function handleAddEnv() {
     // fetch system environments
-    fetch(document.dashboard_url + "/jobs/composer/environments")
+    fetch(document.dashboard_url + "/jobs/composer/get_system_envs_info")
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-        data = data.filter((env) => !env.is_user_env);
-        console.log(data);
+        // Select the modal body where the table will be appended
         const envModalBody = document.querySelector(
           "#env-add-modal .modal-body"
         );
-        envModalBody.innerHTML = "";
 
+        // Create the table structure
+        envModalBody.innerHTML = `
+          <table class="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th>Environment</th>
+                <th>Description</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="env-table-body">
+            </tbody>
+          </table>
+        `;
+
+        const envTableBody = document.querySelector("#env-table-body");
+
+        // Iterate through each environment and append a row to the table
         data.forEach((env) => {
-          console.log(env.env);
-          const envLine = document.createElement("div");
-          envLine.className = "row";
-          envLine.innerHTML = env.env;
+          // Create table row
+          const envRow = document.createElement("tr");
+
+          // Create cells for environment and source
+          const envCell = document.createElement("td");
+          envCell.textContent = env.env;
+
+          const descriptionCell = document.createElement("td");
+          descriptionCell.textContent = env.description;
+
+          // Create the "Add" button
+          const actionCell = document.createElement("td");
           const envButton = document.createElement("button");
           envButton.className = "btn btn-primary";
           envButton.innerHTML = "Add";
           envButton.addEventListener("click", function () {
-            // send post request to add environment
+            // Send post request to add environment
             const formData = new FormData();
             formData.append("env", env.env);
-            formData.append("src", env.src);
             fetch(document.dashboard_url + "/jobs/composer/add_environment", {
               method: "POST",
               body: formData,
@@ -169,14 +191,15 @@ function App() {
               .then((data) => {
                 if (data.status === "Success") {
                   alert("Environment added successfully");
-                  setEnvironments([
-                    ...environments,
-                    {
-                      value: env.env,
-                      label: env.env,
-                      src: env.src,
-                      styles: { color: "#3B71CA" },
-                    },
+                  const newEnv = {
+                    value: env.env,
+                    label: env.env,
+                    src: "./environments",
+                    styles: { color: "#3B71CA" },
+                  };
+                  setEnvironments((prevEnvironments) => [
+                    ...prevEnvironments,
+                    newEnv,
                   ]);
                 } else {
                   alert("Error adding environment");
@@ -188,13 +211,25 @@ function App() {
               });
           });
 
-          envLine.appendChild(envButton);
+          // Append button to the action cell
+          actionCell.appendChild(envButton);
 
-          envModalBody.appendChild(envLine);
+          // Append all cells to the row
+          envRow.appendChild(envCell);
+          envRow.appendChild(descriptionCell);
+          envRow.appendChild(actionCell);
+
+          // Append the row to the table body
+          envTableBody.appendChild(envRow);
         });
 
+        // Initialize and show the Bootstrap modal
         const modal = new bootstrap.Modal(envModalRef.current);
         modal.toggle();
+      })
+      .catch((error) => {
+        console.log(error);
+        console.error("Error fetching environment data");
       });
   }
 
