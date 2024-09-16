@@ -411,7 +411,7 @@ function App() {
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Add More Environments</h5>
+              <h5 className="modal-title">Import Environments</h5>
               <button
                 type="button"
                 className="close"
