@@ -30,18 +30,17 @@ function App() {
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
-      .then((data) =>
+      .then((data) => {
+        console.log(data);
         setEnvironments(
-          data
-            .filter((env) => env.is_user_env)
-            .map((env) => ({
-              value: env.env,
-              label: env.env,
-              src: env.src,
-              styles: { color: env.is_user_env ? "#3B71CA" : "" },
-            }))
-        )
-      )
+          data.map((env) => ({
+            value: env.env,
+            label: env.env,
+            src: env.src,
+            styles: { color: env.is_user_env ? "#3B71CA" : "" },
+          }))
+        );
+      })
       .catch((error) => {
         console.error("Error fetching JSON data");
       });
@@ -137,7 +136,7 @@ function App() {
 
   function handleAddEnv() {
     // fetch system environments
-    fetch(document.dashboard_url + "/jobs/composer/get_system_envs_info")
+    fetch(document.dashboard_url + "/jobs/composer/get_more_envs_info")
       .then((response) => response.json())
       .then((data) => {
         // Select the modal body where the table will be appended
@@ -183,6 +182,7 @@ function App() {
             // Send post request to add environment
             const formData = new FormData();
             formData.append("env", env.env);
+            formData.append("src", env.src);
             fetch(document.dashboard_url + "/jobs/composer/add_environment", {
               method: "POST",
               body: formData,
@@ -194,7 +194,7 @@ function App() {
                   const newEnv = {
                     value: env.env,
                     label: env.env,
-                    src: "./environments",
+                    src: env.src,
                     styles: { color: "#3B71CA" },
                   };
                   setEnvironments((prevEnvironments) => [

@@ -205,7 +205,7 @@ def get_environments():
 @job_composer.route('/add_environment', methods=['POST'])
 def add_environment():
     env = request.form.get("env")
-    src = "./environments"
+    src = request.form.get("src")
     env_dir = os.path.join(src, env)
     # copy the environment to the user's environment directory
     user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
@@ -214,20 +214,23 @@ def add_environment():
 
     return jsonify({"status": "Success"})
 
-@job_composer.route('/get_system_envs_info', methods=['GET'])
-def get_system_envs_info():
-    system_environments = get_directories("./environments")
+@job_composer.route('/get_more_envs_info', methods=['GET'])
+def get_more_envs_info():
+    cluster_name = app.config['cluster_name']
+    environments_dir = f"./environments-repo/{cluster_name}"
+    environments = get_directories(environments_dir)
     # get info from manifest.yml of each environment
     system_envs_info = []
-    for env in system_environments:
-        env_dir = os.path.join("./environments", env)
+    for env in environments:
+        env_dir = os.path.join(environments_dir, env)
         manifest_path = os.path.join(env_dir, "manifest.yml")
         if os.path.exists(manifest_path):
             with open(manifest_path, 'r') as f:
                 manifest = yaml.safe_load(f)
+                manifest["src"] = environments_dir
                 system_envs_info.append(manifest)
         else:
-            system_envs_info.append({"env": env, "description": "No description available"})
+            system_envs_info.append({"env": env, "description": "No description available", "src": environments_dir})
     return jsonify(system_envs_info)
 
 
