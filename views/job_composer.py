@@ -5,6 +5,7 @@ import re
 import os
 from machine_driver_scripts.engine import Engine
 import subprocess
+import yaml
 
 job_composer = Blueprint("job_composer", __name__)
 
@@ -34,6 +35,7 @@ def get_modules():
 @job_composer.route('/environment/<environment>', methods=['GET'])
 def get_environment(environment):
     env_dir = request.args.get("src")
+    print("Here" + env_dir)
     if env_dir is None:
         template_path = os.path.join('environments', environment, 'template.txt')
     else:
@@ -200,6 +202,39 @@ def get_environments():
     environments = _get_environments()
     return jsonify(environments)
 
+@job_composer.route('/add_environment', methods=['POST'])
+def add_environment():
+    env = request.form.get("env")
+    src = request.form.get("src")
+    env_dir = os.path.join(src, env)
+    # copy the environment to the user's environment directory
+    user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+    create_folder_if_not_exist(user_envs_path)
+    os.system(f"cp -r {env_dir} {user_envs_path}")
+
+    return jsonify({"status": "Success"})
+
+@job_composer.route('/get_more_envs_info', methods=['GET'])
+def get_more_envs_info():
+    cluster_name = app.config['cluster_name']
+    environments_dir = f"./environments-repo/{cluster_name}"
+    environments = get_directories(environments_dir)
+    # get info from manifest.yml of each environment
+    system_envs_info = []
+    for env in environments:
+        env_dir = os.path.join(environments_dir, env)
+        manifest_path = os.path.join(env_dir, "manifest.yml")
+        if os.path.exists(manifest_path):
+            with open(manifest_path, 'r') as f:
+                manifest = yaml.safe_load(f)
+                manifest["src"] = environments_dir
+                system_envs_info.append(manifest)
+        else:
+            system_envs_info.append({"env": env, "description": "No description available", "src": environments_dir})
+    return jsonify(system_envs_info)
+
+
+
 
 def _get_environments():
     system_environments = get_directories("./environments")
@@ -208,7 +243,8 @@ def _get_environments():
     user_envs_path = request.args.get("user_envs_path")
 
     if user_envs_path is None:
-        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments" 
+        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+        create_folder_if_not_exist(user_envs_path)
 
     user_environments = []
     try:
@@ -216,8 +252,9 @@ def _get_environments():
         user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
     except OSError as e:
         print(e)
-        
+    
     environments = system_environments + user_environments
 
     return environments
+
 
