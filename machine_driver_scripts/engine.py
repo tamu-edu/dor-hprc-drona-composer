@@ -2,6 +2,7 @@ import json
 import re
 import argparse
 import ast
+import shutil
 import os
 from machine_driver_scripts.utils import *
 import importlib.util
@@ -20,48 +21,55 @@ def replace_no_flag(match, flag_dict):
     else:
         return ""
 
-def process_function(value, environment):
+def process_function(value, environment, env_dir):
     pattern = r'!(\w+)\((.*?)\)'
-
     matches = re.findall(pattern, value)
 
+    global_utils_path = os.path.join("machine_driver_scripts", "utils.py")
+    
+    spec = importlib.util.spec_from_file_location("global_utils", global_utils_path)
+    global_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(global_module)
+    
     for match in matches:
         function_name = match[0]
-        # variables = match[1].split(",")
-        # variables = [variable.strip() for variable in variables]
         variables = [variable.strip() for variable in match[1].split(",")] if match[1] else []
         
-        function_path = f"environments/{environment}/utils.py"
-        if os.path.exists(function_path):
-            spec = importlib.util.spec_from_file_location("utils", function_path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            if function_name in dir(module) and callable(getattr(module, function_name)):
-                dynamic_function = getattr(module, function_name)
-                try:
-                    result = dynamic_function(*variables)
-                except Exception as e:
-                    result = f"Error: {e}"
-                # replace the function call with the result
-                value = value.replace(f"!{function_name}({match[1]})", result)
-        else:
-            if function_name in globals() and callable(globals()[function_name]):
-                dynamic_function = globals()[function_name]
-                try:
-                    result = dynamic_function(*variables)
-                except Exception as e:
-                    result = f"Error: {e}"
-                # replace the function call with the result
-                value = value.replace(f"!{function_name}({match[1]})", result)
-            else:
-                return (f"Function {function_name} not found or not callable.")
+        local_function_path = os.path.join(env_dir, environment, "utils.py")
         
+        local_module = None
+        if os.path.exists(local_function_path):
+            spec = importlib.util.spec_from_file_location("utils", local_function_path)
+            local_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(local_module)
+            
+            for func_name in dir(global_module):
+                if callable(getattr(global_module, func_name)):
+                    setattr(local_module, func_name, getattr(global_module, func_name))
+        
+        if local_module and function_name in dir(local_module) and callable(getattr(local_module, function_name)):
+            dynamic_function = getattr(local_module, function_name)
+        elif function_name in dir(global_module) and callable(getattr(global_module, function_name)):
+            dynamic_function = getattr(global_module, function_name)
+        else:
+            return (f"Function {function_name} not found in local or global utils.py.")
+        
+        try:
+            result = dynamic_function(*variables)
+        except Exception as e:
+            result = f"Error: {e}"
+        
+        if result is None:
+            return ""
+
+        value = value.replace(f"!{function_name}({match[1]})", result) 
     return value
 
 
 class Engine():
     def __init__(self):
         self.environment = None
+        self.env_dir = None
         self.schema = None
         self.map = None
         self.script = None
@@ -82,25 +90,71 @@ class Engine():
         with open(driver_path) as shell_script:
             self.driver = shell_script.read()
 
-    def set_additional_files(self,files_path):
+    def set_additional_files(self,env_path):
         self.additional_files= {}
-        filename = os.path.join(files_path, "additional_files")
+        filename = os.path.join(env_path, "additional_files.json")
         if os.path.isfile(filename):
-            self.additional_files= {}
-            keys=[]
-            with open(filename) as additional_script:
-                keys = additional_script.readlines()
-            for nkey in keys:
+            with open(filename) as additional_scripts:
+                try:
+                    additional_scripts = json.load(additional_scripts)
+                except json.JSONDecodeError:
+                    print(f"Error: the file '{filename}' contains invalid JSON.")
+                    return
+
+            for nkey in additional_scripts["files"]:
                 keystring = nkey.strip()
-                nfile= os.path.join(files_path,keystring)
+                nfile= os.path.join(env_path,"additional_files", keystring)
                 if os.path.isfile(nfile):
                     with open(nfile) as nshell_script:
                         self.additional_files[keystring] = nshell_script.read()
         else:
             self.additional_files= {}
 
+    def set_dynamic_additional_files(self, env_path, params):
+        user_id = os.getenv('USER')
+
+        self.dynamic_additional_files = {}
+        files_path = os.path.join(env_path, "additional_files")
+        additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
+        
+        if not os.path.exists(additional_files_path):
+            return 
+
+        with open(additional_files_path, 'r') as file: 
+            additional_scripts = json.load(file)
+ 
+        if "files" in additional_scripts:
+            for nkey in additional_scripts["files"]:
+                keystring = nkey.strip()
+                nfile = os.path.join(files_path, keystring)
+                if os.path.isfile(nfile):
+                    with open(nfile) as nshell_script:
+                        self.dynamic_additional_files[os.path.basename(keystring)] = nshell_script.read()
+
+        os.remove(additional_files_path)
+            
+    def get_dynamic_map(self):
+        user_id = os.getenv('USER')
+
+        dynamic_map = os.path.join("/tmp", f"{user_id}.map")
+        
+        if not os.path.exists(dynamic_map):
+            return {}
+
+        with open(dynamic_map, 'r') as file:
+            map_dict = json.load(file)
+
+        os.remove(dynamic_map)
+
+        return map_dict
+
+   
+
     def get_environment(self):
         return self.environment
+
+    def get_env_dir(self):
+        return self.env_dir
 
     def get_schema(self):
         return self.schema
@@ -113,19 +167,40 @@ class Engine():
     
     def get_globals(self):
         return globals()
-    
+   
+    def get_warnings(self, params):
+        user_id = os.getenv('USER')
+        warnings_path = os.path.join("/tmp", f"{user_id}.warnings")
+        if not os.path.exists(warnings_path):
+            return []
+
+        warnings = []
+        
+        with open(warnings_path, 'r') as file: 
+            warnings_dict = json.load(file)
+ 
+        if "warnings" in warnings_dict:
+            warnings = warnings_dict["warnings"] 
+
+        os.remove(warnings_path)
+
+        return warnings
+        
+
+
     def fetch_template(self, template_path):
         with open(template_path) as text_file:
             template = text_file.read()
             return template
         
-    def set_environment(self, environment):
+    def set_environment(self, environment, env_dir):
         self.environment = environment
-        self.set_map("environments/" + environment + "/map.json")
-        self.set_schema("environments/" + environment + "/schema.json")
-        self.set_driver("environments/" + environment + "/driver.sh")
-        self.set_additional_files("environments/" + environment)
-
+        self.env_dir = env_dir
+        self.set_map(os.path.join(env_dir, environment, "map.json"))
+        self.set_schema(os.path.join(env_dir, environment, "schema.json"))
+        self.set_driver(os.path.join(env_dir, environment, "driver.sh"))
+        self.set_additional_files(os.path.join(env_dir, environment))
+        
     def evaluate_map(self, map, params):
         for key, value in map.items():
             ## 2. Replace the params name with the actual values in form fields
@@ -137,27 +212,62 @@ class Engine():
             pattern_no_flag = r'\$(\w+)'
             value = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), value)
 
-            value = process_function(value, self.environment)
+            value = process_function(value, self.environment, self.env_dir)
             map[key] = value
         return map
     
     def custom_replace(self, template, map, params):
-        map = self.evaluate_map(map, params)
         for key, value in map.items():
             template = template.replace("["+key+"]", value)
         return template
+
+    def replace_placeholders(self, input_script, map, params):
+        job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
+        output = self.custom_replace(input_script, map, params)
+        output = output.replace("[job-file-name]", job_file_name)
+        output = output.replace("\t", " ")
+        output = re.sub(r'\r\n?|\r', '\n', output)
+
+        return output
+    
     
     def preview_script(self, params):
         if self.environment is None:
             return "No environment selected"
         else:
-            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
-            template = params["run_command"]
-            self.script = self.custom_replace(template, self.map, params)
-            self.script = self.script.replace("[job-file-name]", job_file_name)
-            self.script = self.script.replace("\t", " ")
-            self.script = re.sub(r'\r\n?|\r', '\n', self.script)
-            return self.script
+            self.drona_job_name = params["name"]
+            evaluated_map = self.evaluate_map(self.map, params)
+            
+            dynamic_map = self.get_dynamic_map()
+            dynamic_evaluated_map = self.evaluate_map(dynamic_map, params)
+
+            evaluated_map = {**evaluated_map, **dynamic_evaluated_map}
+
+            template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
+            self.script = self.replace_placeholders(template, evaluated_map, params)
+            self.driver = self.replace_placeholders(self.driver, evaluated_map, params)
+            
+            self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment) ,params)
+            
+            for fname, content in self.additional_files.items():
+                content = self.replace_placeholders(content, evaluated_map, params)
+                self.additional_files[fname] = content
+
+            for fname, content in self.dynamic_additional_files.items():
+
+                content = self.replace_placeholders(content, evaluated_map, params)
+                self.additional_files[fname] = content
+            
+            warnings = self.get_warnings(params)
+
+            preview_job = {
+                    "driver": self.driver, 
+                    "script": self.script, 
+                    "warnings":  warnings,
+                    "additional_files": self.additional_files 
+            }
+            
+            return preview_job
         
     def generate_script(self, params):
         if self.environment is None:
@@ -172,15 +282,13 @@ class Engine():
                 self.script = re.sub(r'\r\n?|\r', '\n', self.script)
                 job_file.write(self.script)
 
+            self.additional_files = json.loads(params["additional_files"])
             for fname, content in self.additional_files.items():
                 # Copy  files with the job script
                 nfile=content
                 additional_job_file_path = os.path.join(params['location'], fname)
-                with open(additional_job_file_path, "w") as ajob_file:
-                    nfile = self.custom_replace(nfile, self.map, params)
-                    nfile = nfile.replace("[job-file-name]", job_file_name)
-                    nfile = nfile.replace("\t", " ")
-                    nfile = re.sub(r'\r\n?|\r', '\n', nfile)
+                with open(os.path.join(additional_job_file_path), "w") as ajob_file:
+                    nfile = self.replace_placeholders(nfile, self.map, params)
                     ajob_file.write(nfile)
 
             return job_file_path
@@ -189,25 +297,18 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
-            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
             bash_file_path = os.path.join(params['location'], "run.sh")
             with open(bash_file_path, "w") as bash_file:
-                self.driver = self.custom_replace(self.driver, self.map, params)
-                self.driver = self.driver.replace("[job-file-name]", job_file_name)
+                self.driver = params["driver"]
                 self.driver = self.driver.replace("\t", " ")
                 self.driver = re.sub(r'\r\n?|\r', '\n', self.driver)
+
                 bash_file.write(self.driver)
 
             return bash_file_path
 
 
-        
-
-
-        
             
-
-
 def main():
     parser = argparse.ArgumentParser(description = "Engine")
 
@@ -224,7 +325,7 @@ def main():
         try:
             params = ast.literal_eval(args.params)  # Safely parse the dictionary string
             if isinstance(params, dict):
-                engine.set_environment(params["runtime"])
+                engine.set_environment(params["runtime"], params["env_dir"])
             else:
                 print("Invalid dictionary format 1")
         except (SyntaxError, ValueError) as e:

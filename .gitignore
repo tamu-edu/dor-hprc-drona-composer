@@ -2,3 +2,5 @@
 *.lock
 *.pyc
 .venv
+node_modules/
+static/bundle.js
