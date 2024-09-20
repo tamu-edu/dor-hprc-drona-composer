@@ -31,7 +31,6 @@ function App() {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setEnvironments(
           data.map((env) => ({
             value: env.env,
