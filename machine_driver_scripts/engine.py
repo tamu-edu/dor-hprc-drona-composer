@@ -112,7 +112,7 @@ class Engine():
             
             if "preview_order" in additional_file:
                 preview_order = additional_file["preview_order"]
-                preview_order = 0 if preview_order < -1 else preview_order
+                preview_order = 0 if preview_order < 0 else preview_order
             else:
                 preview_order = 0
             
