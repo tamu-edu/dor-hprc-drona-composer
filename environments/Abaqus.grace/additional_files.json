@@ -1,3 +1,8 @@
+[
 {
-	"files" : ["first.py","second.py"]
+     "file_name": "first.py"
+},
+{
+     "file_name": "second.py"
 }
+]

@@ -35,7 +35,6 @@ def get_modules():
 @job_composer.route('/environment/<environment>', methods=['GET'])
 def get_environment(environment):
     env_dir = request.args.get("src")
-    print("Here" + env_dir)
     if env_dir is None:
         template_path = os.path.join('environments', environment, 'template.txt')
     else:

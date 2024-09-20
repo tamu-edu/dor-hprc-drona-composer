@@ -1,11 +1,30 @@
-import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
+
+  // Do not show panes with order -1 
+  // const filteredPanes = panes.filter(pane => pane.order <= -1);
+
+  // tabs with order 0 will be moved to the right
+  // A specific distinct high value i is assigned to them to prevent order change on rerendering
+  let zeroOrderIndex = 10000;  
+
+  panes.forEach((pane, index) => {
+    if (pane.order === 0) {
+      pane.order = zeroOrderIndex;
+      zeroOrderIndex++;
+    }
+  });
+
+  const sortedPanes = panes.sort((a, b) => {
+    return a.order - b.order;
+  });
+
   const [activePane, setActivePane] = useState(0);
   const paneRefs = useRef([]);
 
-  if (paneRefs.current.length !== panes.length) {
-    paneRefs.current = panes.map((_, i) => paneRefs.current[i] || React.createRef());
+  if (paneRefs.current.length !== sortedPanes.length) {
+    paneRefs.current = sortedPanes.map((_, i) => paneRefs.current[i] || React.createRef());
   }
 
   useImperativeHandle(ref, () => ({
@@ -17,10 +36,10 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
   };
 
   const handleTextChange = (e, index) => {
-    const updatedPanes = [...panes];
+    const updatedPanes = [...sortedPanes];
     updatedPanes[index].content = e.target.value;
     setPanes(updatedPanes);
-    if(panes[index].onChange) panes[index].onChange(e);
+    if(sortedPanes[index].onChange) sortedPanes[index].onChange(e);
   };
 
   const containerStyle = {
@@ -69,14 +88,16 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
     borderRadius: '5px'
   };
 
-  if(activePane >= panes.length){
-  	setActivePane(0);
-  }
+  useEffect(() => {
+    if (activePane >= sortedPanes.length) {
+      setActivePane(0);
+    }
+  }, [activePane, sortedPanes.length]);
 
   return (
     <div style={containerStyle}>
       <div style={paneSelectorStyle}>
-        {panes.map((pane, index) => (
+        {sortedPanes.map((pane, index) => (
           <button
             key={index}
             onClick={() => handlePaneChange(index)}
@@ -84,11 +105,11 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
             aria-selected={activePane === index}
             role="tab"
           >
-            {pane.name}
+            {pane.preview_name}
           </button>
         ))}
       </div>
-      {panes.map((pane, index) => (
+      {sortedPanes.map((pane, index) => (
         <div
           key={index}
           id={`pane-${index}`}
@@ -105,7 +126,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
             value={pane.content}
             name={pane.name}
             onChange={(e) => handleTextChange(e, index)}
-            placeholder={`${pane.title} content`}
+            placeholder={`${pane.preview_name} content`}
             style={textareaStyle}
           />
         </div>
