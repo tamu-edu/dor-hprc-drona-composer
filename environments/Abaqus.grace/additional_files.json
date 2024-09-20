@@ -1,3 +1,10 @@
+[
 {
-	"files" : ["first.py","second.py"]
+     "file_name": "first.py",
+     "preview_name": "first file"
+},
+{
+     "file_name": "second.py",
+     "preview_order": -1
 }
+]

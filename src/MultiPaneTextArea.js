@@ -1,6 +1,22 @@
-import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
+
+  // tabs with order 0 will be moved to the right
+  // A specific distinct high value i is assigned to them to prevent order change on rerendering
+  let zeroOrderIndex = 10000;  
+
+  panes.forEach((pane, index) => {
+    if (pane.order === 0) {
+      pane.order = zeroOrderIndex;
+      zeroOrderIndex++;
+    }
+  });
+
+  panes = panes.sort((a, b) => {
+    return a.order - b.order;
+  });
+ 
   const [activePane, setActivePane] = useState(0);
   const paneRefs = useRef([]);
 
@@ -69,14 +85,19 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
     borderRadius: '5px'
   };
 
-  if(activePane >= panes.length){
-  	setActivePane(0);
-  }
+  useEffect(() => {
+    if (activePane >= panes.length) {
+      setActivePane(0);
+    }
+  }, [activePane, panes.length]);
 
   return (
     <div style={containerStyle}>
       <div style={paneSelectorStyle}>
-        {panes.map((pane, index) => (
+        {panes.map((pane, index) => {
+	  if(pane.order == -1) return;
+
+	  return (
           <button
             key={index}
             onClick={() => handlePaneChange(index)}
@@ -84,9 +105,11 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
             aria-selected={activePane === index}
             role="tab"
           >
-            {pane.name}
+            {pane.preview_name}
           </button>
-        ))}
+        )
+	})}
+
       </div>
       {panes.map((pane, index) => (
         <div
@@ -105,7 +128,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
             value={pane.content}
             name={pane.name}
             onChange={(e) => handleTextChange(e, index)}
-            placeholder={`${pane.title} content`}
+            placeholder={`${pane.preview_name} content`}
             style={textareaStyle}
           />
         </div>

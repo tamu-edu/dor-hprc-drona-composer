@@ -31,7 +31,6 @@ function App() {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setEnvironments(
           data.map((env) => ({
             value: env.env,
@@ -113,20 +112,28 @@ function App() {
       } else {
         setJobScript(jobScript["script"]);
 
+	// Template and driver panes will be displayed on the left of everything else
         const panes = [
           {
-            title: "template.txt",
+            preview_name: "template.txt",
             content: jobScript["script"],
             name: "run_command",
+            order: -3
           },
-          { title: "driver.sh", content: jobScript["driver"], name: "driver" },
+          {
+	    preview_name: "driver.sh",
+	    content: jobScript["driver"],
+	    name: "driver",
+	    order: -2
+	  },
         ];
 
-        for (const [fname, content] of Object.entries(
+        for (const [fname, file] of Object.entries(
           jobScript["additional_files"]
         )) {
-          panes.push({ title: fname, content: content, name: fname });
+          panes.push({ preview_name: file["preview_name"], content: file["content"], name: fname, order: file["preview_order"]});
         }
+
         setPanes(panes);
 
         setWarningMessages(jobScript["warnings"]);

@@ -92,23 +92,40 @@ class Engine():
 
     def set_additional_files(self,env_path):
         self.additional_files= {}
-        filename = os.path.join(env_path, "additional_files.json")
-        if os.path.isfile(filename):
-            with open(filename) as additional_scripts:
-                try:
-                    additional_scripts = json.load(additional_scripts)
-                except json.JSONDecodeError:
-                    print(f"Error: the file '{filename}' contains invalid JSON.")
-                    return
+        
+        files_path = os.path.join(env_path, "additional_files.json")
+        
+        if not os.path.exists(files_path):
+            return
+        
+        with open(files_path, 'r') as file:
+            additional_files = json.load(file)
 
-            for nkey in additional_scripts["files"]:
-                keystring = nkey.strip()
-                nfile= os.path.join(env_path,"additional_files", keystring)
-                if os.path.isfile(nfile):
-                    with open(nfile) as nshell_script:
-                        self.additional_files[keystring] = nshell_script.read()
-        else:
-            self.additional_files= {}
+        for additional_file in additional_files:
+            file_name = additional_file["file_name"].strip()
+            
+            if "preview_name" in additional_file:
+                preview_name = additional_file["preview_name"].strip()
+                preview_name = file_name if preview_name == "" else preview_name
+            else:
+                preview_name = file_name
+            
+            if "preview_order" in additional_file:
+                preview_order = additional_file["preview_order"]
+                preview_order = 0 if preview_order < 0 else preview_order
+            else:
+                preview_order = 0
+            
+            file_path = os.path.join(env_path, "additional_files", file_name)
+        
+            if os.path.isfile(file_path):
+                with open(file_path) as file:
+                     self.additional_files[os.path.basename(file_name)] = {
+                            "content": file.read(),
+                            "preview_name": preview_name,
+                            "preview_order": preview_order
+                    }
+
 
     def set_dynamic_additional_files(self, env_path, params):
         user_id = os.getenv('USER')
@@ -121,15 +138,25 @@ class Engine():
             return 
 
         with open(additional_files_path, 'r') as file: 
-            additional_scripts = json.load(file)
+            additional_files = json.load(file)
  
-        if "files" in additional_scripts:
-            for nkey in additional_scripts["files"]:
-                keystring = nkey.strip()
-                nfile = os.path.join(files_path, keystring)
-                if os.path.isfile(nfile):
-                    with open(nfile) as nshell_script:
-                        self.dynamic_additional_files[os.path.basename(keystring)] = nshell_script.read()
+        for additional_file in additional_files:
+                file_name  = additional_file["file_name"].strip()
+            
+                preview_name = additional_file["preview_name"].strip()
+                preview_name = file_name if preview_name == "" else preview_name 
+
+                preview_order = additional_file["preview_order"]
+                preview_order = 0 if preview_order < -1 else preview_order
+
+                file_path = os.path.join(files_path, file_name)
+                if os.path.isfile(file_path):
+                    with open(file_path) as file:
+                        self.dynamic_additional_files[os.path.basename(file_name)] = {
+                                "content": file.read(),
+                                "preview_name": preview_name,
+                                "preview_order": preview_order
+                        }
 
         os.remove(additional_files_path)
             
@@ -239,8 +266,8 @@ class Engine():
             evaluated_map = self.evaluate_map(self.map, params)
             
             dynamic_map = self.get_dynamic_map()
+            
             dynamic_evaluated_map = self.evaluate_map(dynamic_map, params)
-
             evaluated_map = {**evaluated_map, **dynamic_evaluated_map}
 
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
@@ -249,14 +276,15 @@ class Engine():
             
             self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment) ,params)
             
-            for fname, content in self.additional_files.items():
-                content = self.replace_placeholders(content, evaluated_map, params)
-                self.additional_files[fname] = content
+            for fname, file in self.additional_files.items():
+                file["content"] = self.replace_placeholders(file["content"], evaluated_map, params)
+                self.additional_files[fname] = file
 
-            for fname, content in self.dynamic_additional_files.items():
+            additional_file = []
+            for fname, file in self.dynamic_additional_files.items():
 
-                content = self.replace_placeholders(content, evaluated_map, params)
-                self.additional_files[fname] = content
+                file["content"] = self.replace_placeholders(file["content"], evaluated_map, params)
+                self.additional_files[fname] = file 
             
             warnings = self.get_warnings(params)
 
