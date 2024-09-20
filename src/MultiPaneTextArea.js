@@ -2,9 +2,6 @@ import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } f
 
 const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
 
-  // Do not show panes with order -1 
-  // const filteredPanes = panes.filter(pane => pane.order <= -1);
-
   // tabs with order 0 will be moved to the right
   // A specific distinct high value i is assigned to them to prevent order change on rerendering
   let zeroOrderIndex = 10000;  
@@ -97,7 +94,10 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
   return (
     <div style={containerStyle}>
       <div style={paneSelectorStyle}>
-        {panes.map((pane, index) => (
+        {panes.map((pane, index) => {
+	  if(pane.order == -1) return;
+
+	  return (
           <button
             key={index}
             onClick={() => handlePaneChange(index)}
@@ -107,7 +107,9 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
           >
             {pane.preview_name}
           </button>
-        ))}
+        )
+	})}
+
       </div>
       {panes.map((pane, index) => (
         <div
