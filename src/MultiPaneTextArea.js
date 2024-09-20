@@ -16,15 +16,15 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
     }
   });
 
-  const sortedPanes = panes.sort((a, b) => {
+  panes = panes.sort((a, b) => {
     return a.order - b.order;
   });
-
+ 
   const [activePane, setActivePane] = useState(0);
   const paneRefs = useRef([]);
 
-  if (paneRefs.current.length !== sortedPanes.length) {
-    paneRefs.current = sortedPanes.map((_, i) => paneRefs.current[i] || React.createRef());
+  if (paneRefs.current.length !== panes.length) {
+    paneRefs.current = panes.map((_, i) => paneRefs.current[i] || React.createRef());
   }
 
   useImperativeHandle(ref, () => ({
@@ -36,10 +36,10 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
   };
 
   const handleTextChange = (e, index) => {
-    const updatedPanes = [...sortedPanes];
+    const updatedPanes = [...panes];
     updatedPanes[index].content = e.target.value;
     setPanes(updatedPanes);
-    if(sortedPanes[index].onChange) sortedPanes[index].onChange(e);
+    if(panes[index].onChange) panes[index].onChange(e);
   };
 
   const containerStyle = {
@@ -89,15 +89,15 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
   };
 
   useEffect(() => {
-    if (activePane >= sortedPanes.length) {
+    if (activePane >= panes.length) {
       setActivePane(0);
     }
-  }, [activePane, sortedPanes.length]);
+  }, [activePane, panes.length]);
 
   return (
     <div style={containerStyle}>
       <div style={paneSelectorStyle}>
-        {sortedPanes.map((pane, index) => (
+        {panes.map((pane, index) => (
           <button
             key={index}
             onClick={() => handlePaneChange(index)}
@@ -109,7 +109,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
           </button>
         ))}
       </div>
-      {sortedPanes.map((pane, index) => (
+      {panes.map((pane, index) => (
         <div
           key={index}
           id={`pane-${index}`}
