@@ -1,0 +1,12 @@
+{
+  "batchopts" : "!retrieve_tamubatch_opts($cores,$memory,$walltime)",
+  "LOADR": "module load $version",
+  "MEM": "$memory",
+  "CPUS": "!retrieve_ncpus($cores,$parallel)",
+  "MPIMODE" : "!retrieve_mpi_mode_abaqus($cores,48)",
+  "flocation": "$location",
+  "INPUT": "$mainscript",
+  "drona_warnings": "!check_my_code($name, $cores,$memory)",
+  "additional_filesv2": "!drona_add_additional_files($name, $cores)"
+}
+

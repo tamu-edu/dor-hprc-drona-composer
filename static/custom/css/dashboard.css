@@ -79,7 +79,8 @@ h6 {
   background-color: transparent;
 }
 
-.maroon-button {
+.maroon-button,
+.maroon-button-secondary {
   color: maroon;
   background-color: white;
   border-color: rgba(80, 0, 0, 0.5);
@@ -93,6 +94,30 @@ h6 {
   border-color: maroon;
 }
 
+.maroon-button-filled {
+  border-radius: 8px 8px 8px 8px !important;
+  color: white;
+  background-color: maroon;
+  border-color: maroon;
+}
+
+.maroon-button-filled:hover,
+.maroon-button-filled:focus {
+  border-color: maroon;
+  box-shadow: 0 0 10px maroon;
+  background-color: maroon;
+}
+
+.maroon-button-secondary:hover,
+.maroon-button-secondary:focus {
+  border-color: rgba(80, 0, 0, 0.5);
+  box-shadow: 0 0 7px rgba(80, 0, 0, 0.5);
+  color: maroon;
+  background-color: white;
+  border-color: rgba(80, 0, 0, 0.5);
+  border-radius: 8px 8px 8px 8px !important;
+
+}
 .request-maroon-button {
   color: white;
   background-color: maroon;
@@ -151,3 +176,4 @@ footer {
   width: 2em;
   height: 2em;
 }
+

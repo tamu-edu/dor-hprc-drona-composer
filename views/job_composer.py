@@ -1,15 +1,17 @@
 from flask import Blueprint, render_template, request, jsonify, current_app as app
+import json
 import sqlite3
 import re
 import os
 from machine_driver_scripts.engine import Engine
 import subprocess
+import yaml
 
 job_composer = Blueprint("job_composer", __name__)
 
 @job_composer.route("/")
 def composer():
-    environments = get_directories("./environments")
+    environments = _get_environments() 
     return render_template("index_no_banner.html", environments=environments)
 
 def get_directories(path):
@@ -18,7 +20,8 @@ def get_directories(path):
 @job_composer.route('/modules', methods=['GET'])
 def get_modules():
     query = request.args.get('query')
-    modules_db_path = app.config['modules_db_path']
+    toolchain = request.args.get('toolchain')
+    modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
 
     with sqlite3.connect(modules_db_path) as modules_db:
         cursor = modules_db.cursor()
@@ -31,20 +34,68 @@ def get_modules():
 
 @job_composer.route('/environment/<environment>', methods=['GET'])
 def get_environment(environment):
-    template = os.path.join('environments', environment, 'template.txt')
-    template_data = open(template, 'r').read()
+    env_dir = request.args.get("src")
+    if env_dir is None:
+        template_path = os.path.join('environments', environment, 'template.txt')
+    else:
+        template_path = os.path.join(env_dir, environment, 'template.txt')
+
+    if os.path.exists(template_path):
+        template_data = open(template_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'template.txt')} not found")
+    
     return template_data
 
 @job_composer.route('/schema/<environment>', methods=['GET'])
 def get_schema(environment):
-    schema = os.path.join('environments', environment, 'schema.json')
-    schema_data = open(schema, 'r').read()
-    return schema_data
+    env_dir = request.args.get("src")
+    if env_dir is None:
+        schema_path = os.path.join('environments', environment, 'schema.json')
+    else:
+        schema_path = os.path.join(env_dir, environment, 'schema.json')
+
+    if os.path.exists(schema_path):
+        schema_data = open(schema_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'schema.json')} not found")
+   
+    schema_dict = json.loads(schema_data)
+    
+    for key in schema_dict:
+        if schema_dict[key]["type"] == "dynamic_select":
+            
+            retriever_path = os.path.join(env_dir, environment, schema_dict[key]["retriever"])
+            bash_command = f"bash {retriever_path}"
+
+            try:
+                result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                if result.returncode == 0:
+                    options = json.loads(result.stdout)
+                else:
+                    return result.stderr
+            except subprocess.CalledProcessError as e:
+                return e.stderr
+            
+            schema_dict[key]["type"] = "select" 
+            schema_dict[key]["options"] = options
+
+    return json.dumps(schema_dict)
+
 
 @job_composer.route('/map/<environment>', methods=['GET'])
 def get_map(environment):
-    map = os.path.join('environments', environment, 'map.json')
-    map_data = open(map, 'r').read()
+    env_dir = request.args.get("src")
+    if env_dir is None:
+        map_path = os.path.join('environments', environment, 'map.json')
+    else:
+        map_path = os.path.join(env_dir, environment, 'map.json')
+
+    if os.path.exists(map_path):
+        map_data = open(map_path, 'r').read()
+    else:
+        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'map.json')} not found")
+    
     return map_data
 
 def create_folder_if_not_exist(dir_path):
@@ -79,7 +130,7 @@ def submit_job():
     create_folder_if_not_exist(params.get('location'))
 
     engine = Engine()
-    engine.set_environment(params.get('runtime'))
+    engine.set_environment(params.get('runtime'), params.get('env_dir'))
 
     # Saving Files
     # executable_script = save_file(files.get('executable_script'), params.get('location'))
@@ -99,15 +150,25 @@ def submit_job():
             return result.stderr
     except subprocess.CalledProcessError as e:
         return e.stderr
+    
+@job_composer.route('/test_submit', methods=['POST'])
+def test_submit():
+    params = request.form
+    files = request.files
+    print(params)
+    print(files)
+    return "Success"
+
 
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
     engine = Engine()
-    engine.set_environment(params.get('runtime'))
-    preview_job_script = engine.preview_script(params)
-    return preview_job_script
+    
+    engine.set_environment(params.get('runtime'), params.get('env_dir'))
+    preview_job = engine.preview_script(params)
 
+    return jsonify(preview_job)
 @job_composer.route('/mainpaths', methods=['GET'])
 def get_main_paths():
     current_user = os.getenv("USER")
@@ -135,7 +196,64 @@ def get_subdirectories():
     subdirectories = fetch_subdirectories(fullpath)
     return subdirectories
 
-    
+@job_composer.route('/environments', methods=['GET'])
+def get_environments():
+    environments = _get_environments()
+    return jsonify(environments)
 
+@job_composer.route('/add_environment', methods=['POST'])
+def add_environment():
+    env = request.form.get("env")
+    src = request.form.get("src")
+    env_dir = os.path.join(src, env)
+    # copy the environment to the user's environment directory
+    user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+    create_folder_if_not_exist(user_envs_path)
+    os.system(f"cp -r {env_dir} {user_envs_path}")
+
+    return jsonify({"status": "Success"})
+
+@job_composer.route('/get_more_envs_info', methods=['GET'])
+def get_more_envs_info():
+    cluster_name = app.config['cluster_name']
+    environments_dir = f"./environments-repo/{cluster_name}"
+    environments = get_directories(environments_dir)
+    # get info from manifest.yml of each environment
+    system_envs_info = []
+    for env in environments:
+        env_dir = os.path.join(environments_dir, env)
+        manifest_path = os.path.join(env_dir, "manifest.yml")
+        if os.path.exists(manifest_path):
+            with open(manifest_path, 'r') as f:
+                manifest = yaml.safe_load(f)
+                manifest["src"] = environments_dir
+                system_envs_info.append(manifest)
+        else:
+            system_envs_info.append({"env": env, "description": "No description available", "src": environments_dir})
+    return jsonify(system_envs_info)
+
+
+
+
+def _get_environments():
+    system_environments = get_directories("./environments")
+    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
+    
+    user_envs_path = request.args.get("user_envs_path")
+
+    if user_envs_path is None:
+        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+        create_folder_if_not_exist(user_envs_path)
+
+    user_environments = []
+    try:
+        user_environments = get_directories(user_envs_path)
+        user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
+    except OSError as e:
+        print(e)
+    
+    environments = system_environments + user_environments
+
+    return environments
 
 

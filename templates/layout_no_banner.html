@@ -63,6 +63,7 @@
         document.dashboard_url = "{{ config.dashboard_url }}";
         document.file_app_url = "{{ config.file_app_url }}";
         document.file_editor_url = "{{ config.file_editor_url }}";
+        document.user = "{{ config.user }}";
       </script>
 
       <!-- <div id="main-container" class="container" role="main"> -->
@@ -71,11 +72,12 @@
     </header>
     <footer class="footer mt-2"></footer>
 
+    <script src="{{url_for('static', filename='bundle.js')}}"></script>
     <script src="{{ url_for('static', filename='jquery-3.4.1/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap-4.4.1/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.js') }}"></script>
     <script src="{{ url_for('static', filename='chartjs-2.9.3/Chart.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='custom/js/job_composer.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='custom/js/job_composer.js') }}"></script> -->
   </body>
 </html>

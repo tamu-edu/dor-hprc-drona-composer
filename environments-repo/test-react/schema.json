@@ -1,0 +1,160 @@
+{
+  "testSelect1": {
+    "type": "select",
+    "label": "Test Select 1",
+    "name": "testSelect1",
+    "options": [
+      {
+        "label": "Option 1",
+        "value": "option1"
+      },
+      {
+        "label": "Option 2",
+        "value": "option2"
+      },
+      {
+        "label": "Option 3",
+        "value": "option3"
+      }
+    ]
+  },
+  "testText1": {
+    "type": "text",
+    "label": "Test Text 1",
+    "name": "testText1",
+    "value": "Default Text",
+    "condition": "testSelect1.option1"
+  },
+  "testText2": {
+    "type": "text",
+    "label": "Test Text 2",
+    "name": "testText2",
+    "value": "Default Text",
+    "condition": "testSelect1.option2"
+  },
+  "testSelect2": {
+    "type": "select",
+    "label": "Test Select 2",
+    "name": "testSelect1",
+    "options": [
+      {
+        "label": "Option 1",
+        "value": "option1"
+      },
+      {
+        "label": "Option 2",
+        "value": "option2"
+      }
+    ],
+    "condition": "testSelect1.option3"
+  },
+  "testText3": {
+    "type": "text",
+    "label": "Test Text 3",
+    "name": "testText3",
+    "placeholder": "Placeholder Text",
+    "condition": "testSelect2.option1"
+  },
+  "testText4": {
+    "type": "text",
+    "label": "Test Text 4",
+    "name": "testText4",
+    "placeholder": "Placeholder Text",
+    "condition": "testSelect2.option2"
+  },
+  "testNumber1": {
+    "type": "number",
+    "label": "Test Number 1",
+    "name": "testNumber1",
+    "min": 0,
+    "max": 100,
+    "step": 2,
+    "placeholder": "0-100, step of 2"
+  },
+  "testCheckbox1": {
+    "type": "checkbox",
+    "label": "Test Checkbox 1",
+    "name": "testCheckbox1",
+    "value": "Yes"
+  },
+  "testText5": {
+    "type": "text",
+    "label": "Test Text 5",
+    "name": "testText5",
+    "placeholder": "Placeholder Text",
+    "condition": "testCheckbox1.Yes"
+  },
+  "testRadio1": {
+    "type": "radioGroup",
+    "name": "testRadio1",
+    "label": "Radio Group Element",
+    "options": [
+      {
+        "label": "Radio 1",
+        "value": "value1"
+      },
+      {
+        "label": "Radio 2",
+        "value": "value2"
+      },
+      {
+        "label": "Radio 3",
+        "value": "value3"
+      }
+    ]
+  },
+  "testNumber2": {
+    "type": "number",
+    "label": "Test Number 2",
+    "name": "testNumber2",
+    "min": 0,
+    "max": 100,
+    "step": 2,
+    "placeholder": "0-100, step of 2",
+    "condition": "testRadio1.value3"
+  },
+  "testUploader1": {
+    "type": "uploader",
+    "label": "Test Uploader 1"
+  },
+  "testUploader2": {
+    "type": "uploader",
+    "label": "Test Uploader 2"
+  },
+  "testPicker1": {
+    "type": "picker",
+    "label": "Test Picker 1",
+    "name": "testPicker1",
+    "remoteLabel": "Upload",
+    "localLabel": "Cluster",
+    "showFiles": true
+  },
+  "testModule1": {
+    "type": "module",
+    "label": "Test Module 1",
+    "toolchains": [
+      {
+        "label": "Default Toolchain",
+        "value": "modules"
+      },
+      {
+        "label": "Foss/2023a Toolchain",
+        "value": "modules-foss2023a"
+      }
+    ]
+  },
+  "testTime1": {
+    "type": "time",
+    "label": "Test Time 1",
+    "name": "testTime1"
+  },
+  "testUnit1": {
+    "type": "unit",
+    "label": "Test Unit 1",
+    "name": "testUnit1",
+    "units": [
+      { "label": "MB", "value": "M" },
+      { "label": "GB", "value": "G" }
+    ]
+  }
+}
