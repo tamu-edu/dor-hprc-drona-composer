@@ -17,6 +17,8 @@ sed -i.bak -e "s/\[cluster-name\]/$CLUSTERNAME/g" manifest.yml
 # Remove backup file during copy
 rm config.yml.bak manifest.yml.bak
 
+# create the environments directory
+mkdir environments
 
 python3 -m venv .venv
 source .venv/bin/activate
