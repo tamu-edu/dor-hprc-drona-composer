@@ -1,5 +1,0 @@
-{
-  "setup_pytorch": "export SINGULARITY_BINDPATH='/scratch/group/hprc/benchmarks/Language-Modelling/BERT/:/workspace/bert'\nexport BERT_PREP_WORKING_DIR='/workspace/bert/data'",
-  "pytorch_driver": "singularity exec --nv $dir_container bash /scratch/group/hprc/benchmarks/Language-Modelling/BERT/bert_wrapper.sh $epochs $batchSize $precision",
-  "fmodules": "$module_list"
-}
