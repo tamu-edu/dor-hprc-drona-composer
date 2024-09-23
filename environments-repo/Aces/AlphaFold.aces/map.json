@@ -1,9 +1,0 @@
-{
-  "PROTEIN_FASTA": "$proteinfasta",
-  "MAX_TEMPLATE": "$maxtemplate",
-  "MODEL_PRESET": "$modelpreset",
-  "DB_PRESET": "$dbpreset",
-  "OUTPUT_DIR": "$outputdir",
-  "ALPHAPICKLE": "!retrieve_alphapickle($pickle, $proteinfasta, $outputdir)"
-}
-

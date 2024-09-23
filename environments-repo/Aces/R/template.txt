@@ -1,11 +1,11 @@
-# template for running R codes
-
 # load the modules
 module purge
+module load WebProxy
 [LOADR]
 
 cd [flocation]
 
+[RLIBS]
 # run the R script
 [DRIVER] Rscript [fmainscript]
 

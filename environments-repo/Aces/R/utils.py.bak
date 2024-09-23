@@ -1,0 +1,47 @@
+import os
+
+def retrieve_R_driver(mpistring=""):
+    if mpistring == "mpi":
+        return f"mpirun -np 1 "
+    else:
+        return f""
+
+
+def retrieve_R_version_aces(version=""):
+    return f"module load foss/2022b R_tamu/4.2.2"
+
+
+def retrieve_loaded_modules_grace(modules=""):
+    if modules == "":
+        return f""
+    else:
+        return "module load foss/2023a " + modules
+
+def retrieve_tamubatch_opts(parallel,cores,memory,walltime,extra_slurm="",gpu=""):
+    options_string=""
+    additional=extra_slurm + " " + gpu
+    if  cores != "":
+        if parallel == "sock" and  int(cores) > 95:
+            cores="96"
+        options_string=options_string+"-n " + cores + " "
+    if walltime != "":
+        times=walltime.split(':')
+        if int(times[0]) > 168:
+            additional=additional+ " --partition=xlong " 
+        options_string=options_string+"-W " + walltime + " "
+    if memory.find("MB") > 0 or memory.find("G") > 0:
+        options_string=options_string+"-M " + memory + " "
+    if additional != "":
+        options_string="-x '" + additional + "' " + options_string
+    return f"" + options_string
+
+def check_code(parallel, cores, memory):
+    warnings = []
+    if memory == "":
+        warnings.append("Memory unspecified, using default values")
+    if parallel == "sock"
+        if cores > 95:
+            warnings.append("more than 95 cores requested for SOCK cluster. Reducing to 95 to fit on a single node")
+    return str(warnings)
+
+

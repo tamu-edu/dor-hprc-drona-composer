@@ -1,0 +1,10 @@
+{
+  "batchopts" : "!retrieve_tamubatch_opts($parallel,$coressock,$memory,$walltime)",
+  "LOADR": "!retrieve_R_version_aces($version)",
+  "DRIVER": "!retrieve_R_driver($parallel)",
+  "flocation": "$location",
+  "fmainscript": "$mainscript",
+  "drona_warnings" : "!check_code($parallel, $coressock, $memory)"
+}
+
+
