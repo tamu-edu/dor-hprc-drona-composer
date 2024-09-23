@@ -8,8 +8,8 @@ def retrieve_time(time=""):
 
 
 def retrieve_nodes(nodes,cores):
-   if nodes == "0":
-       result= ((int(cores)+47) // 48) 
+   if nodes == "0" or nodes == "":
+       result= ((int(cores)+47) // 48)  
        return f""+str(result)
    else:
        return f""+nodes
@@ -51,11 +51,11 @@ def retrieve_partition(job_name,cores,walltime,gpu,mem,nodes):
         times=walltime.split(':')
         total_hours=int(times[0])
     cnodes=nodes
-    if nodes =="0":
+    if nodes =="0" or nodes == "":
         cnodes=((int(cores)+47) // 48)
     mempn= 1
     if mem != "":
-        mempn=int(mem[:-1])/cnodes
+        mempn=int(mem[:-1])/int(cnodes)
      
     wgpu=0
     wtime=0
