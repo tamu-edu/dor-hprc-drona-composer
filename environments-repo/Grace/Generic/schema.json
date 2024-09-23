@@ -1,0 +1,97 @@
+{
+
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload files (optional)"
+  },
+
+   "testModule1": {
+    "type": "module",
+    "label": "Add modules",
+    "toolchains": [
+      {
+        "label": "Default (foss/2023a)",
+        "value": "modules"
+      }
+    ]
+  },
+
+  "cores": {
+    "type": "number",
+    "label": "Number of cores (if not sure, keep at 1)",
+    "name": "cores",
+    "value": "1"
+  }, 
+
+  "nodes": {
+    "type": "number",
+    "label": "Number of nodes (if not sure, leave as 0)",
+    "name": "nodes",
+    "value": "0"
+  },
+
+  "gpuDropdown": {
+    "type": "select",
+    "label": "Use GPU",
+    "name": "gpu",
+    "options": [
+      {
+        "value": "",
+        "label": "NO GPU"
+      },
+      {    
+        "value": "--gres=gpu",
+        "label": "ANY GPU"
+      },
+      {
+        "value": "--gres=gpu:a100",
+        "label": "A100"
+      },
+      {
+        "value": "--gres=gpu:rtx",
+        "label": "RTX 6000"
+      },
+      {
+        "value": "--gres=gpu:t4",
+        "label": "T4"
+      },
+      {
+        "value": "--gres=gpu:a40",
+        "label": "A40"
+      }
+    ]
+  },
+  "memory": {
+    "type": "unit",
+    "label": "TOTAL Memory",
+    "name": "memory",
+    "units": [
+      {
+        "label": "GB",
+        "value": "G"
+      }
+    ]
+  },
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected run time",
+    "name": "walltime",
+    "value": ""
+  },
+
+  "account": {
+    "type": "text",
+    "label": "Account (leave blank if using default)?",
+    "name": "account",
+    "value": ""
+  },
+
+  "extraText": {
+    "type": "text",
+    "label": "Additional Slurm parameters?",
+    "name": "extra_slurm",
+    "value": "",
+    "help": "You can specify any slurm parameter here"
+  }
+}
