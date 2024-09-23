@@ -1,6 +1,0 @@
-{
-  "batchopts" : "!retrieve_tamubatch_opts($cores,$memory,$walltime)",
-  "flocation": "$location",
-  "fmainscript": "$mainscript",
-  "fmodules": "$module_list"
-}
