@@ -1,4 +1,6 @@
 #!/bin/bash
 source /etc/profile
+
 cd [flocation]
-tamubatch [job-file-name]
+ 
+/sw/local/bin/sbatch [job-file-name] 
