@@ -35,7 +35,6 @@ def get_modules():
 @job_composer.route('/environment/<environment>', methods=['GET'])
 def get_environment(environment):
     env_dir = request.args.get("src")
-    print("Here" + env_dir)
     if env_dir is None:
         template_path = os.path.join('environments', environment, 'template.txt')
     else:
@@ -216,8 +215,7 @@ def add_environment():
 
 @job_composer.route('/get_more_envs_info', methods=['GET'])
 def get_more_envs_info():
-    cluster_name = app.config['cluster_name']
-    environments_dir = f"./environments-repo/{cluster_name}"
+    environments_dir = app.config['import_envs_path']
     environments = get_directories(environments_dir)
     # get info from manifest.yml of each environment
     system_envs_info = []
