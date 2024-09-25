@@ -141,15 +141,19 @@ def submit_job():
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
     bash_command = f"bash {driver_script_path}"
+
+    resp = {"stdout": "", "stderr": ""}
     
     try:
         result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        if result.returncode == 0:
-                return result.stdout
-        else:
-            return result.stderr
+        resp["stdout"] = result.stdout
+        resp["stderr"] = result.stderr
     except subprocess.CalledProcessError as e:
-        return e.stderr
+        resp["stderr"] = e.stderr
+    except Exception as e:
+        resp["stderr"] = str(e)
+    
+    return jsonify(resp)
     
 @job_composer.route('/test_submit', methods=['POST'])
 def test_submit():
@@ -169,6 +173,7 @@ def preview_job():
     preview_job = engine.preview_script(params)
 
     return jsonify(preview_job)
+
 @job_composer.route('/mainpaths', methods=['GET'])
 def get_main_paths():
     current_user = os.getenv("USER")

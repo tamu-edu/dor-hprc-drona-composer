@@ -266,7 +266,6 @@ class Engine():
                     "warnings":  warnings,
                     "additional_files": self.additional_files 
             }
-            
             return preview_job
         
     def generate_script(self, params):

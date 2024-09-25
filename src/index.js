@@ -16,11 +16,16 @@ function App() {
   const [warningMessages, setWarningMessages] = useState([]);
 
   const [panes, setPanes] = useState([{ title: "", name: "", content: "" }]);
+  const [resultPanes, setResultPanes] = useState([
+    { title: "", name: "", content: "" },
+  ]);
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
+  const submitRef = useRef(null);
   const envModalRef = useRef(null);
   const multiPaneRef = useRef(null);
+  const multiResultPaneRef = useRef(null);
 
   const [defaultLocation, setDefaultLocation] = useState(
     "/scratch/user/" + document.user + "/job_composer"
@@ -31,7 +36,6 @@ function App() {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setEnvironments(
           data.map((env) => ({
             value: env.env,
@@ -112,7 +116,6 @@ function App() {
         alert(error);
       } else {
         setJobScript(jobScript["script"]);
-
         const panes = [
           {
             title: "template.txt",
@@ -235,7 +238,7 @@ function App() {
 
   function add_submission_loading_indicator() {
     var submission_section = document.getElementById(
-      "job-submit-button-section"
+      "job-submit-response-footer"
     );
     if (submission_section == null) {
       return;
@@ -257,7 +260,7 @@ function App() {
     spinner.remove();
   }
 
-  function submit_job(action, formData) {
+  function submit_job(action, formData, callback) {
     var request = new XMLHttpRequest();
 
     formData.append("env_dir", environment.src);
@@ -267,17 +270,15 @@ function App() {
     request.onload = function (event) {
       remove_submission_loading_indicator();
       if (request.status == 200) {
-        alert(request.responseText);
-        window.location.reload();
+        var jobResult = JSON.parse(request.responseText);
+        callback(null, jobResult); // Pass the result to the callback
       } else {
-        alert(`Error ${request.status}. Try again!`);
-        window.location.reload();
+        callback(`Error ${request.status}. Try again!`); // Pass the error to the callback
       }
     };
     request.onerror = function (event) {
       remove_submission_loading_indicator();
-      alert("An error has occured. Please try again!");
-      window.location.reload();
+      callback("An error has occurred. Please try again!"); // Pass the error to the callback
     };
 
     request.send(formData);
@@ -285,13 +286,13 @@ function App() {
 
   function handleSubmit(event) {
     event.preventDefault();
-
     const formData = new FormData(formRef.current);
 
     if (formData.get("name") === "") {
       alert("Job name is required.");
       return;
     }
+
     const paneRefs = multiPaneRef.current.getPaneRefs();
     const additional_files = {};
     paneRefs.forEach((ref) => {
@@ -311,8 +312,33 @@ function App() {
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
+
+    const modal = new bootstrap.Modal(submitRef.current);
+    modal.toggle();
     const action = formRef.current.getAttribute("action");
-    submit_job(action, formData);
+    submit_job(action, formData, function (error, jobResult) {
+      if (error) {
+        alert(error);
+      } else {
+        const panes = [
+          {
+            title: "Response",
+            content: jobResult["stdout"],
+            name: "Response",
+          },
+          {
+            title: "Error",
+            content: jobResult["stderr"],
+            name: "Error",
+          },
+        ];
+
+        setResultPanes(panes);
+      }
+    });
+
+    const prevModal = previewRef.current;
+    prevModal.style.display = "none";
   }
 
   const handleJobScriptChange = (event) => {
@@ -501,6 +527,65 @@ function App() {
                     style={{ marginRight: "-15px" }}
                   >
                     Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal for Job Submission Response */}
+      <div
+        ref={submitRef}
+        className="modal fade bd-example-modal-lg"
+        id="job-submit-modal"
+        tabIndex="-1"
+        role="dialog"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Job Submission</h5>
+              <button
+                type="button"
+                className="close"
+                data-dismiss="modal"
+                aria-label="Close"
+                onClick={() => {
+                  window.location.reload();
+                }}
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <div id="job-preview-container">
+                <MultiPaneTextArea
+                  ref={multiResultPaneRef}
+                  panes={resultPanes}
+                  setPanes={setResultPanes}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <div className="form-group row text-center">
+                <div
+                  id="job-submit-response-footer"
+                  className="col-lg-12 d-flex justify-content-center align-items-center"
+                >
+                  <button
+                    type="button"
+                    className="btn btn-secondary maroon-button-secondary"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                    style={{ marginRight: "10px" }}
+                    onClick={() => {
+                      window.location.reload();
+                    }}
+                  >
+                    Close
                   </button>
                 </div>
               </div>
