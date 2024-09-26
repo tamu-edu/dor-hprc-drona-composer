@@ -1,11 +1,11 @@
 #!/bin/bash
-# Template for a standard shell env
 
 #SBATCH --job-name=[JOBNAME]
 #SBATCH --time=[TIME]
 #SBATCH --ntasks=[TASKS]
+#SBATCH --cpus-per-task=[CPUS]
 #SBATCH --nodes=[NODES]
-#SBATCH [MEMORY]
+#SBATCH --mem=[MEM]
 #SBATCH --output=out.%j
 #SBATCH --error=error.%j
 [EXTRA]
