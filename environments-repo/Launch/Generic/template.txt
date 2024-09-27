@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #SBATCH --job-name=[JOBNAME]
 #SBATCH --time=[TIME]
 #SBATCH --ntasks=[TASKS]
@@ -9,11 +8,9 @@
 #SBATCH --output=out.%j
 #SBATCH --error=error.%j
 [EXTRA]
-[ACCOUNT]  
 
 module purge
-module load WebProxy
-[MODULES]
+module load WebProxy [MODULES]
 
 cd [flocation]
 

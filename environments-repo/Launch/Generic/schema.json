@@ -50,6 +50,7 @@
     "help" : "This option is mostly used for hybrid codes (typically codes that use both MPI and OpenMP). Only set this field if you are sure your code will utilze multiple threads per task. Keep in mind the total number of cores will be #tasks multiplied by #cpus_per_task).",
     "name": "cpus",
     "value": "1",
+    "max": "192",
     "condition": "AdvancedCheckbox.Yes"
   },
 

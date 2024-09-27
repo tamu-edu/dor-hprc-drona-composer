@@ -26,7 +26,7 @@ def retrieve_tasks_and_other_resources(nodes,tasks,cpus,mem,gpu):
        cpunum=192
    # if nodes is not set, match the number of nodes based on requested tasks and cpus
    if nodenum == 0:
-      nodenum = (cpunum*tasknum // 192)+1
+      nodenum = (cpunum*tasknum // 192) if  (cpunum*tasknum) % 192 == 0 else (cpunum*tasknum // 192)+1 
    else:
       # check for
       # cpu=1 and tasks < nodes  --> set nodes to match tasks
@@ -83,7 +83,7 @@ def retrieve_loaded_modules(modules=""):
     if modules == "":
         return f""
     else:
-        return f"module load foss/2023b " + modules  
+        return f" foss/2023b " + modules  
 
 
 def retrieve_account(account=""):
@@ -92,8 +92,10 @@ def retrieve_account(account=""):
     else:
         return f"#SBATCH --account="+account
 
-def retrieve_extra(extras, gpu):
+def retrieve_extra(extras, gpu, account):
     extra_string=extras+ " " + gpu
+    if account != "":
+        extra_string=extra_string+" --account="+account
     if extra_string == " ":
         return f""
     else:
