@@ -18,18 +18,18 @@
     ]
   },
 
-  "cores": {
+  "tasks": {
     "type": "number",
     "label": "Number of tasks",
     "help": "This is the number of tasks your code can utilize. This is mainly for codes that use MPI. If you are not sure, just leave this as 1",
-    "name": "cores",
+    "name": "tasks",
     "value": "1"
   }, 
 
 
    "AdvancedCheckbox": {
     "type": "checkbox",
-    "label":"Include advanced task distribution options",
+    "label":"Advanced task options",
     "name": "advancedbox",
     "help": "Check this box if you want to provide advanced task placement options. These are advanced settings. Only use if you are familiar with these options",
     "value": "Yes"
@@ -44,6 +44,16 @@
     "condition": "AdvancedCheckbox.Yes"
   },
 
+   "cpus": {
+    "type": "number",
+    "label": "Number of cpus per tasks",
+    "help" : "This option is mostly used for hybrid codes (typically codes that use both MPI and OpenMP). Only set this field if you are sure your code will utilze multiple threads per task. Keep in mind the total number of cores will be #tasks multiplied by #cpus_per_task).",
+    "name": "cpus",
+    "value": "1",
+    "max": "64",
+    "condition": "AdvancedCheckbox.Yes"
+  },
+
   "gpuDropdown": {
     "type": "select",
     "label": "Use Accelerator",
@@ -51,35 +61,45 @@
     "name": "gpu",
     "options": [
       {
-        "value": "",
+        "value": "None",
         "label": "None"
       },
-      {    
-        "value": "--partition=gpu --gres=gpu",
-        "label": "ANY GPU"
-      },
       {
-        "value": "--partition=gpu --gres=gpu:a100",
+        "value": "a10",
+        "label": "A10"
+      },
+     {
+        "value": "a30",
+        "label": "A30"
+      },
+       {
+        "value": "a40",
+        "label": "A40"
+      },
+       {
+        "value": "a100",
         "label": "A100"
       },
        {
-        "value": "--partition=gpu --gres=gpu:a40",
-        "label": "A40"
-      },
-      {
-        "value": "--partition=gpu --gres=gpu:a30",
-        "label": "A30"
-      },
-      {
-        "value": "--partition=gpu --gres=gpu:a10",
-        "label": "A10 "
-      },
-       {
-        "value": "--partition=gpu --gres=gpu:t4",
-        "label": "T4 "
+        "value": "t4",
+        "label": "T4"
       }
-    ]
+      ]
+
   },
+
+
+   "numgpus": {
+    "type": "number",
+    "label": "#GPUs",
+    "help" : "Enter the number of GPUs you want to use. On FASTER, in theory you can request up to 10.",
+    "name": "numgpu",
+    "value": "1",
+    "max": "10",
+    "condition": "gpuDropdown.a10 || gpuDropdown.a10 || gpuDropdown.a30 || gpuDropdown.a40 || gpuDropdown.a100 || gpuDropdown.t4 ||"
+  },
+
+
   "memory": {
     "type": "unit",
     "label": "TOTAL Memory",
