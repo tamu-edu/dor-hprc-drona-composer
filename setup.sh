@@ -18,7 +18,7 @@ sed -i.bak -e "s/\[cluster-name\]/$CLUSTERNAME/g" manifest.yml
 rm config.yml.bak manifest.yml.bak
 
 # create the environments directory
-mkdir environments
+mkdir -p environments
 
 python3 -m venv .venv
 source .venv/bin/activate

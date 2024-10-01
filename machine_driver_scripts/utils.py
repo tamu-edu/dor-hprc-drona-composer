@@ -3,13 +3,6 @@ import shutil
 import json
 
 
-def retrieve_alphapickle(pickle, proteinfasta, outputdir):
-    if pickle == "true":
-       name = os.path.splitext(os.path.basename(proteinfasta))[0]
-       return f"run_AlphaPickle.py   -od " +  outputdir + "/" + name
-    else:
-       return f""
-
 
 def drona_add_additional_file(additional_file, preview_name = "", preview_order = 0):
     user_id = os.getenv('USER')
