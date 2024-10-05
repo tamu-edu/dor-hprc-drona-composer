@@ -1,4 +1,4 @@
- Drona Composer, developed by HPRC, is a tool that assists researchers in creating and submitting any type of batch job or workflow using a 100% graphical interface. It guides the researcher to provide workflow-specific information, generates a job file, and submits the job on the user's behalf. 
+ Drona Composer, developed by HPRC, is a tool that assists researchers in creating and submitting any type of job (including complex multi-stage jobs) using a 100% graphical interface. It guides the researcher in providing job-specific information, generating all necessary job files, and submitting the job on the user's behalf. 
 
 For detailed information on how to use Drona Composer and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Composer]([https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html) User Guide.
 
