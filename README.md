@@ -1,6 +1,6 @@
  Drona Composer, developed by HPRC, is a tool that assists researchers in creating and submitting any type of batch job or workflow using a 100% graphical interface. It guides the researcher to provide workflow-specific information, generates a job file, and submits the job on the user's behalf. 
 
-For detailed information on how to use Drona Composer and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC (Drona Composer)[https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html] User Guide.
+For detailed information on how to use Drona Composer and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Composer]([https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html) User Guide.
 
 To setup/install Drona Composer, see the instructions below. If you have any questions, please contact us at help@hprc.tamu.edu
 
@@ -13,7 +13,7 @@ Drona Composer is also a Passenger Phusion app using React/Flask. Before you can
 ```
 ./setup
 ```
-This will install all the Python dependencies in requirements.txt. It will also create the **environments** directory. After running the setup script the app should be ready tp use. The first time you run the app, it will show the common "Initialize App" screen.
+This will install all the Python dependencies in requirements.txt. It will also create the **environments** directory. After running the setup script the app should be ready tp use. The first time you run the app, it will show the typical "Initialize App" screen.
 
 ### Potential Installation Issues
 
@@ -25,7 +25,7 @@ Drona Composer will check a specific user directory for environments. On HPRC cl
 user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
 ```
 
-with the correct location on your cluster.
+with the correct location on your cluster. 
 
 #### TMP directory
 
@@ -48,13 +48,13 @@ The config.yml file contains the entry **modules_db_path: "/sw/hprc/sw/dor-hprc-
 
 #### Retrieving Clustername
 
-the setup script retrieves the name of the cluster by calling a custom script named **clustername**. On non-hprc clusters you might need to update setup.sh to set the clustername. The name doesn't really matter.
+the setup script retrieves the name of the cluster by calling a custom script named **clustername**. On non-hprc clusters you might need to update setup.sh to set the clustername. The clustername is mostly used internally and ond in the form title. The name doesn't really matter.
 
 ## Setting up Environments
 
-Drona Composer will check for system environments in the **environments** directory. When you first install Drona Composer, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/<clustername>** You can copy this Generic env, update the various declaration files to match your particular situation and then copy the update env to the **environments** directory. 
+Drona Composer will check for system environments in the **environments** directory. When you first install Drona Composer, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/<clustername>** You can copy this Generic env, update the various declaration files to match your particular situation, and then copy the update env to the **environments** directory. 
 
 ## Setting up Import Feature
 
-Researchers can "import" new environments to their local storage. Right now, all environments available to import are stored locally inside the repo in directory **environments-repo/<clustername> (where clustername was dissuced above). You are welcome to provide more environments in this directory for researchers to "import". 
+Researchers can "import" new environments to their local storage. Right now, all environments available to import are stored locally inside the repo in directory **environments-repo/<clustername>** (where clustername was discussed above). You are welcome to provide more environments in this directory for researchers to "import". 
 
