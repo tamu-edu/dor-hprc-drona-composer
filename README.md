@@ -52,9 +52,9 @@ The setup script retrieves the cluster name by calling a custom script named **c
 
 ## Setting up Environments
 
-Drona Composer will check for system environments (an environment is the building block to create/generate jobs) in the **environments** directory. When you first install Drona Composer, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/<clustername>/** You can copy this Generic env, update the various declaration files to match your particular situation, and then copy the update env to the **environments** directory. 
+Drona Composer will check for system environments (an environment is the building block to create/generate jobs) in the **environments** directory. When you first install Drona Composer, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/clustername/** You can copy this Generic env, update the various declaration files to match your particular situation, and then copy the update env to the **environments** directory. 
 
 ## Setting up Import Feature
 
-Researchers can "import" new environments to their local storage. Right now, all environments available to import are stored locally inside the repo in directory **environments-repo/<clustername>/** (where clustername was discussed above). You are welcome to provide more environments in this directory for researchers to "import". 
+Researchers can "import" new environments to their local storage. Right now, all environments available to import are stored locally inside the repo in directory **environments-repo/clustername/** (where clustername was discussed above). You are welcome to provide more environments in this directory for researchers to "import". 
 
