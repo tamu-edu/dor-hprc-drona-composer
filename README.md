@@ -8,12 +8,12 @@ To setup/install Drona Composer, see the instructions below. If you have any que
 
 ## OOD passenger app
 
-Drona Composer is also a Passenger Phusion app using React/Flask. Before you can use Drona Composer you need to run setup to install the dependencies. After cloning the repo inside OOD (either sys or dev directory), enter the Drona Composer directory and run the following command:
+Drona Composer is also a Passenger Phusion app using React/Flask. Before you can use Drona Composer, you need to run setup to install the dependencies. After cloning the repo inside OOD (either sys or dev directory), enter the Drona Composer directory and run the following command:
 
 ```
 ./setup
 ```
-This will install all the Python dependencies in requirements.txt. It will also create the **environments** directory. After running the setup script the app should be ready tp use. The first time you run the app, it will show the typical "Initialize App" screen.
+This will install all the Python dependencies in requirements.txt. It will also create the **environments** directory. After running the setup script, the app should be ready to use. The first time you run the app, it will show the typical "Initialize App" screen.
 
 ### Potential Installation Issues
 
@@ -48,13 +48,13 @@ The config.yml file contains the entry **modules_db_path: "/sw/hprc/sw/dor-hprc-
 
 #### Retrieving Clustername
 
-the setup script retrieves the name of the cluster by calling a custom script named **clustername**. On non-hprc clusters you might need to update setup.sh to set the clustername. The clustername is mostly used internally and ond in the form title. The name doesn't really matter.
+The setup script retrieves the cluster name by calling a custom script named **clustername**. On non-HPRC clusters, you might need to update setup.sh to set the cluster name. The clustername is mainly used internally and in the form title. The name doesn't really matter.
 
 ## Setting up Environments
 
-Drona Composer will check for system environments in the **environments** directory. When you first install Drona Composer, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/<clustername>** You can copy this Generic env, update the various declaration files to match your particular situation, and then copy the update env to the **environments** directory. 
+Drona Composer will check for system environments (an environment is the building block to create/generate jobs) in the **environments** directory. When you first install Drona Composer, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/<clustername>** You can copy this Generic env, update the various declaration files to match your particular situation, and then copy the update env to the **environments** directory. 
 
 ## Setting up Import Feature
 
-Researchers can "import" new environments to their local storage. Right now, all environments available to import are stored locally inside the repo in directory **environments-repo/<clustername>** (where clustername was discussed above). You are welcome to provide more environments in this directory for researchers to "import". 
+Researchers can "import" new environments to their local storage. Right now, all environments available to import are stored locally inside the repo in directory **environments-repo/<clustername>/** (where clustername was discussed above). You are welcome to provide more environments in this directory for researchers to "import". 
 
