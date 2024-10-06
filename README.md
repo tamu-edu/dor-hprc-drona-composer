@@ -50,6 +50,10 @@ The config.yml file contains the entry **modules_db_path: "/sw/hprc/sw/dor-hprc-
 
 The setup script retrieves the cluster name by calling a custom script named **clustername**. On non-HPRC clusters, you might need to update setup.sh to set the cluster name. The clustername is mainly used internally and in the form title. The name doesn't really matter.
 
+##### Older Python version
+
+Drona Composer requires at least Python version 3.8. For clusters that still have versions 3.6, we provide an older requirements file (requirements.txt.Python2.6.8). Copy this file  to requirments.txt and follow the usual setup process. You might need to remove file package-lock.json.
+
 ## Setting up Environments
 
 Drona Composer will check for system environments (an environment is the building block to create/generate jobs) in the **environments** directory. When you first install Drona Composer, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/clustername/** You can copy this Generic env, update the various declaration files to match your particular situation, and then copy the update env to the **environments** directory. 
