@@ -5,7 +5,7 @@ Drona Composer, developed by High Performance Research Computing (HPRC) at Texas
 
 For detailed information on how to use Drona Composer and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC  [Drona Composer](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html) User Guide.
 
-To setup/install Drona Composer, see the instructions below. If you have any questions, please contact us at help@hprc.tamu.edu
+To setup/install Drona Composer, see the instructions below. If you have any questions, please contact us at help@hprc.tamu.edu. If you find any bugs, your are welcome to create an issue in this repo.
 
 # Setup
 
