@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import FormElementWrapper from "./FormElementWrapper";
 
-function Text(props) {
+function Unknown(props) {
   const [value, setValue] = useState(props.value || "");
 
   function handleValueChange(event) {
@@ -13,19 +13,14 @@ function Text(props) {
   return (
     <FormElementWrapper
       labelOnTop={props.labelOnTop}
-      name={props.name}
       label={props.label}
-      help={props.help}
     >
-      <input
-        type="text"
-        name={props.name}
-        id={props.id}
-        value={value}
-        placeholder={props.placeholder}
-        className="form-control"
-        onChange={handleValueChange}
-      />
+	             <div key={elementIndex} className="col">
+              {/* Fallback UI for invalid element types */}
+              <div className="alert alert-danger">
+                Invalid component type: {type || "undefined"}
+              </div>
+            </div>
     </FormElementWrapper>
   );
 }

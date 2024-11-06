@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Label from "./Label"
+import FormElementWrapper from "./FormElementWrapper";
 
 function Time(props) {
   const [days, setDays] = useState(0);
@@ -39,9 +39,12 @@ function Time(props) {
   }
 
   return (
-    <div className="form-group row">
-      <Label name={props.name} label={props.label} help={props.help}/>
-      <div className="col-lg-9">
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+    >
         <div className="input-group">
           <input
             type="number"
@@ -71,8 +74,7 @@ function Time(props) {
           />
         </div>
         <input name={props.name} type="hidden" value={value} />
-      </div>
-    </div>
+    </FormElementWrapper>
   );
 }
 

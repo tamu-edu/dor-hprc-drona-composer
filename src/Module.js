@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import Label from "./Label"
+import FormElementWrapper from "./FormElementWrapper";
 
 function Module(props) {
   const [value, setValue] = useState("");
@@ -78,9 +78,13 @@ function Module(props) {
   ));
 
   return (
-    <div className="form-group row">
-      <Label name={props.name} label={props.label} help={props.help}/>
-      <div className="col-lg-9 ui-widget">
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+    >
+      <div className="ui-widget">
         <div className="input-group">
           <input
             ref={moduleSearchRef}
@@ -116,7 +120,7 @@ function Module(props) {
           </span>
         ))}
       </div>
-    </div>
+    </FormElementWrapper>
   );
 }
 

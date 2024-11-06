@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Label from "./Label"
+import FormElementWrapper from "./FormElementWrapper"
 
 function RadioGroup(props) {
   const [value, setValue] = useState("");
@@ -25,10 +25,14 @@ function RadioGroup(props) {
   ));
 
   return (
-    <div className="form-group row">
-      <Label name={props.name} label={props.label} help={props.help}/>
-      <div className="col-lg-9">{optionList}</div>
-    </div>
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+    >
+      {optionList}
+    </FormElementWrapper>
   );
 }
 
