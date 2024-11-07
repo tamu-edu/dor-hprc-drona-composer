@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { GlobalFilesContext } from "./index.js";
-import Label from "./Label"
+import FormElementWrapper from "./FormElementWrapper";
 
 function Uploader(props) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -57,9 +57,12 @@ function Uploader(props) {
   }
 
   return (
-    <div className="form-group row">
-      <Label name={props.name} label={props.label} help={props.help}/>
-      <div className="col-lg-9">
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+    >
         <select defaultValue={"default"} ref={selectRef}>
           <option value="default" disabled>
             Select an option
@@ -98,8 +101,7 @@ function Uploader(props) {
             </div>
           ))}
         </div>
-      </div>
-    </div>
+     </FormElementWrapper>
   );
 }
 export default Uploader;
