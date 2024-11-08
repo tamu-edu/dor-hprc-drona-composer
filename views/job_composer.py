@@ -6,8 +6,12 @@ import os
 from machine_driver_scripts.engine import Engine
 import subprocess
 import yaml
+from functools import wraps
+from .logger import Logger
 
 job_composer = Blueprint("job_composer", __name__)
+logger = Logger()
+
 
 @job_composer.route("/")
 def composer():
@@ -123,6 +127,14 @@ def save_file(file, location):
     
 
 @job_composer.route('/submit', methods=['POST'])
+@logger.log_route(
+    extract_fields={
+        'user': lambda: os.getenv('USER'), 
+        'env_dir': lambda: request.form.get('env_dir', 'unknown'),
+        'env': lambda: request.form.get('runtime', 'unknown')
+    },
+    format_string="{timestamp}:{user}{env_dir}/{env}"
+)
 def submit_job():
     params = request.form
     files = request.files
