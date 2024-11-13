@@ -11,6 +11,7 @@ import Uploader from "./Uploader";
 import Time from "./Time";
 import Module from "./Module";
 import Unit from "./Unit";
+import UnknownElement from "./UnknownElement";
 
 const componentsMap = {
   text: Text,
@@ -97,7 +98,17 @@ const FieldRenderer = ({
       ), 1];
     }
 
-    return [<p key={key}>{key} : {type}</p>, 1];
+    return [(
+        <div key={index} className={fieldStyles}>
+          <UnknownElement
+            key={key}
+            labelOnTop={labelOnTop}
+            index={index}
+	    type={type}
+	    {...attributes}
+          />
+        </div>
+      ), 1];
   };
 
  
