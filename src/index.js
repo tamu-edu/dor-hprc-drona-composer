@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef, createContext } from "react";
 
 import ReactDOM from "react-dom";
-import Text from "./Text";
-import Select from "./Select";
-import Picker from "./Picker";
-import Composer from "./Composer";
+import {Text, Select, Picker} from "./schemaRendering/schemaElements/index"
+import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
 export const GlobalFilesContext = createContext();
 

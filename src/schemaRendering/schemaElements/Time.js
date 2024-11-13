@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import FormElementWrapper from "./FormElementWrapper";
+import FormElementWrapper from "../utils/FormElementWrapper";
 
 function Time(props) {
   const [days, setDays] = useState(0);

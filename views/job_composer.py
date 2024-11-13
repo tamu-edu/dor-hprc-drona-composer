@@ -163,15 +163,6 @@ def submit_job():
     except subprocess.CalledProcessError as e:
         return e.stderr
     
-@job_composer.route('/test_submit', methods=['POST'])
-def test_submit():
-    params = request.form
-    files = request.files
-    print(params)
-    print(files)
-    return "Success"
-
-
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
@@ -248,9 +239,6 @@ def get_more_envs_info():
 
 
 def _get_environments():
-    system_environments = get_directories("./environments")
-    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
-    
     user_envs_path = request.args.get("user_envs_path")
 
     if user_envs_path is None:
@@ -263,9 +251,7 @@ def _get_environments():
         user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
     except OSError as e:
         print(e)
-    
-    environments = system_environments + user_environments
 
-    return environments
+    return user_environments
 
 

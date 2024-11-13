@@ -1,5 +1,5 @@
 import React from "react";
-import FieldRenderer from "./FieldRenderer";
+import FieldRenderer from "../FieldRenderer";
 
 function RowContainer({
   elements,

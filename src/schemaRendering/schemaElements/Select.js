@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import FormElementWrapper from "./FormElementWrapper"
-import Label from "./Label";
+import FormElementWrapper from "../utils/FormElementWrapper"
 import Select from "react-select";
 
 function CustomSelect(props) {

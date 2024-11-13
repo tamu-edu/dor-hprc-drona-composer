@@ -37,12 +37,7 @@ app.register_blueprint(job_composer, url_prefix="/jobs/composer")
 
 @app.route("/")
 def index():
-    environments = get_directories("./environments")
-    return render_template("index.html", environments=environments)
-
-def get_directories(path):
-    return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
+    return render_template("index.html")
 
 @app.route("/config")
 def config():
@@ -50,4 +45,4 @@ def config():
         
 
 if __name__ == "__main__":
-	app.run(debug=True)
+    app.run(debug=True)
