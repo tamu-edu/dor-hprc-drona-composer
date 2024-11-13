@@ -1,5 +1,5 @@
 import React from "react";
-import FormElementWrapper from "./FormElementWrapper";
+import FormElementWrapper from "../utils/FormElementWrapper";
 
 function UnknownElement(props) {
 

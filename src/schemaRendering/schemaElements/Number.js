@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import FormElementWrapper from "./FormElementWrapper"
+import FormElementWrapper from "../utils/FormElementWrapper"
 
 function Number(props) {
   const [value, setValue] = useState(props.value || "");

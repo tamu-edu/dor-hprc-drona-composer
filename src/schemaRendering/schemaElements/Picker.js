@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
 import { GlobalFilesContext } from "../../index.js";
-import FormElementWrapper from "./FormElementWrapper"
+import FormElementWrapper from "../utils/FormElementWrapper"
 
 function Picker(props) {
   const [uploadedFiles, setUploadedFiles] = useState([]);

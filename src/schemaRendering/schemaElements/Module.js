@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import FormElementWrapper from "./FormElementWrapper";
+import FormElementWrapper from "../utils/FormElementWrapper";
 
 function Module(props) {
   const [value, setValue] = useState("");
