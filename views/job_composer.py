@@ -163,15 +163,6 @@ def submit_job():
     except subprocess.CalledProcessError as e:
         return e.stderr
     
-@job_composer.route('/test_submit', methods=['POST'])
-def test_submit():
-    params = request.form
-    files = request.files
-    print(params)
-    print(files)
-    return "Success"
-
-
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
