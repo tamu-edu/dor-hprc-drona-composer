@@ -1,0 +1,12 @@
+# this is the template to run matlab codes in the jobcomposer
+
+source /etc/profile
+
+module load Matlab/[fversion]
+
+cd [flocation]
+
+[matlabpath]
+matlabsubmit [mopts] [fmainscript]
+
+echo "Run Finish"
