@@ -8,6 +8,7 @@ import subprocess
 import yaml
 from functools import wraps
 from .logger import Logger
+from .error_handler import APIError, handle_api_error
 
 job_composer = Blueprint("job_composer", __name__)
 logger = Logger()
@@ -52,6 +53,7 @@ def get_environment(environment):
     return template_data
 
 @job_composer.route('/schema/<environment>', methods=['GET'])
+@handle_api_error
 def get_schema(environment):
     env_dir = request.args.get("src")
     if env_dir is None:
@@ -62,10 +64,13 @@ def get_schema(environment):
     if os.path.exists(schema_path):
         schema_data = open(schema_path, 'r').read()
     else:
-        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'schema.json')} not found")
+        raise APIError(f"Schema file not found: {schema_path}", status_code=404)
    
-    schema_dict = json.loads(schema_data)
-    
+    try:
+        schema_dict = json.loads(schema_data)
+    except json.JSONDecodeError as e:
+        raise APIError("Invalid schema JSON", status_code=400, details={'error': str(e)})
+
     for key in schema_dict:
         if schema_dict[key]["type"] == "dynamic_select":
             
@@ -79,7 +84,11 @@ def get_schema(environment):
                 else:
                     return result.stderr
             except subprocess.CalledProcessError as e:
-                return e.stderr
+                raise APIError(
+                    "Failed to process dynamic select",
+                    status_code=500,
+                    details={'error': str(e)}
+                )
             
             schema_dict[key]["type"] = "select" 
             schema_dict[key]["options"] = options
