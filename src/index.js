@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import {Text, Select, Picker} from "./schemaRendering/schemaElements/index"
 import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
+import ErrorAlert from "./ErrorAlert";
 export const GlobalFilesContext = createContext();
 
 function App() {
@@ -24,7 +25,11 @@ function App() {
     "/scratch/user/" + document.user + "/job_composer"
   );
 
+
+
   const [environments, setEnvironments] = useState([]);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
@@ -49,21 +54,31 @@ function App() {
     );
   }
 
+
   function handleEnvChange(key, option) {
     const env = option.value;
     const src = option.src;
 
     setEnvironment({ env: env, src: src });
 
-    fetch(
-      document.dashboard_url + "/jobs/composer/schema/" + env + "?src=" + src
-    )
-      .then((response) => response.json())
-      .then((data) => setFields(data))
-      .catch((error) => {
-        console.error("Error fetching JSON data");
+    fetch(`${document.dashboard_url}/jobs/composer/schema/${env}?src=${src}`)
+      .then(async response => {
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw {
+            message: errorData.message || 'Failed to load schema',
+            status_code: response.status,
+            details: errorData.details || errorData
+          };
+        }
+        return response.json();
+      })
+      .then(data => setFields(data))
+      .catch(error => {
+        setError(error);
       });
   }
+
 
   function handleUploadedFiles(files, globalFiles) {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -326,6 +341,12 @@ function App() {
 
   return (
     <div>
+     {error && (
+      <ErrorAlert
+        error={error}
+        onClose={() => setError(null)}
+      />
+     )}
       <div className="card shadow">
         <div className="card-header">
           <h6 className="maroon-header">Job Composer</h6>
