@@ -1,10 +1,13 @@
 import React from 'react';
   
-const Label = ({ name, label, help }) => {
-  return (
-    <label className="col-lg-3 col-form-label form-control-label" htmlFor={name}>
+const Label = ({ labelOnTop, name, label, help }) => {
+  return(
+    <label
+  	className={`form-control-label ${labelOnTop ? "col-form-label" : "col-lg-3 col-form-label"}`}
+ 	htmlFor={name}
+    >
       {label}
-            {help && (
+      {help && (
         <span
            style={{
    		marginLeft: '3px',

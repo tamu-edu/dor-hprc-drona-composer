@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
-import { GlobalFilesContext } from "./index.js";
-import Label from "./Label"
+import { GlobalFilesContext } from "../../index.js";
+import FormElementWrapper from "../utils/FormElementWrapper"
 
 function Picker(props) {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -200,9 +200,13 @@ function Picker(props) {
 
   return (
     <div>
-      <div className="form-group row">
-	<Label name={props.name} label={props.label} help={props.help}/>
-        <div className="col-lg-9" style={{ display: "flex" }}>
+      <FormElementWrapper
+        labelOnTop={props.labelOnTop}
+        name={props.name}
+        label={props.label}
+        help={props.help}
+      >
+        <div style={{ display: "flex" }}>
           {showRemoteLabel && (
             <button
               type="button"
@@ -240,7 +244,7 @@ function Picker(props) {
             ref={inputRef}
           />
         </div>
-      </div>
+      </FormElementWrapper>
       <div
         className="modal fade"
         id={"local-file-picker-modal-" + props.name}

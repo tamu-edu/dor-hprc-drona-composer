@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Label from "./Label"
+import FormElementWrapper from "../utils/FormElementWrapper"
 
 function Number(props) {
   const [value, setValue] = useState(props.value || "");
@@ -10,9 +10,12 @@ function Number(props) {
   }
 
   return (
-    <div className="form-group row">
-     <Label name={props.name} label={props.label} help={props.help}/>
-      <div className="col-lg-9">
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+    >
         <input
           type="number"
           name={props.name}
@@ -25,8 +28,7 @@ function Number(props) {
           step={props.step}
           onChange={handleValueChange}
         />
-      </div>
-    </div>
+    </FormElementWrapper>
   );
 }
 export default Number;

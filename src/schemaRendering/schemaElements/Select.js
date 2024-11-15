@@ -1,15 +1,9 @@
 import React, { useState } from "react";
-import Label from "./Label";
+import FormElementWrapper from "../utils/FormElementWrapper"
 import Select from "react-select";
 
 function CustomSelect(props) {
-  const [value, setValue] = useState("");
-
-  // const optionList = props.options.map((option) => (
-  //   <option key={option.value} value={option.value} {...option}>
-  //     {option.label}
-  //   </option>
-  // ));
+  const [value, setValue] = useState(props.value || "");
 
   const handleValueChange = (option) => {
     setValue(option);
@@ -57,10 +51,16 @@ function CustomSelect(props) {
     }),
   };
   return (
-    <div className="form-group row">
-      <Label name={props.name} label={props.label} help={props.help} />
-      <div className="col-lg-9" style={{ display: "flex" }}>
-        <Select
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+    >
+	  <div style={{display: "flex"}}>
+	  <Select
+	  menuPortalTarget={document.body}  // Allows the dropdown to extend beyond the parent div 
+          menuPosition="fixed" 
           value={value}
           onChange={handleValueChange}
           options={props.options}
@@ -81,8 +81,8 @@ function CustomSelect(props) {
             +
           </button>
         )}
-      </div>
-    </div>
+	  </div>
+    </FormElementWrapper>
   );
 }
 
