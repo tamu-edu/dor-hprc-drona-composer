@@ -97,7 +97,10 @@ const ErrorAlert = ({ error, onClose }) => {
                   fontSize: '14px',
                   marginTop: '8px'
                 }}>
-                  <pre style={{ margin: 0 }}>
+                  <pre style={{ margin: 0, 
+				whiteSpace: 'pre-wrap',       
+      				wordWrap: 'break-word'
+				}}>
                     {JSON.stringify(errorDetails, null, 2)}
                   </pre>
                 </div>
