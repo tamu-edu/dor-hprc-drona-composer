@@ -1,0 +1,99 @@
+{
+  "versionDropdown": {
+    "type": "select",
+    "label": "Matlab version",
+    "name": "version",
+    "options": [
+      {
+        "value": "R2023b",
+        "label": "Matlab/R2023b"
+      },
+      {
+        "value": "R2024a",
+        "label": "Matlab/R2024a"
+      }
+    ]
+  },
+
+  "mainscriptPicker": {
+    "type": "picker",
+    "label": "Main Matlab script",
+    "name": "mainscript",
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "showFiles": "True",
+    "files": "True"
+  },
+
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload additional scripts and data (optional)"
+  },
+
+
+  "matlabpathPicker": {
+    "type": "picker",
+    "label": "MATLABPATH (to add Matlab directories to search path)",
+    "name": "matlabpath",
+    "localLabel": "select"
+  },
+
+  "workers": {
+    "type": "number",
+    "label": "#workers for parallel processing (max 48)",
+    "name": "workers",
+    "value": "0"
+  },
+
+  "threads": {
+    "type": "number",
+    "label": "#comp threads",
+    "name": "threads",
+    "value": "1"
+  },
+
+  "gpuDropdown": {
+    "type": "select",
+    "label": "Use GPU",
+    "name": "gpu",
+    "options": [
+      {
+        "value": "",
+        "label": "NO GPU"
+      },
+      {    
+        "value": "--gres=gpu",
+        "label": "ANY GPU"
+      },
+      {
+        "value": "--gres=gpu:a30",
+        "label": "A30"
+      },
+      {
+        "value": "--gres=gpu:h100",
+        "label": "H100"
+      }
+    ]
+  },
+
+
+    "memory": {
+    "type": "unit",
+    "label": "Memory",
+    "name": "memory",
+    "units": [
+      {
+        "label": "MB",
+        "value": "MB"
+      }
+    ]
+  },
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected time needed to run",
+    "name": "walltime",
+    "value": ""
+  }
+
+}
