@@ -140,9 +140,10 @@ def save_file(file, location):
     extract_fields={
         'user': lambda: os.getenv('USER'), 
         'env_dir': lambda: request.form.get('env_dir', 'unknown'),
+        'job_name': lambda: request.form.get('name','unknown'), 
         'env': lambda: request.form.get('runtime', 'unknown')
     },
-    format_string="{timestamp}:{user}{env_dir}/{env}"
+    format_string="{timestamp} {user} {env_dir}/{env} {job_name}"
 )
 def submit_job():
     params = request.form
