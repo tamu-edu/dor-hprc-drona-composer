@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {componentsMap, RowContainer, UnknownElement} from "./schemaElements/index.js"
-
 const FieldRenderer = ({
   fields,
   handleValueChange,
@@ -52,6 +51,9 @@ const FieldRenderer = ({
        />
       </div>
       ), totalElements];
+   }
+   if (type === "dynamicSelect" && !attributes["isShown"]) {
+       attributes["isShown"] = true;
    }
    if (Element) {
       return [(
