@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useRef, createContext } from "react";
-
 import ReactDOM from "react-dom";
-import {Text, Select, Picker} from "./schemaRendering/schemaElements/index"
-import Composer from "./schemaRendering/Composer";
-import MultiPaneTextArea from "./MultiPaneTextArea";
-import ErrorAlert from "./ErrorAlert";
-export const GlobalFilesContext = createContext();
+import JobComposer from "./JobComposer";
 
 function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
@@ -340,202 +335,30 @@ function App() {
     setJobScript(event.target.value);
   };
 
-  return (
-    <div>
-     {error && (
-      <ErrorAlert
-        error={error}
-        onClose={() => setError(null)}
-      />
-     )}
-      <div className="card shadow">
-        <div className="card-header">
-          <h6 className="maroon-header">Job Composer</h6>
-        </div>
-        <div className="card-body">
-          <form
-            ref={formRef}
-            className="form"
-            role="form"
-            id="slurm-config-form"
-            autoComplete="off"
-            method="POST"
-            encType="multipart/form-data"
-            onSubmit={handleSubmit}
-            onKeyDown={(e) => {
-              e.key === "Enter" && e.preventDefault();
-            }}
-            action={document.dashboard_url + "/jobs/composer/submit"}
-          >
-            <div className="row">
-              <div className="col-lg-12">
-                <div id="job-content">
-                  <GlobalFilesContext.Provider
-                    value={{ globalFiles, setGlobalFiles }}
-                  >
-                    <Text
-                      name="name"
-                      id="job-name"
-                      label="Job Name"
-                      onNameChange={(name) => sync_job_name(name)}
-                    />
-                    <Picker
-                      name="location"
-                      label="Location"
-                      localLabel="Change"
-                      defaultLocation={runLocation}
-                    />
-                    <Select
-                      key="env_select"
-                      name="runtime"
-                      label="Environments"
-                      options={environments}
-                      onChange={handleEnvChange}
-                      showAddMore={true}
-                      onAddMore={handleAddEnv}
-                    />
-                    <Composer
-                      environment={environment}
-                      fields={fields}
-                      onFileChange={(files, globalFiles) =>
-                        handleUploadedFiles(files, globalFiles)
-                      }
-                    />
-                  </GlobalFilesContext.Provider>
-                </div>
-              </div>
-            </div>
-            <div className="form-group row text-center">
-              <div id="job-preview-button-section" className="col-lg-12">
-                <input
-                  type="button"
-                  id="job-preview-button"
-                  className="btn btn-primary maroon-button"
-                  value="Preview"
-                  onClick={handlePreview}
-                />
-              </div>
-            </div>
-          </form>
-        </div>
-        <div className="card-footer">
-          <small className="text-muted">
-            ⚠️ Cautions: Job files will overwrite existing files with the same
-            name. The same principle applies for your executable scripts.
-          </small>
-        </div>
-      </div>
-
-      {/* Modal for add more environments */}
-      <div
-        ref={envModalRef}
-        className="modal fade bd-example-modal-lg"
-        id="env-add-modal"
-        tabIndex="-1"
-        role="dialog"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Import Environments</h5>
-              <button
-                type="button"
-                className="close"
-                data-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div className="modal-body"></div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-dismiss="modal"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal for job preview */}
-      <div
-        ref={previewRef}
-        className="modal fade bd-example-modal-lg"
-        id="job-preview-modal"
-        tabIndex="-1"
-        role="dialog"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Job Preview</h5>
-              <button
-                type="button"
-                className="close"
-                data-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <div
-                id="warning-messages"
-                className="alert alert-warning mt-3"
-                style={{
-                  display: warningMessages.length != 0 ? "block" : "none",
-                }}
-              >
-                <h6 className="alert-heading">
-                  The script was generated with the following warnings:
-                </h6>
-                <ul>
-                  {warningMessages.map((warning, index) => (
-                    <li key={index}>{warning}</li>
-                  ))}
-                </ul>
-              </div>
-              <div id="job-preview-container">
-                <MultiPaneTextArea
-                  ref={multiPaneRef}
-                  panes={panes}
-                  setPanes={setPanes}
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <div className="form-group row text-center">
-                <div id="job-submit-button-section" className="col-lg-12">
-                  <input
-                    type="submit"
-                    className="btn btn-primary maroon-button-filled"
-                    value="Submit"
-                    form="slurm-config-form"
-                    style={{ marginRight: "10px" }}
-                  />
-
-                  <button
-                    type="button"
-                    className="btn btn-secondary maroon-button-secondary"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                    style={{ marginRight: "-15px" }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+	  return (
+  <JobComposer
+    error={error}
+    setError={setError}
+    globalFiles={globalFiles}
+    setGlobalFiles={setGlobalFiles}
+    environment={environment}
+    environments={environments}
+    fields={fields}
+    runLocation={runLocation}
+    warningMessages={warningMessages}
+    panes={panes}
+    setPanes={setPanes}
+    handleSubmit={handleSubmit}
+    handlePreview={handlePreview}
+    handleEnvChange={handleEnvChange}
+    handleAddEnv={handleAddEnv}
+    handleUploadedFiles={handleUploadedFiles}
+    sync_job_name={sync_job_name}
+    formRef={formRef}
+    previewRef={previewRef}
+    envModalRef={envModalRef}
+    multiPaneRef={multiPaneRef}
+  />
   );
 }
 
