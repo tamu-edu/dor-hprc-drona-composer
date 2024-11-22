@@ -53,6 +53,7 @@ def get_environment(environment):
     return template_data
 
 @job_composer.route('/evaluate_dynamic_select', methods=['GET'])
+@handle_api_error
 def evaluate_dynamic_select():
     retriever_path = request.args.get("retriever_path")
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
@@ -71,7 +72,11 @@ def evaluate_dynamic_select():
         if result.returncode == 0:
             options = json.loads(result.stdout)
         else:
-            return result.stderr
+            raise APIError(
+                "The dynamic select script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+                )
     except subprocess.CalledProcessError as e:
         raise APIError(
             "Failed to process dynamic select",

@@ -7,7 +7,8 @@ function RowContainer({
   onChange,
   startingIndex,
   onSizeChange,
-  currentValues 
+  currentValues,
+  setError
 }) {
 
   return (
@@ -19,6 +20,7 @@ function RowContainer({
         fieldStyles="col"
         startingIndex={startingIndex}
 	currentValues={currentValues}
+     	setError={setError}
       />
     </div>
   );

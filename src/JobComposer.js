@@ -56,6 +56,7 @@ function JobComposer({ error, setError,  formRef,
                       environment={props.environment}
                       fields={props.fields}
                       onFileChange={props.handleUploadedFiles}
+	  	      setError={setError}
                     />
                   </GlobalFilesContext.Provider>
                 </div>
