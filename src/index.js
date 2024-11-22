@@ -21,8 +21,9 @@ function App() {
   const envModalRef = useRef(null);
   const multiPaneRef = useRef(null);
 
-  const [defaultLocation, setDefaultLocation] = useState(
-    "/scratch/user/" + document.user + "/job_composer"
+  const defaultRunLocation = "/scratch/user/" + document.user + "/drona_composer/runs";
+  const [runLocation, setRunLocation] = useState(
+	  defaultRunLocation
   );
 
 
@@ -49,8 +50,8 @@ function App() {
   }, []);
 
   function sync_job_name(name) {
-    setDefaultLocation(
-      "/scratch/user/" + document.user + "/job_composer/" + name
+    setRunLocation(
+      defaultRunLocation + "/" + name
     );
   }
 
@@ -382,7 +383,7 @@ function App() {
                       name="location"
                       label="Location"
                       localLabel="Change"
-                      defaultLocation={defaultLocation}
+                      defaultLocation={runLocation}
                     />
                     <Select
                       key="env_select"
