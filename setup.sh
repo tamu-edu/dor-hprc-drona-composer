@@ -20,10 +20,16 @@ rm config.yml.bak manifest.yml.bak
 # create the environments directory
 mkdir -p environments
 
+
+#create the logs directory and log file
+mkdir -p logs
+touch logs/drona_log
+chmod uog+rw logs/drona_log
+
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-
+#pip install -r requirements.txt.Python2.6.8
 
 
 npm install -D babel-loader @babel/core @babel/preset-react
