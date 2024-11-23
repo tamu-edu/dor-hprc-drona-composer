@@ -52,6 +52,36 @@ def get_environment(environment):
     
     return template_data
 
+@job_composer.route('/evaluate_dynamic_select', methods=['GET'])
+def evaluate_dynamic_select():
+    retriever_path = request.args.get("retriever_path")
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    bash_command = f"bash {retriever_script}"
+    try:
+        result = subprocess.run(
+                bash_command, 
+                shell=True,
+                check=True, 
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, 
+                universal_newlines=True,
+                cwd=retriever_dir
+        )
+        if result.returncode == 0:
+            options = json.loads(result.stdout)
+        else:
+            return result.stderr
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process dynamic select",
+            status_code=500,
+            details={'error': str(e)}
+    )
+    return options
+
+
+
 @job_composer.route('/schema/<environment>', methods=['GET'])
 @handle_api_error
 def get_schema(environment):
@@ -72,26 +102,12 @@ def get_schema(environment):
         raise APIError("Invalid schema JSON", status_code=400, details={'error': str(e)})
 
     for key in schema_dict:
-        if schema_dict[key]["type"] == "dynamic_select":
+        if schema_dict[key]["type"] == "dynamicSelect":
             
             retriever_path = os.path.join(env_dir, environment, schema_dict[key]["retriever"])
-            bash_command = f"bash {retriever_path}"
-
-            try:
-                result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-                if result.returncode == 0:
-                    options = json.loads(result.stdout)
-                else:
-                    return result.stderr
-            except subprocess.CalledProcessError as e:
-                raise APIError(
-                    "Failed to process dynamic select",
-                    status_code=500,
-                    details={'error': str(e)}
-                )
-            
-            schema_dict[key]["type"] = "select" 
-            schema_dict[key]["options"] = options
+            schema_dict[key]["retrieverPath"] = retriever_path 
+            schema_dict[key]["isEvaluated"] = False
+            schema_dict[key]["isShown"] = False
 
     return json.dumps(schema_dict)
 

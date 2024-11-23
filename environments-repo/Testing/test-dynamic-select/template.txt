@@ -1,0 +1,11 @@
+
+
+# load the modules
+module purge
+[LOADR]
+
+cd [flocation]
+
+Abaqus verion: [version]
+echo "Done!"
+

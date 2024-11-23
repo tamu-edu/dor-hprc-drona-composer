@@ -1,0 +1,27 @@
+
+{
+  "x": {
+    "type": "select",
+    "label": "x",
+    "name": "x",
+    "options": [
+      {
+        "label": "True",
+        "value": "true"
+      },
+      {
+        "label": "False",
+        "value": "false"
+      }
+    ]
+  },
+
+  "VersionDropdown": {
+    "type": "dynamicSelect",
+    "label": "Abaqus version",
+    "name": "version",
+    "help": "Allows to select one of the available Abaqus versions",
+    "retriever" : "retriever.sh",
+    "condition" : "x.true"
+  }
+}
