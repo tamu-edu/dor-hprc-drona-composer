@@ -85,6 +85,13 @@ def evaluate_dynamic_select():
     )
     return options
 
+def iterate_schema(schema_dict):
+    """Generator that yields all elements in the schema including nested ones"""
+    for key, value in schema_dict.items():
+        yield key, value
+
+        if value.get("type") == "rowContainer" and "elements" in value:
+            yield from iterate_schema(value["elements"])
 
 
 @job_composer.route('/schema/<environment>', methods=['GET'])
@@ -106,13 +113,12 @@ def get_schema(environment):
     except json.JSONDecodeError as e:
         raise APIError("Invalid schema JSON", status_code=400, details={'error': str(e)})
 
-    for key in schema_dict:
-        if schema_dict[key]["type"] == "dynamicSelect":
-            
-            retriever_path = os.path.join(env_dir, environment, schema_dict[key]["retriever"])
-            schema_dict[key]["retrieverPath"] = retriever_path 
-            schema_dict[key]["isEvaluated"] = False
-            schema_dict[key]["isShown"] = False
+    for key, element in iterate_schema(schema_dict):
+        if element["type"] == "dynamicSelect":
+            retriever_path = os.path.join(env_dir, environment, element["retriever"])
+            element["retrieverPath"] = retriever_path
+            element["isEvaluated"] = False
+            element["isShown"] = False
 
     return json.dumps(schema_dict)
 
