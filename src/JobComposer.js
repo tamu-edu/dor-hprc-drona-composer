@@ -68,14 +68,14 @@ function JobComposer({ error, setError,  formRef,
               </div>
             </div>
           </form>
-
+	{/*
           <div className="text-center mt-4">
             <button className="btn btn-outline-secondary" onClick={() => setShowHistory(!showHistory)}>
               {showHistory ? 'Hide History' : 'Show History'}
             </button>
           </div>
 
-          <SubmissionHistory isExpanded={showHistory} />
+           <SubmissionHistory isExpanded={showHistory} />*/}
         </div>
         <div className="card-footer">
           <small className="text-muted">
