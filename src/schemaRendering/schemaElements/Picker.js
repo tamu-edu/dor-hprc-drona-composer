@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
-import { GlobalFilesContext } from "../../index.js";
+import { GlobalFilesContext } from "../../JobComposer.js";
 import FormElementWrapper from "../utils/FormElementWrapper"
 
 function Picker(props) {

@@ -63,6 +63,7 @@ const newValues = [...currentValues];
       fields={fields}
       handleValueChange={handleValueChange}
       currentValues={currentValues}  
+      setError={props.setError}
     />
   );
 }
