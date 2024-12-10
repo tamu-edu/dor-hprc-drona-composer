@@ -6,7 +6,8 @@ const FieldRenderer = ({
   labelOnTop,
   fieldStyles,
   startingIndex,
-  currentValues
+  currentValues,
+  setError
 }) => {
 
   if (!fields) return null;
@@ -48,6 +49,7 @@ const FieldRenderer = ({
           onChange={handleValueChange}
           startingIndex={index+1} 
           currentValues={currentValues} 
+	  setError={setError}
        />
       </div>
       ), totalElements];
@@ -64,6 +66,7 @@ const FieldRenderer = ({
             index={index}
             value={currentValues[index]} 
 	    {...attributes}
+	    setError={setError}
 
             onChange={ (_, val) => {
               handleValueChange(index, val);

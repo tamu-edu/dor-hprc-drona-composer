@@ -62,14 +62,19 @@ function DynamicSelect(props) {
           );
           
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+		  const errorData = await response.json();
+		  throw {
+            		message: errorData.message || 'Failed to retrieve select options',
+            		status_code: response.status,
+            		details: errorData.details || errorData
+          	 };
           }
           
           const data = await response.json();
           setOptions(data);
           setIsEvaluated(true);
         } catch (error) {
-          console.error("Error fetching select options:", error);
+		props.setError(error);
         } finally {
           setIsLoading(false);
         }
