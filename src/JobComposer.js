@@ -62,21 +62,25 @@ function JobComposer({ error, setError,  formRef,
                 </div>
               </div>
             </div>
-            <div className="form-group row text-center">
-              <div id="job-preview-button-section" className="col-lg-12">
-                <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
-              </div>
+	  <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem' }}>
+ 	    <div className="invisible">
+              <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
             </div>
-          </form>
-	{/*
-          <div className="text-center mt-4">
-            <button className="btn btn-outline-secondary" onClick={() => setShowHistory(!showHistory)}>
-              {showHistory ? 'Hide History' : 'Show History'}
-            </button>
+              <div>
+	        <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
+              </div>
+                <div>
+                  <button className="btn btn-primary maroon-button" onClick={(e) => {
+                    e.preventDefault();
+                    setShowHistory(!showHistory);
+                  }}>
+                {showHistory ? 'Hide History' : 'Show History'}
+              </button>
+            </div>
           </div>
-
-           <SubmissionHistory isExpanded={showHistory} />*/}
-        </div>
+        </form>
+          <SubmissionHistory isExpanded={showHistory} />
+	</div>
         <div className="card-footer">
           <small className="text-muted">
             ⚠️ Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
