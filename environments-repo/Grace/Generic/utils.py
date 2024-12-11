@@ -53,7 +53,7 @@ def retrieve_tasks_and_other_resources(nodes,tasks,cpus,mem,gpu,numgpu,walltime,
       if total_hours > 7*24:
          drona_add_warning("ERROR: Limit for jobs requesting more than 32 nodes is 7 days. Your job will not run. Please adjust time or request number of nodes")
    elif total_hours > 21 * 24:
-      drona_add_warning("ERROR: Limit  for  wall time is 21 days  nodes is 24 hours. Your job will not run. Please adjust time")
+      drona_add_warning("ERROR: Limit  for  wall time is 21 days. Your job will not run. Please adjust time")
    elif total_hours > 4*24:
       partition=partition+ "--partition xlong " 
       if memnum > maxmemnode:
