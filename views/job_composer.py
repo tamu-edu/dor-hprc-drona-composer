@@ -70,7 +70,8 @@ def evaluate_dynamic_select():
                 cwd=retriever_dir
         )
         if result.returncode == 0:
-            options = json.loads(result.stdout)
+            #options = json.loads(result.stdout)
+            options = result.stdout
         else:
             raise APIError(
                 "The dynamic select script did not return exit code 0",
