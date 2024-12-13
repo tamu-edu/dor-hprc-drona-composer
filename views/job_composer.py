@@ -9,6 +9,7 @@ import yaml
 from functools import wraps
 from .logger import Logger
 from .error_handler import APIError, handle_api_error
+from .history_manager import JobHistoryManager
 
 job_composer = Blueprint("job_composer", __name__)
 logger = Logger()
@@ -161,6 +162,22 @@ def save_file(file, location):
 
     return file_path
     
+@job_composer.route('/history', methods=['GET'])
+def get_history():
+    history_manager = JobHistoryManager()
+    return jsonify(history_manager.get_user_history())
+
+
+@job_composer.route('/rerun/<int:job_id>', methods=['POST'])
+def rerun_job():
+    #TODO
+
+    return 0
+
+def extract_job_id(submit_response):
+    match = re.search(r'Submitted batch job (\d+)', submit_response)
+    return match.group(1) if match else None
+
 
 @job_composer.route('/submit', methods=['POST'])
 @logger.log_route(
@@ -188,17 +205,32 @@ def submit_job():
 
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
+
     bash_command = f"bash {driver_script_path}"
     
+
+    history_manager = JobHistoryManager()
+
     try:
         result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if result.returncode == 0:
+                history_manager.save_job(
+                    extract_job_id(result.stdout),
+                    params,
+                    files,
+                    {
+                        'bash_script': bash_script_path,
+                        'driver_script': driver_script_path
+                     }
+                )
                 return result.stdout
+                
         else:
             return result.stderr
     except subprocess.CalledProcessError as e:
         return e.stderr
     
+
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
