@@ -6,7 +6,7 @@ const SubmissionHistory = ({ isExpanded }) => {
   const [jobHistory, setJobHistory] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-
+  const [filteredData, setFilteredData] = useState([]);
   useEffect(() => {
     if (isExpanded) {
       const currentDate = new Date();
@@ -32,7 +32,17 @@ const SubmissionHistory = ({ isExpanded }) => {
   };
 
 
-const columns = [
+  useEffect(() => {
+    const sorted = [...jobHistory].sort((a, b) => {
+      if (!a.timestamp) return 1;
+      if (!b.timestamp) return -1;
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+    setFilteredData(sorted);
+  }, [jobHistory]);
+
+
+  const columns = [
     {
       name: 'ID',
       selector: row => row.job_id || 'N/A',
@@ -137,6 +147,30 @@ const columns = [
   ];
 
 
+  const handleFilter = () => {
+    const filtered = jobHistory.filter(job => {
+      if (!job.timestamp || !startDate || !endDate) return true;
+      const jobDate = new Date(job.timestamp);
+      
+      const startDateObj = new Date(startDate);
+      startDateObj.setHours(23, 59, 59, 999);
+	    
+      const endDateObj = new Date(endDate );
+      endDateObj.setDate(endDateObj.getDate() + 1);
+      endDateObj.setHours(23, 59, 59, 999);  
+      return jobDate >= startDateObj && jobDate <= endDateObj;
+    });
+    const sortedFiltered = [...filtered].sort((a, b) => {
+      if (!a.timestamp) return 1;
+      if (!b.timestamp) return -1;
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+
+    setFilteredData(sortedFiltered);
+
+  };
+
+
 
   const handleRerun = async (job) => {
     try {
@@ -150,13 +184,6 @@ const columns = [
   };
 
   if (!isExpanded) return null;
-
-  // Initialize the tabel with the most recent jobs first
-  const sortedJobHistory = [...jobHistory].sort((a, b) => {
-    if (!a.timestamp) return 1;
-    if (!b.timestamp) return -1;
-    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-  });
 
   return (
     <div className="mt-4">
@@ -179,7 +206,7 @@ const columns = [
         />
         <button 
           className="btn btn-primary maroon-button"
-          onClick={fetchJobHistory}
+          onClick={handleFilter}
         >
          Filter 
         </button>
@@ -187,7 +214,7 @@ const columns = [
 
       <DataTable
         columns={columns}
-        data={sortedJobHistory}
+        data={filteredData}
         customStyles={tableCustomStyles}
 	responsive
 	pagination
