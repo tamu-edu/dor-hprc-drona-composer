@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, createContext } from "react";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
+import RerunPromptModal from "./RerunPromptModal";
+
+export const GlobalFilesContext = createContext();
+
 
 function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
@@ -12,6 +16,11 @@ function App() {
   const [panes, setPanes] = useState([{ title: "", name: "", content: "" }]);
   const [jobStatus, setJobStatus] = useState("new"); // new | rerun
   const [rerunInfo, setRerunInfo] = useState({});
+  const [rerunOriginalName, setRerunOriginalName] = useState("");
+ 
+  const [isRerunPromptOpen, setIsRerunPromptOpen] = useState(false);
+  const [pendingRerunRow, setPendingRerunRow] = useState(null);
+  const rerunPromptModalRef = useRef(null);
  
   const formRef = useRef(null);
   const previewRef = useRef(null);
@@ -77,55 +86,76 @@ function App() {
       });
   }
 
+function handleRerunCancel() {
+    const modal = new bootstrap.Modal(rerunPromptModalRef.current);
+    modal.toggle();
+}
+async function processRerun(promptData) {
   
+    setJobStatus("rerun");
+    const modal = new bootstrap.Modal(rerunPromptModalRef.current);
+    modal.hide();
+    try {
+    const response = await fetch(`${document.dashboard_url}/jobs/composer/rerun_preview/${pendingRerunRow.job_id}`, {
+      method: 'GET'
+    });
 
-  async function handleRerun(row) {
-	setJobStatus("rerun");
-	try {
-          const response = await fetch(`${document.dashboard_url}/jobs/composer/rerun_preview/${row.job_id}`, {
-            method: 'GET'
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
-        
-        const jobScript = await response.json();
-        const modal = new bootstrap.Modal(previewRef.current);
-        modal.toggle();
-        
-        setJobScript(jobScript["script"]);
-        
-        const panes = [
-            {
-                preview_name: "template.txt",
-                content: jobScript["script"],
-                name: "run_command",
-                order: -3
-            },
-            {
-                preview_name: "driver.sh",
-                content: jobScript["driver"],
-                name: "driver",
-                order: -2
-            },
-        ];
-
-        for (const [fname, file] of Object.entries(
-          jobScript["additional_files"]
-        )) {
-          panes.push({ preview_name: file["preview_name"] || fname, content: file["content"] || file, name: fname, order: file["preview_order"]});
-        }
-        
-        setPanes(panes);
-        setWarningMessages([]);
-	setRerunInfo(row);
-        
-    } catch (error) {
-        console.error('Failed to generate preview:', error);
-        alert('Failed to generate preview: ' + error.message);
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
     }
+
+    const jobScript = await response.json();
+    
+    const modal = new bootstrap.Modal(previewRef.current);
+    modal.show();
+
+    setJobScript(jobScript["script"]);
+
+    const panes = [
+      {
+        preview_name: "template.txt",
+        content: jobScript["script"],
+        name: "run_command",
+        order: -3
+      },
+      {
+        preview_name: "driver.sh",
+        content: jobScript["driver"],
+        name: "driver",
+        order: -2
+      },
+    ];
+
+    for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
+      panes.push({ 
+        preview_name: file["preview_name"] || fname, 
+        content: file["content"] || file, 
+        name: fname, 
+        order: file["preview_order"]
+      });
+    }
+
+    setPanes(panes);
+    setWarningMessages([]);
+    setRerunInfo({
+      ...pendingRerunRow,
+      name: promptData.jobName,
+      location: promptData.location
+    });
+    setPendingRerunRow(null);
+
+  } catch (error) {
+    console.error('Failed to generate preview:', error);
+    alert('Failed to generate preview: ' + error.message);
   }
+}
+
+async function handleRerun(row) {
+  setRerunOriginalName(row.name);
+  setPendingRerunRow(row);
+  const modal = new bootstrap.Modal(rerunPromptModalRef.current);
+  modal.show();
+}  
 
   function handleUploadedFiles(files, globalFiles) {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -430,32 +460,41 @@ function App() {
     setJobScript(event.target.value);
   };
 
-	  return (
-  <JobComposer
-    error={error}
-    setError={setError}
-    globalFiles={globalFiles}
-    setGlobalFiles={setGlobalFiles}
-    environment={environment}
-    environments={environments}
-    fields={fields}
-    runLocation={runLocation}
-    warningMessages={warningMessages}
-    panes={panes}
-    setPanes={setPanes}
-    handleSubmit={(jobStatus == "new") ? handleSubmit : handleRerunSubmit}
-    handlePreview={handlePreview}
-    handleEnvChange={handleEnvChange}
-    handleAddEnv={handleAddEnv}
-    handleUploadedFiles={handleUploadedFiles}
-    sync_job_name={sync_job_name}
-    formRef={formRef}
-    previewRef={previewRef}
-    envModalRef={envModalRef}
-    multiPaneRef={multiPaneRef}
-    handleRerun={handleRerun}
-  />
-  );
+return (
+  <GlobalFilesContext.Provider value={{ globalFiles, setGlobalFiles }}>
+    <>
+    <JobComposer
+      error={error}
+      setError={setError}
+      environment={environment}
+      environments={environments}
+      fields={fields}
+      runLocation={runLocation}
+      warningMessages={warningMessages}
+      panes={panes}
+      setPanes={setPanes}
+      handleSubmit={(jobStatus == "new") ? handleSubmit : handleRerunSubmit}
+      handlePreview={handlePreview}
+      handleEnvChange={handleEnvChange}
+      handleAddEnv={handleAddEnv}
+      handleUploadedFiles={handleUploadedFiles}
+      sync_job_name={sync_job_name}
+      formRef={formRef}
+      previewRef={previewRef}
+      envModalRef={envModalRef}
+      multiPaneRef={multiPaneRef}
+      handleRerun={handleRerun}
+    />
+    <RerunPromptModal
+      modalRef={rerunPromptModalRef}
+      originalName={rerunOriginalName}
+      defaultLocation={defaultRunLocation}
+      onConfirm={processRerun}
+      onCancel={handleRerunCancel}
+    />
+	</>
+  </GlobalFilesContext.Provider>
+);
 }
 
 // Render the parent component into the root DOM node

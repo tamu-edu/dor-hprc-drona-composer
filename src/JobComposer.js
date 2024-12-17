@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, createContext } from "react";
+import React, { useState, useEffect, useRef} from "react";
 
 import ReactDOM from "react-dom";
 import {Text, Select, Picker} from "./schemaRendering/schemaElements/index"
@@ -6,7 +6,6 @@ import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
-export const GlobalFilesContext = createContext();
 import EnvironmentModal from "./EnvironmentModal"; 
 import PreviewModal from "./PreviewModal"; 
 
@@ -40,7 +39,6 @@ function JobComposer({ error, setError,  formRef,
             <div className="row">
               <div className="col-lg-12">
                 <div id="job-content">
-                  <GlobalFilesContext.Provider value={{ globalFiles: props.globalFiles, setGlobalFiles: props.setGlobalFiles }}>
                     <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name} />
                     <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation} />
                     <Select
@@ -58,7 +56,6 @@ function JobComposer({ error, setError,  formRef,
                       onFileChange={props.handleUploadedFiles}
 	  	      setError={setError}
                     />
-                  </GlobalFilesContext.Provider>
                 </div>
               </div>
             </div>
