@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
 function Text(props) {
@@ -9,7 +9,9 @@ function Text(props) {
     if (props.onChange) props.onChange(props.index, event.target.value);
     if (props.onNameChange) props.onNameChange(event.target.value);
   }
-
+  useEffect(() => {
+    setValue(props.value || "");
+  }, [props.value]);
   return (
     <FormElementWrapper
       labelOnTop={props.labelOnTop}

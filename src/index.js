@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, createContext } from "react";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
+import RerunPromptModal from "./RerunPromptModal";
+
+export const GlobalFilesContext = createContext();
+
 
 function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
@@ -10,7 +14,14 @@ function App() {
   const [warningMessages, setWarningMessages] = useState([]);
 
   const [panes, setPanes] = useState([{ title: "", name: "", content: "" }]);
-
+  const [jobStatus, setJobStatus] = useState("new"); // new | rerun
+  const [rerunInfo, setRerunInfo] = useState({});
+  const [rerunOriginalName, setRerunOriginalName] = useState("");
+ 
+  const [isRerunPromptOpen, setIsRerunPromptOpen] = useState(false);
+  const [pendingRerunRow, setPendingRerunRow] = useState(null);
+  const rerunPromptModalRef = useRef(null);
+ 
   const formRef = useRef(null);
   const previewRef = useRef(null);
   const envModalRef = useRef(null);
@@ -75,6 +86,76 @@ function App() {
       });
   }
 
+function handleRerunCancel() {
+    const modal = new bootstrap.Modal(rerunPromptModalRef.current);
+    modal.toggle();
+}
+async function processRerun(promptData) {
+  
+    setJobStatus("rerun");
+    const modal = new bootstrap.Modal(rerunPromptModalRef.current);
+    modal.hide();
+    try {
+    const response = await fetch(`${document.dashboard_url}/jobs/composer/rerun_preview/${pendingRerunRow.job_id}`, {
+      method: 'GET'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    const jobScript = await response.json();
+    
+    const modal = new bootstrap.Modal(previewRef.current);
+    modal.show();
+
+    setJobScript(jobScript["script"]);
+
+    const panes = [
+      {
+        preview_name: "template.txt",
+        content: jobScript["script"],
+        name: "run_command",
+        order: -3
+      },
+      {
+        preview_name: "driver.sh",
+        content: jobScript["driver"],
+        name: "driver",
+        order: -2
+      },
+    ];
+
+    for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
+      panes.push({ 
+        preview_name: file["preview_name"] || fname, 
+        content: file["content"] || file, 
+        name: fname, 
+        order: file["preview_order"]
+      });
+    }
+
+    setPanes(panes);
+    setWarningMessages([]);
+    setRerunInfo({
+      ...pendingRerunRow,
+      name: promptData.jobName,
+      location: promptData.location
+    });
+    setPendingRerunRow(null);
+
+  } catch (error) {
+    console.error('Failed to generate preview:', error);
+    alert('Failed to generate preview: ' + error.message);
+  }
+}
+
+async function handleRerun(row) {
+  setRerunOriginalName(row.name);
+  setPendingRerunRow(row);
+  const modal = new bootstrap.Modal(rerunPromptModalRef.current);
+  modal.show();
+}  
 
   function handleUploadedFiles(files, globalFiles) {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -105,6 +186,7 @@ function App() {
   }
 
   function handlePreview() {
+    setJobStatus("new")
     const formData = new FormData(formRef.current);
 
     if (!formData.has("runtime")) {
@@ -276,8 +358,6 @@ function App() {
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
 
-    formData.append("env_dir", environment.src);
-
     add_submission_loading_indicator();
     request.open("POST", action, true);
     request.onload = function (event) {
@@ -299,6 +379,49 @@ function App() {
     request.send(formData);
   }
 
+  function handleRerunSubmit(event) {
+    event.preventDefault();
+    const data = rerunInfo;
+    const paneRefs = multiPaneRef.current.getPaneRefs();
+    const additionalFiles = {};
+
+    paneRefs.forEach((ref) => {
+      if (!ref.current) return;
+
+      const current = ref.current;
+      const name = current.getAttribute("name");
+
+      if (name === "driver" || name === "run_command") {
+        data[name] = current.value;
+      } else {
+        additionalFiles[name] = current.value;
+      }
+    });
+
+    data["additional_files"] = JSON.stringify(additionalFiles);
+
+    if (globalFiles && globalFiles.length) {
+      data["files"] = globalFiles;
+    }  
+
+    const action = formRef.current.getAttribute("action");
+
+    // Convert dictionary to formData 
+    const formData = new FormData();
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else if (Array.isArray(value)) {
+        value.forEach((item, index) => {
+          formData.append(`${key}[]`, item);
+        });
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, String(value));
+      }
+    }
+    submit_job(action, formData);
+  }
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -327,6 +450,8 @@ function App() {
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
+       
+    formData.append("env_dir", environment.src);
     const action = formRef.current.getAttribute("action");
     submit_job(action, formData);
   }
@@ -335,31 +460,41 @@ function App() {
     setJobScript(event.target.value);
   };
 
-	  return (
-  <JobComposer
-    error={error}
-    setError={setError}
-    globalFiles={globalFiles}
-    setGlobalFiles={setGlobalFiles}
-    environment={environment}
-    environments={environments}
-    fields={fields}
-    runLocation={runLocation}
-    warningMessages={warningMessages}
-    panes={panes}
-    setPanes={setPanes}
-    handleSubmit={handleSubmit}
-    handlePreview={handlePreview}
-    handleEnvChange={handleEnvChange}
-    handleAddEnv={handleAddEnv}
-    handleUploadedFiles={handleUploadedFiles}
-    sync_job_name={sync_job_name}
-    formRef={formRef}
-    previewRef={previewRef}
-    envModalRef={envModalRef}
-    multiPaneRef={multiPaneRef}
-  />
-  );
+return (
+  <GlobalFilesContext.Provider value={{ globalFiles, setGlobalFiles }}>
+    <>
+    <JobComposer
+      error={error}
+      setError={setError}
+      environment={environment}
+      environments={environments}
+      fields={fields}
+      runLocation={runLocation}
+      warningMessages={warningMessages}
+      panes={panes}
+      setPanes={setPanes}
+      handleSubmit={(jobStatus == "new") ? handleSubmit : handleRerunSubmit}
+      handlePreview={handlePreview}
+      handleEnvChange={handleEnvChange}
+      handleAddEnv={handleAddEnv}
+      handleUploadedFiles={handleUploadedFiles}
+      sync_job_name={sync_job_name}
+      formRef={formRef}
+      previewRef={previewRef}
+      envModalRef={envModalRef}
+      multiPaneRef={multiPaneRef}
+      handleRerun={handleRerun}
+    />
+    <RerunPromptModal
+      modalRef={rerunPromptModalRef}
+      originalName={rerunOriginalName}
+      defaultLocation={defaultRunLocation}
+      onConfirm={processRerun}
+      onCancel={handleRerunCancel}
+    />
+	</>
+  </GlobalFilesContext.Provider>
+);
 }
 
 // Render the parent component into the root DOM node
