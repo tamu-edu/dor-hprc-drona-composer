@@ -168,11 +168,16 @@ def get_history():
     return jsonify(history_manager.get_user_history())
 
 
-@job_composer.route('/rerun/<int:job_id>', methods=['POST'])
-def rerun_job():
-    #TODO
+@job_composer.route('/rerun_preview/<int:job_id>', methods=['GET'])
+def rerun_job(job_id):
+    history_manager = JobHistoryManager()
+    
+    job_data = history_manager.get_job(job_id)
 
-    return 0
+    if not job_data:
+        return "Job not found", 404
+
+    return jsonify(job_data)  
 
 def extract_job_id(submit_response):
     match = re.search(r'Submitted batch job (\d+)', submit_response)
@@ -207,7 +212,6 @@ def submit_job():
     driver_script_path = engine.generate_driver_script(params)
 
     bash_command = f"bash {driver_script_path}"
-    
 
     history_manager = JobHistoryManager()
 

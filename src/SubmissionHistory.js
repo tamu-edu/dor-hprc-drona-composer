@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { tableCustomStyles } from '../static/custom/css/tablestyle.jsx';
 
-const SubmissionHistory = ({ isExpanded }) => {
+const SubmissionHistory = ({ isExpanded, handleRerun }) => {
   const [jobHistory, setJobHistory] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -51,11 +51,11 @@ const SubmissionHistory = ({ isExpanded }) => {
     },
     {
       name: 'Name',
-      selector: row => row.job_name || 'N/A',
+      selector: row => row.name || 'N/A',
       sortable: true,
       width: '200px',
       cell: row => {
-        const name = row.job_name || 'N/A';
+        const name = row.name || 'N/A';
         return (
           <div className="text-truncate" style={{ maxWidth: '180px' }}>
             <span title={name}>{name}</span>
@@ -88,11 +88,11 @@ const SubmissionHistory = ({ isExpanded }) => {
     },
     {
       name: 'Environment',
-      selector: row => row.environment || 'N/A',
+      selector: row => row.runtime || 'N/A',
       sortable: true,
       width: '150px',
       cell: row => {
-        const environment = row.environment || 'N/A';
+        const environment = row.runtime || 'N/A';
         return (
           <div className="text-truncate" style={{ maxWidth: '130px' }}>
             <span title={environment}>{environment}</span>
@@ -171,17 +171,6 @@ const SubmissionHistory = ({ isExpanded }) => {
   };
 
 
-
-  const handleRerun = async (job) => {
-    try {
-      const response = await fetch(`${document.dashboard_url}/jobs/composer/rerun/${job.id}`, {
-        method: 'POST'
-      });
-      const result = await response.text();
-    } catch (error) {
-      console.error('Failed to rerun job:', error);
-    }
-  };
 
   if (!isExpanded) return null;
 

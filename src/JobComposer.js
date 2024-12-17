@@ -79,7 +79,7 @@ function JobComposer({ error, setError,  formRef,
             </div>
           </div>
         </form>
-          <SubmissionHistory isExpanded={showHistory} />
+          <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} />
 	</div>
         <div className="card-footer">
           <small className="text-muted">

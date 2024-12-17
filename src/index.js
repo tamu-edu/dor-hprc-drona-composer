@@ -10,7 +10,9 @@ function App() {
   const [warningMessages, setWarningMessages] = useState([]);
 
   const [panes, setPanes] = useState([{ title: "", name: "", content: "" }]);
-
+  const [jobStatus, setJobStatus] = useState("new"); // new | rerun
+  const [rerunInfo, setRerunInfo] = useState({});
+ 
   const formRef = useRef(null);
   const previewRef = useRef(null);
   const envModalRef = useRef(null);
@@ -75,6 +77,55 @@ function App() {
       });
   }
 
+  
+
+  async function handleRerun(row) {
+	setJobStatus("rerun");
+	try {
+          const response = await fetch(`${document.dashboard_url}/jobs/composer/rerun_preview/${row.job_id}`, {
+            method: 'GET'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+        
+        const jobScript = await response.json();
+        const modal = new bootstrap.Modal(previewRef.current);
+        modal.toggle();
+        
+        setJobScript(jobScript["script"]);
+        
+        const panes = [
+            {
+                preview_name: "template.txt",
+                content: jobScript["script"],
+                name: "run_command",
+                order: -3
+            },
+            {
+                preview_name: "driver.sh",
+                content: jobScript["driver"],
+                name: "driver",
+                order: -2
+            },
+        ];
+
+        for (const [fname, file] of Object.entries(
+          jobScript["additional_files"]
+        )) {
+          panes.push({ preview_name: file["preview_name"] || fname, content: file["content"] || file, name: fname, order: file["preview_order"]});
+        }
+        
+        setPanes(panes);
+        setWarningMessages([]);
+	setRerunInfo(row);
+        
+    } catch (error) {
+        console.error('Failed to generate preview:', error);
+        alert('Failed to generate preview: ' + error.message);
+    }
+  }
 
   function handleUploadedFiles(files, globalFiles) {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -105,6 +156,7 @@ function App() {
   }
 
   function handlePreview() {
+    setJobStatus("new")
     const formData = new FormData(formRef.current);
 
     if (!formData.has("runtime")) {
@@ -276,8 +328,6 @@ function App() {
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
 
-    formData.append("env_dir", environment.src);
-
     add_submission_loading_indicator();
     request.open("POST", action, true);
     request.onload = function (event) {
@@ -299,6 +349,49 @@ function App() {
     request.send(formData);
   }
 
+  function handleRerunSubmit(event) {
+    event.preventDefault();
+    const data = rerunInfo;
+    const paneRefs = multiPaneRef.current.getPaneRefs();
+    const additionalFiles = {};
+
+    paneRefs.forEach((ref) => {
+      if (!ref.current) return;
+
+      const current = ref.current;
+      const name = current.getAttribute("name");
+
+      if (name === "driver" || name === "run_command") {
+        data[name] = current.value;
+      } else {
+        additionalFiles[name] = current.value;
+      }
+    });
+
+    data["additional_files"] = JSON.stringify(additionalFiles);
+
+    if (globalFiles && globalFiles.length) {
+      data["files"] = globalFiles;
+    }  
+
+    const action = formRef.current.getAttribute("action");
+
+    // Convert dictionary to formData 
+    const formData = new FormData();
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else if (Array.isArray(value)) {
+        value.forEach((item, index) => {
+          formData.append(`${key}[]`, item);
+        });
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, String(value));
+      }
+    }
+    submit_job(action, formData);
+  }
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -327,6 +420,8 @@ function App() {
     globalFiles.forEach((file) => {
       formData.append("files[]", file);
     });
+       
+    formData.append("env_dir", environment.src);
     const action = formRef.current.getAttribute("action");
     submit_job(action, formData);
   }
@@ -348,7 +443,7 @@ function App() {
     warningMessages={warningMessages}
     panes={panes}
     setPanes={setPanes}
-    handleSubmit={handleSubmit}
+    handleSubmit={(jobStatus == "new") ? handleSubmit : handleRerunSubmit}
     handlePreview={handlePreview}
     handleEnvChange={handleEnvChange}
     handleAddEnv={handleAddEnv}
@@ -358,6 +453,7 @@ function App() {
     previewRef={previewRef}
     envModalRef={envModalRef}
     multiPaneRef={multiPaneRef}
+    handleRerun={handleRerun}
   />
   );
 }
