@@ -118,32 +118,77 @@ const SubmissionHistory = ({ isExpanded, handleRerun }) => {
         );
       },
     },
-    {
-      name: 'Actions',
-      cell: row => (
-        <div style={{ minWidth: "115px" }} className="d-flex gap-2">
-          <button
+  {
+    name: 'Actions',
+    width: '100px',
+    cell: row => {
+      const [isOpen, setIsOpen] = useState(false);
+      const toggleDropdown = () => setIsOpen(!isOpen);
+    
+      useEffect(() => {
+        const handleClickOutside = (event) => {
+          if (!event.target.closest('.dropdown')) {
+            setIsOpen(false);
+          }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+      }, []);
+
+      return (
+ <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+        <div className="dropdown">
+          <button 
+            className={`btn btn-sm btn-primary maroon-button dropdown-toggle ${isOpen ? 'show' : ''}`}
             type="button"
-            className="btn btn-sm btn-primary maroon-button"
-            onClick={() => handleView(row)}
-	      style={{ marginRight: '4px' }}
-            title="View job details"
+            onClick={toggleDropdown}
+            aria-expanded={isOpen}
           >
-            View
+            Actions
           </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-primary maroon-button"
-            onClick={() => handleRerun(row)}
-	      style={{ marginLeft: '4px' }}
-            title="Rerun this job"
-          >
-            Rerun
-          </button>
+          <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`} style={{ minWidth: '120px' }}>
+            <li>
+              <button 
+                className="dropdown-item" 
+                onClick={() => {
+                  handleView(row);
+                  setIsOpen(false);
+                }}
+              >
+                View
+              </button>
+            </li>
+            <li>
+              <button 
+                className="dropdown-item" 
+                onClick={() => {
+                  handleRerun(row);
+                  setIsOpen(false);
+                }}
+              >
+                Rerun
+              </button>
+            </li>
+	    <li>
+              <button 
+                className="dropdown-item" 
+                onClick={() => {
+                  handleRerun(row);
+                  setIsOpen(false);
+                }}
+              >
+                 Form 
+              </button>
+            </li>
+
+          </ul>
         </div>
-      ),
-      ignoreRowClick: true,
+        </div>
+      );
     },
+    ignoreRowClick: true,
+  }
   ];
 
 
