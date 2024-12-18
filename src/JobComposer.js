@@ -15,7 +15,7 @@ function JobComposer({ error, setError,  formRef,
   envModalRef,
   multiPaneRef, ...props }) {
   const [showHistory, setShowHistory] = useState(false);
-
+  
   return (
     <div>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
@@ -63,9 +63,11 @@ function JobComposer({ error, setError,  formRef,
  	    <div className="invisible">
               <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
             </div>
+	  	{props.environment.env !== "" && ( 
               <div>
 	        <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
               </div>
+		)}
                 <div>
                   <button className="btn btn-primary maroon-button" onClick={(e) => {
                     e.preventDefault();
