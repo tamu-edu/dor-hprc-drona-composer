@@ -32,7 +32,6 @@ const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, 
     setLocation(defaultLocation + "/" + name);
   }
 
-  // Handle clicking outside modal
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       handleCancel();
@@ -60,9 +59,9 @@ const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, 
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Rerun {originalName}</h5>
-            <button 
-              type="button" 
-              className="close" 
+            <button
+              type="button"
+              className="close"
               onClick={handleCancel}
               aria-label="Close"
             >
@@ -70,27 +69,33 @@ const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, 
             </button>
           </div>
           <div className="modal-body">
+            <div className="alert alert-warning mb-4" role="alert">
+              <i className="fas fa-exclamation-triangle me-2"></i>
+              <b>Warning:</b> This action will not change the contents of the scripts.
+            </div>
+
             <form>
-              <Text 
-                name="rerun-name" 
-                id="rerun-job-name" 
-                label="Job Name" 
-                value={jobName} 
-                onNameChange={sync_job_name} 
+              <Text
+                name="rerun-name"
+                id="rerun-job-name"
+                label="Job Name"
+                value={jobName}
+                onNameChange={sync_job_name}
               />
-              <Picker 
-                name="rerun_location" 
-                label="Location" 
-                localLabel="Change" 
-                onChange={(index, value) => setLocation(value)} 
-                defaultLocation={location} 
+              <Picker
+                name="rerun_location"
+                label="Location"
+                localLabel="Change"
+                onChange={(index, value) => setLocation(value)}
+                defaultLocation={location}
               />
             </form>
+
           </div>
           <div className="modal-footer">
-            <button 
-              type="button" 
-              className="btn btn-secondary maroon-button-secondary" 
+            <button
+              type="button"
+              className="btn btn-secondary maroon-button-secondary"
               onClick={handleCancel}
             >
               Cancel
@@ -103,12 +108,6 @@ const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, 
               Continue
             </button>
           </div>
-        </div>
-        <div className="card-footer">
-          <small className="text-muted">
-            ⚠ Cautions: Job files will overwrite existing files with the same name. 
-            The same principle applies for your executable scripts.
-          </small>
         </div>
       </div>
     </div>
