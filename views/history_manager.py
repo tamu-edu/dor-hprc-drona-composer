@@ -41,8 +41,8 @@ class JobHistoryManager:
             },
             'script': job_data.get('run_command'),
             'driver': job_data.get('driver'),
-            'additional_files': json.loads(job_data.get('additional_files'))
-            #'form_data': dict(job_data)  # Also possible to store  all form data for complete form recreation
+            'additional_files': json.loads(job_data.get('additional_files')),
+            'form_data': dict(job_data)  # Also possible to store all form data for complete form recreation
         }
         
         history_file = os.path.join(self.base_dir, f"{user}_history.json")

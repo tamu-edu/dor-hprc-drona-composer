@@ -23,6 +23,9 @@ function App() {
   const [showRerunModal, setShowRerunModal] = useState(false);
   const rerunPromptModalRef = useRef(null);
  
+
+  const [fieldsLoadedResolver, setFieldsLoadedResolver] = useState(null);
+
   const formRef = useRef(null);
   const previewRef = useRef(null);
   const envModalRef = useRef(null);
@@ -62,30 +65,43 @@ function App() {
     );
   }
 
+useEffect(() => {
+  if (!environment.env || !environment.src) return;
 
-  function handleEnvChange(key, option) {
-    const env = option.value;
-    const src = option.src;
+  const fetchSchema = async () => {
+    try {
+      const response = await fetch(
+        `${document.dashboard_url}/jobs/composer/schema/${environment.env}?src=${environment.src}`
+      );
 
-    setEnvironment({ env: env, src: src });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw {
+          message: errorData.message || 'Failed to load schema',
+          status_code: response.status,
+          details: errorData.details || errorData
+        };
+      }
 
-    fetch(`${document.dashboard_url}/jobs/composer/schema/${env}?src=${src}`)
-      .then(async response => {
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw {
-            message: errorData.message || 'Failed to load schema',
-            status_code: response.status,
-            details: errorData.details || errorData
-          };
-        }
-        return response.json();
-      })
-      .then(data => setFields(data))
-      .catch(error => {
-        setError(error);
-      });
-  }
+      const data = await response.json();
+      setFields(data);
+      
+      // Resolve the promise if there's a resolver
+      if (fieldsLoadedResolver) {
+        fieldsLoadedResolver(data);
+        setFieldsLoadedResolver(null);
+      }
+    } catch (error) {
+      setError(error);
+    }
+  };
+
+  fetchSchema();
+}, [environment, fieldsLoadedResolver]);
+
+function handleEnvChange(key, option) {
+  setEnvironment({ env: option.value, src: option.src });
+}
 
 function handleRerunCancel() {
 	setShowRerunModal(false);
@@ -95,7 +111,7 @@ async function processRerun(promptData) {
     setJobStatus("rerun");
     setShowRerunModal(false);
     try {
-    const response = await fetch(`${document.dashboard_url}/jobs/composer/rerun_preview/${pendingRerunRow.job_id}`, {
+    const response = await fetch(`${document.dashboard_url}/jobs/composer/history/${pendingRerunRow.job_id}`, {
       method: 'GET'
     });
 
@@ -154,6 +170,17 @@ async function handleRerun(row) {
   setPendingRerunRow(row);
   setShowRerunModal(true);
 }  
+async function handleForm(row) {
+  const fieldsPromise = new Promise(resolve => {
+    setFieldsLoadedResolver(() => resolve);
+  });
+
+  await setEnvironment({env: row.runtime, src: row.env_dir});
+  const updatedFields = await fieldsPromise;
+
+  console.log(row);
+  console.log(updatedFields);
+}
 
   function handleUploadedFiles(files, globalFiles) {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -482,6 +509,7 @@ return (
       envModalRef={envModalRef}
       multiPaneRef={multiPaneRef}
       handleRerun={handleRerun}
+      handleForm={handleForm}
     />
     {showRerunModal && (
       <RerunPromptModal

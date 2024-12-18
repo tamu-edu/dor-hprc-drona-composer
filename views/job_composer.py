@@ -168,8 +168,8 @@ def get_history():
     return jsonify(history_manager.get_user_history())
 
 
-@job_composer.route('/rerun_preview/<int:job_id>', methods=['GET'])
-def rerun_job(job_id):
+@job_composer.route('/history/<int:job_id>', methods=['GET'])
+def get_job_from_history(job_id):
     history_manager = JobHistoryManager()
     
     job_data = history_manager.get_job(job_id)

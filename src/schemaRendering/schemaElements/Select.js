@@ -3,10 +3,10 @@ import FormElementWrapper from "../utils/FormElementWrapper"
 import Select from "react-select";
 
 function CustomSelect(props) {
-  const [value, setValue] = useState(props.value || "");
+  // Convert props.value to the format React-Select expects
+  const selectValue = props.options.find(opt => opt.value === props.value) || null;
 
   const handleValueChange = (option) => {
-    setValue(option);
     if (props.onChange) {
       props.onChange(props.index, option);
     }
@@ -20,36 +20,36 @@ function CustomSelect(props) {
       borderRadius: ".25rem",
       minHeight: "38px",
       boxShadow: state.isFocused ? "0 0 0 .2rem rgba(0,123,255,.25)" : "none",
-      fontSize: "1rem", // Matches font size of Bootstrap form-control
+      fontSize: "1rem",
     }),
     menu: (provided) => ({
       ...provided,
-      zIndex: 2, // Ensure the menu appears above other elements
+      zIndex: 2,
     }),
     singleValue: (provided) => ({
       ...provided,
-      color: "#495057", // Matches Bootstrap's text color
+      color: "#495057",
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isFocused ? "#e9ecef" : "#fff", // Match hover style
+      backgroundColor: state.isFocused ? "#e9ecef" : "#fff",
       color: "#495057",
-      padding: "8px 12px", // Match default padding for options
+      padding: "8px 12px",
       "&:hover": {
-        backgroundColor: "#e9ecef", // Matches hover effect
+        backgroundColor: "#e9ecef",
       },
-
       ...state.data.styles,
     }),
     dropdownIndicator: (provided) => ({
       ...provided,
-      padding: "4px", // Adjust padding for dropdown arrow
+      padding: "4px",
     }),
     placeholder: (provided) => ({
       ...provided,
-      color: "#6c757d", // Matches Bootstrap placeholder color
+      color: "#6c757d",
     }),
   };
+
   return (
     <FormElementWrapper
       labelOnTop={props.labelOnTop}
@@ -57,11 +57,11 @@ function CustomSelect(props) {
       label={props.label}
       help={props.help}
     >
-	  <div style={{display: "flex"}}>
-	  <Select
-	  menuPortalTarget={document.body}  // Allows the dropdown to extend beyond the parent div 
-          menuPosition="fixed" 
-          value={value}
+      <div style={{display: "flex"}}>
+        <Select
+          menuPortalTarget={document.body}
+          menuPosition="fixed"
+          value={selectValue}
           onChange={handleValueChange}
           options={props.options}
           name={props.name}
@@ -70,7 +70,7 @@ function CustomSelect(props) {
             container: (base) => ({ ...base, flexGrow: 1 }),
           }}
           placeholder="-- Choose an option --"
-        ></Select>
+        />
         {props.showAddMore && (
           <button
             type="button"
@@ -81,7 +81,7 @@ function CustomSelect(props) {
             +
           </button>
         )}
-	  </div>
+      </div>
     </FormElementWrapper>
   );
 }

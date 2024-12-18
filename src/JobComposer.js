@@ -47,6 +47,7 @@ function JobComposer({ error, setError,  formRef,
                       label="Environments"
                       options={props.environments}
                       onChange={props.handleEnvChange}
+	  	      value={props.environment.env || ''}
                       showAddMore={true}
                       onAddMore={props.handleAddEnv}
                     />
@@ -78,7 +79,7 @@ function JobComposer({ error, setError,  formRef,
             </div>
           </div>
         </form>
-          <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} />
+          <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
 	</div>
         <div className="card-footer">
           <small className="text-muted">

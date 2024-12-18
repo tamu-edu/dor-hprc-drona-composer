@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { tableCustomStyles } from '../static/custom/css/tablestyle.jsx';
 
-const SubmissionHistory = ({ isExpanded, handleRerun }) => {
+const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
   const [jobHistory, setJobHistory] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -174,7 +174,7 @@ const SubmissionHistory = ({ isExpanded, handleRerun }) => {
               <button 
                 className="dropdown-item" 
                 onClick={() => {
-                  handleRerun(row);
+                  handleForm(row);
                   setIsOpen(false);
                 }}
               >
