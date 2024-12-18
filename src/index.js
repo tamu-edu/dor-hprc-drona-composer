@@ -20,6 +20,7 @@ function App() {
  
   const [isRerunPromptOpen, setIsRerunPromptOpen] = useState(false);
   const [pendingRerunRow, setPendingRerunRow] = useState(null);
+  const [showRerunModal, setShowRerunModal] = useState(false);
   const rerunPromptModalRef = useRef(null);
  
   const formRef = useRef(null);
@@ -87,14 +88,12 @@ function App() {
   }
 
 function handleRerunCancel() {
-    const modal = new bootstrap.Modal(rerunPromptModalRef.current);
-    modal.toggle();
+	setShowRerunModal(false);
 }
 async function processRerun(promptData) {
   
     setJobStatus("rerun");
-    const modal = new bootstrap.Modal(rerunPromptModalRef.current);
-    modal.hide();
+    setShowRerunModal(false);
     try {
     const response = await fetch(`${document.dashboard_url}/jobs/composer/rerun_preview/${pendingRerunRow.job_id}`, {
       method: 'GET'
@@ -153,8 +152,7 @@ async function processRerun(promptData) {
 async function handleRerun(row) {
   setRerunOriginalName(row.name);
   setPendingRerunRow(row);
-  const modal = new bootstrap.Modal(rerunPromptModalRef.current);
-  modal.show();
+  setShowRerunModal(true);
 }  
 
   function handleUploadedFiles(files, globalFiles) {
@@ -485,14 +483,16 @@ return (
       multiPaneRef={multiPaneRef}
       handleRerun={handleRerun}
     />
-    <RerunPromptModal
-      modalRef={rerunPromptModalRef}
-      originalName={rerunOriginalName}
-      defaultLocation={defaultRunLocation}
-      onConfirm={processRerun}
-      onCancel={handleRerunCancel}
-    />
-	</>
+    {showRerunModal && (
+      <RerunPromptModal
+        modalRef={rerunPromptModalRef}
+        originalName={rerunOriginalName}
+        defaultLocation={defaultRunLocation}
+        onConfirm={processRerun}
+        onCancel={handleRerunCancel}
+      />
+    )}
+    </>
   </GlobalFilesContext.Provider>
 );
 }
