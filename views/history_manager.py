@@ -22,11 +22,44 @@ class JobHistoryManager:
         except (FileNotFoundError, json.JSONDecodeError):
             return None
         return None  # Job not found
+
+
+    def transform_form_data(self, form_data):
+        transformed = {}
+        pairs = {}
+
+        # First pass: collect pairs
+        for key, value in form_data.items():
+            if key.endswith('_label'):
+                base_key = key[:-6]  # remove '_label'
+                if base_key not in pairs:
+                    pairs[base_key] = {}
+                pairs[base_key]['label'] = value
+            else:
+                if key not in pairs:
+                    pairs[key] = {}
+                pairs[key]['value'] = value
+
+        # Second pass: create transformed dictionary
+        for key, pair in pairs.items():
+            if 'value' in pair and 'label' in pair:
+                # If we have both value and label, combine them
+                transformed[key] = {
+                    'value': pair['value'],
+                    'label': pair['label']
+                }
+            else:
+                # If it's not a pair, keep the original value
+                transformed[key] = form_data[key]
+
+        return transformed
+
         
     def save_job(self, job_id, job_data, files, generated_files):
         timestamp = datetime.now().isoformat()
         user = os.getenv('USER')
-
+        
+        form_data = self.transform_form_data(dict(job_data))
         job_record = {
             'job_id': job_id,
             'name': job_data.get('name'),
@@ -42,7 +75,7 @@ class JobHistoryManager:
             'script': job_data.get('run_command'),
             'driver': job_data.get('driver'),
             'additional_files': json.loads(job_data.get('additional_files')),
-            'form_data': dict(job_data)  # Also possible to store all form data for complete form recreation
+            'form_data': form_data  # Also possible to store all form data for complete form recreation
         }
         
         history_file = os.path.join(self.base_dir, f"{user}_history.json")

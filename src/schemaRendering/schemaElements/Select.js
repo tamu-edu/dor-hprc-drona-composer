@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper"
 import Select from "react-select";
 
 function CustomSelect(props) {
-  // Convert props.value to the format React-Select expects
-  const selectValue = props.options.find(opt => opt.value === props.value) || null;
+  const [value, setValue] = useState(props.value || "");
+
+  useEffect(() => {
+    setValue(props.value);
+  }, [props.value]);
 
   const handleValueChange = (option) => {
+    setValue(option);
     if (props.onChange) {
       props.onChange(props.index, option);
     }
@@ -61,7 +65,7 @@ function CustomSelect(props) {
         <Select
           menuPortalTarget={document.body}
           menuPosition="fixed"
-          value={selectValue}
+          value={value}
           onChange={handleValueChange}
           options={props.options}
           name={props.name}
@@ -70,6 +74,11 @@ function CustomSelect(props) {
             container: (base) => ({ ...base, flexGrow: 1 }),
           }}
           placeholder="-- Choose an option --"
+        />
+        <input
+          type="hidden"
+          name={`${props.name}_label`}
+          value={value?.label || ""}
         />
         {props.showAddMore && (
           <button

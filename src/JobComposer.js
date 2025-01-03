@@ -47,7 +47,7 @@ function JobComposer({ error, setError,  formRef,
                       label="Environments"
                       options={props.environments}
                       onChange={props.handleEnvChange}
-	  	      value={props.environment.env || ''}
+	  	      value={ props.environment.env ? {value: props.environment.env, label: props.environment.env, src: props.environment.src} : null}
                       showAddMore={true}
                       onAddMore={props.handleAddEnv}
                     />
@@ -56,6 +56,7 @@ function JobComposer({ error, setError,  formRef,
                       fields={props.fields}
                       onFileChange={props.handleUploadedFiles}
 	  	      setError={setError}
+	  	      ref={props.composerRef}
                     />
                 </div>
               </div>

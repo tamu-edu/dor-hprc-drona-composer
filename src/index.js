@@ -21,7 +21,10 @@ function App() {
   const [isRerunPromptOpen, setIsRerunPromptOpen] = useState(false);
   const [pendingRerunRow, setPendingRerunRow] = useState(null);
   const [showRerunModal, setShowRerunModal] = useState(false);
+
   const rerunPromptModalRef = useRef(null);
+
+  const composerRef = useRef(null);
  
 
   const [fieldsLoadedResolver, setFieldsLoadedResolver] = useState(null);
@@ -84,7 +87,7 @@ useEffect(() => {
       }
 
       const data = await response.json();
-      setFields(data);
+     setFields(data);
       
       // Resolve the promise if there's a resolver
       if (fieldsLoadedResolver) {
@@ -178,9 +181,11 @@ async function handleForm(row) {
   await setEnvironment({env: row.runtime, src: row.env_dir});
   const updatedFields = await fieldsPromise;
 
-  console.log(row);
-  console.log(updatedFields);
+  if (composerRef.current) {
+    composerRef.current.setValues(row.form_data);
+  }
 }
+
 
   function handleUploadedFiles(files, globalFiles) {
     let combinedFiles = Array.from(new Set([...globalFiles, ...files]));
@@ -510,6 +515,7 @@ return (
       multiPaneRef={multiPaneRef}
       handleRerun={handleRerun}
       handleForm={handleForm}
+      composerRef={composerRef}
     />
     {showRerunModal && (
       <RerunPromptModal
