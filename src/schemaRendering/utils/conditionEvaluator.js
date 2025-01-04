@@ -1,40 +1,16 @@
-export const evaluateCondition = (condition, fields, currentValues) => {
+import { getFieldValue } from './fieldUtils';
 
+export const evaluateCondition = (condition, fields) => {
   const evaluateAtomicCondition = (expr) => {
-    const [depender, value] = expr.split(".");
-
-    let foundIndex = -1;
-    let currentIndex = 0;
- 
-    const findInFields = (fieldsArray) => {
-
-      for (const [key, fieldValue, toggle] of fieldsArray) {
-
-        if (key === depender) {
-          foundIndex = currentIndex;
-          return true;
-        }
-        currentIndex++;
-
-        if(fieldValue.type === 'rowContainer' && fieldValue.elements) {
-          const foundInNested = findInFields(fieldValue.elements);
-          if (foundInNested) return true;
-        }
-
-      }
-      return false;
-    };
-
-    findInFields(fields);
-
-    // Handle elements that store objects as their values such as Selects
-    if (typeof currentValues[foundIndex] === 'object' && currentValues[foundIndex]?.value !== undefined) {
-      return currentValues[foundIndex].value === value;
+    const [fieldName, expectedValue] = expr.split(".");
+    const actualValue = getFieldValue(fields, fieldName);
+    
+    // Handle objects with value property (like Select components)
+    if (typeof actualValue === 'object' && actualValue?.value !== undefined) {
+      return actualValue.value === expectedValue;
     }
-    return currentValues[foundIndex] === value;
+    return actualValue === expectedValue;
   };
-
-
 
   const evaluateExpression = (expr) => {
     const tokens = expr.match(/(\|\||&&|\(|\)|!|\^|[^\s\|\&\(\)]+)/g);
@@ -45,31 +21,27 @@ export const evaluateCondition = (condition, fields, currentValues) => {
     const applyOperator = () => {
       const operator = operatorsStack.pop();
       if (operator === "!") {
-        const value = valuesStack.pop();
-        valuesStack.push(!value);
+        valuesStack.push(!valuesStack.pop());
       } else {
         const right = valuesStack.pop();
         const left = valuesStack.pop();
-        if (operator === "&&") {
-          valuesStack.push(left && right);
-        } else if (operator === "||") {
-          valuesStack.push(left || right);
-        } else if (operator === "^") {
-          valuesStack.push(left ^ right);
+        switch (operator) {
+          case "&&": valuesStack.push(left && right); break;
+          case "||": valuesStack.push(left || right); break;
+          case "^": valuesStack.push(left ^ right); break;
         }
       }
     };
 
-    tokens?.forEach((token) => {
-      if (token === "&&" || token === "||" || token === "^") {
+    tokens?.forEach(token => {
+      if (precedence[token]) {
         while (
-          operatorsStack.length &&
+          operatorsStack.length && 
+          operatorsStack[operatorsStack.length - 1] !== "(" &&
           precedence[operatorsStack[operatorsStack.length - 1]] >= precedence[token]
         ) {
           applyOperator();
         }
-        operatorsStack.push(token);
-      } else if (token === "!") {
         operatorsStack.push(token);
       } else if (token === "(") {
         operatorsStack.push(token);
@@ -77,7 +49,7 @@ export const evaluateCondition = (condition, fields, currentValues) => {
         while (operatorsStack.length && operatorsStack[operatorsStack.length - 1] !== "(") {
           applyOperator();
         }
-        operatorsStack.pop();
+        operatorsStack.pop(); // Remove "("
       } else {
         valuesStack.push(evaluateAtomicCondition(token));
       }
@@ -92,4 +64,3 @@ export const evaluateCondition = (condition, fields, currentValues) => {
 
   return evaluateExpression(condition?.trim());
 };
-
