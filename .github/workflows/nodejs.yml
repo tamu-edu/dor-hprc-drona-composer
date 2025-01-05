@@ -3,10 +3,10 @@ name: Run React Tests
 on:
   push:
     branches:
-      - main
+      - testing 
   pull_request:
     branches:
-      - main
+      - testing
 
 jobs:
   test:
