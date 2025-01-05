@@ -11,6 +11,7 @@ import Module from "./Module";
 import Unit from "./Unit";
 import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
+import TextArea from "./TextArea";
 
 
 export {
@@ -26,7 +27,8 @@ export {
 	Module,
 	Unit,
 	UnknownElement,
-	DynamicSelect
+	DynamicSelect,
+	TextArea
 }
 export const componentsMap = {
   text: Text,
@@ -40,6 +42,7 @@ export const componentsMap = {
   time: Time,
   module: Module,
   unit: Unit,
-  dynamicSelect: DynamicSelect
+  dynamicSelect: DynamicSelect,
+  textarea: TextArea
 };
 
