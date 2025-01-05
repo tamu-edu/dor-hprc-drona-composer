@@ -3,6 +3,7 @@ import Select from "./Select";
 import Number from "./Number";
 import Checkbox from "./Checkbox";
 import RowContainer from "./RowContainer";
+import CollapsibleRowContainer from "./CollapsibleRowContainer";
 import RadioGroup from "./RadioGroup";
 import Picker from "./Picker";
 import Uploader from "./Uploader";
@@ -28,7 +29,8 @@ export {
 	Unit,
 	UnknownElement,
 	DynamicSelect,
-	TextArea
+	TextArea,
+	CollapsibleRowContainer
 }
 export const componentsMap = {
   text: Text,
@@ -43,6 +45,9 @@ export const componentsMap = {
   module: Module,
   unit: Unit,
   dynamicSelect: DynamicSelect,
-  textarea: TextArea
+  textarea: TextArea,
+  collapsibleRowContainer: CollapsibleRowContainer
 };
+
+export const Containers = ["rowContainer", "collapsibleRowContainer"];
 

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { componentsMap, RowContainer, UnknownElement } from "./schemaElements/index.js"
+import { componentsMap, RowContainer, UnknownElement, Containers } from "./schemaElements/index.js"
 
 const FieldRenderer = ({
   fields,
@@ -15,10 +15,10 @@ const FieldRenderer = ({
     const { type, name, condition, elements, value, ...attributes } = field;
     const Element = componentsMap[type];
 
-    if (type === "rowContainer" && elements) {
+    if (Containers.includes(type) && elements) {
       return (
         <div key={name} className={fieldStyles}>
-          <RowContainer
+          <Element
             key={name}
             name={name}
             elements={elements}

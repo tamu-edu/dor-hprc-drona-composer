@@ -1,3 +1,5 @@
+import {Containers} from "../schemaElements/index"
+
 export const normalizeFields = (fields) => {
   return Object.entries(fields).map(([name, field]) => ({
     name,
@@ -5,7 +7,7 @@ export const normalizeFields = (fields) => {
     isVisible: !field.condition, // Default visible if no condition
     value: field.type === "checkbox" ? (field.checked ? field.value : "") : (field.value || ""),
     // Recursively normalize nested elements in rowContainer
-    elements: field.type === "rowContainer" && field.elements 
+    elements: Containers.includes(field.type) && field.elements 
       ? normalizeFields(field.elements) 
       : undefined
   }));

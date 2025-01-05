@@ -3,6 +3,8 @@ import FieldRenderer from './FieldRenderer';
 import { normalizeFields, updateFieldVisibility, updateFieldValue } from './utils/fieldUtils';
 import { evaluateCondition } from './utils/conditionEvaluator';
 
+import { Containers } from "./schemaElements/index"
+
 const Composer = forwardRef((props, ref) => {
   const [fields, setFields] = useState([]);
   const dictionaryRef = useRef(null);
@@ -40,7 +42,7 @@ const Composer = forwardRef((props, ref) => {
           }
 
           // Recursively handle rowContainer elements
-          if (field.type === "rowContainer" && field.elements) {
+          if (Containers.includes(field.type) && field.elements) {
             updatedField.elements = field.elements.map(updateFieldsRecursively);
           }
 
@@ -124,7 +126,7 @@ const _updateVisibilityAndClearHidden = (fields, fullFields) => {
       value: (isVisible ? field.value : "")
     };
 
-    if (field.type === "rowContainer" && field.elements) {
+    if (Containers.includes(field.type) && field.elements) {
       const result = _updateVisibilityAndClearHidden(field.elements, fullFields);
       processed.elements = result.fields;
       if (result.hasChanged) hasChanged = true;
@@ -166,7 +168,7 @@ const _updateVisibilityAndClearHidden = (fields, fullFields) => {
               } : {})
             };
 
-            if (field.type === "rowContainer" && field.elements) {
+            if (Containers.includes(field.type) && field.elements) {
               updatedField.elements = field.elements.map(updateFieldsRecursively);
             }
 
