@@ -93,50 +93,54 @@ const Composer = forwardRef((props, ref) => {
 
   // Helper to update visibility and clear hidden field values
 // Helper to update visibility and clear hidden field values
+	//
 const updateVisibilityAndClearHidden = (fields) => {
-    return _updateVisibilityAndClearHidden(fields, fields)
-}
+  let hasChanged;
+  let newFields = [...fields];
+  
+  do {
+    const result = _updateVisibilityAndClearHidden(newFields, newFields);
+    hasChanged = result.hasChanged;
+    newFields = result.fields;
+  } while(hasChanged);
+  
+  return newFields;
+};
 
 const _updateVisibilityAndClearHidden = (fields, fullFields) => {
-  let hasChanged;
-  let currentFields = [...fields];
+  let hasChanged = false;
+  const newFields = fields.map(field => {
+    const wasVisible = field.isVisible;
+    const isVisible = field.condition
+      ? evaluateCondition(field.condition, fullFields)
+      : true;
 
-  do {
-    hasChanged = false;
-    const newFields = currentFields.map(field => {
-      const wasVisible = field.isVisible;
-      const isVisible = field.condition
-        ? evaluateCondition(field.condition, fullFields)
-        : true;
-      console.log(field.condition, fullFields, isVisible)
+    // Only consider it a change if visibility switches from true to false
+    const wouldChange = wasVisible !== isVisible;
+    
+    const processed = {
+      ...field,
+      isVisible,
+      value: (isVisible ? field.value : "")
+    };
 
-      // Only consider it a change if visibility switches from true to false
-      const wouldChange = wasVisible && !isVisible;
+    if (field.type === "rowContainer" && field.elements) {
+      const result = _updateVisibilityAndClearHidden(field.elements, fullFields);
+      processed.elements = result.fields;
+      if (result.hasChanged) hasChanged = true;
+    }
 
-      const processed = {
-        ...field,
-        isVisible,
-        // Only clear value if visibility changed from true to false
-        value: (wouldChange) ? "" : field.value
-      };
+    if (wouldChange) {
+      hasChanged = true;
+    }
 
-      if (field.type === "rowContainer" && field.elements) {
-        processed.elements = _updateVisibilityAndClearHidden(field.elements, fullFields);
-      }
+    return processed;
+  });
 
-      if (wouldChange) {
-        hasChanged = true;
-      }
-
-      return processed;
-    });
-
-    currentFields = newFields;
-  } while (hasChanged);
-
-  console.log(currentFields);
-  return currentFields;
+  return { fields: newFields, hasChanged };
 };
+	//
+	//
   // Expose setValues method
   useImperativeHandle(ref, () => ({
     setValues: (dictionary) => {

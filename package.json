@@ -29,7 +29,8 @@
     "build": "webpack --config webpack.config.js",
     "build-watch": "webpack --config webpack.config.js --watch",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",

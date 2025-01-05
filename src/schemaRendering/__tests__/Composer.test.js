@@ -293,7 +293,8 @@ describe('Nested Structure Visibility', () => {
         nestedToggle: {
           type: 'checkbox',
           name: 'nestedToggle',
-          value: 'Yes'
+          value: 'Yes',
+	  checked: true
         },
         nestedField: {
           type: 'text',
