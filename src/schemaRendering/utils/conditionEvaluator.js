@@ -1,10 +1,12 @@
 import { getFieldValue } from './fieldUtils';
 
 export const evaluateCondition = (condition, fields) => {
+  // Add early return for null/empty conditions
+  if (!condition) return false;  // Changed from undefined to false for consistency
+
   const evaluateAtomicCondition = (expr) => {
     const [fieldName, expectedValue] = expr.split(".");
     const actualValue = getFieldValue(fields, fieldName);
-    
     // Handle objects with value property (like Select components)
     if (typeof actualValue === 'object' && actualValue?.value !== undefined) {
       return actualValue.value === expectedValue;
@@ -28,7 +30,7 @@ export const evaluateCondition = (condition, fields) => {
         switch (operator) {
           case "&&": valuesStack.push(left && right); break;
           case "||": valuesStack.push(left || right); break;
-          case "^": valuesStack.push(left ^ right); break;
+          case "^": valuesStack.push(!left !== !right); // Fixed XOR to return boolean
         }
       }
     };
@@ -36,7 +38,7 @@ export const evaluateCondition = (condition, fields) => {
     tokens?.forEach(token => {
       if (precedence[token]) {
         while (
-          operatorsStack.length && 
+          operatorsStack.length &&
           operatorsStack[operatorsStack.length - 1] !== "(" &&
           precedence[operatorsStack[operatorsStack.length - 1]] >= precedence[token]
         ) {
@@ -58,9 +60,8 @@ export const evaluateCondition = (condition, fields) => {
     while (operatorsStack.length) {
       applyOperator();
     }
-
     return valuesStack[0];
   };
 
-  return evaluateExpression(condition?.trim());
+  return evaluateExpression(condition.trim());
 };
