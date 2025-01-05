@@ -19,7 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '10.7.0'  # Update to the version you need
+        node-version: '16'
 
     - name: Cache Node.js modules
       uses: actions/cache@v2
