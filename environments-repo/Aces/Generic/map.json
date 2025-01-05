@@ -1,11 +1,6 @@
 {
   "JOBNAME" :"$name",
-  "TASKS": "$cores",
-  "EXTRA": "!retrieve_extra($extra_slurm, $gpu)",
-  "NODES": "!retrieve_nodes($nodes,$cores)",
-  "TIME": "!retrieve_time($name,$walltime,$gpu)",
-  "MEMORY": "!retrieve_memory($memory,$cores)",
-  "ACCOUNT": "!retrieve_account($account)",
+  "TASKS": "!retrieve_tasks_and_other_resources($nodes,$tasks,$cpus,$memory,$gpu,$numgpu,$walltime,$account,$extra)",
   "flocation": "$location",
   "MODULES": "!retrieve_loaded_modules($module_list)"
 }

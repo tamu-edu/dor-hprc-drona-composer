@@ -1,21 +1,12 @@
 #!/bin/bash
-# Template for a standard shell env
-
 #SBATCH --job-name=[JOBNAME]
-#SBATCH --time=[TIME]
-#SBATCH --ntasks=[TASKS]
-#SBATCH --nodes=[NODES]
-#SBATCH [MEMORY]
-#SBATCH --output=out.%j
-#SBATCH --error=error.%j
+#SBATCH --time=[TIME] --mem=[MEM]
+#SBATCH --ntasks=[TASKS] --nodes=[NODES] --cpus-per-task=[CPUS]
+#SBATCH --output=out.%j --error=error.%j
 [EXTRA]
-[ACCOUNT]  
 
 module purge
-module load WebProxy
-[MODULES]
-
+module load WebProxy [MODULES]
 cd [flocation]
-
 # ADD YOUR COMMANDS BELOW
 
