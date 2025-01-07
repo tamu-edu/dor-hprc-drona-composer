@@ -23,11 +23,9 @@ class JobHistoryManager:
             return None
         return None  # Job not found
 
-
-    def transform_form_data(self, form_data):
+    def transform_form_data(self, form_data, location):
         transformed = {}
         pairs = {}
-
         # First pass: collect pairs
         for key, value in form_data.items():
             if key.endswith('_label'):
@@ -39,7 +37,6 @@ class JobHistoryManager:
                 if key not in pairs:
                     pairs[key] = {}
                 pairs[key]['value'] = value
-
         # Second pass: create transformed dictionary
         for key, pair in pairs.items():
             if 'value' in pair and 'label' in pair:
@@ -51,7 +48,24 @@ class JobHistoryManager:
             else:
                 # If it's not a pair, keep the original value
                 transformed[key] = form_data[key]
-
+        
+        for key, value in transformed.items():
+            if not isinstance(value, str):
+                continue
+            try:
+                value = json.loads(value)
+                print(key, value, isinstance(value, list))
+                if isinstance(value, list) and all(isinstance(item, dict) and 'filename' in item and 'filepath' in item for item in value):
+                # Update filepaths
+                    transformed[key] = [
+                        {
+                        **item,
+                        'filepath': os.path.join(location, item['filename'])
+                        }
+                        for item in value
+                ]
+            except json.JSONDecodeError:
+                continue
         return transformed
 
         
@@ -59,7 +73,7 @@ class JobHistoryManager:
         timestamp = datetime.now().isoformat()
         user = os.getenv('USER')
         
-        form_data = self.transform_form_data(dict(job_data))
+        form_data = self.transform_form_data(dict(job_data), job_data.get('location'))
         job_record = {
             'job_id': job_id,
             'name': job_data.get('name'),
