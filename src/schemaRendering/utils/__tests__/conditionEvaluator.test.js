@@ -1,5 +1,12 @@
 import { evaluateCondition } from '../conditionEvaluator';
 
+jest.mock('../../schemaElements', () => {
+  const MockComponent = () => null;
+  return {
+    Containers: ["rowContainer", "collapsibleRowContainer"]
+  };
+});
+
 describe('evaluateCondition', () => {
   // Test data setup
   const mockFields = [

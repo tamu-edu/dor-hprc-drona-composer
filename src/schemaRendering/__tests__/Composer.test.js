@@ -2,6 +2,12 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import Composer from '../Composer';
 
+jest.mock('../schemaElements', () => {
+  const MockComponent = () => null;
+  return {
+    Containers: ["rowContainer", "collapsibleRowContainer"]
+  };
+});
 // Mock with proper controlled inputs and nested structure support
 jest.mock('../FieldRenderer', () => {
   const RenderFields = ({ fields, handleValueChange, setError, onFileChange }) => {

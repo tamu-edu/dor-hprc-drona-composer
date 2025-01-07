@@ -5,6 +5,13 @@ import {
   getFieldValue 
 } from '../fieldUtils';
 
+jest.mock('../../schemaElements', () => {
+  const MockComponent = () => null;
+  return {
+ 	Containers: ["rowContainer", "collapsibleRowContainer"]
+  };
+});
+
 describe('fieldUtils', () => {
   describe('normalizeFields', () => {
     test('normalizes basic fields', () => {
