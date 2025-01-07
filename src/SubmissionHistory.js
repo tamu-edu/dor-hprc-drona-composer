@@ -152,17 +152,6 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
               <button 
                 className="dropdown-item" 
                 onClick={() => {
-                  handleView(row);
-                  setIsOpen(false);
-                }}
-              >
-                View
-              </button>
-            </li>
-            <li>
-              <button 
-                className="dropdown-item" 
-                onClick={() => {
                   handleRerun(row);
                   setIsOpen(false);
                 }}
@@ -178,7 +167,7 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
                   setIsOpen(false);
                 }}
               >
-                 Form 
+                 Recreate 
               </button>
             </li>
 
