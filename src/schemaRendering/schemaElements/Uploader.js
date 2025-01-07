@@ -29,12 +29,8 @@ function Uploader(props) {
   }
   function handleFileChange(files) {
     const filesArray = Array.from(files);
-
-    let newFiles = [];
-    filesArray.forEach((file) => {
-      newFiles.push(file);
-      setUploadedFiles((prevFiles) => [...prevFiles, file]);
-    });
+    setUploadedFiles(prevFiles => [...prevFiles, ...filesArray]);
+    setGlobalFiles(prevFiles => [...prevFiles, ...filesArray]);
   }
 
   function showFiles() {
