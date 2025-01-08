@@ -15,7 +15,7 @@ function JobComposer({ error, setError,  formRef,
   envModalRef,
   multiPaneRef, ...props }) {
   const [showHistory, setShowHistory] = useState(false);
-
+  
   return (
     <div>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
@@ -47,6 +47,7 @@ function JobComposer({ error, setError,  formRef,
                       label="Environments"
                       options={props.environments}
                       onChange={props.handleEnvChange}
+	  	      value={ props.environment.env ? {value: props.environment.env, label: props.environment.env, src: props.environment.src} : null}
                       showAddMore={true}
                       onAddMore={props.handleAddEnv}
                     />
@@ -55,6 +56,7 @@ function JobComposer({ error, setError,  formRef,
                       fields={props.fields}
                       onFileChange={props.handleUploadedFiles}
 	  	      setError={setError}
+	  	      ref={props.composerRef}
                     />
                 </div>
               </div>
@@ -63,9 +65,11 @@ function JobComposer({ error, setError,  formRef,
  	    <div className="invisible">
               <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
             </div>
+	  	{props.environment.env !== "" && ( 
               <div>
 	        <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
               </div>
+		)}
                 <div>
                   <button className="btn btn-primary maroon-button" onClick={(e) => {
                     e.preventDefault();
@@ -76,7 +80,7 @@ function JobComposer({ error, setError,  formRef,
             </div>
           </div>
         </form>
-          <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} />
+          <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
 	</div>
         <div className="card-footer">
           <small className="text-muted">

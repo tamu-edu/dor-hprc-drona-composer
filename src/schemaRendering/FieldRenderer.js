@@ -1,112 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import {componentsMap, RowContainer, UnknownElement} from "./schemaElements/index.js"
+import React, { useMemo } from 'react';
+import { componentsMap, RowContainer, UnknownElement, Containers } from "./schemaElements/index.js"
+
 const FieldRenderer = ({
   fields,
   handleValueChange,
   labelOnTop,
   fieldStyles,
-  startingIndex,
-  currentValues,
   setError
 }) => {
-
   if (!fields) return null;
+  const renderField = useMemo(() => (field) => {
+    if (!field || !field.isVisible) return null;
 
-  const countNestedElements = ([_, value]) => {
-    if (!value) return 0;
-    
-    const { type, elements } = value;
-    
-    if (type === "rowContainer" && elements) {
-      return 1 + elements.reduce((sum, field) => sum + countNestedElements(field), 0);
-    }
-    
-    return 1;
-  };
-
-  const renderField = ([key, value, toggle], index) => {
-    if (!value) return null;
-
-    const { type, condition, ...attributes } = value;
+    const { type, name, condition, elements, value, ...attributes } = field;
     const Element = componentsMap[type];
 
-    if (!toggle) {
-
-      const totalElements = countNestedElements([key, value]);
-
-      // Return null element but still increment index, to maintain consistent indexing
-      return [null, totalElements];
-    }
-    if (type === "rowContainer") {
-      const totalElements = countNestedElements([key, value]);
-
-      return [(
-       <div key={index} className={fieldStyles}>
-       <RowContainer
-          key={key}
-          index={index}
-          {...attributes}
-          onChange={handleValueChange}
-          startingIndex={index+1} 
-          currentValues={currentValues} 
-	  setError={setError}
-       />
-      </div>
-      ), totalElements];
-   }
-   if (type === "dynamicSelect" && !attributes["isShown"]) {
-       attributes["isShown"] = true;
-   }
-   if (Element) {
-      return [(
-        <div key={index} className={fieldStyles}>
+    if (Containers.includes(type) && elements) {
+      return (
+        <div key={name} className={fieldStyles}>
           <Element
-            key={key}
+            key={name}
+            name={name}
+            elements={elements}
+            value={value}
+            {...attributes}
+            onChange={handleValueChange}
             labelOnTop={labelOnTop}
-            index={index}
-            value={currentValues[index]} 
-	    {...attributes}
-	    setError={setError}
-
-            onChange={ (_, val) => {
-              handleValueChange(index, val);
-	    }}
-		  
+            fieldStyles={fieldStyles}
+            setError={setError}
           />
         </div>
-      ), 1];
+      );
     }
 
-    return [(
-        <div key={index} className={fieldStyles}>
-          <UnknownElement
-            key={key}
+    if (type === "dynamicSelect") {
+      attributes.isShown = true;
+    }
+
+    if (Element) {
+      return (
+        <div key={name} className={fieldStyles}>
+          <Element
+            key={name}
+            name={name}
             labelOnTop={labelOnTop}
-            index={index}
-	    type={type}
-	    {...attributes}
+            value={value}
+            {...attributes}
+            setError={setError}
+            onChange={(_, val) => handleValueChange(name, val)}
           />
         </div>
-      ), 1];
-  };
+      );
+    }
 
- 
-  let runningIndex = startingIndex ? startingIndex : 0;
-  const elements = [];
+    return (
+      <div key={name} className={fieldStyles}>
+        <UnknownElement
+          key={name}
+          name={name}
+          labelOnTop={labelOnTop}
+          type={type}
+          {...attributes}
+        />
+      </div>
+    );
+  }, [handleValueChange, fieldStyles, labelOnTop, setError]);
 
-  for (const field of fields) {
-    const out = renderField(field, runningIndex);
+  const renderElements = useMemo(() => {
+    return fields.map(field => renderField(field)).filter(Boolean);
+  }, [fields, renderField]);
 
-    if (out === null) continue;
-    
-    const [element, increment] = out;
-	
-    if (element) elements.push(element);
-    runningIndex += increment; 
-  }
-
-  return <>{elements}</>;
+  return <>{renderElements}</>;
 };
 
-export default React.memo(FieldRenderer);
+// Custom comparison function for React.memo
+const areEqual = (prevProps, nextProps) => {
+  return (
+    prevProps.fields === nextProps.fields &&
+    prevProps.handleValueChange === nextProps.handleValueChange
+  );
+};
 
+export default React.memo(FieldRenderer, areEqual);

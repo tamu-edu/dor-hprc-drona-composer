@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, current_app as app
+from flask import Blueprint, send_file, render_template, request, jsonify, current_app as app
 import json
 import sqlite3
 import re
@@ -22,6 +22,37 @@ def composer():
 
 def get_directories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
+@job_composer.route('/download_file', methods=['POST'])
+def download_file():
+    # Todo make it use api errors
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON'}), 400
+    try:
+        data = request.get_json()
+    except Exception as json_error:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    filepath = data.get('filepath')
+    if not filepath:
+        return jsonify({'error': 'No filepath provided'}), 400
+
+    if not os.path.exists(filepath):
+        return jsonify({'error': f'File not found: {filepath}'}), 404
+
+    if not os.access(filepath, os.R_OK):
+        return jsonify({'error': f'No read permissions for file: {filepath}'}), 403
+
+    try:
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=os.path.basename(filepath)
+        )
+    except PermissionError as pe:
+        return jsonify({'error': f'Permission denied: {pe}'}), 403
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @job_composer.route('/modules', methods=['GET'])
 def get_modules():
@@ -168,8 +199,8 @@ def get_history():
     return jsonify(history_manager.get_user_history())
 
 
-@job_composer.route('/rerun_preview/<int:job_id>', methods=['GET'])
-def rerun_job(job_id):
+@job_composer.route('/history/<int:job_id>', methods=['GET'])
+def get_job_from_history(job_id):
     history_manager = JobHistoryManager()
     
     job_data = history_manager.get_job(job_id)

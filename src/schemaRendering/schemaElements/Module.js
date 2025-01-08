@@ -3,26 +3,30 @@ import FormElementWrapper from "../utils/FormElementWrapper";
 
 function Module(props) {
   const [value, setValue] = useState("");
-  const [modules, setModules] = useState([""]);
+  const [modules, setModules] = useState([]);
   const moduleSearchRef = useRef(null);
   const moduleAddRef = useRef(null);
   const [toolchain, setToolchain] = useState("modules");
+
+  useEffect(() => {
+    if (props.value != "") {
+      const modulesList = props.value.trim().split(' ').filter(m => m !== '');
+      setModules(modulesList);
+      setValue(props.value);
+    }
+  }, [props.value]);
 
   useEffect(() => {
     if (moduleSearchRef.current) {
       $(moduleSearchRef.current).autocomplete({
         delay: 40,
         source: function (request, response) {
-          // Suggest URL
-          //http://api.railwayapi.com/suggest_train/trains/190/apikey/1234567892/
-          // The above url did not work for me so using some existing one
           var suggestURL =
             document.dashboard_url +
             "/jobs/composer/modules?query=%QUERY&toolchain=" +
             toolchain;
           suggestURL = suggestURL.replace("%QUERY", request.term);
 
-          // JSONP Request
           $.ajax({
             method: "GET",
             dataType: "json",
@@ -43,7 +47,12 @@ function Module(props) {
       const toolchainName = getToolchainName(toolchain);
 
       if (moduleName) {
-        const updatedModules = [toolchainName, ...modules.slice(1), moduleName];
+        let updatedModules;
+        if (modules.length === 0) {
+          updatedModules = [toolchainName, moduleName];
+        } else {
+          updatedModules = [...modules, moduleName];
+        }
         setModules(updatedModules);
       }
       moduleSearchRef.current.value = "";
@@ -65,6 +74,7 @@ function Module(props) {
       module_list += module + " ";
     });
     setValue(module_list);
+    if (props.onChange) props.onChange(props.index, module_list);
   }, [modules]);
 
   function handleToolchain(event) {
@@ -106,7 +116,7 @@ function Module(props) {
         >
           Add
         </button>
-        <input type="hidden" name="module_list" value={value} />
+        <input type="hidden" name={props.name} value={value} />
 
         {modules.map((module, index) => (
           <span
