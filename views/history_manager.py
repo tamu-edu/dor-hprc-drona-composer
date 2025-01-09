@@ -6,12 +6,13 @@ from pathlib import Path
 
 class JobHistoryManager:
     def __init__(self):
-        self.base_dir = os.path.join(os.getenv('SCRATCH'), 'drona_composer/jobs')
-        Path(self.base_dir).mkdir(parents=True, exist_ok=True)
+        return 
         
     def get_job(self, job_id):
         user = os.getenv('USER')
-        history_file = os.path.join(self.base_dir, f"{user}_history.json")
+        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        Path(base_dir).mkdir(parents=True, exist_ok=True)
+        history_file = os.path.join(base_dir, f"{user}_history.json")
 
         try:
             with open(history_file, 'r') as f:
@@ -69,7 +70,7 @@ class JobHistoryManager:
         return transformed
 
         
-    def save_job(self, job_id, job_data, files, generated_files):
+    def save_job(self,job_id, job_data, files, generated_files):
         timestamp = datetime.now().isoformat()
         user = os.getenv('USER')
         
@@ -91,8 +92,10 @@ class JobHistoryManager:
             'additional_files': json.loads(job_data.get('additional_files')),
             'form_data': form_data  # Also possible to store all form data for complete form recreation
         }
-        
-        history_file = os.path.join(self.base_dir, f"{user}_history.json")
+           
+        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        Path(base_dir).mkdir(parents=True, exist_ok=True)
+        history_file = os.path.join(base_dir, f"{user}_history.json")
         try:
             with open(history_file, 'r') as f:
                 history = json.load(f)
@@ -106,7 +109,10 @@ class JobHistoryManager:
             
     def get_user_history(self):
         user = os.getenv('USER')
-        history_file = os.path.join(self.base_dir, f"{user}_history.json")
+
+        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        Path(base_dir).mkdir(parents=True, exist_ok=True)
+        history_file = os.path.join(base_dir, f"{user}_history.json")
         try:
             with open(history_file, 'r') as f:
                 return json.load(f)
