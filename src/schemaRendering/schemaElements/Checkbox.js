@@ -3,17 +3,18 @@ import FormElementWrapper from "../utils/FormElementWrapper"
 
 function Checkbox(props) {
   const [isChecked, setIsChecked] = useState(false);
-  const [value, setValue] = useState("");
-
+  const defaultValue = props.value || "Yes";  // Default to "Yes" if no value provided
+  const [checkboxValue, setCheckboxValue] = useState(defaultValue);
+  
   useEffect(() => {
-     if(props.value != "") {
-     	setValue(props.value);
-     }
-     setIsChecked(props.value != "");
+    if(props.value !== ""){
+    	setCheckboxValue(props.value);
+    }
+    setIsChecked(props.value !== "");
   }, [props.value]);
 
   function handleValueChange(event) {
-    const new_value = event.target.checked ? value : "";
+    const new_value = event.target.checked ? checkboxValue : "";
     setIsChecked(event.target.checked);
     if (props.onChange) props.onChange(props.index, new_value);
   }
@@ -29,7 +30,7 @@ function Checkbox(props) {
           type="checkbox"
           name={props.name}
           id={props.id}
-          value={value}
+          value={checkboxValue}
           checked={isChecked}
           className="form-control move-left"
           onChange={handleValueChange}
@@ -37,5 +38,4 @@ function Checkbox(props) {
     </FormElementWrapper>
   );
 }
-
 export default Checkbox;
