@@ -10,15 +10,17 @@ def retrieve_R_driver_aces(mpistring=""):
 def retrieve_R_version_aces(version=""):
     return f"module load foss/2022b R_tamu/4.2.2"
 
-def retrieve_R_libs(rlibs):
+def retrieve_R_libs(rlibs=""):
     if rlibs =="":
         return f""
     else:
-        return f"export R_LIBS_USER="+rlibs
+        return f"export R_LIBS_USER="+rlibs+":$R_LIBS_USER"
 
-def retrieve_tamubatch_opts_local(parallel,cores,memory,walltime):
+def retrieve_tamubatch_opts_local(parallel,cores,memory,walltime,project):
     options_string=""
     additional=""
+    if project != None and  project != "":
+        additional = additional +"--account="+project+" "
     if  cores != "":
         if parallel == "sock" and  int(cores) > 96:
             drona_add_warning("SOCK cluster is limited to a single node. You requested "+cores+ "workers. Adjusting to 96")

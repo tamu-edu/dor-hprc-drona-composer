@@ -13,6 +13,11 @@
     ]
   },
 
+  "ContainerScripts": {
+    "type": "rowContainer",
+    "label": "Additional",
+    "elements": {
+
   "mainscriptPicker": {
     "type": "picker",
     "label": "Main R script",
@@ -24,19 +29,32 @@
     "files": "True"
   },
 
-   "RpathPicker": {
-    "type": "picker",
-    "label": "Add R_LIBS_USER path",
-    "name": "rlibs",
-    "help":"OPTIONAL: If you have any local R packages that will be used by this R job, you can select the directory that contains these packages here. Note, the packages in this path much exactly match the R version and toolchain selected for this Job. Use this option with care. R_tamu also sets up R_LIBS and R_LIBS_USER paths. This is the recommended way to install and access packages.",
-    "localLabel": "select"
-  },
   
   "fileUploader": {
     "type": "uploader",
     "label": "Upload files/data)",
     "help":"If your job uses any additional files, e.g. R scripts, or input data, that are stored on your local machine,  you can upload them here." 
   },
+
+  "RpathPicker": {
+    "type": "picker",
+    "label": "Add R_LIBS_USER",
+    "name": "rlibs",
+    "help":"OPTIONAL: If you have any local R packages that will be used by this R job, you can select the directory that contains these packages here. Note, the packages in this path much exactly match the R version and toolchain selected for this Job. Use this option with care. R_tamu also sets up R_LIBS and R_LIBS_USER paths. This is the recommended way to install and access packages.",
+    "localLabel": "select",
+    "default":""
+  }
+
+    }
+  },
+
+
+  
+  "ContainerPar": {
+    "type": "rowContainer",
+    "label": "Additional",
+    "elements": {
+
 
   "ParallelDependDropdown": {
     "type": "select",
@@ -88,7 +106,17 @@
     "name": "cores",
     "value": "1",
     "condition": "ParallelDependDropdown.other"
+  }
+
+    }
   },
+
+
+
+  "ContainerAdditionals": {
+    "type": "rowContainer",
+    "label": "Additional",
+    "elements": {
 
   "memory": {
     "type": "unit",
@@ -109,5 +137,17 @@
     "help": "OPTIONAL: provide the time you estimate the job will need. It's best to be conservative when requesting walltime. If your job exceeds the requested walltime, your job will be killed immediately and you might loose all intermediate results. If you don't enter a value, composer will use a default value of 2 hours",
     "name": "walltime",
     "value": ""
+  },
+
+  "account": {
+    "type": "dynamicSelect",
+    "label": "Project Account",
+    "help": " OPTIONAL: if you want to use a different project account than your default account, you can provide the account number here.",
+    "name": "account",
+    "retriever" : "list_accounts"
   }
+
+    }
+  }
+
 }
