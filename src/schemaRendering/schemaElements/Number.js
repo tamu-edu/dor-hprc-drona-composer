@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper"
 
 function Number(props) {
   const [value, setValue] = useState(props.value || "");
+
+  useEffect(() => {
+    setValue(props.value || "");
+  }, [props.value]);
 
   function handleValueChange(event) {
     setValue(event.target.value);

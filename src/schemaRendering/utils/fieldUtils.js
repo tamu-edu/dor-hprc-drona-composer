@@ -1,99 +1,66 @@
-export const formatFields = (fields) => {
-  return Object.entries(fields).map((field) => {
-    const fieldData = [...field];
-    fieldData.push(field[1].hasOwnProperty("condition") ? false : true);
+import {Containers} from "../schemaElements/index"
 
-    if (field[1].type === "rowContainer" && field[1].elements) {
-      fieldData[1].elements = formatFields(field[1].elements);
-    }
-    return fieldData;
+export const normalizeFields = (fields) => {
+  return Object.entries(fields).map(([name, field]) => ({
+    name,
+    ...field,
+    isVisible: !field.condition, // Default visible if no condition
+    value: field.type === "checkbox" ? (field.checked ? field.value : "") : (field.value || ""),
+    // Recursively normalize nested elements in rowContainer
+    elements: Containers.includes(field.type) && field.elements 
+      ? normalizeFields(field.elements) 
+      : undefined
+  }));
+};
+
+export const updateFieldVisibility = (fields, evaluateCondition) => {
+  return fields.map(field => {
+    // Update visibility based on condition
+    const isVisible = field.condition 
+      ? evaluateCondition(field.condition, fields) 
+      : true;
+
+    return {
+      ...field,
+      isVisible,
+      // Clear value if field becomes invisible
+      value: isVisible ? field.value : "",
+      // Recursively update nested elements
+      elements: field.elements 
+        ? updateFieldVisibility(field.elements, evaluateCondition) 
+        : undefined
+    };
   });
 };
 
-export const initializeValues = (fields) => {
-  return Object.entries(fields).flatMap((field) => {
-    
-    field = field[1];
-    
-    if (field[1].type === "checkbox") {
-      return [field[1].checked ? field[1].value : ""];
-    } else if (field[1].type === "rowContainer" && field[1].elements) {
-        return ["", ...initializeValues(field[1].elements)];
-    } else {
-      return [field[1].value ? field[1].value : ""];
+export const updateFieldValue = (fields, fieldName, newValue) => {
+  return fields.map(field => {
+    if (field.name === fieldName) {
+      return { ...field, value: newValue };
     }
+    
+    // Recursively update nested elements
+    if (field.elements) {
+      return {
+        ...field,
+        elements: updateFieldValue(field.elements, fieldName, newValue)
+      };
+    }
+    
+    return field;
   });
 };
 
-export const extractConditionFields = (fields) => {
-  const conditions = [];
-  let valueIndex = 0;
-
-  const processFields = (fields) => {
-      fields.forEach((fieldArray) => {
-        const [key, fieldValue, toggle] = fieldArray;
-        if (fieldValue.condition) {
-          conditions.push({
-            index: valueIndex,
-            condition: fieldValue.condition
-          });
-        }
-        valueIndex++;
-        if (fieldValue.type === 'rowContainer' && fieldValue.elements) {
-          processFields(fieldValue.elements);
-        }
-      });
-  };
-
-  processFields(fields); 
-  return conditions;
-};
-
-export const updateNestedField = (fields, index, newValue) => {
-  const newFields = structuredClone(fields);
-
-  let valueIndex = 0;
-  let updated = false; 
-
-  const updateFieldAtPath = (currentFields, indexPath) => {
-
-    //Takes in a path in the form of 3.0, where this means:
-	  // it is contained at index 0 in the container at index 3 in the topmost container
-    const pathParts = indexPath.split(".").map(Number); // Convert the path into an array of numbers
-    let target = currentFields;
-
-    for (let i = 0; i < pathParts.length - 1; i++) {
-      target = target[pathParts[i]][1].elements; 
+// Helper to get a field's value by name
+export const getFieldValue = (fields, fieldName) => {
+  for (const field of fields) {
+    if (field.name === fieldName) {
+      return field.value;
     }
-    const finalIndex = pathParts[pathParts.length - 1];
-    target[finalIndex] = [...target[finalIndex]]; 
-   target[finalIndex][2] = newValue; 
-  };
-
-  const processFields = (currentFields, currentPath = "") => {
-       currentFields.forEach((fieldArray, i) => {
-       if(updated) return;
-        const [key, fieldValue, toggle] = fieldArray;
-
-        const path = currentPath ? `${currentPath}.${i}` : `${i}`;
-        if (valueIndex === index) {
-          updateFieldAtPath(newFields, path);
-  	  updated = true;
-          return; 
-        }
-        valueIndex++;
-
-        // Recurse for rowContainer elements
-        if (fieldValue && fieldValue.type === 'rowContainer' && fieldValue.elements) {
-           processFields(fieldValue.elements, path);
-           if(updated) return;
-	}
-      });
-    return false; 
-  };
-
-
-  processFields(newFields);
-  return newFields;
+    if (field.elements) {
+      const nestedValue = getFieldValue(field.elements, fieldName);
+      if (nestedValue !== undefined) return nestedValue;
+    }
+  }
+  return undefined;
 };
-

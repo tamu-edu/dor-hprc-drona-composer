@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, current_app as app
+from flask import Blueprint, send_file, render_template, request, jsonify, current_app as app
 import json
 import sqlite3
 import re
@@ -9,6 +9,7 @@ import yaml
 from functools import wraps
 from .logger import Logger
 from .error_handler import APIError, handle_api_error
+from .history_manager import JobHistoryManager
 
 job_composer = Blueprint("job_composer", __name__)
 logger = Logger()
@@ -21,6 +22,37 @@ def composer():
 
 def get_directories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
+@job_composer.route('/download_file', methods=['POST'])
+def download_file():
+    # Todo make it use api errors
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON'}), 400
+    try:
+        data = request.get_json()
+    except Exception as json_error:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    filepath = data.get('filepath')
+    if not filepath:
+        return jsonify({'error': 'No filepath provided'}), 400
+
+    if not os.path.exists(filepath):
+        return jsonify({'error': f'File not found: {filepath}'}), 404
+
+    if not os.access(filepath, os.R_OK):
+        return jsonify({'error': f'No read permissions for file: {filepath}'}), 403
+
+    try:
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=os.path.basename(filepath)
+        )
+    except PermissionError as pe:
+        return jsonify({'error': f'Permission denied: {pe}'}), 403
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @job_composer.route('/modules', methods=['GET'])
 def get_modules():
@@ -70,6 +102,7 @@ def evaluate_dynamic_select():
                 cwd=retriever_dir
         )
         if result.returncode == 0:
+            #TODO: We assume the result is the correct JSON format for a dynamic select 
             #options = json.loads(result.stdout)
             options = result.stdout
         else:
@@ -162,6 +195,27 @@ def save_file(file, location):
 
     return file_path
     
+@job_composer.route('/history', methods=['GET'])
+def get_history():
+    history_manager = JobHistoryManager()
+    return jsonify(history_manager.get_user_history())
+
+
+@job_composer.route('/history/<int:job_id>', methods=['GET'])
+def get_job_from_history(job_id):
+    history_manager = JobHistoryManager()
+    
+    job_data = history_manager.get_job(job_id)
+
+    if not job_data:
+        return "Job not found", 404
+
+    return jsonify(job_data)  
+
+def extract_job_id(submit_response):
+    match = re.search(r'Submitted batch job (\d+)', submit_response)
+    return match.group(1) if match else None
+
 
 @job_composer.route('/submit', methods=['POST'])
 @logger.log_route(
@@ -190,17 +244,31 @@ def submit_job():
 
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
+
     bash_command = f"bash {driver_script_path}"
-    
+
+    history_manager = JobHistoryManager()
+
     try:
         result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if result.returncode == 0:
+                history_manager.save_job(
+                    extract_job_id(result.stdout),
+                    params,
+                    files,
+                    {
+                        'bash_script': bash_script_path,
+                        'driver_script': driver_script_path
+                     }
+                )
                 return result.stdout
+                
         else:
             return result.stderr
     except subprocess.CalledProcessError as e:
         return e.stderr
     
+
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
