@@ -6,6 +6,7 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
   const [jobHistory, setJobHistory] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [openDropdownId, setOpenDropdownId] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
   useEffect(() => {
     if (isExpanded) {
@@ -118,65 +119,61 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
         );
       },
     },
-  {
-    name: 'Actions',
-    width: '100px',
-    cell: row => {
-      const [isOpen, setIsOpen] = useState(false);
-      const toggleDropdown = () => setIsOpen(!isOpen);
-    
-      useEffect(() => {
-        const handleClickOutside = (event) => {
-          if (!event.target.closest('.dropdown')) {
-            setIsOpen(false);
-          }
-        };
+    {
+      name: 'Actions',
+      width: '100px',
+      cell: row => {
+        useEffect(() => {
+          const handleClickOutside = (event) => {
+            if (!event.target.closest('.dropdown')) {
+              setOpenDropdownId(null);
+            }
+          };
 
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-      }, []);
+          document.addEventListener('click', handleClickOutside);
+          return () => document.removeEventListener('click', handleClickOutside);
+        }, []);
 
-      return (
- <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-        <div className="dropdown">
-          <button 
-            className={`btn btn-sm btn-primary maroon-button dropdown-toggle ${isOpen ? 'show' : ''}`}
-            type="button"
-            onClick={toggleDropdown}
-            aria-expanded={isOpen}
-          >
-            Actions
-          </button>
-          <ul className={`dropdown-menu ${isOpen ? 'show' : ''}`} style={{ minWidth: '120px' }}>
-            <li>
-              <button 
-                className="dropdown-item" 
-                onClick={() => {
-                  handleRerun(row);
-                  setIsOpen(false);
-                }}
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <div className="dropdown">
+              <button
+                className={`btn btn-sm btn-primary maroon-button dropdown-toggle ${openDropdownId === row.job_id ? 'show' : ''}`}
+                type="button"
+                onClick={() => setOpenDropdownId(openDropdownId === row.job_id ? null : row.job_id)}
+                aria-expanded={openDropdownId === row.job_id}
               >
-                Rerun
+                Actions
               </button>
-            </li>
-	    <li>
-              <button 
-                className="dropdown-item" 
-                onClick={() => {
-                  handleForm(row);
-                  setIsOpen(false);
-                }}
-              >
-                 Recreate 
-              </button>
-            </li>
-
-          </ul>
-        </div>
-        </div>
-      );
-    },
-    ignoreRowClick: true,
+              <ul className={`dropdown-menu ${openDropdownId === row.job_id ? 'show' : ''}`} style={{ minWidth: '120px' }}>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      handleRerun(row);
+                      setOpenDropdownId(null);
+                    }}
+                  >
+                    Rerun
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      handleForm(row);
+                      setOpenDropdownId(null);
+                    }}
+                  >
+                    Recreate
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        );
+      },
+      ignoreRowClick: true,
   }
   ];
 
