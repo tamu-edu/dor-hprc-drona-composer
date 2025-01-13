@@ -161,6 +161,7 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
                   <button
                     className="dropdown-item"
                     onClick={() => {
+		      window.scrollTo(0, 90);
                       handleForm(row);
                       setOpenDropdownId(null);
                     }}
