@@ -14,7 +14,7 @@ function JobComposer({ error, setError,  formRef,
   previewRef,
   envModalRef,
   multiPaneRef, ...props }) {
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
   
   return (
     <div>
