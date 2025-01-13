@@ -9,11 +9,9 @@ function Module(props) {
   const [toolchain, setToolchain] = useState("modules");
 
   useEffect(() => {
-    if (props.value != "") {
       const modulesList = props.value.trim().split(' ').filter(m => m !== '');
       setModules(modulesList);
       setValue(props.value);
-    }
   }, [props.value]);
 
   useEffect(() => {
