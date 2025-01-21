@@ -1,0 +1,246 @@
+{
+
+ "ContainerVersion": {
+    "type": "rowContainer",
+    "label": "Additional",
+    "elements": {
+
+    "versionSelect": {
+    "type": "select",
+    "label": "Python Environment",
+    "name": "versionSelect",
+    "help": "Select the environment type.",
+    "options": [
+      {
+        "value": "private",
+        "label": "Private virtual env"
+      },
+       {
+        "value": "create",
+        "label": "Create new private virtual env"
+      },
+      {
+        "value": "shared",
+        "label": "Shared virtual env"
+      },
+      {
+        "value": "module",
+        "label": "Module (latest)"
+      }
+    ]
+  },
+
+
+  "createEnvName": {
+    "type": "text",
+    "label": "Name of virtual env",
+    "name": "createEnvName",
+    "help": "Enter a unique name for your new environment. Use only letters, numbers, hyphens, or underscores. Spaces and special characters are not allowed.",
+    "value": "",
+    "condition": "versionSelect.create"
+  },
+
+  "pythonVersionDropdown": {
+    "type": "select",
+    "label": "Python Version",
+    "name": "pythonVersionDropdown",
+    "help": "Choose a Python version to load from the available options. The selected version will automatically load the required GCCcore and Python module.",
+    "condition": "versionSelect.create",
+    "options": [
+      {
+        "value": "module load GCCcore/13.2.0 Python/3.11.5",
+        "label": "Python 3.11.5"
+      },
+      {
+        "value": "module load GCCcore/11.3.0 Python/3.10.4",
+        "label": "Python 3.10.4"
+      },
+      {
+        "value": "module load GCCcore/11.2.0 Python/3.9.6",
+        "label": "Python 3.9.6"
+      },
+      {
+        "value": "module load GCCcore/10.2.0 Python/3.8.6",
+        "label": "Python 3.8.6"
+      },
+      {
+        "value": "module load GCCcore/7.3.0 Python/3.7.0",
+        "label": "Python 3.7.0"
+      }
+    ]
+  },
+
+  "currentEnvDropdown": {
+    "type": "dynamicSelect",
+    "label": "My environments",
+    "name": "currentEnvDropdown",
+    "help": "Choose from your currently existing environments.",
+    "condition": "versionSelect.private",
+    "retriever": "get_current_env.sh"
+  },
+  "sharedEnvDropdown": {
+    "type": "dynamicSelect",
+    "label": "Select Shared Environements",
+    "name": "sharedEnvDropdown",
+    "help": "Shared environments.",
+    "condition": "versionSelect.shared",
+    "retriever": "get_python_versions.sh"
+  }
+
+ }
+ },
+
+  "ContainerScripts": {
+    "type": "rowContainer",
+    "label": "Additional",
+    "elements": {
+
+  "mainscriptPicker": {
+    "type": "picker",
+    "label": "Main Python script",
+    "name": "mainscript",
+    "remoteLabel": "local",
+    "localLabel": "cluster",
+    "showFiles": "True",
+    "help" : "Here you can specify the Python script you want to execute. You can either select it from a location on ACES (select cluster) or upload it from your local machine (local).If you don't select a file here, you can still manually enter it in the preview window.",
+    "files": "True"
+  },
+
+  
+  "fileUploader": {
+    "type": "uploader",
+    "label": "Upload files/data)",
+    "help":"If your job uses any additional files, e.g. R scripts, or input data, that are stored on your local machine,  you can upload them here." 
+  }
+
+
+    }
+  },
+
+
+
+  
+   "SlurmCheckbox": {
+    "type": "checkbox",
+    "label":"Set Job requirements",
+    "name": "slurmbox",
+    "help": "Check this box if you want to set Slurm Options. ",
+    "value": "Yes"
+  },
+
+
+
+ "ContainerTasks": {
+    "type": "rowContainer",
+    "label": "GPU",
+    "condition": "slurmbox.Yes)", 
+    "elements": {
+
+  "tasks": {
+    "type": "number",
+    "label": "#tasks",
+    "help": "This is the number of tasks your code can utilize. This is mainly for codes that use MPI. If you are not sure, just leave this as 1",
+    "name": "tasks",
+    "value": "1"
+  },
+
+
+  "nodes": {
+    "type": "text",
+    "label": "#nodes",
+    "help" : "Only set this field if you requested multiple tasks above and you want to distribute these tasks over multiple nodes. This is most common for MPI codes. If you are not sure, or if you don't want to explicitly distribute tasks over multiple nodes, leave this value at 0.",
+    "name": "nodes",
+    "value": ""
+  },
+
+  "cpus": {
+    "type": "number",
+    "label": "#CPUs/task",
+    "help" : "This option is mostly used for hybrid codes (typically codes that use both MPI and OpenMP). Only set this field if you are sure your code will utilze multiple threads per task. Keep in mind the total number of cores will be #tasks multiplied by #cpus_per_task).",
+    "name": "cpus",
+    "value": "1",
+    "max": "96"
+  },
+
+
+  "gpuDropdown": {
+    "type": "select",
+    "label": "Accelerator",
+    "help": "Only select an accelerator if your job will utilize them. You might need to setup the environment for the accelerator you selected in the job script.",
+    "name": "gpu",
+    "options": [
+
+       {
+        "value": "",
+        "label": "NONE"
+      },
+      {
+        "value": "h100",
+        "label": "H100"
+      },
+      {
+        "value": "a30",
+        "label": "A30"
+      },
+      {
+        "value": "pvc",
+        "label": "PVC"
+      }
+      ]
+
+  },
+
+
+   "numgpus": {
+    "type": "number",
+    "label": "#GPUs",
+    "help" : "Number of accelerators you want to use. On ACES, in theory you can request up to 10.",
+    "name": "numgpu",
+    "value": "1",
+    "condition": "gpu.h100 || gpu.a30 || gpu.pvc"
+
+}
+}
+},
+
+  
+
+  "ContainerAdditionals": {
+    "type": "rowContainer",
+    "label": "Additional",
+    "condition" : "slurmbox.Yes",
+    "elements": {
+
+  "memory": {
+    "type": "unit",
+    "label": "Memory",
+    "help": "OPTIONAL: provide the total amount of memory you esttimate the job needs. It's best to be conservative and request more. If your job will try to use more memory than requested, your job will be killed immediately and you might loose all intermediate results. If you don't enter any value, composer will use a default value.",
+    "name": "memory",
+    "units": [
+      {
+        "label": "GB",
+        "value": "G"
+      }
+    ]
+  },
+  
+  "Walltime": {
+    "type": "time",
+    "label": "Expected run time",
+    "help": "OPTIONAL: provide the time you estimate the job will need. It's best to be conservative when requesting walltime. If your job exceeds the requested walltime, your job will be killed immediately and you might loose all intermediate results. If you don't enter a value, composer will use a default value of 2 hours",
+    "name": "walltime",
+    "value": ""
+  },
+
+  "account": {
+    "type": "dynamicSelect",
+    "label": "Project Account",
+    "help": " OPTIONAL: if you want to use a different project account than your default account, you can provide the account number here.",
+    "name": "account",
+    "retriever" : "list_accounts"
+  }
+
+    }
+  }
+
+}
