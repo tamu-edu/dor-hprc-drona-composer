@@ -17,6 +17,9 @@ function Module(props) {
   }, [props.value]);
 
   useEffect(() => {
+     
+    setValue(""); 
+    setModules([]);
     if (moduleSearchRef.current) {
       $(moduleSearchRef.current).autocomplete({
         delay: 40,
@@ -101,7 +104,7 @@ function Module(props) {
             autoComplete="off"
           />
           <div className="input-group-append">
-            <select className="form-control" onChange={handleToolchain}>
+            <select name={props.toolchainName} className="form-control" onChange={handleToolchain}>
               {toolchains}
             </select>
           </div>
