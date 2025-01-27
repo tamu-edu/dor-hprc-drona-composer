@@ -18,6 +18,11 @@
     ]
   },
 
+ "ContainerTasks": {
+    "type": "rowContainer",
+    "label": "GPU",
+    "elements": {
+
   "tasks": {
     "type": "number",
     "label": "Number of tasks",
@@ -37,7 +42,7 @@
 
   "nodes": {
     "type": "text",
-    "label": "Number of nodes (empty means undefined)",
+    "label": "Number of nodes",
     "help" : "Only set this field if you requested multiple tasks above and you want to distribute these tasks over multiple nodes. This is most common for MPI codes. If you are not sure, or if you don't want to explicitly distribute tasks over multiple nodes, leave this value at 0.",
     "name": "nodes",
     "value": "",
@@ -50,9 +55,21 @@
     "help" : "This option is mostly used for hybrid codes (typically codes that use both MPI and OpenMP). Only set this field if you are sure your code will utilze multiple threads per task. Keep in mind the total number of cores will be #tasks multiplied by #cpus_per_task).",
     "name": "cpus",
     "value": "1",
-    "max": "64",
+    "max": "48",
     "condition": "AdvancedCheckbox.Yes"
-  },
+  }
+}
+},
+
+
+
+
+
+  "ContainerGPU": {
+    "type": "rowContainer",
+    "label": "GPU",
+    "elements": {
+
 
   "gpuDropdown": {
     "type": "select",
@@ -60,25 +77,26 @@
     "help": "Only select an accelerator if your job will utilize them. You might need to setup the environment for the accelerator you selected in the job script.", 
     "name": "gpu",
     "options": [
+
+       {
+        "value": "",
+        "label": "NONE"
+      },
       {
-        "value": "None",
-        "label": "None"
+        "value": "a100",
+        "label": "A100"
+      },
+      {
+        "value": "a40",
+        "label": "A40"
+      },
+      {
+        "value": "a30",
+        "label": "A30"
       },
       {
         "value": "a10",
         "label": "A10"
-      },
-     {
-        "value": "a30",
-        "label": "A30"
-      },
-       {
-        "value": "a40",
-        "label": "A40"
-      },
-       {
-        "value": "a100",
-        "label": "A100"
       },
        {
         "value": "t4",
@@ -92,13 +110,20 @@
    "numgpus": {
     "type": "number",
     "label": "#GPUs",
-    "help" : "Enter the number of GPUs you want to use. On FASTER, in theory you can request up to 10.",
+    "help" : "Number of GPUs you want to use. On Grace, in theory you can request up to 10.",
     "name": "numgpu",
     "value": "1",
     "max": "10",
-    "condition": "gpuDropdown.a10 || gpuDropdown.a10 || gpuDropdown.a30 || gpuDropdown.a40 || gpuDropdown.a100 || gpuDropdown.t4 ||"
-  },
+    "condition": "gpuDropdown.a100 || gpuDropdown.rtx6000 || gpuDropdown.t4 || gpuDropdown.a40"
+  
+}
+}
+},
 
+ "ContainerAdditional": {
+    "type": "rowContainer",
+    "label": "Additional",
+    "elements": {
 
   "memory": {
     "type": "unit",
@@ -121,19 +146,22 @@
     "value": ""
   },
 
-  "account": {
-    "type": "text",
+ "account": {
+    "type": "dynamicSelect",
     "label": "Project Account",
     "help": " OPTIONAL: if you want to use a different project account than your default account, you can provide the account number here.",
     "name": "account",
-    "value": ""
+    "retriever" : "list_accounts"
   },
 
-  "extraText": {
+ "extraText": {
     "type": "text",
     "label": "Additional Slurm parameters",
     "help": "OPTIONAL: You can specify Slurm-specific parameters here, e.g. --exclusive or --reservation=XXX. This is a specialized field to tailor your specific job requirements. Only use this option  if you are familiar with advanced Slurm flags.",
     "name": "extra_slurm",
     "value": ""
   }
+}
+}
+
 }

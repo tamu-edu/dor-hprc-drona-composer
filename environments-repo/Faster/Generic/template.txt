@@ -1,18 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=[JOBNAME]
-#SBATCH --time=[TIME]
-#SBATCH --ntasks=[TASKS]
-#SBATCH --cpus-per-task=[CPUS]
-#SBATCH --nodes=[NODES]
-#SBATCH --mem=[MEM]
-#SBATCH --output=out.%j
-#SBATCH --error=error.%j
+#SBATCH --time=[TIME] --mem=[MEM]
+#SBATCH --ntasks=[TASKS] --nodes=[NODES] --cpus-per-task=[CPUS]
+#SBATCH --output=out.%j --error=error.%j
 [EXTRA]
 
 module purge
 module load WebProxy [MODULES]
-
 cd [flocation]
-
 # ADD YOUR COMMANDS BELOW
 
