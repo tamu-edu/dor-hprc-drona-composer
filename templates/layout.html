@@ -95,7 +95,9 @@
     </header>
     <footer class="footer mt-2"></footer>
 
-    <script src="{{url_for('static', filename='bundle.js')}}"></script>
+    <script src="{{url_for('static', filename='dist/vendors.bundle.js')}}"></script>
+    <script src="{{url_for('static', filename='dist/react.bundle.js')}}"></script>
+    <script src="{{url_for('static', filename='dist/main.bundle.js')}}"></script>
     <script src="{{ url_for('static', filename='jquery-3.4.1/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap-4.4.1/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='DataTables/datatables.min.js') }}"></script>
