@@ -315,10 +315,10 @@ def get_environments():
 def add_environment():
     env = request.form.get("env")
     src = request.form.get("src")
-    cluster_name = app.config.get('cluster_name', "Faster")
+    cluster_name = app.config['cluster_name']
     
     repo_manager = EnvironmentRepoManager(
-            repo_url="https://github.com/a11155/dor-hprc-drona-environments.git",
+            repo_url=app.config['env_repo_github'],
             repo_dir="./environments-repo"
     )
         
@@ -332,9 +332,9 @@ def add_environment():
 
 @job_composer.route('/get_more_envs_info', methods=['GET'])
 def get_more_envs_info():
-    cluster_name = app.config.get('cluster_name', "Faster")
+    cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
-        repo_url="https://github.com/a11155/dor-hprc-drona-environments.git",
+        repo_url=app.config["env_repo_github"],
         repo_dir="./environments-repo"
     )
     
