@@ -1,0 +1,10 @@
+{
+  "batchopts" : "!retrieve_tamubatch_opts_local($parallel,$cores,$memory,$walltime,$account)",
+  "LOADR": "!retrieve_R_version_aces($version)",
+  "DRIVER": "!retrieve_R_driver_aces($parallel)",
+  "RLIBS" : "!retrieve_R_libs($rlibs)",
+  "flocation": "$location",
+  "fmainscript": "$mainscript"
+}
+
+
