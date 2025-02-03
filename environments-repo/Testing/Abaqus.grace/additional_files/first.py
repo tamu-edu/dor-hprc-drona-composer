@@ -1,1 +1,0 @@
-print("Memory: [MEM]")
