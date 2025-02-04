@@ -1,7 +1,0 @@
-{
-  "jobname": "$name",
-  "test": "$testSelect1 $testText1 $testNumber1 $testCheckbox1 $testRadio1",
-  "flocation": "$location",
-  "fmodules": "foss/2022b Python/3.10.8 $module_list",
-  "testUnit1": "$testUnit1"
-}

@@ -1,9 +1,0 @@
-{
-  "fversion": "$version",
-  "flocation": "$location",
-  "mopts" : "!retrieve_matlabopts($name,$workers,$threads,$walltime,$memory,$gpu)",
-  "fmainscript": "!retrieve_main($mainscript)",
-  "matlabpath": "!retrieve_matlabpath($mainscript,$matlabpath)"
-}
-
-
