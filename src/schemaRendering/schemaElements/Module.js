@@ -2,19 +2,24 @@ import React, { useState, useRef, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
 function Module(props) {
-  const [value, setValue] = useState("");
-  const [modules, setModules] = useState([]);
+  const [value, setValue] = useState(props.value || "");
+  const [modules, setModules] = useState(() => {
+    return props.value ? props.value.trim().split(' ').filter(m => m !== '') : [];
+  });
   const moduleSearchRef = useRef(null);
   const moduleAddRef = useRef(null);
   const [toolchain, setToolchain] = useState("modules");
 
   useEffect(() => {
-      const modulesList = props.value.trim().split(' ').filter(m => m !== '');
-      setModules(modulesList);
-      setValue(props.value);
+    const newModules = props.value.trim().split(' ').filter(m => m !== '');
+    setModules(newModules);
+    setValue(props.value);
   }, [props.value]);
 
   useEffect(() => {
+     
+    setValue(""); 
+    setModules([]);
     if (moduleSearchRef.current) {
       $(moduleSearchRef.current).autocomplete({
         delay: 40,
@@ -24,7 +29,6 @@ function Module(props) {
             "/jobs/composer/modules?query=%QUERY&toolchain=" +
             toolchain;
           suggestURL = suggestURL.replace("%QUERY", request.term);
-
           $.ajax({
             method: "GET",
             dataType: "json",
@@ -39,11 +43,20 @@ function Module(props) {
     }
   }, [toolchain]);
 
+  useEffect(() => {
+    const module_list = modules.join(' ');
+    if (module_list !== value) {
+      setValue(module_list);
+      if (props.onChange) {
+        props.onChange(props.index, module_list);
+      }
+    }
+  }, [modules]);
+
   function handleAddModule() {
     if (moduleSearchRef.current) {
       const moduleName = $(moduleSearchRef.current).val();
       const toolchainName = getToolchainName(toolchain);
-
       if (moduleName) {
         let updatedModules;
         if (modules.length === 0) {
@@ -65,15 +78,6 @@ function Module(props) {
       return "";
     }
   }
-
-  useEffect(() => {
-    let module_list = "";
-    modules.forEach((module) => {
-      module_list += module + " ";
-    });
-    setValue(module_list);
-    if (props.onChange) props.onChange(props.index, module_list);
-  }, [modules]);
 
   function handleToolchain(event) {
     setToolchain(event.target.value);
@@ -99,9 +103,8 @@ function Module(props) {
             className="form-control ui-autoComplete-input"
             autoComplete="off"
           />
-
           <div className="input-group-append">
-            <select className="form-control" onChange={handleToolchain}>
+            <select name={props.toolchainName} className="form-control" onChange={handleToolchain}>
               {toolchains}
             </select>
           </div>
@@ -115,7 +118,6 @@ function Module(props) {
           Add
         </button>
         <input type="hidden" name={props.name} value={value} />
-
         {modules.map((module, index) => (
           <span
             key={index}

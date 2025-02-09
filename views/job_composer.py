@@ -10,6 +10,7 @@ from functools import wraps
 from .logger import Logger
 from .error_handler import APIError, handle_api_error
 from .history_manager import JobHistoryManager
+from .env_repo_manager import EnvironmentRepoManager
 
 job_composer = Blueprint("job_composer", __name__)
 logger = Logger()
@@ -314,35 +315,31 @@ def get_environments():
 def add_environment():
     env = request.form.get("env")
     src = request.form.get("src")
-    env_dir = os.path.join(src, env)
-    # copy the environment to the user's environment directory
+    cluster_name = app.config['cluster_name']
+    
+    repo_manager = EnvironmentRepoManager(
+            repo_url=app.config['env_repo_github'],
+            repo_dir="./environments-repo"
+    )
+        
     user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-    create_folder_if_not_exist(user_envs_path)
-    os.system(f"cp -r {env_dir} {user_envs_path}")
-
-    return jsonify({"status": "Success"})
+    success = repo_manager.copy_environment_to_user(cluster_name, env, user_envs_path)
+        
+    if success:
+        return jsonify({"status": "Success"})
+    else:
+        return jsonify({"status": "Failed to copy environment"}), 500
 
 @job_composer.route('/get_more_envs_info', methods=['GET'])
 def get_more_envs_info():
     cluster_name = app.config['cluster_name']
-    environments_dir = f"./environments-repo/{cluster_name}"
-    environments = get_directories(environments_dir)
-    # get info from manifest.yml of each environment
-    system_envs_info = []
-    for env in environments:
-        env_dir = os.path.join(environments_dir, env)
-        manifest_path = os.path.join(env_dir, "manifest.yml")
-        if os.path.exists(manifest_path):
-            with open(manifest_path, 'r') as f:
-                manifest = yaml.safe_load(f)
-                manifest["src"] = environments_dir
-                system_envs_info.append(manifest)
-        else:
-            system_envs_info.append({"env": env, "description": "No description available", "src": environments_dir})
-    return jsonify(system_envs_info)
-
-
-
+    repo_manager = EnvironmentRepoManager(
+        repo_url=app.config["env_repo_github"],
+        repo_dir="./environments-repo"
+    )
+    
+    environments_info = repo_manager.get_environments_info(cluster_name)
+    return jsonify(environments_info)
 
 def _get_environments():
     system_environments = get_directories("./environments")
