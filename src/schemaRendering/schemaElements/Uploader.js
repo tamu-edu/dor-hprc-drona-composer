@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { GlobalFilesContext } from "../../index.js";
+import { GlobalFilesContext } from "../../ComposerWrapper.js";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
 function Uploader(props) {
