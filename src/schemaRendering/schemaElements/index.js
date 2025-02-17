@@ -13,6 +13,7 @@ import Unit from "./Unit";
 import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
 import TextArea from "./TextArea";
+import StaticText from "./StaticText";
 
 
 export {
@@ -30,8 +31,10 @@ export {
 	UnknownElement,
 	DynamicSelect,
 	TextArea,
+	StaticText,
 	CollapsibleRowContainer
 }
+
 export const componentsMap = {
   text: Text,
   select: Select,
@@ -46,6 +49,7 @@ export const componentsMap = {
   unit: Unit,
   dynamicSelect: DynamicSelect,
   textarea: TextArea,
+  staticText: StaticText,
   collapsibleRowContainer: CollapsibleRowContainer
 };
 
