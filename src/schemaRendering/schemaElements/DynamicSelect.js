@@ -3,7 +3,7 @@ import FormElementWrapper from "../utils/FormElementWrapper";
 import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
 
-import config from '../../../../config.yml';
+import config from '@config';
 
 function DynamicSelect(props) {
   const [value, setValue] = useState(props.value || "");

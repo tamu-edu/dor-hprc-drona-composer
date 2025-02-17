@@ -89,21 +89,23 @@ def get_environment(environment):
 @handle_api_error
 def evaluate_dynamic_select():
     retriever_path = request.args.get("retriever_path")
+    
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
     bash_command = f"bash {retriever_script}"
+    
     try:
         result = subprocess.run(
-                bash_command, 
+                bash_command,
                 shell=True,
-                check=True, 
+                check=True,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, 
+                stderr=subprocess.PIPE,
                 universal_newlines=True,
                 cwd=retriever_dir
         )
         if result.returncode == 0:
-            #TODO: We assume the result is the correct JSON format for a dynamic select 
+            #TODO: We assume the result is the correct JSON format for a dynamic select
             #options = json.loads(result.stdout)
             options = result.stdout
         else:
