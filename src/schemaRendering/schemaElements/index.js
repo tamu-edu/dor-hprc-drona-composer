@@ -3,7 +3,7 @@ import Select from "./Select";
 import Number from "./Number";
 import Checkbox from "./Checkbox";
 import RowContainer from "./RowContainer";
-import CollapsibleRowContainer from "./CollapsibleRowContainer";
+import { CollapsibleRowContainer, CollapsibleColContainer } from "./CollapsibleContainer";
 import RadioGroup from "./RadioGroup";
 import Picker from "./Picker";
 import Uploader from "./Uploader";
@@ -32,7 +32,8 @@ export {
 	DynamicSelect,
 	TextArea,
 	StaticText,
-	CollapsibleRowContainer
+	CollapsibleRowContainer,
+	CollapsibleColContainer
 }
 
 export const componentsMap = {
@@ -50,8 +51,9 @@ export const componentsMap = {
   dynamicSelect: DynamicSelect,
   textarea: TextArea,
   staticText: StaticText,
-  collapsibleRowContainer: CollapsibleRowContainer
+  collapsibleRowContainer: CollapsibleRowContainer,
+  collapsibleColContainer: CollapsibleColContainer
 };
 
-export const Containers = ["rowContainer", "collapsibleRowContainer"];
+export const Containers = ["rowContainer", "collapsibleRowContainer", "collapsibleColContainer"];
 
