@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, createContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
 
-export const GlobalFilesContext = createContext();
+import  { GlobalFilesContext } from './GlobalFilesContext';
 
-
-function App() {
+export function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
   const [environment, setEnvironment] = useState({ env: "", src: "" });
   const [fields, setFields] = useState({});
@@ -532,4 +531,7 @@ return (
 }
 
 // Render the parent component into the root DOM node
-ReactDOM.render(<App />, document.getElementById("root"));
+//import ReactDOM from "react-dom";
+//if (document.getElementById("root")) {
+//ReactDOM.render(<JobComposerApp />, document.getElementById("root"));
+//}
