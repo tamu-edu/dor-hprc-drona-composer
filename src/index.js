@@ -214,52 +214,60 @@ async function handleForm(row) {
     request.send(formData);
   }
 
-  function handlePreview() {
-    setJobStatus("new")
-    const formData = new FormData(formRef.current);
+function handlePreview() {
+  setJobStatus("new");
+  const formData = new FormData(formRef.current);
 
-    if (!formData.has("runtime")) {
-      alert("Environment is required.");
-      return;
-    }
-
-    const modal = new bootstrap.Modal(previewRef.current);
-    modal.toggle();
-    const action = document.dashboard_url + "/jobs/composer/preview";
-    preview_job(action, formData, function (error, jobScript) {
-      if (error) {
-        alert(error);
-      } else {
-        setJobScript(jobScript["script"]);
-
-	// Template and driver panes will be displayed on the left of everything else
-        const panes = [
-          {
-            preview_name: "template.txt",
-            content: jobScript["script"],
-            name: "run_command",
-            order: -3
-          },
-          {
-	    preview_name: "driver.sh",
-	    content: jobScript["driver"],
-	    name: "driver",
-	    order: -2
-	  },
-        ];
-
-        for (const [fname, file] of Object.entries(
-          jobScript["additional_files"]
-        )) {
-          panes.push({ preview_name: file["preview_name"], content: file["content"], name: fname, order: file["preview_order"]});
-        }
-
-        setPanes(panes);
-
-        setWarningMessages(jobScript["warnings"]);
-      }
-    });
+  if (!formData.has("runtime")) {
+    alert("Environment is required.");
+    return;
   }
+
+  if (window.jQuery) {
+    window.jQuery(previewRef.current).modal('show');
+  } else {
+    console.error("jQuery not available - cannot show modal");
+    return;
+  }
+
+  const action = document.dashboard_url + "/jobs/composer/preview";
+  preview_job(action, formData, function (error, jobScript) {
+    if (error) {
+      alert(error);
+      if (window.jQuery) {
+        window.jQuery(previewRef.current).modal('hide');
+      }
+    } else {
+      setJobScript(jobScript["script"]);
+      const panes = [
+        {
+          preview_name: "template.txt",
+          content: jobScript["script"],
+          name: "run_command",
+          order: -3
+        },
+        {
+          preview_name: "driver.sh",
+          content: jobScript["driver"],
+          name: "driver",
+          order: -2
+        },
+      ];
+
+      for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
+        panes.push({ 
+          preview_name: file["preview_name"], 
+          content: file["content"], 
+          name: fname, 
+          order: file["preview_order"]
+        });
+      }
+
+      setPanes(panes);
+      setWarningMessages(jobScript["warnings"]);
+    }
+  });
+}
 
   function handleAddEnv() {
     // fetch system environments

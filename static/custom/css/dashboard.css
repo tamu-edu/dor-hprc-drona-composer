@@ -1,15 +1,5 @@
 /* Assume that browser does a decent job for caching fonts */
 
-body {
-  font-family: "Open Sans", sans-serif;
-}
-
-h4,
-h6 {
-  font-weight: bold;
-  color: maroon;
-}
-
 .ui-autocomplete {
   max-height: 200px;
   overflow-y: auto;
