@@ -13,47 +13,55 @@ class EnvironmentRepoManager:
     def __init__(self, repo_url: str, repo_dir: str):
         self.repo_url = repo_url
         self.repo_dir = repo_dir
-
-    def ensure_metadata_repo(self, cluster_name: str):
+        
+    def ensure_metadata_repo(self):
         """
         Ensures we have a local repo with just metadata.json
         """
-        if not os.path.exists(self.repo_dir):
+        if not os.path.exists(os.path.join(self.repo_dir, "metadata.json")):
             subprocess.run(['git', 'clone', '--depth=1', '--no-checkout', self.repo_url, self.repo_dir])
-            subprocess.run(['git', 'sparse-checkout', 'set', f"{cluster_name}/metadata.json"], cwd=self.repo_dir)
+            subprocess.run(['git', 'sparse-checkout', 'set', "metadata.json"], cwd=self.repo_dir)
             subprocess.run(['git', 'checkout', 'main'], cwd=self.repo_dir)
         else:
             subprocess.run(['git', 'pull', 'origin', 'main'], cwd=self.repo_dir)
-
-    def get_environments_info(self, cluster_name: str) -> List[Dict]:
+            
+    def get_environments_info(self, cluster_name: str = None) -> List[Dict]:
         """
         Retrieves environment information from metadata.json using local repo
+        Optionally filters by cluster name
         """
-        self.ensure_metadata_repo(cluster_name)
-
-        metadata_path = os.path.join(self.repo_dir, cluster_name, "metadata.json")
+        self.ensure_metadata_repo()
+        metadata_path = os.path.join(self.repo_dir, "metadata.json")
         with open(metadata_path) as f:
             metadata = json.load(f)
             return self._transform_metadata(metadata, cluster_name)
-
-    def _transform_metadata(self, metadata: Dict, cluster_name: str) -> List[Dict]:
+            
+    def _transform_metadata(self, metadata: Dict, cluster_name: str = None) -> List[Dict]:
         """
         Transforms the metadata.json format to match the expected format.
+        Optionally filters by cluster name
         """
         transformed = []
         for env_name, env_data in metadata.items():
+            # Skip if cluster name is specified and doesn't match
+            if cluster_name and env_data.get("cluster") != cluster_name:
+                continue
+                
             env_info = {
                 "env": env_name,
                 "description": env_data.get("description", "No description available"),
-                "src": f"/scratch/user/{os.getenv('USER')}/drona_composer/environments",  # Currently Hardcoded
+                "src": f"/scratch/user/{os.getenv('USER')}/drona_composer/environments",
                 "category": env_data.get("category", "Uncategorized"),
                 "version": env_data.get("version", "1.0.0"),
+                "cluster": env_data.get("cluster", "Unknown"),
+                "organization": env_data.get("organization", "Unknown"),
                 "author": env_data.get("author", "Unknown"),
                 "last_updated": env_data.get("last_updated", "Unknown")
             }
             transformed.append(env_info)
         return transformed
-    def copy_environment_to_user(self, cluster_name: str, env_name: str, user_envs_path: str) -> bool:
+        
+    def copy_environment_to_user(self, env_name: str, user_envs_path: str) -> bool:
         """
         Copies the environment directly to user's directory using a temporary clone
         """
@@ -64,26 +72,25 @@ class EnvironmentRepoManager:
                     'git', 'clone', '--depth=1', '--no-checkout',
                     self.repo_url, temp_dir
                 ], check=True)
-
+                
+                # Sparse checkout the specific environment directory
                 subprocess.run([
-                    'git', 'sparse-checkout', 'set', f"{cluster_name}/{env_name}"
+                    'git', 'sparse-checkout', 'set', env_name
                 ], cwd=temp_dir, check=True)
-
+                
                 subprocess.run([
                     'git', 'checkout', 'main'
                 ], cwd=temp_dir, check=True)
-
-                src_env_path = os.path.join(temp_dir, cluster_name, env_name)
+                
+                src_env_path = os.path.join(temp_dir, env_name)
                 dst_env_path = os.path.join(user_envs_path, env_name)
-
+                
                 if os.path.exists(dst_env_path):
                     shutil.rmtree(dst_env_path)
-
+                    
                 shutil.copytree(src_env_path, dst_env_path)
                 return True
-
         except subprocess.CalledProcessError as e:
-            print(f"Git operation failed: {str(e)}")
             return False
         except Exception as e:
             print(f"Error copying environment: {str(e)}")
