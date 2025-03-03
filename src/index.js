@@ -215,6 +215,9 @@ async function handleForm(row) {
     request.send(formData);
   }
 
+  const handleAddEnvironment = (newEnv) => {
+    setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
+  };
 function handlePreview() {
   setJobStatus("new");
   const formData = new FormData(formRef.current);
@@ -223,9 +226,6 @@ function handlePreview() {
     alert("Environment is required.");
     return;
   }
-  const handleAddEnvironment = (newEnv) => {
-    setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
-  };
 
   if (window.jQuery) {
     window.jQuery(previewRef.current).modal('show');
@@ -453,7 +453,6 @@ return (
 }
 
 // Render the parent component into the root DOM node
-//import ReactDOM from "react-dom";
-//if (document.getElementById("root")) {
-//ReactDOM.render(<JobComposerApp />, document.getElementById("root"));
-//}
+if (document.getElementById("root")) {
+  ReactDOM.render(<App />, document.getElementById("root"));
+}
