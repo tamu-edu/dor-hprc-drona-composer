@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef, createContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
 import EnvironmentModal from "./EnvironmentModal";
 
-export const GlobalFilesContext = createContext();
+import  { GlobalFilesContext } from './GlobalFilesContext';
 
-
-function App() {
+export function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
   const [environment, setEnvironment] = useState({ env: "", src: "" });
   const [fields, setFields] = useState({});
@@ -216,55 +215,63 @@ async function handleForm(row) {
     request.send(formData);
   }
 
-  function handlePreview() {
-    setJobStatus("new")
-    const formData = new FormData(formRef.current);
+function handlePreview() {
+  setJobStatus("new");
+  const formData = new FormData(formRef.current);
 
-    if (!formData.has("runtime")) {
-      alert("Environment is required.");
-      return;
-    }
-
-    const modal = new bootstrap.Modal(previewRef.current);
-    modal.toggle();
-    const action = document.dashboard_url + "/jobs/composer/preview";
-    preview_job(action, formData, function (error, jobScript) {
-      if (error) {
-        alert(error);
-      } else {
-        setJobScript(jobScript["script"]);
-
-	// Template and driver panes will be displayed on the left of everything else
-        const panes = [
-          {
-            preview_name: "template.txt",
-            content: jobScript["script"],
-            name: "run_command",
-            order: -3
-          },
-          {
-	    preview_name: "driver.sh",
-	    content: jobScript["driver"],
-	    name: "driver",
-	    order: -2
-	  },
-        ];
-
-        for (const [fname, file] of Object.entries(
-          jobScript["additional_files"]
-        )) {
-          panes.push({ preview_name: file["preview_name"], content: file["content"], name: fname, order: file["preview_order"]});
-        }
-
-        setPanes(panes);
-
-        setWarningMessages(jobScript["warnings"]);
-      }
-    });
+  if (!formData.has("runtime")) {
+    alert("Environment is required.");
+    return;
   }
   const handleAddEnvironment = (newEnv) => {
     setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
   };
+
+  if (window.jQuery) {
+    window.jQuery(previewRef.current).modal('show');
+  } else {
+    console.error("jQuery not available - cannot show modal");
+    return;
+  }
+
+  const action = document.dashboard_url + "/jobs/composer/preview";
+  preview_job(action, formData, function (error, jobScript) {
+    if (error) {
+      alert(error);
+      if (window.jQuery) {
+        window.jQuery(previewRef.current).modal('hide');
+      }
+    } else {
+      setJobScript(jobScript["script"]);
+      const panes = [
+        {
+          preview_name: "template.txt",
+          content: jobScript["script"],
+          name: "run_command",
+          order: -3
+        },
+        {
+          preview_name: "driver.sh",
+          content: jobScript["driver"],
+          name: "driver",
+          order: -2
+        },
+      ];
+
+      for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
+        panes.push({ 
+          preview_name: file["preview_name"], 
+          content: file["content"], 
+          name: fname, 
+          order: file["preview_order"]
+        });
+      }
+
+      setPanes(panes);
+      setWarningMessages(jobScript["warnings"]);
+    }
+  });
+}
 
   function handleAddEnv() {
          const modal = new bootstrap.Modal(envModalRef.current);
@@ -446,4 +453,7 @@ return (
 }
 
 // Render the parent component into the root DOM node
-ReactDOM.render(<App />, document.getElementById("root"));
+//import ReactDOM from "react-dom";
+//if (document.getElementById("root")) {
+//ReactDOM.render(<JobComposerApp />, document.getElementById("root"));
+//}
