@@ -325,7 +325,7 @@ def add_environment():
     )
         
     user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-    success = repo_manager.copy_environment_to_user(cluster_name, env, user_envs_path)
+    success = repo_manager.copy_environment_to_user(env, user_envs_path)
         
     if success:
         return jsonify({"status": "Success"})

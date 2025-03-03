@@ -2,106 +2,142 @@ import React, { useState } from "react";
 import FieldRenderer from "../FieldRenderer";
 
 function CollapsibleHeader({ title, isCollapsed, onToggle }) {
- return (
-   <div className="flex items-center justify-between mb-4 border-b pb-3">
-     <span className="text-lg font-semibold">{title}</span>
-     <button 
-       onClick={onToggle}
-       className="px-4 py-2 bg-[#500000] text-white rounded hover:bg-[#400000] transition-colors flex items-center gap-2"
-     >
-       <span className="text-sm">
-         {isCollapsed ? '▼' : '▲'}
-       </span>
-       <span>{isCollapsed ? 'Show' : 'Hide'} {title}</span>
-     </button>
-   </div>
- );
+  return (
+    <div style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "1rem",
+      paddingBottom: "0.75rem",
+      borderBottom: "1px solid #dee2e6"
+    }}>
+      <span style={{ fontSize: "1.25rem", fontWeight: "600" }}>{title}</span>
+      <button
+        onClick={onToggle}
+        style={{
+          padding: "0.5rem 1rem",
+          backgroundColor: "#500000",
+          color: "white",
+          borderRadius: "0.25rem",
+          border: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          cursor: "pointer"
+        }}
+      >
+        <span style={{ fontSize: "0.875rem" }}>
+          {isCollapsed ? '▼' : '▲'}
+        </span>
+        <span>{isCollapsed ? 'Show' : 'Hide'} {title}</span>
+      </button>
+    </div>
+  );
 }
 
 function CollapsibleRowContainer({
- elements,
- index,
- onChange,
- onFileChange,
- startingIndex,
- onSizeChange,
- currentValues,
- setError,
- title = "Collapsible Row Container",
+  elements,
+  index,
+  onChange,
+  onFileChange,
+  startingIndex,
+  onSizeChange,
+  currentValues,
+  setError,
+  title = "Collapsible Row Container",
 }) {
- const [isCollapsed, setIsCollapsed] = useState(false);
-
- function toggleCollapse(e) {
-   e.preventDefault();
-   setIsCollapsed(prev => !prev);
- }
-
- return (
-   <div className="border rounded p-4 mb-4">
-     <CollapsibleHeader 
-       title={title} 
-       isCollapsed={isCollapsed} 
-       onToggle={toggleCollapse} 
-     />
-     <div className={`transition-all duration-200 ${isCollapsed ? 'hidden' : ''}`}>
-       <div className="space-y-4">
-         <FieldRenderer
-           fields={elements}
-           handleValueChange={onChange}
-           onFileChange={onFileChange}
-           labelOnTop
-           fieldStyles="w-full"
-           startingIndex={startingIndex}
-           currentValues={currentValues}
-           setError={setError}
-         />
-       </div>
-     </div>
-   </div>
- );
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  function toggleCollapse(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsCollapsed(prev => !prev);
+  }
+  
+  return (
+    <div style={{
+      border: "1px solid #dee2e6",
+      borderRadius: "0.25rem",
+      padding: "1rem",
+      marginBottom: "1rem"
+    }}>
+      <CollapsibleHeader
+        title={title}
+        isCollapsed={isCollapsed}
+        onToggle={toggleCollapse}
+      />
+      
+      <div style={{ display: isCollapsed ? 'none' : 'block' }}>
+        <div style={{ marginTop: "1rem" }}>
+          <FieldRenderer
+            fields={elements}
+            handleValueChange={onChange}
+            onFileChange={onFileChange}
+            labelOnTop
+            fieldStyles="width: 100%"
+            startingIndex={startingIndex}
+            currentValues={currentValues}
+            setError={setError}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function CollapsibleColContainer({
- elements,
- index,
- onChange,
- onFileChange,
- startingIndex,
- onSizeChange,
- currentValues,
- setError,
- title = "Collapsible Column Container",
+  elements,
+  index,
+  onChange,
+  onFileChange,
+  startingIndex,
+  onSizeChange,
+  currentValues,
+  setError,
+  title = "Collapsible Column Container",
 }) {
- const [isCollapsed, setIsCollapsed] = useState(false);
-
- function toggleCollapse(e) {
-   e.preventDefault();
-   setIsCollapsed(prev => !prev);
- }
-
- return (
-   <div className="border rounded p-4 mb-4">
-     <CollapsibleHeader 
-       title={title} 
-       isCollapsed={isCollapsed} 
-       onToggle={toggleCollapse} 
-     />
-     <div className={`transition-all duration-200 ${isCollapsed ? 'hidden' : ''}`}>
-       <div className="flex flex-col space-y-4">
-         <FieldRenderer
-           fields={elements}
-           handleValueChange={onChange}
-           onFileChange={onFileChange}
-           labelOnTop
-           fieldStyles="w-full"
-           startingIndex={startingIndex}
-           currentValues={currentValues}
-           setError={setError}
-         />
-       </div>
-     </div>
-   </div>
- );
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  function toggleCollapse(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsCollapsed(prev => !prev);
+  }
+  
+  return (
+    <div style={{
+      border: "1px solid #dee2e6",
+      borderRadius: "0.25rem",
+      padding: "1rem",
+      marginBottom: "1rem"
+    }}>
+      <CollapsibleHeader
+        title={title}
+        isCollapsed={isCollapsed}
+        onToggle={toggleCollapse}
+      />
+      
+      <div style={{ display: isCollapsed ? 'none' : 'block' }}>
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: "1rem",
+          marginTop: "1rem"
+        }}>
+          <FieldRenderer
+            fields={elements}
+            handleValueChange={onChange}
+            onFileChange={onFileChange}
+            labelOnTop
+            fieldStyles="width: 100%"
+            startingIndex={startingIndex}
+            currentValues={currentValues}
+            setError={setError}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export { CollapsibleRowContainer, CollapsibleColContainer };

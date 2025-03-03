@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
+import EnvironmentModal from "./EnvironmentModal";
 
 import  { GlobalFilesContext } from './GlobalFilesContext';
 
@@ -222,6 +223,9 @@ function handlePreview() {
     alert("Environment is required.");
     return;
   }
+  const handleAddEnvironment = (newEnv) => {
+    setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
+  };
 
   if (window.jQuery) {
     window.jQuery(previewRef.current).modal('show');
@@ -270,102 +274,8 @@ function handlePreview() {
 }
 
   function handleAddEnv() {
-    // fetch system environments
-    fetch(document.dashboard_url + "/jobs/composer/get_more_envs_info")
-      .then((response) => response.json())
-      .then((data) => {
-        // Select the modal body where the table will be appended
-        const envModalBody = document.querySelector(
-          "#env-add-modal .modal-body"
-        );
-
-        // Create the table structure
-        envModalBody.innerHTML = `
-          <table class="table table-striped table-bordered">
-            <thead>
-              <tr>
-                <th>Environment</th>
-                <th>Description</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="env-table-body">
-            </tbody>
-          </table>
-        `;
-
-        const envTableBody = document.querySelector("#env-table-body");
-
-        // Iterate through each environment and append a row to the table
-        data.forEach((env) => {
-          // Create table row
-          const envRow = document.createElement("tr");
-
-          // Create cells for environment and source
-          const envCell = document.createElement("td");
-          envCell.textContent = env.env;
-
-          const descriptionCell = document.createElement("td");
-          descriptionCell.textContent = env.description;
-
-          // Create the "Add" button
-          const actionCell = document.createElement("td");
-          const envButton = document.createElement("button");
-          envButton.className = "btn btn-primary";
-          envButton.innerHTML = "Add";
-          envButton.addEventListener("click", function () {
-            // Send post request to add environment
-            const formData = new FormData();
-            formData.append("env", env.env);
-            formData.append("src", env.src);
-            fetch(document.dashboard_url + "/jobs/composer/add_environment", {
-              method: "POST",
-              body: formData,
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                if (data.status === "Success") {
-                  alert("Environment added successfully");
-                  const newEnv = {
-                    value: env.env,
-                    label: env.env,
-                    src: env.src,
-                    styles: { color: "#3B71CA" },
-                  };
-                  setEnvironments((prevEnvironments) => [
-                    ...prevEnvironments,
-                    newEnv,
-                  ]);
-                } else {
-                  alert("Error adding environment");
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-                console.error("Error fetching JSON data");
-              });
-          });
-
-          // Append button to the action cell
-          actionCell.appendChild(envButton);
-
-          // Append all cells to the row
-          envRow.appendChild(envCell);
-          envRow.appendChild(descriptionCell);
-          envRow.appendChild(actionCell);
-
-          // Append the row to the table body
-          envTableBody.appendChild(envRow);
-        });
-
-        // Initialize and show the Bootstrap modal
-        const modal = new bootstrap.Modal(envModalRef.current);
-        modal.toggle();
-      })
-      .catch((error) => {
-        console.log(error);
-        console.error("Error fetching environment data");
-      });
+         const modal = new bootstrap.Modal(envModalRef.current);
+         modal.toggle();
   }
 
   function add_submission_loading_indicator() {
@@ -533,6 +443,10 @@ return (
         onCancel={handleRerunCancel}
       />
     )}
+    <EnvironmentModal 
+      envModalRef={envModalRef} 
+      onAddEnvironment={handleAddEnvironment} 
+    />
     </>
   </GlobalFilesContext.Provider>
 );
