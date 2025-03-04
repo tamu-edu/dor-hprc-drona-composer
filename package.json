@@ -9,8 +9,10 @@
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18.2.0",
     "react-select": "^5.8.0",
+    "styled-components": "^6.1.15",
     "webpack": "^5.94.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "yaml-loader": "^0.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
