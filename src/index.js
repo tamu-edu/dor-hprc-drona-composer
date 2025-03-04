@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef, createContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
+import EnvironmentModal from "./EnvironmentModal";
 
-export const GlobalFilesContext = createContext();
+import  { GlobalFilesContext } from './GlobalFilesContext';
 
-
-function App() {
+export function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
   const [environment, setEnvironment] = useState({ env: "", src: "" });
   const [fields, setFields] = useState({});
@@ -215,150 +215,67 @@ async function handleForm(row) {
     request.send(formData);
   }
 
-  function handlePreview() {
-    setJobStatus("new")
-    const formData = new FormData(formRef.current);
+  const handleAddEnvironment = (newEnv) => {
+    setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
+  };
+function handlePreview() {
+  setJobStatus("new");
+  const formData = new FormData(formRef.current);
 
-    if (!formData.has("runtime")) {
-      alert("Environment is required.");
-      return;
-    }
-
-    const modal = new bootstrap.Modal(previewRef.current);
-    modal.toggle();
-    const action = document.dashboard_url + "/jobs/composer/preview";
-    preview_job(action, formData, function (error, jobScript) {
-      if (error) {
-        alert(error);
-      } else {
-        setJobScript(jobScript["script"]);
-
-	// Template and driver panes will be displayed on the left of everything else
-        const panes = [
-          {
-            preview_name: "template.txt",
-            content: jobScript["script"],
-            name: "run_command",
-            order: -3
-          },
-          {
-	    preview_name: "driver.sh",
-	    content: jobScript["driver"],
-	    name: "driver",
-	    order: -2
-	  },
-        ];
-
-        for (const [fname, file] of Object.entries(
-          jobScript["additional_files"]
-        )) {
-          panes.push({ preview_name: file["preview_name"], content: file["content"], name: fname, order: file["preview_order"]});
-        }
-
-        setPanes(panes);
-
-        setWarningMessages(jobScript["warnings"]);
-      }
-    });
+  if (!formData.has("runtime")) {
+    alert("Environment is required.");
+    return;
   }
 
-  function handleAddEnv() {
-    // fetch system environments
-    fetch(document.dashboard_url + "/jobs/composer/get_more_envs_info")
-      .then((response) => response.json())
-      .then((data) => {
-        // Select the modal body where the table will be appended
-        const envModalBody = document.querySelector(
-          "#env-add-modal .modal-body"
-        );
+  if (window.jQuery) {
+    window.jQuery(previewRef.current).modal('show');
+  } else {
+    console.error("jQuery not available - cannot show modal");
+    return;
+  }
 
-        // Create the table structure
-        envModalBody.innerHTML = `
-          <table class="table table-striped table-bordered">
-            <thead>
-              <tr>
-                <th>Environment</th>
-                <th>Description</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="env-table-body">
-            </tbody>
-          </table>
-        `;
+  const action = document.dashboard_url + "/jobs/composer/preview";
+  preview_job(action, formData, function (error, jobScript) {
+    if (error) {
+      alert(error);
+      if (window.jQuery) {
+        window.jQuery(previewRef.current).modal('hide');
+      }
+    } else {
+      setJobScript(jobScript["script"]);
+      const panes = [
+        {
+          preview_name: "template.txt",
+          content: jobScript["script"],
+          name: "run_command",
+          order: -3
+        },
+        {
+          preview_name: "driver.sh",
+          content: jobScript["driver"],
+          name: "driver",
+          order: -2
+        },
+      ];
 
-        const envTableBody = document.querySelector("#env-table-body");
-
-        // Iterate through each environment and append a row to the table
-        data.forEach((env) => {
-          // Create table row
-          const envRow = document.createElement("tr");
-
-          // Create cells for environment and source
-          const envCell = document.createElement("td");
-          envCell.textContent = env.env;
-
-          const descriptionCell = document.createElement("td");
-          descriptionCell.textContent = env.description;
-
-          // Create the "Add" button
-          const actionCell = document.createElement("td");
-          const envButton = document.createElement("button");
-          envButton.className = "btn btn-primary";
-          envButton.innerHTML = "Add";
-          envButton.addEventListener("click", function () {
-            // Send post request to add environment
-            const formData = new FormData();
-            formData.append("env", env.env);
-            formData.append("src", env.src);
-            fetch(document.dashboard_url + "/jobs/composer/add_environment", {
-              method: "POST",
-              body: formData,
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                if (data.status === "Success") {
-                  alert("Environment added successfully");
-                  const newEnv = {
-                    value: env.env,
-                    label: env.env,
-                    src: env.src,
-                    styles: { color: "#3B71CA" },
-                  };
-                  setEnvironments((prevEnvironments) => [
-                    ...prevEnvironments,
-                    newEnv,
-                  ]);
-                } else {
-                  alert("Error adding environment");
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-                console.error("Error fetching JSON data");
-              });
-          });
-
-          // Append button to the action cell
-          actionCell.appendChild(envButton);
-
-          // Append all cells to the row
-          envRow.appendChild(envCell);
-          envRow.appendChild(descriptionCell);
-          envRow.appendChild(actionCell);
-
-          // Append the row to the table body
-          envTableBody.appendChild(envRow);
+      for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
+        panes.push({ 
+          preview_name: file["preview_name"], 
+          content: file["content"], 
+          name: fname, 
+          order: file["preview_order"]
         });
+      }
 
-        // Initialize and show the Bootstrap modal
-        const modal = new bootstrap.Modal(envModalRef.current);
-        modal.toggle();
-      })
-      .catch((error) => {
-        console.log(error);
-        console.error("Error fetching environment data");
-      });
+      setPanes(panes);
+      setWarningMessages(jobScript["warnings"]);
+    }
+  });
+}
+
+  function handleAddEnv() {
+         const modal = new bootstrap.Modal(envModalRef.current);
+         modal.toggle();
   }
 
   function add_submission_loading_indicator() {
@@ -526,10 +443,16 @@ return (
         onCancel={handleRerunCancel}
       />
     )}
+    <EnvironmentModal 
+      envModalRef={envModalRef} 
+      onAddEnvironment={handleAddEnvironment} 
+    />
     </>
   </GlobalFilesContext.Provider>
 );
 }
 
 // Render the parent component into the root DOM node
-ReactDOM.render(<App />, document.getElementById("root"));
+if (document.getElementById("root")) {
+  ReactDOM.render(<App />, document.getElementById("root"));
+}
