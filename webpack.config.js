@@ -73,10 +73,22 @@ module.exports = (env, argv) => {
             }
           }
         },
+
+	{
+	  test: /\.ya?ml$/,
+	  use: 'yaml-loader'
+	}
       ],
     },
-    resolve: {
-      extensions: ['.js', '.jsx']
-    }
+  resolve: {
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
+    alias: {
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+      '@config': path.resolve(__dirname, 'config.yml'),
+      '@composer_index': path.resolve(__dirname, 'src/composer', 'index.js')
+    },
+  },
+
   };
 };
