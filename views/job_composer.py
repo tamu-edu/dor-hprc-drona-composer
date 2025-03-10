@@ -343,25 +343,30 @@ def get_more_envs_info():
     environments_info = repo_manager.get_environments_info(cluster_name)
     return jsonify(environments_info)
 
+
 def _get_environments():
-    system_environments = get_directories("./environments")
-    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
-
+    system_environments = []
+    try:
+        system_environments = get_directories("./environments")
+        system_environments = [{"env": env, "src": "./environments", "is_user_env": False} for env in system_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        system_environments = []
+    
     user_envs_path = request.args.get("user_envs_path")
-
     if user_envs_path is None:
         user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-        create_folder_if_not_exist(user_envs_path)
-
+        try:
+            create_folder_if_not_exist(user_envs_path)
+        except (PermissionError, OSError):
+            pass
+    
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
-    except OSError as e:
-        print(e)
-
+        user_environments = [{"env": env, "src": user_envs_path, "is_user_env": True} for env in user_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        user_environments = []
+    
     environments = system_environments + user_environments
-
     return environments
-
 
