@@ -1,11 +1,7 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
 const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
-
-  // tabs with order 0 will be moved to the right
-  // A specific distinct high value i is assigned to them to prevent order change on rerendering
   let zeroOrderIndex = 10000;  
-
   panes.forEach((pane, index) => {
     if (pane.order === 0) {
       pane.order = zeroOrderIndex;
@@ -19,41 +15,120 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
  
   const [activePane, setActivePane] = useState(0);
   const paneRefs = useRef([]);
+  const editorInstancesRef = useRef({});
 
   if (paneRefs.current.length !== panes.length) {
     paneRefs.current = panes.map((_, i) => paneRefs.current[i] || React.createRef());
   }
 
   useImperativeHandle(ref, () => ({
-	  getPaneRefs: () => paneRefs.current,
+    getPaneRefs: () => paneRefs.current,
   }));
 
   const handlePaneChange = (index) => {
     setActivePane(index);
+    
+    // Refresh CodeMirror when switching tabs to ensure proper rendering
+    setTimeout(() => {
+      const editor = editorInstancesRef.current[`editor-${index}`];
+      if (editor && typeof editor.refresh === 'function') {
+        editor.refresh();
+      }
+    }, 10);
   };
 
-  const handleTextChange = (e, index) => {
-    const updatedPanes = [...panes];
-    updatedPanes[index].content = e.target.value;
-    setPanes(updatedPanes);
-    if(panes[index].onChange) panes[index].onChange(e);
+  // Determine language mode based on file name
+  const getLanguageMode = (name) => {
+    if (!name) return 'shell';
+    
+    const lowerName = name.toLowerCase();
+    if (lowerName.endsWith('.py') || lowerName.includes('python')) {
+      return 'python';
+    }
+    return 'shell';
   };
+
+  useEffect(() => {
+    if (typeof window.CodeMirror !== 'undefined') {
+      panes.forEach((pane, index) => {
+        const textarea = paneRefs.current[index]?.current;
+        if (!textarea) return;
+        
+        const editorKey = `editor-${index}`;
+        
+        // If this textarea already has a CodeMirror instance, skip initialization
+        if (textarea.nextSibling && textarea.nextSibling.classList.contains('CodeMirror')) {
+          return;
+        }
+        
+        const mode = getLanguageMode(pane.preview_name);
+        
+        try {
+          const editor = window.CodeMirror.fromTextArea(textarea, {
+            mode: mode,
+            theme: 'eclipse',
+            lineNumbers: true,
+            lineWrapping: true,
+            viewportMargin: Infinity,
+            indentUnit: 2,
+            tabSize: 2
+          });
+          
+          editor.setValue(pane.content || '');
+          
+          editor.on('change', (cm) => {
+            const newContent = cm.getValue();
+            
+            const updatedPanes = [...panes];
+            updatedPanes[index].content = newContent;
+            setPanes(updatedPanes);
+            
+            textarea.value = newContent;
+            
+            if (panes[index].onChange) {
+              panes[index].onChange({ target: { value: newContent } });
+            }
+          });
+          
+          editorInstancesRef.current[editorKey] = editor;
+        } catch (error) {
+          console.error('Error initializing CodeMirror:', error);
+        }
+      });
+    }
+    
+    // Clean up function
+    return () => {
+      Object.keys(editorInstancesRef.current).forEach(key => {
+        try {
+          const editor = editorInstancesRef.current[key];
+          if (editor && typeof editor.toTextArea === 'function') {
+            editor.toTextArea();
+          }
+          delete editorInstancesRef.current[key];
+        } catch (error) {
+          console.error('Error cleaning up CodeMirror instance:', error);
+        }
+      });
+    };
+  }, [panes.length, activePane]);
 
   const containerStyle = {
     border: '1px solid #ccc',
     borderRadius: '5px',
     fontFamily: 'Arial, sans-serif',
-    overflow: 'hidden',
+    overflow: 'hidden'
   };
 
   const paneSelectorStyle = {
     display: 'flex',
+    flexWrap: 'wrap',
     borderBottom: '1px solid #ccc',
-    marginBottom: '10px',
+    marginBottom: '0',
+    backgroundColor: '#f1f1f1'
   };
 
   const paneTabStyle = {
-    flex: '1',
     padding: '10px 15px',
     backgroundColor: '#f1f1f1',
     border: '1px solid #ccc',
@@ -63,6 +138,9 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
     transition: 'background-color 0.3s ease',
     textAlign: 'center',
     outline: 'none',
+    margin: '0 2px',
+    borderTopLeftRadius: '5px',
+    borderTopRightRadius: '5px',
   };
 
   const activeTabStyle = {
@@ -71,18 +149,21 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
     borderColor: '#ccc',
     borderBottom: '1px solid #ffffff',
     fontWeight: 'bold',
+    position: 'relative',
+    zIndex: 1
   };
 
   const paneContentStyle = {
-    padding: '10px',
+    position: 'relative'
   };
 
   const textareaStyle = { 
-    border: 'none',
-    outline: 'none',
     width: '100%',
-    boxSizing: 'border-box',
-    borderRadius: '5px'
+    minHeight: '400px',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    lineHeight: '1.5',
+    display: 'none' // Will be replaced by CodeMirror
   };
 
   useEffect(() => {
@@ -92,44 +173,41 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
   }, [activePane, panes.length]);
 
   return (
-    <div style={containerStyle}>
-      <div style={paneSelectorStyle}>
+    <div style={containerStyle} className="cm-container">
+      <div style={paneSelectorStyle} className="pane-tabs">
         {panes.map((pane, index) => {
-	  if(pane.order == -1) return;
+          if(pane.order === -1) return null;
 
-	  return (
-          <button
-            key={index}
-            onClick={() => handlePaneChange(index)}
-            style={activePane === index ? activeTabStyle : paneTabStyle}
-            aria-selected={activePane === index}
-            role="tab"
-          >
-            {pane.preview_name}
-          </button>
-        )
-	})}
-
+          return (
+            <button
+              key={index}
+              onClick={() => handlePaneChange(index)}
+              style={activePane === index ? activeTabStyle : paneTabStyle}
+              className={activePane === index ? 'pane-tab pane-tab-active' : 'pane-tab'}
+              aria-selected={activePane === index}
+              role="tab"
+            >
+              {pane.preview_name}
+            </button>
+          );
+        })}
       </div>
+      
       {panes.map((pane, index) => (
         <div
           key={index}
-          id={`pane-${index}`}
           style={{
             ...paneContentStyle,
-            display: activePane === index ? 'block' : 'none',
+            display: activePane === index ? 'block' : 'none'
           }}
         >
           <textarea
-            className="form-control"
-            rows="20"
             ref={paneRefs.current[index]}
             id={pane.name}
-            value={pane.content}
             name={pane.name}
-            onChange={(e) => handleTextChange(e, index)}
-            placeholder={`${pane.preview_name} content`}
+            defaultValue={pane.content || ''}
             style={textareaStyle}
+            data-language={getLanguageMode(pane.preview_name)}
           />
         </div>
       ))}
@@ -138,4 +216,3 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
 });
 
 export default MultiPaneTextArea;
-
