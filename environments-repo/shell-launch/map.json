@@ -1,5 +1,0 @@
-{
-  "flocation": "$location",
-  "fmainscript": "$mainscript",
-  "fmodules": "foss/2022b $module_list"
-}

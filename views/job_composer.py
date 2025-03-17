@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, current_app as app
+from flask import Blueprint, send_file, render_template, request, jsonify, current_app as app
 import json
 import sqlite3
 import re
@@ -9,6 +9,8 @@ import yaml
 from functools import wraps
 from .logger import Logger
 from .error_handler import APIError, handle_api_error
+from .history_manager import JobHistoryManager
+from .env_repo_manager import EnvironmentRepoManager
 
 job_composer = Blueprint("job_composer", __name__)
 logger = Logger()
@@ -21,6 +23,37 @@ def composer():
 
 def get_directories(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+
+@job_composer.route('/download_file', methods=['POST'])
+def download_file():
+    # Todo make it use api errors
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON'}), 400
+    try:
+        data = request.get_json()
+    except Exception as json_error:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    filepath = data.get('filepath')
+    if not filepath:
+        return jsonify({'error': 'No filepath provided'}), 400
+
+    if not os.path.exists(filepath):
+        return jsonify({'error': f'File not found: {filepath}'}), 404
+
+    if not os.access(filepath, os.R_OK):
+        return jsonify({'error': f'No read permissions for file: {filepath}'}), 403
+
+    try:
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=os.path.basename(filepath)
+        )
+    except PermissionError as pe:
+        return jsonify({'error': f'Permission denied: {pe}'}), 403
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @job_composer.route('/modules', methods=['GET'])
 def get_modules():
@@ -56,20 +89,24 @@ def get_environment(environment):
 @handle_api_error
 def evaluate_dynamic_select():
     retriever_path = request.args.get("retriever_path")
+    
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
+    print("dynamic Dir", retriever_dir, retriever_script, retriever_path)
     bash_command = f"bash {retriever_script}"
+    
     try:
         result = subprocess.run(
-                bash_command, 
+                bash_command,
                 shell=True,
-                check=True, 
+                check=True,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, 
+                stderr=subprocess.PIPE,
                 universal_newlines=True,
                 cwd=retriever_dir
         )
         if result.returncode == 0:
+            #TODO: We assume the result is the correct JSON format for a dynamic select
             #options = json.loads(result.stdout)
             options = result.stdout
         else:
@@ -85,6 +122,62 @@ def evaluate_dynamic_select():
             details={'error': str(e)}
     )
     return options
+
+@job_composer.route('/evaluate_autocomplete', methods=['GET'])
+@handle_api_error
+def evaluate_autocomplete():
+    retriever_path = request.args.get("retriever_path")
+    query = request.args.get("query")
+    
+    if not retriever_path:
+        raise APIError("Retriever path is required", status_code=400)
+    
+    if not query:
+        raise APIError("Search query is required", status_code=400)
+    
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    print("Dir", retriever_dir, retriever_script, retriever_path)
+    
+    # Pass the query as an environment variable
+    env = os.environ.copy()
+    env["SEARCH_QUERY"] = query
+    
+    try:
+        result = subprocess.run(
+            f"bash {retriever_script}",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            cwd=retriever_dir,
+            env=env
+        )
+        
+        if result.returncode != 0:
+            raise APIError(
+                "The autocomplete script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+            )
+        
+        try:
+            options = json.loads(result.stdout)
+            return jsonify(options)
+        except json.JSONDecodeError as e:
+            raise APIError(
+                "The autocomplete script did not return valid JSON",
+                status_code=400, 
+                details={'error': str(e), 'output': result.stdout}
+            )
+            
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process autocomplete search",
+            status_code=500,
+            details={'error': str(e), 'stderr': e.stderr}
+        )
 
 def iterate_schema(schema_dict):
     """Generator that yields all elements in the schema including nested ones"""
@@ -162,6 +255,27 @@ def save_file(file, location):
 
     return file_path
     
+@job_composer.route('/history', methods=['GET'])
+def get_history():
+    history_manager = JobHistoryManager()
+    return jsonify(history_manager.get_user_history())
+
+
+@job_composer.route('/history/<int:job_id>', methods=['GET'])
+def get_job_from_history(job_id):
+    history_manager = JobHistoryManager()
+    
+    job_data = history_manager.get_job(job_id)
+
+    if not job_data:
+        return "Job not found", 404
+
+    return jsonify(job_data)  
+
+def extract_job_id(submit_response):
+    match = re.search(r'Submitted batch job (\d+)', submit_response)
+    return match.group(1) if match else None
+
 
 @job_composer.route('/submit', methods=['POST'])
 @logger.log_route(
@@ -190,17 +304,31 @@ def submit_job():
 
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
+
     bash_command = f"bash {driver_script_path}"
-    
+
+    history_manager = JobHistoryManager()
+
     try:
         result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if result.returncode == 0:
+                history_manager.save_job(
+                    extract_job_id(result.stdout),
+                    params,
+                    files,
+                    {
+                        'bash_script': bash_script_path,
+                        'driver_script': driver_script_path
+                     }
+                )
                 return result.stdout
+                
         else:
             return result.stderr
     except subprocess.CalledProcessError as e:
         return e.stderr
     
+
 @job_composer.route('/preview', methods=['POST'])
 def preview_job():
     params = request.form
@@ -246,55 +374,56 @@ def get_environments():
 def add_environment():
     env = request.form.get("env")
     src = request.form.get("src")
-    env_dir = os.path.join(src, env)
-    # copy the environment to the user's environment directory
+    cluster_name = app.config['cluster_name']
+    
+    repo_manager = EnvironmentRepoManager(
+            repo_url=app.config['env_repo_github'],
+            repo_dir="./environments-repo"
+    )
+        
     user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-    create_folder_if_not_exist(user_envs_path)
-    os.system(f"cp -r {env_dir} {user_envs_path}")
-
-    return jsonify({"status": "Success"})
+    success = repo_manager.copy_environment_to_user(env, user_envs_path)
+        
+    if success:
+        return jsonify({"status": "Success"})
+    else:
+        return jsonify({"status": "Failed to copy environment"}), 500
 
 @job_composer.route('/get_more_envs_info', methods=['GET'])
 def get_more_envs_info():
     cluster_name = app.config['cluster_name']
-    environments_dir = f"./environments-repo/{cluster_name}"
-    environments = get_directories(environments_dir)
-    # get info from manifest.yml of each environment
-    system_envs_info = []
-    for env in environments:
-        env_dir = os.path.join(environments_dir, env)
-        manifest_path = os.path.join(env_dir, "manifest.yml")
-        if os.path.exists(manifest_path):
-            with open(manifest_path, 'r') as f:
-                manifest = yaml.safe_load(f)
-                manifest["src"] = environments_dir
-                system_envs_info.append(manifest)
-        else:
-            system_envs_info.append({"env": env, "description": "No description available", "src": environments_dir})
-    return jsonify(system_envs_info)
-
-
+    repo_manager = EnvironmentRepoManager(
+        repo_url=app.config["env_repo_github"],
+        repo_dir="./environments-repo"
+    )
+    
+    environments_info = repo_manager.get_environments_info(cluster_name)
+    return jsonify(environments_info)
 
 
 def _get_environments():
-    system_environments = get_directories("./environments")
-    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
-
+    system_environments = []
+    try:
+        system_environments = get_directories("./environments")
+        system_environments = [{"env": env, "src": "./environments", "is_user_env": False} for env in system_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        system_environments = []
+    
     user_envs_path = request.args.get("user_envs_path")
-
     if user_envs_path is None:
         user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-        create_folder_if_not_exist(user_envs_path)
-
+        try:
+            create_folder_if_not_exist(user_envs_path)
+        except (PermissionError, OSError):
+            pass
+    
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
-    except OSError as e:
-        print(e)
-
+        user_environments = [{"env": env, "src": user_envs_path, "is_user_env": True} for env in user_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        user_environments = []
+    
     environments = system_environments + user_environments
-
     return environments
-
 

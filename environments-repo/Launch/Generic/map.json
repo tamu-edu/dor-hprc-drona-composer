@@ -1,8 +1,0 @@
-{
-  "JOBNAME" :"$name",
-  "TASKS": "!retrieve_tasks_and_other_resources($nodes,$tasks,$cpus,$memory,$gpu)",
-  "EXTRA": "!retrieve_extra($extra_slurm, $gpu, $account)",
-  "TIME": "!retrieve_time($name,$walltime)",
-  "flocation": "$location",
-  "MODULES": "!retrieve_loaded_modules($module_list)"
-}

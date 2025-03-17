@@ -2,80 +2,101 @@ import React, { useState, useRef, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
 function Module(props) {
-  const [value, setValue] = useState("");
-  const [modules, setModules] = useState([""]);
-  const moduleSearchRef = useRef(null);
-  const moduleAddRef = useRef(null);
+  const [value, setValue] = useState(props.value || "");
+  const [modules, setModules] = useState(() => {
+    return props.value ? props.value.trim().split(' ').filter(m => m !== '') : [];
+  });
+  const [suggestions, setSuggestions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [toolchain, setToolchain] = useState("modules");
+  const moduleSearchRef = useRef(null);
+  const suggestionsRef = useRef(null);
 
   useEffect(() => {
-    if (moduleSearchRef.current) {
-      $(moduleSearchRef.current).autocomplete({
-        delay: 40,
-        source: function (request, response) {
-          // Suggest URL
-          //http://api.railwayapi.com/suggest_train/trains/190/apikey/1234567892/
-          // The above url did not work for me so using some existing one
-          var suggestURL =
-            document.dashboard_url +
-            "/jobs/composer/modules?query=%QUERY&toolchain=" +
-            toolchain;
-          suggestURL = suggestURL.replace("%QUERY", request.term);
+    const newModules = props.value ? props.value.trim().split(' ').filter(m => m !== '') : [];
+    setModules(newModules);
+    setValue(props.value || "");
+  }, [props.value]);
 
-          // JSONP Request
-          $.ajax({
-            method: "GET",
-            dataType: "json",
-            jsonpCallback: "jsonCallback",
-            url: suggestURL,
-            success: function (data) {
-              response(data["data"]);
-            },
-          });
-        },
-      });
-    }
-  }, [toolchain]);
-
-  function handleAddModule() {
-    if (moduleSearchRef.current) {
-      const moduleName = $(moduleSearchRef.current).val();
-      const toolchainName = getToolchainName(toolchain);
-
-      if (moduleName) {
-        const updatedModules = [toolchainName, ...modules.slice(1), moduleName];
-        setModules(updatedModules);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setShowSuggestions(false);
       }
-      moduleSearchRef.current.value = "";
-    }
-  }
-
-  function getToolchainName(str) {
-    let parts = str.split("-");
-    if (parts.length > 1) {
-      return parts[1];
-    } else {
-      return "";
-    }
-  }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
-    let module_list = "";
-    modules.forEach((module) => {
-      module_list += module + " ";
-    });
-    setValue(module_list);
+    const module_list = modules.join(' ');
+    if (module_list !== value) {
+      setValue(module_list);
+      if (props.onChange) {
+        props.onChange(props.index, module_list);
+      }
+    }
   }, [modules]);
 
-  function handleToolchain(event) {
-    setToolchain(event.target.value);
-  }
+  const fetchSuggestions = async (query) => {
+    if (!query) {
+      setSuggestions([]);
+      return;
+    }
 
-  const toolchains = props.toolchains.map((toolchain) => (
-    <option key={toolchain.value} value={toolchain.value}>
-      {toolchain.label}
-    </option>
-  ));
+    try {
+      const suggestURL = `${document.dashboard_url}/jobs/composer/modules?query=${query}&toolchain=${toolchain}`;
+      const response = await fetch(suggestURL);
+      const data = await response.json();
+      setSuggestions(data.data || []);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setSuggestions([]);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const query = e.target.value;
+    setSearchTerm(query);
+    setShowSuggestions(true);
+    const timeoutId = setTimeout(() => {
+      fetchSuggestions(query);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  };
+
+  const handleAddModule = () => {
+    if (searchTerm) {
+      const toolchainName = getToolchainName(toolchain);
+      let updatedModules;
+      if (modules.length === 0) {
+        updatedModules = [toolchainName, searchTerm];
+      } else {
+        updatedModules = [...modules, searchTerm];
+      }
+      setModules(updatedModules);
+      setSearchTerm("");
+      setSuggestions([]);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion) => {
+    setSearchTerm(suggestion);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const getToolchainName = (str) => {
+    let parts = str.split("-");
+    return parts.length > 1 ? parts[1] : "";
+  };
+
+  const handleToolchain = (event) => {
+    setToolchain(event.target.value);
+    setSearchTerm("");
+    setSuggestions([]);
+  };
 
   return (
     <FormElementWrapper
@@ -84,41 +105,85 @@ function Module(props) {
       label={props.label}
       help={props.help}
     >
-      <div className="ui-widget">
-        <div className="input-group">
+      <div className="module-widget">
+        <div className="input-group" style={{ position: 'relative' }}>
           <input
             ref={moduleSearchRef}
-            className="form-control ui-autoComplete-input"
+            className="form-control"
+            value={searchTerm}
+            onChange={handleInputChange}
             autoComplete="off"
+            placeholder="Search for modules..."
           />
-
           <div className="input-group-append">
-            <select className="form-control" onChange={handleToolchain}>
-              {toolchains}
+            <select 
+              name={props.toolchainName} 
+              className="form-control" 
+              onChange={handleToolchain}
+              value={toolchain}
+            >
+              {props.toolchains.map((tc) => (
+                <option key={tc.value} value={tc.value}>{tc.label}</option>
+              ))}
             </select>
           </div>
+          {showSuggestions && suggestions.length > 0 && (
+            <div 
+              ref={suggestionsRef}
+              className="suggestions-dropdown"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                backgroundColor: 'white',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                marginTop: '4px'
+              }}
+            >
+              {suggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="suggestion-item"
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                  style={{
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid #eee'
+                  }}
+                  onMouseEnter={e => e.target.style.backgroundColor = '#f5f5f5'}
+                  onMouseLeave={e => e.target.style.backgroundColor = 'white'}
+                >
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <button
           type="button"
-          ref={moduleAddRef}
           className="btn btn-primary mt-2 maroon-button"
           onClick={handleAddModule}
         >
           Add
         </button>
-        <input type="hidden" name="module_list" value={value} />
-
-        {modules.map((module, index) => (
-          <span
-            key={index}
-            className="badge badge-pill badge-primary module-to-load"
-            onClick={() => {
-              setModules(modules.filter((_, i) => i !== index));
-            }}
-          >
-            {module}
-          </span>
-        ))}
+        <input type="hidden" name={props.name} value={value} />
+        <div className="mt-2">
+          {modules.map((module, index) => (
+            <span
+              key={index}
+              className="badge badge-pill badge-primary module-to-load"
+              onClick={() => setModules(modules.filter((_, i) => i !== index))}
+              style={{ margin: '0.25rem', cursor: 'pointer' }}
+            >
+              {module}
+            </span>
+          ))}
+        </div>
       </div>
     </FormElementWrapper>
   );

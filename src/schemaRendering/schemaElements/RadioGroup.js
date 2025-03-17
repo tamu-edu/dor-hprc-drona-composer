@@ -1,12 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper"
 
 function RadioGroup(props) {
   const [value, setValue] = useState("");
 
+  useEffect(() => {
+    if (props.value != "") {
+      setValue(props.value);
+    }
+  }, [props.value]);
+
   function handleValueChange(event) {
-    setValue(event.target.value);
-    if (props.onChange) props.onChange(props.index, event.target.value);
+    const newValue = event.target.value;
+    setValue(newValue);
+    if (props.onChange) props.onChange(props.index, newValue);
   }
 
   const optionList = props.options.map((option) => (
@@ -16,9 +23,10 @@ function RadioGroup(props) {
         className="form-check-input"
         value={option.value}
         name={props.name}
+        checked={value === option.value}
         onChange={handleValueChange}
       />
-      <label className="form-check-label" htmlFor={props.name}>
+      <label className="form-check-label" htmlFor={`${props.name}-${option.value}`}>
         {option.label}
       </label>
     </div>

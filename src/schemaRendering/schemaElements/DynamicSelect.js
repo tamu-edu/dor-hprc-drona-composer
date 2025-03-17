@@ -1,84 +1,91 @@
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
+import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
+
+import config from '@config';
 
 function DynamicSelect(props) {
   const [value, setValue] = useState(props.value || "");
   const [isEvaluated, setIsEvaluated] = useState(false);
   const [options, setOptions] = useState(props.options || []);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [isValueInvalid, setIsValueInvalid] = useState(false);
 
+  const devUrl = config.development.dashboard_url;
+  const prodUrl = config.production.dashboard_url;
 
-    const customSelectStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isDisabled ? "#e9ecef" : "#fff",
-      borderColor: state.isFocused ? "#80bdff" : "#ced4da",
-      borderRadius: ".25rem",
-      minHeight: "38px",
-      boxShadow: state.isFocused ? "0 0 0 .2rem rgba(0,123,255,.25)" : "none",
-      fontSize: "1rem", // Matches font size of Bootstrap form-control
-    }),
-    menu: (provided) => ({
-      ...provided,
-      zIndex: 2, // Ensure the menu appears above other elements
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: "#495057", // Matches Bootstrap's text color
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused ? "#e9ecef" : "#fff", // Match hover style
-      color: "#495057",
-      padding: "8px 12px", // Match default padding for options
-      "&:hover": {
-        backgroundColor: "#e9ecef", // Matches hover effect
-      },
-      ...state.data.styles,
-    }),
-    dropdownIndicator: (provided) => ({
-      ...provided,
-      padding: "4px", // Adjust padding for dropdown arrow
-    }),
-    placeholder: (provided) => ({
-      ...provided,
-      color: "#6c757d", // Matches Bootstrap placeholder color
-    }),
-  };
+  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
+  useEffect(() => {
+    setValue(props.value);
+  }, [props.value]);
 
-
+  // Validate value against options
+  useEffect(() => {
+    if (isEvaluated && value) {
+      const isValueValid = options.some(option => option.value === value.value);
+      setIsValueInvalid(!isValueValid);
+      
+      if (!isValueValid) {
+        // Add the current value to options with an indicator
+        setOptions(prevOptions => [
+          ...prevOptions,
+          {
+            ...value,
+            label: `${value.label} (Unavailable)`,
+            isDeprecated: true,
+            styles: {
+              color: '#dc3545',  // Bootstrap danger color
+              fontStyle: 'italic'
+            }
+          }
+        ]);
+      }
+    }
+  }, [options, value, isEvaluated]);
 
   useEffect(() => {
     const fetchOptions = async () => {
-      if (props.isShown && !isEvaluated && props.retrieverPath) {
-        setIsLoading(true);
-        try {
-          const response = await fetch(
-            document.dashboard_url + "/jobs/composer" + `/evaluate_dynamic_select?retriever_path=${encodeURIComponent(
-              props.retrieverPath
-            )}`
-          );
-          
-          if (!response.ok) {
-		  const errorData = await response.json();
-		  throw {
-            		message: errorData.message || 'Failed to retrieve select options',
-            		status_code: response.status,
-            		details: errorData.details || errorData
-          	 };
+        const retrieverPath = props.retrieverPath || props.retriever;
+
+	if(retrieverPath == undefined){
+          props.setError({
+            message: "Retriever path is not set",
+            status_code: 400,
+            details: ""
+          });
+
+	} 
+      	if (props.isShown && !isEvaluated && retrieverPath) {
+          setIsLoading(true);
+          try {
+            const response = await fetch(
+              // document.dashboard_url + 
+              curUrl +
+		"/jobs/composer" + 
+              `/evaluate_dynamic_select?retriever_path=${encodeURIComponent(retrieverPath)}`
+            );
+	  
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              props.setError({
+                message: errorData.message || 'Failed to retrieve select options',
+                status_code: response.status,
+                details: errorData.details || errorData
+              });
+	      return;
+            }
+
+            const data = await response.json();
+	    setOptions(data);
+            setIsEvaluated(true);
+          } catch (error) {
+            props.setError(error);
+          } finally {
+            setIsLoading(false);
           }
-          
-          const data = await response.json();
-          setOptions(data);
-          setIsEvaluated(true);
-        } catch (error) {
-		props.setError(error);
-        } finally {
-          setIsLoading(false);
         }
-      }
     };
 
     fetchOptions();
@@ -86,9 +93,16 @@ function DynamicSelect(props) {
 
   const handleValueChange = (option) => {
     setValue(option);
+    setIsValueInvalid(false); // Reset invalid state on user change
     if (props.onChange) {
       props.onChange(props.index, option);
     }
+  };
+
+  const getNoOptionsMessage = () => {
+    if (isLoading) return "Loading options...";
+    if (isEvaluated && options.length === 0) return "No options available";
+    return "No options found";
   };
 
   return (
@@ -109,11 +123,24 @@ function DynamicSelect(props) {
           isLoading={isLoading}
           styles={{
             ...customSelectStyles,
+            control: (base, state) => ({
+              ...customSelectStyles.control(base, state),
+              ...(isValueInvalid && {
+                borderColor: '#dc3545',
+                '&:hover': {
+                  borderColor: '#bd2130'
+                }
+              })
+            }),
             container: (base) => ({ ...base, flexGrow: 1 }),
           }}
-          placeholder={
-            isLoading ? "Loading options..." : "-- Choose an option --"
-          }
+          noOptionsMessage={getNoOptionsMessage}
+          placeholder={isLoading ? "Loading options..." : "-- Choose an option --"}
+        />
+        <input
+          type="hidden"
+          name={`${props.name}_label`}
+          value={value?.label || ""}
         />
         {props.showAddMore && (
           <button
@@ -126,8 +153,14 @@ function DynamicSelect(props) {
           </button>
         )}
       </div>
+      {isValueInvalid && (
+        <div className="text-danger" style={{ fontSize: '0.875em', marginTop: '0.25rem' }}>
+          This option may no longer be available
+        </div>
+      )}
     </FormElementWrapper>
   );
 }
 
 export default DynamicSelect;
+

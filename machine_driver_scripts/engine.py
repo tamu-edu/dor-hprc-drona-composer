@@ -223,10 +223,15 @@ class Engine():
     def set_environment(self, environment, env_dir):
         self.environment = environment
         self.env_dir = env_dir
-        self.set_map(os.path.join(env_dir, environment, "map.json"))
-        self.set_schema(os.path.join(env_dir, environment, "schema.json"))
         self.set_driver(os.path.join(env_dir, environment, "driver.sh"))
         self.set_additional_files(os.path.join(env_dir, environment))
+
+        # Rerunned jobs do not need map or schema.
+        if os.path.exists(os.path.join(env_dir, environment, "map.json")):
+            self.set_map(os.path.join(env_dir, environment, "map.json"))
+        if os.path.exists(os.path.join(env_dir, environment, "schema.json")):
+            self.set_schema(os.path.join(env_dir, environment, "schema.json"))
+
         
     def evaluate_map(self, map, params):
         for key, value in map.items():
@@ -268,7 +273,7 @@ class Engine():
             dynamic_map = self.get_dynamic_map()
             
             dynamic_evaluated_map = self.evaluate_map(dynamic_map, params)
-            evaluated_map = {**evaluated_map, **dynamic_evaluated_map}
+            evaluated_map = {**dynamic_evaluated_map, **evaluated_map}
 
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
             self.script = self.replace_placeholders(template, evaluated_map, params)

@@ -3,4 +3,5 @@
 *.pyc
 .venv
 node_modules/
+coverage/
 static/bundle.js
