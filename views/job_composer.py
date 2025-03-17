@@ -92,6 +92,7 @@ def evaluate_dynamic_select():
     
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
+    print("dynamic Dir", retriever_dir, retriever_script, retriever_path)
     bash_command = f"bash {retriever_script}"
     
     try:
@@ -121,6 +122,62 @@ def evaluate_dynamic_select():
             details={'error': str(e)}
     )
     return options
+
+@job_composer.route('/evaluate_autocomplete', methods=['GET'])
+@handle_api_error
+def evaluate_autocomplete():
+    retriever_path = request.args.get("retriever_path")
+    query = request.args.get("query")
+    
+    if not retriever_path:
+        raise APIError("Retriever path is required", status_code=400)
+    
+    if not query:
+        raise APIError("Search query is required", status_code=400)
+    
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    print("Dir", retriever_dir, retriever_script, retriever_path)
+    
+    # Pass the query as an environment variable
+    env = os.environ.copy()
+    env["SEARCH_QUERY"] = query
+    
+    try:
+        result = subprocess.run(
+            f"bash {retriever_script}",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            cwd=retriever_dir,
+            env=env
+        )
+        
+        if result.returncode != 0:
+            raise APIError(
+                "The autocomplete script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+            )
+        
+        try:
+            options = json.loads(result.stdout)
+            return jsonify(options)
+        except json.JSONDecodeError as e:
+            raise APIError(
+                "The autocomplete script did not return valid JSON",
+                status_code=400, 
+                details={'error': str(e), 'output': result.stdout}
+            )
+            
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process autocomplete search",
+            status_code=500,
+            details={'error': str(e), 'stderr': e.stderr}
+        )
 
 def iterate_schema(schema_dict):
     """Generator that yields all elements in the schema including nested ones"""
