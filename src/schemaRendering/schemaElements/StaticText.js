@@ -2,6 +2,10 @@ import React from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
 function StaticText(props) {
+  const createMarkup = (html) => {
+    return { __html: html };
+  };
+
   return (
     <FormElementWrapper
       labelOnTop={props.labelOnTop}
@@ -10,9 +14,16 @@ function StaticText(props) {
       help={props.help}
     >
       <div className="py-2">
-        <span className={`${props.isHeading ? 'text-xl font-bold' : ''}`}>
-          {props.value}
-        </span>
+        {props.allowHtml ? (
+          <div 
+            className={`${props.isHeading ? 'text-xl font-bold' : ''}`}
+            dangerouslySetInnerHTML={createMarkup(props.value)}
+          />
+        ) : (
+          <span className={`${props.isHeading ? 'text-xl font-bold' : ''}`}>
+            {props.value}
+          </span>
+        )}
       </div>
     </FormElementWrapper>
   );

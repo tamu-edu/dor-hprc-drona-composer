@@ -92,6 +92,7 @@ def evaluate_dynamic_select():
     
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
+    print("dynamic Dir", retriever_dir, retriever_script, retriever_path)
     bash_command = f"bash {retriever_script}"
     
     try:
@@ -121,6 +122,62 @@ def evaluate_dynamic_select():
             details={'error': str(e)}
     )
     return options
+
+@job_composer.route('/evaluate_autocomplete', methods=['GET'])
+@handle_api_error
+def evaluate_autocomplete():
+    retriever_path = request.args.get("retriever_path")
+    query = request.args.get("query")
+    
+    if not retriever_path:
+        raise APIError("Retriever path is required", status_code=400)
+    
+    if not query:
+        raise APIError("Search query is required", status_code=400)
+    
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    print("Dir", retriever_dir, retriever_script, retriever_path)
+    
+    # Pass the query as an environment variable
+    env = os.environ.copy()
+    env["SEARCH_QUERY"] = query
+    
+    try:
+        result = subprocess.run(
+            f"bash {retriever_script}",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            cwd=retriever_dir,
+            env=env
+        )
+        
+        if result.returncode != 0:
+            raise APIError(
+                "The autocomplete script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+            )
+        
+        try:
+            options = json.loads(result.stdout)
+            return jsonify(options)
+        except json.JSONDecodeError as e:
+            raise APIError(
+                "The autocomplete script did not return valid JSON",
+                status_code=400, 
+                details={'error': str(e), 'output': result.stdout}
+            )
+            
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process autocomplete search",
+            status_code=500,
+            details={'error': str(e), 'stderr': e.stderr}
+        )
 
 def iterate_schema(schema_dict):
     """Generator that yields all elements in the schema including nested ones"""
@@ -343,25 +400,30 @@ def get_more_envs_info():
     environments_info = repo_manager.get_environments_info(cluster_name)
     return jsonify(environments_info)
 
+
 def _get_environments():
-    system_environments = get_directories("./environments")
-    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
-
+    system_environments = []
+    try:
+        system_environments = get_directories("./environments")
+        system_environments = [{"env": env, "src": "./environments", "is_user_env": False} for env in system_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        system_environments = []
+    
     user_envs_path = request.args.get("user_envs_path")
-
     if user_envs_path is None:
         user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-        create_folder_if_not_exist(user_envs_path)
-
+        try:
+            create_folder_if_not_exist(user_envs_path)
+        except (PermissionError, OSError):
+            pass
+    
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
-    except OSError as e:
-        print(e)
-
+        user_environments = [{"env": env, "src": user_envs_path, "is_user_env": True} for env in user_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        user_environments = []
+    
     environments = system_environments + user_environments
-
     return environments
-
 

@@ -14,6 +14,7 @@ import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
 import TextArea from "./TextArea";
 import StaticText from "./StaticText";
+import AutocompleteSelect from "./AutocompleteSelect";
 
 
 export {
@@ -32,6 +33,7 @@ export {
 	DynamicSelect,
 	TextArea,
 	StaticText,
+	AutocompleteSelect,
 	CollapsibleRowContainer,
 	CollapsibleColContainer
 }
@@ -51,6 +53,7 @@ export const componentsMap = {
   dynamicSelect: DynamicSelect,
   textarea: TextArea,
   staticText: StaticText,
+  autocompleteSelect: AutocompleteSelect,
   collapsibleRowContainer: CollapsibleRowContainer,
   collapsibleColContainer: CollapsibleColContainer
 };
