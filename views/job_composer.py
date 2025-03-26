@@ -370,24 +370,61 @@ def get_environments():
     environments = _get_environments()
     return jsonify(environments)
 
+
 @job_composer.route('/add_environment', methods=['POST'])
+@handle_api_error
 def add_environment():
     env = request.form.get("env")
     src = request.form.get("src")
-    cluster_name = app.config['cluster_name']
     
+    if not env:
+        raise APIError(
+            "Missing environment name parameter",
+            status_code=400,
+            details={'error': 'The "env" parameter is required'}
+        )
+        
+    cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
             repo_url=app.config['env_repo_github'],
             repo_dir="./environments-repo"
     )
-        
     user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-    success = repo_manager.copy_environment_to_user(env, user_envs_path)
-        
-    if success:
+    
+    try:
+        repo_manager.copy_environment_to_user(env, user_envs_path)
         return jsonify({"status": "Success"})
-    else:
-        return jsonify({"status": "Failed to copy environment"}), 500
+    except ValueError as e:
+        raise APIError(
+            "Invalid input",
+            status_code=400,
+            details={'error': str(e)}
+        )
+    except FileNotFoundError as e:
+        raise APIError(
+            "Environment not found",
+            status_code=404,
+            details={'error': str(e)}
+        )
+    except PermissionError as e:
+        raise APIError(
+            "Permission denied",
+            status_code=403,
+            details={'error': str(e)}
+        )
+    except RuntimeError as e:
+        raise APIError(
+            "Git operation failed",
+            status_code=500,
+            details={'error': str(e)}
+        )
+    except Exception as e:
+        raise APIError(
+            "Unexpected error while adding environment",
+            status_code=500,
+            details={'error': str(e)}
+        )
+
 
 @job_composer.route('/get_more_envs_info', methods=['GET'])
 def get_more_envs_info():
