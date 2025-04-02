@@ -5,6 +5,7 @@ import tempfile
 import subprocess
 from flask import current_app as app
 from typing import Dict, List
+from subprocess import PIPE
 
 def create_folder_if_not_exist(dir_path):
     if not os.path.isdir(dir_path):
@@ -69,6 +70,7 @@ class EnvironmentRepoManager:
         """
         Copies the environment directly to user's directory using a temporary clone
         """
+
         if not env_name or not env_name.strip():
             raise ValueError("Environment name cannot be empty")
         if not user_envs_path or not user_envs_path.strip():
@@ -82,15 +84,15 @@ class EnvironmentRepoManager:
                 subprocess.run([
                     self.git_path, 'clone', '--depth=1', '--no-checkout',
                     self.repo_url, temp_dir
-                ], check=True, capture_output=True, text=True)
+                ], check=True, stdout=PIPE, stderr=PIPE, text=True)
 
                 subprocess.run([
                     self.git_path, 'sparse-checkout', 'set', env_name
-                ], cwd=temp_dir, check=True, capture_output=True, text=True)
+                ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, text=True)
 
                 subprocess.run([
                     self.git_path, 'checkout', 'main'
-                ], cwd=temp_dir, check=True, capture_output=True, text=True)
+                ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, text=True)
 
                 src_env_path = os.path.join(temp_dir, env_name)
                 if not os.path.exists(src_env_path):
