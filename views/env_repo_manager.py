@@ -84,15 +84,15 @@ class EnvironmentRepoManager:
                 subprocess.run([
                     self.git_path, 'clone', '--depth=1', '--no-checkout',
                     self.repo_url, temp_dir
-                ], check=True, stdout=PIPE, stderr=PIPE, text=True)
+                ], check=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
                 subprocess.run([
                     self.git_path, 'sparse-checkout', 'set', env_name
-                ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, text=True)
+                ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
                 subprocess.run([
                     self.git_path, 'checkout', 'main'
-                ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, text=True)
+                ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
                 src_env_path = os.path.join(temp_dir, env_name)
                 if not os.path.exists(src_env_path):
