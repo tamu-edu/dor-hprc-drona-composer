@@ -446,6 +446,7 @@ return (
     <EnvironmentModal 
       envModalRef={envModalRef} 
       onAddEnvironment={handleAddEnvironment} 
+      setError={setError}
     />
     </>
   </GlobalFilesContext.Provider>
