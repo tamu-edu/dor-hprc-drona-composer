@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const EnvironmentModal = ({ envModalRef, onAddEnvironment }) => {
+const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError }) => {
   const [environments, setEnvironments] = useState([]);
   const [filteredEnvironments, setFilteredEnvironments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,6 +86,7 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment }) => {
         setIsLoading(false);
       });
   };
+ 
 
   const handleAddEnvironment = (env) => {
     const formData = new FormData();
@@ -96,23 +97,36 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment }) => {
       method: "POST",
       body: formData,
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "Success") {
-          const newEnv = {
-            value: env.env,
-            label: env.env,
-            src: env.src,
-            styles: { color: "#3B71CA" },
-          };
-          onAddEnvironment && onAddEnvironment(newEnv);
-          return { success: true };
-        } else {
-          return { success: false, message: data.message || "Unknown error" };
-        }
-      });
-  };
-
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "Success") {
+        const newEnv = {
+          value: env.env,
+          label: env.env,
+          src: env.src,
+          styles: { color: "#3B71CA" },
+        };
+        onAddEnvironment && onAddEnvironment(newEnv);
+        return { success: true };
+      } else {
+	 return {
+          message: data.message || 'Failed to add environment',
+          status_code: data.status,
+          details: JSON.stringify(data.details || data,  null, 2)
+        };
+      }
+  })
+  .catch((error) => {
+      console.error("Environment add failed:", error);
+      return {
+        success: false,
+        message: error.message || "Unknown error occurred",
+      	details: "Unknown Error"
+      };
+	  
+    });
+  }
+	
   const resetFilters = () => {
     setSearchTerm('');
     setCategoryFilter('');
@@ -243,7 +257,7 @@ const AddEnvironmentButton = ({ env, onAddEnvironment }) => {
         if (result.success) {
           setIsAdded(true);
         } else {
-          alert("Error adding environment: " + result.message);
+          alert("Error adding environment: " + result.details);
         }
       })
       .catch(error => {
