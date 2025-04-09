@@ -15,7 +15,7 @@ const Portal = ({ children }) => {
   return ReactDOM.createPortal(children, el);
 };
 
-const PreviewModal = ({ previewRef, warningMessages, multiPaneRef, panes, setPanes }) => {
+const PreviewModal = ({ previewRef, warningMessages, multiPaneRef, panes, isPreviewOpen, setPanes }) => {
   return (
     <Portal>
       <div ref={previewRef} className="modal fade bd-example-modal-lg" id="job-preview-modal" tabIndex="-1" role="dialog" aria-hidden="true">
@@ -37,7 +37,7 @@ const PreviewModal = ({ previewRef, warningMessages, multiPaneRef, panes, setPan
                 </div>
               )}
               <div id="job-preview-container">
-                <MultiPaneTextArea ref={multiPaneRef} panes={panes} setPanes={setPanes} />
+                <MultiPaneTextArea ref={multiPaneRef} panes={panes} setPanes={setPanes} isDisplayed={isPreviewOpen} />
               </div>
             </div>
             <div className="modal-footer">
