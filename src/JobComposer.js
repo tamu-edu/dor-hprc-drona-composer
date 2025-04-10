@@ -99,6 +99,7 @@ function JobComposer({ error, setError,  formRef,
         multiPaneRef={multiPaneRef}
         panes={props.panes}
         setPanes={props.setPanes}
+	isPreviewOpen={props.isPreviewOpen}
       />
     </div>
   );

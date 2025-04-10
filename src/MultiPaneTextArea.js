@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
+const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => {
   let zeroOrderIndex = 10000;  
   panes.forEach((pane, index) => {
     if (pane.order === 0) {
@@ -23,6 +23,17 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
 
   useImperativeHandle(ref, () => ({
     getPaneRefs: () => paneRefs.current,
+	    refreshEditors: () => {
+    // Give a slight delay to let the data load 
+    setTimeout(() => {
+      Object.keys(editorInstancesRef.current).forEach(key => {
+        const editor = editorInstancesRef.current[key];
+        if (editor && typeof editor.refresh === 'function') {
+          editor.refresh();
+        }
+      });
+    }, 500);
+  }
   }));
 
   const handlePaneChange = (index) => {
@@ -111,7 +122,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
         }
       });
     };
-  }, [panes.length, activePane]);
+  }, [activePane, isDisplayed]);
 
   const containerStyle = {
     border: '1px solid #ccc',
@@ -170,7 +181,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes }, ref) => {
     if (activePane >= panes.length) {
       setActivePane(0);
     }
-  }, [activePane, panes.length]);
+  }, [activePane, isDisplayed]);
 
   return (
     <div style={containerStyle} className="cm-container">
