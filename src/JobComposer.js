@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import ReactDOM from "react-dom";
-import {Text, Select, Picker} from "./schemaRendering/schemaElements/index"
+import { Text, Select, Picker } from "./schemaRendering/schemaElements/index"
 import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
@@ -10,7 +10,7 @@ import EnvironmentModal from "./EnvironmentModal";
 import PreviewModal from "./PreviewModal";
 
 
-function JobComposer({ error, setError,  formRef,
+function JobComposer({ error, setError, formRef,
   previewRef,
   envModalRef,
   multiPaneRef, ...props }) {
@@ -19,6 +19,7 @@ function JobComposer({ error, setError,  formRef,
   return (
     <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
+      <p>WUTTTTTT</p>
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div className="card-header">
           <h6 className="maroon-header">Job Composer</h6>
@@ -40,47 +41,69 @@ function JobComposer({ error, setError,  formRef,
             <div className="row">
               <div className="col-lg-12">
                 <div id="job-content" style={{ maxWidth: '100%' }}>
-                    <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name} />
-                    <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation} />
-                    <Select
-                      key="env_select"
-                      name="runtime"
-                      label="Environments"
-                      options={props.environments}
-                      onChange={props.handleEnvChange}
-                      value={ props.environment.env ? {value: props.environment.env, label: props.environment.env, src: props.environment.src} : null}
-                      showAddMore={true}
-                      onAddMore={props.handleAddEnv}
-                    />
-                    <Composer
-                      environment={props.environment}
-                      fields={props.fields}
-                      onFileChange={props.handleUploadedFiles}
-                      setError={setError}
-                      ref={props.composerRef}
-                    />
+
+                  {/* 
+                  <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name}
+                    //Hide from the
+                    style={{
+                      visibility: "hidden",
+                      position: "absolute",
+                      width: 0,
+                      height: 0,
+                      overflow: "hidden"
+                    }} /> */}
+
+                  {/* 
+                  <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation}
+                    style={{
+                      visibility: "hidden",
+                      position: "absolute",
+                      width: 0,
+                      height: 0,
+                      overflow: "hidden"
+                    }} /> */}
+                  {/* <Select
+
+                    key="env_select"
+                    name="runtime"
+                    label="Environments"
+                    // options={props.environments}
+                    // onChange={() => { }}
+                    onChange={props.handleEnvChange}
+                    value={props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
+                    showAddMore={false}
+                    isDisabled={true}
+                  // onAddMore={props.handleAddEnv}
+                  /> */}
+                  <Composer
+                    environment={props.environment}
+                    fields={props.fields}
+                    onFileChange={props.handleUploadedFiles}
+                    setError={setError}
+                    ref={props.composerRef}
+                  />
                 </div>
               </div>
             </div>
-          <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
-            <div className="invisible">
-              <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
-            </div>
-                {props.environment.env !== "" && (
-              <div>
-                <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
+            <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
+              <div className="invisible">
+                <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
               </div>
-                )}
+              {props.environment.env !== "" && (
                 <div>
-                  <button className="btn btn-primary maroon-button" onClick={(e) => {
-                    e.preventDefault();
-                    setShowHistory(!showHistory);
-                  }}>
-                {showHistory ? 'Hide History' : 'Show History'}
-              </button>
+                  <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
+                </div>
+              )}
+              <div>
+                <button className="btn btn-primary maroon-button" onClick={(e) => {
+                  e.preventDefault();
+                  setShowHistory(!showHistory);
+                }}>
+                  {showHistory ? 'Hide History' : 'Show History'}
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
           <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
             <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
           </div>
@@ -99,7 +122,7 @@ function JobComposer({ error, setError,  formRef,
         multiPaneRef={multiPaneRef}
         panes={props.panes}
         setPanes={props.setPanes}
-	isPreviewOpen={props.isPreviewOpen}
+        isPreviewOpen={props.isPreviewOpen}
       />
     </div>
   );
