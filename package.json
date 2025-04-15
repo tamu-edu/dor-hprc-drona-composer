@@ -4,10 +4,15 @@
   "description": "Tool to create and submit batch jobs",
   "main": "webpack.config.js",
   "dependencies": {
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/lang-python": "^6.1.7",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/legacy-modes": "^6.5.0",
+    "@uiw/codemirror-theme-eclipse": "^4.23.10",
+    "@uiw/react-codemirror": "^4.23.10",
     "bootstrap": "^5.3.3",
-    "codemirror": "^5.65.18",
     "react": "^18.2.0",
-    "react-codemirror2": "^8.0.1",
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18.2.0",
     "react-select": "^5.8.0",
@@ -17,7 +22,7 @@
     "yaml-loader": "^0.8.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
+    "@babel/core": "^7.26.10",
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.26.3",
     "@testing-library/jest-dom": "^6.6.3",
