@@ -39,15 +39,23 @@ function Picker(props) {
       setGlobalFiles((prevFiles) => [...prevFiles, currentFile]);
     }
   }, [uploadedFiles]);
-
+  
   useEffect(() => {
-    fetch(document.dashboard_url + "/jobs/composer/mainpaths")
+    let url = document.dashboard_url + "/jobs/composer/mainpaths";
+    
+    if (props.defaultPaths && typeof props.defaultPaths === 'object') {
+      const defaultPathsParam = encodeURIComponent(JSON.stringify(props.defaultPaths));
+      url += `?defaultPaths=${defaultPathsParam}`;
+    }
+    
+    fetch(url)
       .then((response) => response.json())
       .then((data) => {
         const paths = Object.entries(data);
         setMainPaths(paths);
-      });
-  }, []);
+      })
+  }, [props.defaultPaths]);
+
 
   function handleMainClick(event) {
     let fullPath = event.target.value;

@@ -338,19 +338,32 @@ def preview_job():
     preview_job = engine.preview_script(params)
 
     return jsonify(preview_job)
+
+
 @job_composer.route('/mainpaths', methods=['GET'])
 def get_main_paths():
     current_user = os.getenv("USER")
     group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
     group_names = [s.strip() for s in group_names]
-    
+     
+    default_paths = request.args.get('defaultPaths')
+     
     paths = {"Home": f"/home/{current_user}", "Scratch": f"/scratch/user/{current_user}"}
-
+    
+    if default_paths:
+        try:
+            import json
+            custom_paths = json.loads(default_paths)
+            for key, path in custom_paths.items():
+                expanded_path = os.path.expandvars(path)
+                paths[key] = expanded_path
+        except Exception as e:
+   
     for group_name in group_names:
         groupdir = f"/scratch/group/{group_name}"
         if os.path.exists(groupdir):
             paths[group_name] = groupdir
-
+             
     return jsonify(paths)
 
 def fetch_subdirectories(path):
