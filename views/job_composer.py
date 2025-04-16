@@ -341,29 +341,42 @@ def preview_job():
 
 
 @job_composer.route('/mainpaths', methods=['GET'])
+@handle_api_error
 def get_main_paths():
-    current_user = os.getenv("USER")
-    group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
-    group_names = [s.strip() for s in group_names]
      
     default_paths = request.args.get('defaultPaths')
-     
-    paths = {"Home": f"/home/{current_user}", "Scratch": f"/scratch/user/{current_user}"}
+    use_hpc_default_paths = request.args.get('useHPCDefaultPaths')
     
+    paths = {"/": "/"}
+
+    if use_hpc_default_paths != "False" and use_hpc_default_paths != "false":
+        current_user = os.getenv("USER")
+        group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
+        group_names = [s.strip() for s in group_names]
+
+        paths["Home"] = f"/home/{current_user}"
+        paths["Scratch"] = f"/scratch/user/{current_user}"
+    
+        for group_name in group_names:
+            groupdir = f"/scratch/group/{group_name}"
+            if os.path.exists(groupdir):
+                paths[group_name] = groupdir
+     
     if default_paths:
         try:
-            import json
             custom_paths = json.loads(default_paths)
             for key, path in custom_paths.items():
                 expanded_path = os.path.expandvars(path)
                 paths[key] = expanded_path
         except Exception as e:
-   
-    for group_name in group_names:
-        groupdir = f"/scratch/group/{group_name}"
-        if os.path.exists(groupdir):
-            paths[group_name] = groupdir
-             
+
+            raise APIError(
+                "Failed to handle paths",
+                status_code=400,
+                details=str(e)
+            )
+
+            
     return jsonify(paths)
 
 def fetch_subdirectories(path):

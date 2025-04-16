@@ -42,19 +42,24 @@ function Picker(props) {
   
   useEffect(() => {
     let url = document.dashboard_url + "/jobs/composer/mainpaths";
-    
+    const searchParams = new URLSearchParams();
+
+    const useHPCDefaultPaths = props.useHPCDefaultPaths ?? true;
+    searchParams.append('useHPCDefaultPaths', useHPCDefaultPaths);
+
     if (props.defaultPaths && typeof props.defaultPaths === 'object') {
-      const defaultPathsParam = encodeURIComponent(JSON.stringify(props.defaultPaths));
-      url += `?defaultPaths=${defaultPathsParam}`;
+      searchParams.append('defaultPaths', JSON.stringify(props.defaultPaths));
     }
-    
+
+    url += `?${searchParams.toString()}`;
+
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
         const paths = Object.entries(data);
         setMainPaths(paths);
-      })
-  }, [props.defaultPaths]);
+      });
+  }, [props.defaultPaths, props.useHPCDefaultPaths]);
 
 
   function handleMainClick(event) {
