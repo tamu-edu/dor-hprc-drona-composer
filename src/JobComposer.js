@@ -19,7 +19,6 @@ function JobComposer({ error, setError, formRef,
   return (
     <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
-      <p>WUTTTTTT</p>
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div className="card-header">
           <h6 className="maroon-header">Job Composer</h6>
@@ -45,6 +44,7 @@ function JobComposer({ error, setError, formRef,
                   {/* 
                   <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name}
                     //Hide from the
+                    type="hidden"
                     style={{
                       visibility: "hidden",
                       position: "absolute",
@@ -94,25 +94,25 @@ function JobComposer({ error, setError, formRef,
                   <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
                 </div>
               )}
-              <div>
+              {/* <div>
                 <button className="btn btn-primary maroon-button" onClick={(e) => {
                   e.preventDefault();
                   setShowHistory(!showHistory);
                 }}>
                   {showHistory ? 'Hide History' : 'Show History'}
                 </button>
-              </div>
+              </div> */}
             </div>
           </form>
-          <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
+          {/* <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
             <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
-          </div>
+          </div> */}
         </div>
-        <div className="card-footer">
+        {/* <div className="card-footer">
           <small className="text-muted">
             ⚠️ Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
           </small>
-        </div>
+        </div> */}
       </div>
 
       <EnvironmentModal envModalRef={envModalRef} />

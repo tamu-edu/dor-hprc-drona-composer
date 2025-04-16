@@ -62,9 +62,9 @@ export function App() {
       });
   }, []);
 
-  //Update the job name as it starts
+  // //Update the job name as it starts
   useEffect(() => {
-    const job_name = "IPU Tutorial Job";
+    const job_name = "tutorial-job";
     sync_job_name(job_name);
   })
 
@@ -221,6 +221,34 @@ export function App() {
     request.send(formData);
   }
 
+  //--------------------------------------------------
+  // A helper function that ensures a hidden input exists in the form with hardcoded name and value
+  useEffect(() => {
+    if (!formRef.current) return;
+
+    const form = formRef.current;
+
+    // This function ensures that a hidden input with the given name and value exists
+    const setOrCreateInput = (name, value) => {
+      let input = form.querySelector(`[name="${name}"]`);
+      if (!input) {
+        // Create a new <input> element
+        input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name; // Set the 'name' attribute so it will be included in FormData
+        form.appendChild(input); // Add it to the form so it becomes part of the form DOM
+      }
+      input.value = value;
+    };
+
+    setOrCreateInput("name", "tutorial-job");
+    setOrCreateInput("runtime", "IPUTutorial");
+    setOrCreateInput("runtime_label", "IPUTutorial");
+    setOrCreateInput("location", runLocation);
+
+  }, [runLocation]);
+  //------------------------------------------------------------------
+
   const handleAddEnvironment = (newEnv) => {
     setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
   };
@@ -228,16 +256,16 @@ export function App() {
     setJobStatus("new");
     const formData = new FormData(formRef.current);
 
+    // // Hardcoded the job name and the environment name
+    // formData.set("name", "tutorial-job");
+    // formData.set("runtime", "IPUTutorial");
+    // formData.set("runtime_label", "IPUTutorial");
+    // formData.set("location", runLocation);
+
     //Debug
     for (let [key, val] of formData.entries()) {
       console.log(`${key}:`, val);
     }
-
-
-    // Hardcoded the job name and the environment name
-    formData.set("name", "tutorial-job");
-    formData.set("runtime", "IPUTutorial");
-    formData.set("runtime_label", "IPUTutorial");
 
     if (!formData.has("runtime")) {
       alert("Environment is required.");
@@ -252,6 +280,7 @@ export function App() {
     }
 
     const action = document.dashboard_url + "/jobs/composer/preview";
+
     preview_job(action, formData, function (error, jobScript) {
       if (error) {
         alert(error);
@@ -339,6 +368,12 @@ export function App() {
       alert("An error has occured. Please try again!");
       window.location.reload();
     };
+
+    console.log("Hello this is submit job form");
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
 
     request.send(formData);
   }

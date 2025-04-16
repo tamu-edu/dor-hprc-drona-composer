@@ -1,8 +1,6 @@
-
 {
   "flocation": "$location",
-  "driver": "!setup_module($module)"
+  "driver": "!setup_module($module)",
+  "filestocopy": "runcommand.sh",
+  "copydir": "/scratch/user/huy04/drona_composer/runs/IPU"
 }
-
-
-
