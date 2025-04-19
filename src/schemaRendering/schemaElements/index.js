@@ -3,7 +3,7 @@ import Select from "./Select";
 import Number from "./Number";
 import Checkbox from "./Checkbox";
 import RowContainer from "./RowContainer";
-import CollapsibleRowContainer from "./CollapsibleRowContainer";
+import { CollapsibleRowContainer, CollapsibleColContainer } from "./CollapsibleContainer";
 import RadioGroup from "./RadioGroup";
 import Picker from "./Picker";
 import Uploader from "./Uploader";
@@ -13,6 +13,8 @@ import Unit from "./Unit";
 import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
 import TextArea from "./TextArea";
+import StaticText from "./StaticText";
+import AutocompleteSelect from "./AutocompleteSelect";
 
 
 export {
@@ -30,8 +32,12 @@ export {
 	UnknownElement,
 	DynamicSelect,
 	TextArea,
-	CollapsibleRowContainer
+	StaticText,
+	AutocompleteSelect,
+	CollapsibleRowContainer,
+	CollapsibleColContainer
 }
+
 export const componentsMap = {
   text: Text,
   select: Select,
@@ -46,8 +52,11 @@ export const componentsMap = {
   unit: Unit,
   dynamicSelect: DynamicSelect,
   textarea: TextArea,
-  collapsibleRowContainer: CollapsibleRowContainer
+  staticText: StaticText,
+  autocompleteSelect: AutocompleteSelect,
+  collapsibleRowContainer: CollapsibleRowContainer,
+  collapsibleColContainer: CollapsibleColContainer
 };
 
-export const Containers = ["rowContainer", "collapsibleRowContainer"];
+export const Containers = ["rowContainer", "collapsibleRowContainer", "collapsibleColContainer"];
 

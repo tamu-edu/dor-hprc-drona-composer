@@ -6,18 +6,30 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
   const [jobHistory, setJobHistory] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState('__none__');
   const [filteredData, setFilteredData] = useState([]);
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown')) {
+        setOpenDropdownId('__none__');
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     if (isExpanded) {
       const currentDate = new Date();
       const defaultEndDate = currentDate.toISOString().split('T')[0];
       currentDate.setDate(currentDate.getDate() - 30);
       const defaultStartDate = currentDate.toISOString().split('T')[0];
-      
+
       setStartDate(defaultStartDate);
       setEndDate(defaultEndDate);
-      
+
       fetchJobHistory();
     }
   }, [isExpanded]);
@@ -26,7 +38,13 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
     try {
       const response = await fetch(`${document.dashboard_url}/jobs/composer/history`);
       const data = await response.json();
-      setJobHistory(data);
+      
+      const processedData = data.map((job, index) => ({
+        ...job,
+        _rowId: `${index}`
+      }));
+      
+      setJobHistory(processedData);
     } catch (error) {
       console.error('Failed to fetch job history:', error);
     }
@@ -75,9 +93,9 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
         const displayedName = diskName.length > 3 ? diskName.slice(-3).join('/') : location;
         return (
           <div className="text-truncate" style={{ maxWidth: '280px' }}>
-            <a 
-              target="_blank" 
-              style={{ color: '#003C71', fontWeight: 'bold', textDecoration: 'underline' }} 
+            <a
+              target="_blank"
+              style={{ color: '#003C71', fontWeight: 'bold', textDecoration: 'underline' }}
               href={document.file_app_url + row.location}
               title={location}
             >
@@ -123,35 +141,24 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
       name: 'Actions',
       width: '100px',
       cell: row => {
-        useEffect(() => {
-          const handleClickOutside = (event) => {
-            if (!event.target.closest('.dropdown')) {
-              setOpenDropdownId(null);
-            }
-          };
-
-          document.addEventListener('click', handleClickOutside);
-          return () => document.removeEventListener('click', handleClickOutside);
-        }, []);
-
         return (
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <div className="dropdown">
               <button
-                className={`btn btn-sm btn-primary maroon-button dropdown-toggle ${openDropdownId === row.job_id ? 'show' : ''}`}
+                className={`btn btn-sm btn-primary maroon-button dropdown-toggle ${openDropdownId === row._rowId ? 'show' : ''}`}
                 type="button"
-                onClick={() => setOpenDropdownId(openDropdownId === row.job_id ? null : row.job_id)}
-                aria-expanded={openDropdownId === row.job_id}
+                onClick={() => setOpenDropdownId(openDropdownId === row._rowId ? '__none__' : row._rowId)}
+                aria-expanded={openDropdownId === row._rowId}
               >
                 Actions
               </button>
-              <ul className={`dropdown-menu ${openDropdownId === row.job_id ? 'show' : ''}`} style={{ minWidth: '120px' }}>
+              <ul className={`dropdown-menu ${openDropdownId === row._rowId ? 'show' : ''}`} style={{ minWidth: '120px' }}>
                 <li>
                   <button
                     className="dropdown-item"
                     onClick={() => {
                       handleRerun(row);
-                      setOpenDropdownId(null);
+                      setOpenDropdownId('__none__');
                     }}
                   >
                     Rerun
@@ -161,9 +168,9 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
                   <button
                     className="dropdown-item"
                     onClick={() => {
-		      window.scrollTo(0, 90);
+                      window.scrollTo(0, 90);
                       handleForm(row);
-                      setOpenDropdownId(null);
+                      setOpenDropdownId('__none__');
                     }}
                   >
                     Recreate
@@ -183,13 +190,13 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
     const filtered = jobHistory.filter(job => {
       if (!job.timestamp || !startDate || !endDate) return true;
       const jobDate = new Date(job.timestamp);
-      
+
       const startDateObj = new Date(startDate);
       startDateObj.setHours(23, 59, 59, 999);
-	    
+
       const endDateObj = new Date(endDate );
       endDateObj.setDate(endDateObj.getDate() + 1);
-      endDateObj.setHours(23, 59, 59, 999);  
+      endDateObj.setHours(23, 59, 59, 999);
       return jobDate >= startDateObj && jobDate <= endDateObj;
     });
     const sortedFiltered = [...filtered].sort((a, b) => {
@@ -225,11 +232,11 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
           onChange={(e) => setEndDate(e.target.value)}
           className="mx-2"
         />
-        <button 
+        <button
           className="btn btn-primary maroon-button"
           onClick={handleFilter}
         >
-         Filter 
+         Filter
         </button>
       </div>
 
@@ -237,10 +244,10 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
         columns={columns}
         data={filteredData}
         customStyles={tableCustomStyles}
-	responsive
-	pagination
+        responsive
+        pagination
         noDataComponent="No jobs have been submitted yet."
-	    sortIcon={
+            sortIcon={
     <svg
       width="12"
       height="12"

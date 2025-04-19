@@ -273,7 +273,7 @@ class Engine():
             dynamic_map = self.get_dynamic_map()
             
             dynamic_evaluated_map = self.evaluate_map(dynamic_map, params)
-            evaluated_map = {**evaluated_map, **dynamic_evaluated_map}
+            evaluated_map = {**dynamic_evaluated_map, **evaluated_map}
 
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
             self.script = self.replace_placeholders(template, evaluated_map, params)

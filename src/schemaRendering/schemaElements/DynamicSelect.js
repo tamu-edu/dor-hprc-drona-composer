@@ -3,6 +3,8 @@ import FormElementWrapper from "../utils/FormElementWrapper";
 import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
 
+import config from '@config';
+
 function DynamicSelect(props) {
   const [value, setValue] = useState(props.value || "");
   const [isEvaluated, setIsEvaluated] = useState(false);
@@ -10,6 +12,10 @@ function DynamicSelect(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isValueInvalid, setIsValueInvalid] = useState(false);
 
+  const devUrl = config.development.dashboard_url;
+  const prodUrl = config.production.dashboard_url;
+
+  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
   useEffect(() => {
     setValue(props.value);
   }, [props.value]);
@@ -40,33 +46,46 @@ function DynamicSelect(props) {
 
   useEffect(() => {
     const fetchOptions = async () => {
-      if (props.isShown && !isEvaluated && props.retrieverPath) {
-        setIsLoading(true);
-        try {
-          const response = await fetch(
-            document.dashboard_url + 
-            "/jobs/composer" + 
-            `/evaluate_dynamic_select?retriever_path=${encodeURIComponent(props.retrieverPath)}`
-          );
+        const retrieverPath = props.retrieverPath || props.retriever;
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw {
-              message: errorData.message || 'Failed to retrieve select options',
-              status_code: response.status,
-              details: errorData.details || errorData
-            };
+	if(retrieverPath == undefined){
+          props.setError({
+            message: "Retriever path is not set",
+            status_code: 400,
+            details: ""
+          });
+
+	} 
+      	if (props.isShown && !isEvaluated && retrieverPath) {
+          setIsLoading(true);
+          try {
+            const response = await fetch(
+              // document.dashboard_url + 
+              curUrl +
+		"/jobs/composer" + 
+              `/evaluate_dynamic_select?retriever_path=${encodeURIComponent(retrieverPath)}`
+            );
+	  
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              props.setError({
+                message: errorData.message || 'Failed to retrieve select options',
+                status_code: response.status,
+                details: errorData.details || errorData
+              });
+	      return;
+            }
+
+            const data = await response.json();
+	    setOptions(data);
+            setIsEvaluated(true);
+          } catch (error) {
+            props.setError(error);
+          } finally {
+            setIsLoading(false);
           }
-
-          const data = await response.json();
-          setOptions(data);
-          setIsEvaluated(true);
-        } catch (error) {
-          props.setError(error);
-        } finally {
-          setIsLoading(false);
         }
-      }
     };
 
     fetchOptions();

@@ -10,7 +10,11 @@ export const customSelectStyles = {
   }),
   menu: (provided) => ({
     ...provided,
-    zIndex: 2,
+    zIndex: 9999,
+  }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 9999,
   }),
   singleValue: (provided) => ({
     ...provided,

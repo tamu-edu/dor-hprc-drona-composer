@@ -89,21 +89,24 @@ def get_environment(environment):
 @handle_api_error
 def evaluate_dynamic_select():
     retriever_path = request.args.get("retriever_path")
+    
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
+    print("dynamic Dir", retriever_dir, retriever_script, retriever_path)
     bash_command = f"bash {retriever_script}"
+    
     try:
         result = subprocess.run(
-                bash_command, 
+                bash_command,
                 shell=True,
-                check=True, 
+                check=True,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, 
+                stderr=subprocess.PIPE,
                 universal_newlines=True,
                 cwd=retriever_dir
         )
         if result.returncode == 0:
-            #TODO: We assume the result is the correct JSON format for a dynamic select 
+            #TODO: We assume the result is the correct JSON format for a dynamic select
             #options = json.loads(result.stdout)
             options = result.stdout
         else:
@@ -119,6 +122,62 @@ def evaluate_dynamic_select():
             details={'error': str(e)}
     )
     return options
+
+@job_composer.route('/evaluate_autocomplete', methods=['GET'])
+@handle_api_error
+def evaluate_autocomplete():
+    retriever_path = request.args.get("retriever_path")
+    query = request.args.get("query")
+    
+    if not retriever_path:
+        raise APIError("Retriever path is required", status_code=400)
+    
+    if not query:
+        raise APIError("Search query is required", status_code=400)
+    
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    print("Dir", retriever_dir, retriever_script, retriever_path)
+    
+    # Pass the query as an environment variable
+    env = os.environ.copy()
+    env["SEARCH_QUERY"] = query
+    
+    try:
+        result = subprocess.run(
+            f"bash {retriever_script}",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            cwd=retriever_dir,
+            env=env
+        )
+        
+        if result.returncode != 0:
+            raise APIError(
+                "The autocomplete script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+            )
+        
+        try:
+            options = json.loads(result.stdout)
+            return jsonify(options)
+        except json.JSONDecodeError as e:
+            raise APIError(
+                "The autocomplete script did not return valid JSON",
+                status_code=400, 
+                details={'error': str(e), 'output': result.stdout}
+            )
+            
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process autocomplete search",
+            status_code=500,
+            details={'error': str(e), 'stderr': e.stderr}
+        )
 
 def iterate_schema(schema_dict):
     """Generator that yields all elements in the schema including nested ones"""
@@ -279,19 +338,45 @@ def preview_job():
     preview_job = engine.preview_script(params)
 
     return jsonify(preview_job)
+
+
 @job_composer.route('/mainpaths', methods=['GET'])
+@handle_api_error
 def get_main_paths():
-    current_user = os.getenv("USER")
-    group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
-    group_names = [s.strip() for s in group_names]
+     
+    default_paths = request.args.get('defaultPaths')
+    use_hpc_default_paths = request.args.get('useHPCDefaultPaths')
     
-    paths = {"Home": f"/home/{current_user}", "Scratch": f"/scratch/user/{current_user}"}
+    paths = {"/": "/"}
 
-    for group_name in group_names:
-        groupdir = f"/scratch/group/{group_name}"
-        if os.path.exists(groupdir):
-            paths[group_name] = groupdir
+    if use_hpc_default_paths != "False" and use_hpc_default_paths != "false":
+        current_user = os.getenv("USER")
+        group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
+        group_names = [s.strip() for s in group_names]
 
+        paths["Home"] = f"/home/{current_user}"
+        paths["Scratch"] = f"/scratch/user/{current_user}"
+    
+        for group_name in group_names:
+            groupdir = f"/scratch/group/{group_name}"
+            if os.path.exists(groupdir):
+                paths[group_name] = groupdir
+     
+    if default_paths:
+        try:
+            custom_paths = json.loads(default_paths)
+            for key, path in custom_paths.items():
+                expanded_path = os.path.expandvars(path)
+                paths[key] = expanded_path
+        except Exception as e:
+
+            raise APIError(
+                "Failed to handle paths",
+                status_code=400,
+                details=str(e)
+            )
+
+            
     return jsonify(paths)
 
 def fetch_subdirectories(path):
@@ -311,24 +396,61 @@ def get_environments():
     environments = _get_environments()
     return jsonify(environments)
 
+
 @job_composer.route('/add_environment', methods=['POST'])
+@handle_api_error
 def add_environment():
     env = request.form.get("env")
     src = request.form.get("src")
-    cluster_name = app.config['cluster_name']
     
+    if not env:
+        raise APIError(
+            "Missing environment name parameter",
+            status_code=400,
+            details={'error': 'The "env" parameter is required'}
+        )
+        
+    cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
             repo_url=app.config['env_repo_github'],
             repo_dir="./environments-repo"
     )
-        
     user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-    success = repo_manager.copy_environment_to_user(cluster_name, env, user_envs_path)
-        
-    if success:
+    
+    try:
+        repo_manager.copy_environment_to_user(env, user_envs_path)
         return jsonify({"status": "Success"})
-    else:
-        return jsonify({"status": "Failed to copy environment"}), 500
+    except ValueError as e:
+        raise APIError(
+            "Invalid input",
+            status_code=400,
+            details={'error': str(e)}
+        )
+    except FileNotFoundError as e:
+        raise APIError(
+            "Environment not found",
+            status_code=404,
+            details={'error': str(e)}
+        )
+    except PermissionError as e:
+        raise APIError(
+            "Permission denied",
+            status_code=403,
+            details={'error': str(e)}
+        )
+    except RuntimeError as e:
+        raise APIError(
+            "Git operation failed",
+            status_code=500,
+            details={'error': str(e)}
+        )
+    except Exception as e:
+        raise APIError(
+            "Unexpected error while adding environment",
+            status_code=500,
+            details={'error': str(e)}
+        )
+
 
 @job_composer.route('/get_more_envs_info', methods=['GET'])
 def get_more_envs_info():
@@ -341,25 +463,30 @@ def get_more_envs_info():
     environments_info = repo_manager.get_environments_info(cluster_name)
     return jsonify(environments_info)
 
+
 def _get_environments():
-    system_environments = get_directories("./environments")
-    system_environments = [{"env": env, "src": "./environments", "is_user_env" : False} for env in system_environments]
-
+    system_environments = []
+    try:
+        system_environments = get_directories("./environments")
+        system_environments = [{"env": env, "src": "./environments", "is_user_env": False} for env in system_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        system_environments = []
+    
     user_envs_path = request.args.get("user_envs_path")
-
     if user_envs_path is None:
         user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-        create_folder_if_not_exist(user_envs_path)
-
+        try:
+            create_folder_if_not_exist(user_envs_path)
+        except (PermissionError, OSError):
+            pass
+    
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env, "src": user_envs_path, "is_user_env" : True} for env in user_environments]
-    except OSError as e:
-        print(e)
-
+        user_environments = [{"env": env, "src": user_envs_path, "is_user_env": True} for env in user_environments]
+    except (PermissionError, FileNotFoundError, OSError):
+        user_environments = []
+    
     environments = system_environments + user_environments
-
     return environments
-
 
