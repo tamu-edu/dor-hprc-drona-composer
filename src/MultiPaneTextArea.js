@@ -22,9 +22,23 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
   const [activePane, setActivePane] = useState(0);
   const editorRefs = useRef({});
   const contentUpdateTimeoutsRef = useRef({});
+  const editorViewsRef = useRef({});
 
   useImperativeHandle(ref, () => ({
-    getPaneRefs: () => editorRefs.current,
+    getPaneRefs: () => {
+      return sortedPanes.map((pane, index) => {
+        return {
+          current: {
+            getAttribute: (attr) => {
+              if (attr === "name") return pane.name;
+              if (attr === "id") return pane.name;
+              return null;
+            },
+            value: pane.content || ''
+          }
+        };
+      });
+    }
   }));
 
   const getLanguageExtension = (name) => {
@@ -44,14 +58,14 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
   };
 
   const handleContentChange = (index, newContent) => {
-  if (contentUpdateTimeoutsRef.current[index]) {
-    clearTimeout(contentUpdateTimeoutsRef.current[index]);
-  }
-  
-  contentUpdateTimeoutsRef.current[index] = setTimeout(() => {
+    if (contentUpdateTimeoutsRef.current[index]) {
+      clearTimeout(contentUpdateTimeoutsRef.current[index]);
+    }
+
+    contentUpdateTimeoutsRef.current[index] = setTimeout(() => {
       setPanes(currentPanes => {
         const updatedPanes = [...currentPanes];
-      
+
         const originalIndex = updatedPanes.findIndex(p =>
           p.name === sortedPanes[index].name
         );
@@ -60,17 +74,17 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
             ...updatedPanes[originalIndex],
             content: newContent
           };
-        }  
-      
+        }
+
         return updatedPanes;
       });
-    
+
       if (sortedPanes[index].onChange) {
         sortedPanes[index].onChange({
           target: { value: newContent }
         });
       }
-    
+
       delete contentUpdateTimeoutsRef.current[index];
     }, 300);
   };
@@ -84,8 +98,6 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
   const handlePaneChange = (index) => {
     setActivePane(index);
   };
-
-
 
   const containerStyle = {
     border: '1px solid #ccc',
@@ -174,6 +186,11 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
                   ref={ref => {
                     if (ref) {
                       editorRefs.current[`editor-${index}`] = ref;
+                      editorViewsRef.current[`editor-${index}`] = {
+                        pane: pane,
+                        index: index,
+                        content: pane.content || ''
+                      };
                     }
                   }}
                   value={pane.content || ''}
@@ -187,7 +204,12 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
                     }),
                     EditorView.lineWrapping
                   ]}
-                  onChange={(value) => handleContentChange(index, value)}
+                  onChange={(value) => {
+                    handleContentChange(index, value);
+                    if (editorViewsRef.current[`editor-${index}`]) {
+                      editorViewsRef.current[`editor-${index}`].content = value;
+                    }
+                  }}
                   basicSetup={{
                     lineNumbers: true,
                     highlightActiveLine: false,
@@ -196,6 +218,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
                     tabSize: 2,
                   }}
                   id={pane.name}
+                  name={pane.name}
                   data-language={pane.preview_name}
                 />
               </div>
