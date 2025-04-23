@@ -452,6 +452,54 @@ def add_environment():
         )
 
 
+
+@job_composer.route('/evaluate_dynamic_text', methods=['GET'])
+@handle_api_error
+def evaluate_dynamic_text():
+    retriever_path = request.args.get("retriever_path")
+    
+    if not retriever_path:
+        raise APIError("Retriever path is required", status_code=400)
+    
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    
+    env = os.environ.copy()
+    
+    path = os.path.join(retriever_dir, retriever_script)
+    for key, value in request.args.items():
+        if key != "retriever_path":
+            env[key.upper()] = value
+    
+    try:
+        result = subprocess.run(
+            f"bash {path}",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            cwd=retriever_dir,
+            env=env
+        )
+        
+        if result.returncode != 0:
+            raise APIError(
+                "The dynamic text script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+            )
+        
+        return result.stdout
+            
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process dynamic text",
+            status_code=500,
+            details={'error': str(e), 'stderr': e.stderr}
+        )
+
+
 @job_composer.route('/get_more_envs_info', methods=['GET'])
 def get_more_envs_info():
     cluster_name = app.config['cluster_name']
