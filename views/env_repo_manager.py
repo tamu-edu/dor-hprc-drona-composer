@@ -48,8 +48,8 @@ class EnvironmentRepoManager:
         transformed = []
         for env_name, env_data in metadata.items():
             # Skip if cluster name is specified and doesn't match
-            if cluster_name and env_data.get("cluster", "").lower() != cluster_name.lower():
-                continue
+            #if cluster_name and env_data.get("cluster", "").lower() != cluster_name.lower():
+            #    continue
 
             env_info = {
                 "env": env_name,
