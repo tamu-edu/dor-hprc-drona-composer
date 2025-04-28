@@ -92,7 +92,6 @@ def evaluate_dynamic_select():
     
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
-    print("dynamic Dir", retriever_dir, retriever_script, retriever_path)
     bash_command = f"bash {retriever_script}"
     
     try:
@@ -137,7 +136,6 @@ def evaluate_autocomplete():
     
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
-    print("Dir", retriever_dir, retriever_script, retriever_path)
     
     # Pass the query as an environment variable
     env = os.environ.copy()
@@ -208,6 +206,10 @@ def get_schema(environment):
         raise APIError("Invalid schema JSON", status_code=400, details={'error': str(e)})
 
     for key, element in iterate_schema(schema_dict):
+        if "retriever" in element:
+            retriever_path = os.path.join(env_dir, environment, element["retriever"])
+            element["retrieverPath"] = retriever_path
+
         if element["type"] == "dynamicSelect":
             retriever_path = os.path.join(env_dir, environment, element["retriever"])
             element["retrieverPath"] = retriever_path
@@ -387,7 +389,6 @@ def fetch_subdirectories(path):
 @job_composer.route('/subdirectories', methods=['GET'])
 def get_subdirectories():
     fullpath = request.args.get('path')
-    print(fullpath)
     subdirectories = fetch_subdirectories(fullpath)
     return subdirectories
 
