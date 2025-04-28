@@ -207,12 +207,12 @@ def get_schema(environment):
 
     for key, element in iterate_schema(schema_dict):
         if "retriever" in element:
-            retriever_path = os.path.join(env_dir, environment, element["retriever"])
+            retriever_path = element["retriever"]
+            if not os.path.isabs(retriever_path):
+                retriever_path = os.path.join(env_dir, environment, retriever_path)
             element["retrieverPath"] = retriever_path
 
         if element["type"] == "dynamicSelect":
-            retriever_path = os.path.join(env_dir, environment, element["retriever"])
-            element["retrieverPath"] = retriever_path
             element["isEvaluated"] = False
             element["isShown"] = False
 
