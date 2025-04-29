@@ -44,6 +44,22 @@ export function App() {
   const [environments, setEnvironments] = useState([]);
   const [error, setError] = useState(null);
 
+  const [streamOutput, setStreamOutput] = useState("");
+
+  // useEffect(() => {
+  //   const evtSource = new EventSource('/submit'); // If POST doesn’t work, switch to GET + jobId
+  //   evtSource.onmessage = (event) => {
+  //     console.log("Line:", event.data);
+  //     setOutput(prev => prev + event.data + "\n");
+  //   };
+  //   evtSource.onerror = (err) => {
+  //     console.error("Error streaming output", err);
+  //     evtSource.close();
+  //   };
+  //   return () => evtSource.close();
+  // }, []);
+
+
   useEffect(() => {
     fetch(document.dashboard_url + "/jobs/composer/environments")
       .then((response) => response.json())
@@ -348,35 +364,117 @@ export function App() {
     spinner.remove();
   }
 
+  // function submit_job(action, formData) {
+  //   var request = new XMLHttpRequest();
+
+  //   add_submission_loading_indicator();
+  //   request.open("POST", action, true);
+  //   request.onload = function (event) {
+  //     remove_submission_loading_indicator();
+  //     if (request.status == 200) {
+  //       alert(request.responseText);
+  //       window.location.reload();
+  //     } else {
+  //       alert(`Error ${request.status}. Try again!`);
+  //       window.location.reload();
+  //     }
+  //   };
+  //   request.onerror = function (event) {
+  //     remove_submission_loading_indicator();
+  //     alert("An error has occured. Please try again!");
+  //     window.location.reload();
+  //   };
+
+  //   console.log("Hello this is submit job form");
+  //   for (let [key, value] of formData.entries()) {
+  //     console.log(`${key}:`, value);
+  //   }
+
+
+  //   request.send(formData);
+  // }
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
 
-    add_submission_loading_indicator();
+    window.jQuery(previewRef.current).modal('hide');
+
+    // Create a container for the output
+    var outputContainer = document.getElementById("streaming-output");
+    outputContainer.style.display = "block";
+
+    // Stream to the outputContainer
+    outputContainer.textContent = "Starting job submission...\n";
+    // add_submission_loading_indicator();
+
     request.open("POST", action, true);
-    request.onload = function (event) {
-      remove_submission_loading_indicator();
-      if (request.status == 200) {
-        alert(request.responseText);
-        window.location.reload();
-      } else {
-        alert(`Error ${request.status}. Try again!`);
-        window.location.reload();
+
+    // Critical: Set the correct properties for streaming
+    request.responseType = ""; // Empty string is important
+    request.setRequestHeader("Cache-Control", "no-cache");
+    request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+    // Buffer for received data and incomplete lines
+    let received_data = "";
+    let leftover = "";
+
+    request.onprogress = function () {
+      // Get only the new data
+      const newData = request.responseText.substring(received_data.length);
+      // outputContainer.textContent += "NEW DATA REACHED \n";
+      if (newData) {
+        received_data += newData;
+
+        // Combine leftover from previous chunk with new data
+        let lines = (leftover + newData).split(/\r?\n/);
+        // Save the last partial line for the next chunk
+        leftover = lines.pop();
+
+        // Append each complete line to the output
+        for (let line of lines) {
+          if (line.trim() !== "") {
+            outputContainer.textContent += line + "\n";
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+
+          }
+        }
       }
     };
-    request.onerror = function (event) {
-      remove_submission_loading_indicator();
-      alert("An error has occured. Please try again!");
-      window.location.reload();
+
+    request.onreadystatechange = function () {
+      // outputContainer.textContent += "ONE READY STATE CHANGE \n";
+      if (request.readyState === 4) {
+        remove_submission_loading_indicator();
+
+        // Flush any remaining data (the last line)
+        if (leftover && leftover.trim() !== "") {
+          outputContainer.textContent += leftover + "\n";
+          outputContainer.scrollTop = outputContainer.scrollHeight;
+          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+
+        }
+
+        if (request.status === 200) {
+          outputContainer.textContent += "\nJob submission completed successfully.";
+        } else {
+          outputContainer.textContent += `\nError: ${request.status}`;
+        }
+        outputContainer.scrollTop = outputContainer.scrollHeight;
+      }
     };
 
-    console.log("Hello this is submit job form");
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-
+    request.onerror = function () {
+      // remove_submission_loading_indicator();
+      outputContainer.textContent += "\nConnection error occurred.";
+      outputContainer.scrollTop = outputContainer.scrollHeight;
+    };
 
     request.send(formData);
+    // outputContainer.textContent += "THE ENDDDD ";
+
+    return false;
   }
+
 
   function handleRerunSubmit(event) {
     event.preventDefault();

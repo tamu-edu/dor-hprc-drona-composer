@@ -1,8 +1,11 @@
-from flask import Blueprint, send_file, render_template, request, jsonify, current_app as app
+from flask import Response, stream_with_context, Blueprint, send_file, render_template, request, jsonify, current_app as app
 import json
 import sqlite3
 import re
 import os
+import pty
+import time
+import sys
 from machine_driver_scripts.engine import Engine
 import subprocess
 import yaml
@@ -307,28 +310,122 @@ def submit_job():
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
 
-    bash_command = f"bash {driver_script_path}"
+    # Use stdbuf to force line-buffered output from bash
+    bash_cmd = ["stdbuf", "-oL", "-eL", "bash", driver_script_path]
 
     history_manager = JobHistoryManager()
 
-    try:
-        result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        if result.returncode == 0:
+
+    def generate():
+
+        # Spawn the process (no PTY needed)
+        proc = subprocess.Popen(
+            bash_cmd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,    # merge stderr
+            text=True,                   # str not bytes
+            bufsize=1                    # line buffer
+        )
+
+        full_output = []
+        job_id = None
+        try:
+            # 2-C: forward every line as soon as it arrives
+            for line in proc.stdout:
+                yield f"{line.rstrip()}\n\n"
+                
+                full_output.append(line)
+                # Detect job_id once
+                
+                if ((job_id is None) and (extract := extract_job_id(line))):                    
+                    job_id = extract
+                    print(f"[DEBUG STREAM] job_id → {job_id}", flush=True)
+
+        finally:
+            proc.stdout.close()
+            proc.wait()
+            rc = proc.returncode
+
+            # ---------- FINAL SSE ----------
+            # if rc == 0:
+            #     yield "event: done\ndata: {\"status\":\"ok\"}\n\n"
+            # else:
+            #     yield (
+            #         "event: done\ndata: "
+            #         f"{json.dumps({'status':'error','code':rc})}\n\n"
+            #     )
+            # ---------- SAVE TO HISTORY ----------
+            if rc == 0 and job_id:
                 history_manager.save_job(
-                    extract_job_id(result.stdout),
+                    job_id or extract_job_id("".join(full_output)),
                     params,
                     files,
                     {
-                        'bash_script': bash_script_path,
-                        'driver_script': driver_script_path
-                     }
+                        "bash_script":   bash_script_path,
+                        "driver_script": driver_script_path
+                    }
                 )
-                return result.stdout
+            # -------------------------------------
+
+    # ---------- 3.  Flask response ----------
+    resp = Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",       # critical for SSE!
+        direct_passthrough=True,
+    )
+    resp.headers["Cache-Control"]     = "no-cache"
+    resp.headers["Connection"]        = "keep-alive"
+    resp.headers["X-Accel-Buffering"] = "no"       # nginx hint
+
+    return resp
+
+        
+
+
+
+
+################## OLD SUBMIT JOB FUNCTION ################################
+# def submit_job():
+#     params = request.form
+#     files = request.files
+
+#     create_folder_if_not_exist(params.get('location'))
+
+#     engine = Engine()
+#     engine.set_environment(params.get('runtime'), params.get('env_dir'))
+
+#     # Saving Files
+#     # executable_script = save_file(files.get('executable_script'), params.get('location'))
+#     extra_files = files.getlist('files[]')
+#     for file in extra_files:
+#         save_file(file, params.get('location'))
+
+#     bash_script_path = engine.generate_script(params)
+#     driver_script_path = engine.generate_driver_script(params)
+
+#     bash_command = f"bash {driver_script_path}"
+
+#     history_manager = JobHistoryManager()
+
+#     try:
+#         result = subprocess.run(bash_command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+#         if result.returncode == 0:
+#                 history_manager.save_job(
+#                     extract_job_id(result.stdout),
+#                     params,
+#                     files,
+#                     {
+#                         'bash_script': bash_script_path,
+#                         'driver_script': driver_script_path
+#                      }
+#                 )
+#                 return result.stdout
                 
-        else:
-            return result.stderr
-    except subprocess.CalledProcessError as e:
-        return e.stderr
+#         else:
+#             return result.stderr
+#     except subprocess.CalledProcessError as e:
+#         return e.stderr
     
 
 @job_composer.route('/preview', methods=['POST'])

@@ -13,11 +13,12 @@ import PreviewModal from "./PreviewModal";
 function JobComposer({ error, setError, formRef,
   previewRef,
   envModalRef,
-  multiPaneRef, ...props }) {
+  multiPaneRef,
+  ...props }) {
   const [showHistory, setShowHistory] = useState(true);
 
   return (
-    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div className="card-header">
@@ -113,6 +114,26 @@ function JobComposer({ error, setError, formRef,
             ⚠️ Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
           </small>
         </div> */}
+        <div>
+          <div
+            id="streaming-output"
+            style={{
+              width: "90%",
+              fontFamily: "monospace",
+              backgroundColor: "#500000",
+              color: "white",
+              whiteSpace: "pre-wrap",
+              height: "400px",
+              display: "none",
+              padding: "20px",
+              margin: "auto",
+              marginBottom: "40px",
+              borderRadius: "30px",
+            }}
+
+          />
+
+        </div>
       </div>
 
       <EnvironmentModal envModalRef={envModalRef} />
