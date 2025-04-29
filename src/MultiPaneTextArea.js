@@ -1,128 +1,103 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { EditorView } from '@codemirror/view';
+
+import { python } from '@codemirror/lang-python';
+import { markdown } from '@codemirror/lang-markdown';
+import { json } from '@codemirror/lang-json';
+import { shell } from '@codemirror/legacy-modes/mode/shell';
+import { StreamLanguage } from '@codemirror/language';
+
+import { eclipse } from '@uiw/codemirror-theme-eclipse';
 
 const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => {
-  let zeroOrderIndex = 10000;  
-  panes.forEach((pane, index) => {
+  let zeroOrderIndex = 10000;
+  const sortedPanes = [...panes].map((pane, index) => {
     if (pane.order === 0) {
-      pane.order = zeroOrderIndex;
-      zeroOrderIndex++;
+      return { ...pane, order: zeroOrderIndex + index };
     }
-  });
+    return pane;
+  }).sort((a, b) => a.order - b.order);
 
-  panes = panes.sort((a, b) => {
-    return a.order - b.order;
-  });
- 
   const [activePane, setActivePane] = useState(0);
-  const paneRefs = useRef([]);
-  const editorInstancesRef = useRef({});
-
-  if (paneRefs.current.length !== panes.length) {
-    paneRefs.current = panes.map((_, i) => paneRefs.current[i] || React.createRef());
-  }
+  const editorRefs = useRef({});
+  const contentUpdateTimeoutsRef = useRef({});
+  const editorViewsRef = useRef({});
 
   useImperativeHandle(ref, () => ({
-    getPaneRefs: () => paneRefs.current,
-	    refreshEditors: () => {
-    // Give a slight delay to let the data load 
-    setTimeout(() => {
-      Object.keys(editorInstancesRef.current).forEach(key => {
-        const editor = editorInstancesRef.current[key];
-        if (editor && typeof editor.refresh === 'function') {
-          editor.refresh();
-        }
+    getPaneRefs: () => {
+      return sortedPanes.map((pane, index) => {
+        return {
+          current: {
+            getAttribute: (attr) => {
+              if (attr === "name") return pane.name;
+              if (attr === "id") return pane.name;
+              return null;
+            },
+            value: pane.content || ''
+          }
+        };
       });
-    }, 500);
-  }
+    }
   }));
 
-  const handlePaneChange = (index) => {
-    setActivePane(index);
-    
-    // Refresh CodeMirror when switching tabs to ensure proper rendering
-    setTimeout(() => {
-      const editor = editorInstancesRef.current[`editor-${index}`];
-      if (editor && typeof editor.refresh === 'function') {
-        editor.refresh();
-      }
-    }, 10);
+  const getLanguageExtension = (name) => {
+    if (!name) return [StreamLanguage.define(shell)];
+
+    const lowerName = name.toLowerCase();
+
+    if (lowerName.endsWith('.py') || lowerName.includes('python')) {
+      return [python()];
+    } else if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
+      return [markdown()];
+    } else if (lowerName.endsWith('.json')) {
+      return [json()];
+    } else {
+      return [StreamLanguage.define(shell)];
+    }
   };
 
-  // Determine language mode based on file name
-  const getLanguageMode = (name) => {
-    if (!name) return 'shell';
-    
-    const lowerName = name.toLowerCase();
-    if (lowerName.endsWith('.py') || lowerName.includes('python')) {
-      return 'python';
+  const handleContentChange = (index, newContent) => {
+    if (contentUpdateTimeoutsRef.current[index]) {
+      clearTimeout(contentUpdateTimeoutsRef.current[index]);
     }
-    return 'shell';
+
+    contentUpdateTimeoutsRef.current[index] = setTimeout(() => {
+      setPanes(currentPanes => {
+        const updatedPanes = [...currentPanes];
+
+        const originalIndex = updatedPanes.findIndex(p =>
+          p.name === sortedPanes[index].name
+        );
+        if (originalIndex !== -1) {
+          updatedPanes[originalIndex] = {
+            ...updatedPanes[originalIndex],
+            content: newContent
+          };
+        }
+
+        return updatedPanes;
+      });
+
+      if (sortedPanes[index].onChange) {
+        sortedPanes[index].onChange({
+          target: { value: newContent }
+        });
+      }
+
+      delete contentUpdateTimeoutsRef.current[index];
+    }, 300);
   };
 
   useEffect(() => {
-    if (typeof window.CodeMirror !== 'undefined') {
-      panes.forEach((pane, index) => {
-        const textarea = paneRefs.current[index]?.current;
-        if (!textarea) return;
-        
-        const editorKey = `editor-${index}`;
-        
-        // If this textarea already has a CodeMirror instance, skip initialization
-        if (textarea.nextSibling && textarea.nextSibling.classList.contains('CodeMirror')) {
-          return;
-        }
-        
-        const mode = getLanguageMode(pane.preview_name);
-        
-        try {
-          const editor = window.CodeMirror.fromTextArea(textarea, {
-            mode: mode,
-            theme: 'eclipse',
-            lineNumbers: true,
-            lineWrapping: true,
-            viewportMargin: Infinity,
-            indentUnit: 2,
-            tabSize: 2
-          });
-          
-          editor.setValue(pane.content || '');
-          
-          editor.on('change', (cm) => {
-            const newContent = cm.getValue();
-            
-            const updatedPanes = [...panes];
-            updatedPanes[index].content = newContent;
-            setPanes(updatedPanes);
-            
-            textarea.value = newContent;
-            
-            if (panes[index].onChange) {
-              panes[index].onChange({ target: { value: newContent } });
-            }
-          });
-          
-          editorInstancesRef.current[editorKey] = editor;
-        } catch (error) {
-          console.error('Error initializing CodeMirror:', error);
-        }
-      });
+    if (activePane >= sortedPanes.length && sortedPanes.length > 0) {
+      setActivePane(0);
     }
-    
-    // Clean up function
-    return () => {
-      Object.keys(editorInstancesRef.current).forEach(key => {
-        try {
-          const editor = editorInstancesRef.current[key];
-          if (editor && typeof editor.toTextArea === 'function') {
-            editor.toTextArea();
-          }
-          delete editorInstancesRef.current[key];
-        } catch (error) {
-          console.error('Error cleaning up CodeMirror instance:', error);
-        }
-      });
-    };
-  }, [activePane, isDisplayed]);
+  }, [activePane, sortedPanes.length]);
+
+  const handlePaneChange = (index) => {
+    setActivePane(index);
+  };
 
   const containerStyle = {
     border: '1px solid #ccc',
@@ -168,25 +143,15 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
     position: 'relative'
   };
 
-  const textareaStyle = { 
-    width: '100%',
-    minHeight: '400px',
-    fontFamily: 'monospace',
-    fontSize: '14px',
-    lineHeight: '1.5',
-    display: 'none' // Will be replaced by CodeMirror
+  const editorWrapperStyle = {
+    height: '400px',
+    overflow: 'auto'
   };
-
-  useEffect(() => {
-    if (activePane >= panes.length) {
-      setActivePane(0);
-    }
-  }, [activePane, isDisplayed]);
 
   return (
     <div style={containerStyle} className="cm-container">
       <div style={paneSelectorStyle} className="pane-tabs">
-        {panes.map((pane, index) => {
+        {sortedPanes.map((pane, index) => {
           if(pane.order === -1) return null;
 
           return (
@@ -203,25 +168,64 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
           );
         })}
       </div>
-      
-      {panes.map((pane, index) => (
-        <div
-          key={index}
-          style={{
-            ...paneContentStyle,
-            display: activePane === index ? 'block' : 'none'
-          }}
-        >
-          <textarea
-            ref={paneRefs.current[index]}
-            id={pane.name}
-            name={pane.name}
-            defaultValue={pane.content || ''}
-            style={textareaStyle}
-            data-language={getLanguageMode(pane.preview_name)}
-          />
-        </div>
-      ))}
+
+      {sortedPanes.map((pane, index) => {
+        const isActive = activePane === index;
+
+        return (
+          <div
+            key={index}
+            style={{
+              ...paneContentStyle,
+              display: isActive ? 'block' : 'none'
+            }}
+          >
+            {isActive && (
+              <div style={editorWrapperStyle}>
+                <CodeMirror
+                  ref={ref => {
+                    if (ref) {
+                      editorRefs.current[`editor-${index}`] = ref;
+                      editorViewsRef.current[`editor-${index}`] = {
+                        pane: pane,
+                        index: index,
+                        content: pane.content || ''
+                      };
+                    }
+                  }}
+                  value={pane.content || ''}
+                  height="400px"
+                  theme={eclipse}
+                  extensions={[
+                    ...getLanguageExtension(pane.preview_name),
+                    EditorView.theme({
+                        "&": { caretColor: "black" },
+                        ".cm-cursor": { borderLeftColor: "black !important", borderLeftWidth: "2px" }
+                    }),
+                    EditorView.lineWrapping
+                  ]}
+                  onChange={(value) => {
+                    handleContentChange(index, value);
+                    if (editorViewsRef.current[`editor-${index}`]) {
+                      editorViewsRef.current[`editor-${index}`].content = value;
+                    }
+                  }}
+                  basicSetup={{
+                    lineNumbers: true,
+                    highlightActiveLine: false,
+                    foldGutter: true,
+                    indentOnInput: true,
+                    tabSize: 2,
+                  }}
+                  id={pane.name}
+                  name={pane.name}
+                  data-language={pane.preview_name}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 });

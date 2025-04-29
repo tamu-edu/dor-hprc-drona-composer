@@ -92,7 +92,6 @@ def evaluate_dynamic_select():
     
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
-    print("dynamic Dir", retriever_dir, retriever_script, retriever_path)
     bash_command = f"bash {retriever_script}"
     
     try:
@@ -137,7 +136,6 @@ def evaluate_autocomplete():
     
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
-    print("Dir", retriever_dir, retriever_script, retriever_path)
     
     # Pass the query as an environment variable
     env = os.environ.copy()
@@ -208,9 +206,13 @@ def get_schema(environment):
         raise APIError("Invalid schema JSON", status_code=400, details={'error': str(e)})
 
     for key, element in iterate_schema(schema_dict):
-        if element["type"] == "dynamicSelect":
-            retriever_path = os.path.join(env_dir, environment, element["retriever"])
+        if "retriever" in element:
+            retriever_path = element["retriever"]
+            if not os.path.isabs(retriever_path):
+                retriever_path = os.path.join(env_dir, environment, retriever_path)
             element["retrieverPath"] = retriever_path
+
+        if element["type"] == "dynamicSelect":
             element["isEvaluated"] = False
             element["isShown"] = False
 
@@ -338,19 +340,45 @@ def preview_job():
     preview_job = engine.preview_script(params)
 
     return jsonify(preview_job)
+
+
 @job_composer.route('/mainpaths', methods=['GET'])
+@handle_api_error
 def get_main_paths():
-    current_user = os.getenv("USER")
-    group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
-    group_names = [s.strip() for s in group_names]
+     
+    default_paths = request.args.get('defaultPaths')
+    use_hpc_default_paths = request.args.get('useHPCDefaultPaths')
     
-    paths = {"Home": f"/home/{current_user}", "Scratch": f"/scratch/user/{current_user}"}
+    paths = {"/": "/"}
 
-    for group_name in group_names:
-        groupdir = f"/scratch/group/{group_name}"
-        if os.path.exists(groupdir):
-            paths[group_name] = groupdir
+    if use_hpc_default_paths != "False" and use_hpc_default_paths != "false":
+        current_user = os.getenv("USER")
+        group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
+        group_names = [s.strip() for s in group_names]
 
+        paths["Home"] = f"/home/{current_user}"
+        paths["Scratch"] = f"/scratch/user/{current_user}"
+    
+        for group_name in group_names:
+            groupdir = f"/scratch/group/{group_name}"
+            if os.path.exists(groupdir):
+                paths[group_name] = groupdir
+     
+    if default_paths:
+        try:
+            custom_paths = json.loads(default_paths)
+            for key, path in custom_paths.items():
+                expanded_path = os.path.expandvars(path)
+                paths[key] = expanded_path
+        except Exception as e:
+
+            raise APIError(
+                "Failed to handle paths",
+                status_code=400,
+                details=str(e)
+            )
+
+            
     return jsonify(paths)
 
 def fetch_subdirectories(path):
@@ -361,7 +389,6 @@ def fetch_subdirectories(path):
 @job_composer.route('/subdirectories', methods=['GET'])
 def get_subdirectories():
     fullpath = request.args.get('path')
-    print(fullpath)
     subdirectories = fetch_subdirectories(fullpath)
     return subdirectories
 
@@ -423,6 +450,54 @@ def add_environment():
             "Unexpected error while adding environment",
             status_code=500,
             details={'error': str(e)}
+        )
+
+
+
+@job_composer.route('/evaluate_dynamic_text', methods=['GET'])
+@handle_api_error
+def evaluate_dynamic_text():
+    retriever_path = request.args.get("retriever_path")
+    
+    if not retriever_path:
+        raise APIError("Retriever path is required", status_code=400)
+    
+    retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
+    retriever_script = os.path.basename(retriever_path)
+    
+    env = os.environ.copy()
+    
+    path = os.path.join(retriever_dir, retriever_script)
+    for key, value in request.args.items():
+        if key != "retriever_path":
+            env[key.upper()] = value
+    
+    try:
+        result = subprocess.run(
+            f"bash {path}",
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            cwd=retriever_dir,
+            env=env
+        )
+        
+        if result.returncode != 0:
+            raise APIError(
+                "The dynamic text script did not return exit code 0",
+                status_code=400,
+                details={'error': result.stderr}
+            )
+        
+        return result.stdout
+            
+    except subprocess.CalledProcessError as e:
+        raise APIError(
+            "Failed to process dynamic text",
+            status_code=500,
+            details={'error': str(e), 'stderr': e.stderr}
         )
 
 

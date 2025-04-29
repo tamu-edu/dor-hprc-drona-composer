@@ -39,15 +39,28 @@ function Picker(props) {
       setGlobalFiles((prevFiles) => [...prevFiles, currentFile]);
     }
   }, [uploadedFiles]);
-
+  
   useEffect(() => {
-    fetch(document.dashboard_url + "/jobs/composer/mainpaths")
+    let url = document.dashboard_url + "/jobs/composer/mainpaths";
+    const searchParams = new URLSearchParams();
+
+    const useHPCDefaultPaths = props.useHPCDefaultPaths ?? true;
+    searchParams.append('useHPCDefaultPaths', useHPCDefaultPaths);
+
+    if (props.defaultPaths && typeof props.defaultPaths === 'object') {
+      searchParams.append('defaultPaths', JSON.stringify(props.defaultPaths));
+    }
+
+    url += `?${searchParams.toString()}`;
+
+    fetch(url)
       .then((response) => response.json())
       .then((data) => {
         const paths = Object.entries(data);
         setMainPaths(paths);
       });
-  }, []);
+  }, [props.defaultPaths, props.useHPCDefaultPaths]);
+
 
   function handleMainClick(event) {
     let fullPath = event.target.value;
@@ -257,7 +270,7 @@ function Picker(props) {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="exampleModalLabel">
-                Modal title
+                {props.label} 
               </h5>
               <button
                 type="button"
