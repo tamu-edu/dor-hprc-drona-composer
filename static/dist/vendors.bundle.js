@@ -2504,17 +2504,6 @@ eval("\nvar $ = __webpack_require__(/*! ../internals/export */ \"./node_modules/
 
 /***/ }),
 
-/***/ "./node_modules/core-js/modules/es.array.reverse.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/core-js/modules/es.array.reverse.js ***!
-  \**********************************************************/
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-eval("\nvar $ = __webpack_require__(/*! ../internals/export */ \"./node_modules/core-js/internals/export.js\");\nvar uncurryThis = __webpack_require__(/*! ../internals/function-uncurry-this */ \"./node_modules/core-js/internals/function-uncurry-this.js\");\nvar isArray = __webpack_require__(/*! ../internals/is-array */ \"./node_modules/core-js/internals/is-array.js\");\n\nvar nativeReverse = uncurryThis([].reverse);\nvar test = [1, 2];\n\n// `Array.prototype.reverse` method\n// https://tc39.es/ecma262/#sec-array.prototype.reverse\n// fix for Safari 12.0 bug\n// https://bugs.webkit.org/show_bug.cgi?id=188794\n$({ target: 'Array', proto: true, forced: String(test) === String(test.reverse()) }, {\n  reverse: function reverse() {\n    // eslint-disable-next-line no-self-assign -- dirty hack\n    if (isArray(this)) this.length = this.length;\n    return nativeReverse(this);\n  }\n});\n\n\n//# sourceURL=webpack://drona_composer/./node_modules/core-js/modules/es.array.reverse.js?");
-
-/***/ }),
-
 /***/ "./node_modules/core-js/modules/es.array.slice.js":
 /*!********************************************************!*\
   !*** ./node_modules/core-js/modules/es.array.slice.js ***!
