@@ -8,6 +8,8 @@ import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
 import EnvironmentModal from "./EnvironmentModal";
 import PreviewModal from "./PreviewModal";
+import StreamingModal from "./StreamingModal";
+
 
 
 function JobComposer({ error, setError,  formRef,
@@ -15,7 +17,14 @@ function JobComposer({ error, setError,  formRef,
   envModalRef,
   multiPaneRef, ...props }) {
   const [showHistory, setShowHistory] = useState(true);
+  const [showStreaming, setShowStreaming] = useState(false);
+  const streamingRef = useRef(null);
 
+  useEffect(() => {
+    if (!showStreaming || !streamingRef.current) return;
+    const e = { preventDefault: () => {} };
+    props.handleSubmit(e);
+  }, [showStreaming, props.handleSubmit]);
   return (
     <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
@@ -32,7 +41,11 @@ function JobComposer({ error, setError,  formRef,
             autoComplete="off"
             method="POST"
             encType="multipart/form-data"
-            onSubmit={props.handleSubmit}
+            // onSubmit={props.handleSubmit}
+            onSubmit={e => {
+              e.preventDefault();
+              setShowStreaming(true);
+            }}
             onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
             action={document.dashboard_url + "/jobs/composer/submit"}
             style={{ width: '100%' }}
@@ -92,26 +105,23 @@ function JobComposer({ error, setError,  formRef,
         </div>
       </div>
 
-      <div>
-      <div
-            id="streaming-output"
-            style={{
-              width: "90%",
-              fontFamily: "monospace",
-              backgroundColor: "#500000",
-              color: "white",
-              whiteSpace: "pre-wrap",
-              height: "400px",
-              display: "none",
-              padding: "20px",
-              margin: "auto",
-              marginBottom: "40px",
-              borderRadius: "30px",
-            }}
-
-          />
-
-      </div>
+      <StreamingModal isOpen={showStreaming} onClose={() => setShowStreaming(false)}>
+        <div
+          id="streaming-output"
+          ref={streamingRef}
+          style={{
+            width: "100%",
+            fontFamily: "monospace",
+            backgroundColor: "#500000",
+            color: "white",
+            whiteSpace: "pre-wrap",
+            maxHeight: "70vh",
+            overflowY: "auto",
+            padding: "1rem",
+            borderRadius: "1rem",
+          }}
+        />
+      </StreamingModal>
 
 
       <EnvironmentModal envModalRef={envModalRef} />

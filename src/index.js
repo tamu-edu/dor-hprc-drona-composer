@@ -309,7 +309,7 @@ function handlePreview() {
 
     // Create a container for the output
     var outputContainer = document.getElementById("streaming-output");
-    outputContainer.style.display = "block";
+    // outputContainer.style.display = "block";
 
     // Stream to the outputContainer
     outputContainer.textContent = "Starting job submission...\n";
@@ -342,8 +342,8 @@ function handlePreview() {
         for (let line of lines) {
           if (line.trim() !== "") {
             outputContainer.textContent += line + "\n";
-            outputContainer.scrollTop = outputContainer.scrollHeight;
-            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+            // outputContainer.scrollTop = outputContainer.scrollHeight;
+            // window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 
           }
         }
@@ -358,8 +358,8 @@ function handlePreview() {
         // Flush any remaining data (the last line)
         if (leftover && leftover.trim() !== "") {
           outputContainer.textContent += leftover + "\n";
-          outputContainer.scrollTop = outputContainer.scrollHeight;
-          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+          // outputContainer.scrollTop = outputContainer.scrollHeight;
+          // window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 
         }
 
@@ -368,14 +368,14 @@ function handlePreview() {
         } else {
           outputContainer.textContent += `\nError: ${request.status}`;
         }
-        outputContainer.scrollTop = outputContainer.scrollHeight;
+        // outputContainer.scrollTop = outputContainer.scrollHeight;
       }
     };
 
     request.onerror = function () {
       // remove_submission_loading_indicator();
       outputContainer.textContent += "\nConnection error occurred.";
-      outputContainer.scrollTop = outputContainer.scrollHeight;
+      // outputContainer.scrollTop = outputContainer.scrollHeight;
     };
 
     request.send(formData);
