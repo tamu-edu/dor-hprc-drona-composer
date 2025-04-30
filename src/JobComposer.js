@@ -92,6 +92,28 @@ function JobComposer({ error, setError,  formRef,
         </div>
       </div>
 
+      <div>
+      <div
+            id="streaming-output"
+            style={{
+              width: "90%",
+              fontFamily: "monospace",
+              backgroundColor: "#500000",
+              color: "white",
+              whiteSpace: "pre-wrap",
+              height: "400px",
+              display: "none",
+              padding: "20px",
+              margin: "auto",
+              marginBottom: "40px",
+              borderRadius: "30px",
+            }}
+
+          />
+
+      </div>
+
+
       <EnvironmentModal envModalRef={envModalRef} />
       <PreviewModal
         previewRef={previewRef}

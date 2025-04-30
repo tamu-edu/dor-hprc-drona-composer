@@ -29,7 +29,7 @@ chmod uog+rw logs/drona_log
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-#pip install -r requirements.txt.Python2.6.8
+# pip install -r requirements.txt.Python2.6.8
 
 
 npm install -D babel-loader @babel/core @babel/preset-react
