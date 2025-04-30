@@ -131,7 +131,7 @@ class Engine():
         user_id = os.getenv('USER')
 
         self.dynamic_additional_files = {}
-        files_path = os.path.join(env_path, "additional_files")
+        files_path = env_path
         additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
         
         if not os.path.exists(additional_files_path):
