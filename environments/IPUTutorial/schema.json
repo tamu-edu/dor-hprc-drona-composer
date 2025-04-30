@@ -1,0 +1,42 @@
+{
+  
+  "IntroText" :{
+     "type" : "staticText",
+     "label": "",
+     "value": "<h2>IPU Tutorial PEARC25 </h2><p><h4>Welcome to the IPU tutorial organized by HPRC</h4> </p> <p> This tutorial will consist of a number of traning modules, where you will learn how to port PyTorch code to run on IPUs. You can use the Dropdown to select the next module.</p><p><p> You can find the accompanyibg slides <a href='https://hprc.tamu.edu/files/training/2025/Spring/Graphcore_IPU_Tutorial_Spring25.pdf'>HERE</a>",
+     "allowHtml": "true"
+
+  },	  
+  "ModuleDropdown": {
+    "type": "select",
+    "label": "Module",
+    "name": "module",
+    "options": [
+      {
+        "value": "setup",
+        "label": "Setup training materials"
+      },
+      {
+        "value": "runtf",
+        "label": "Run Tensorflow on IPU"
+      },
+      {
+        "value": "runpt",
+        "label": "Run PopTorch on IPU"
+      },
+      {
+        "value": "PyTorch",
+        "label": "Porting PyTorch on IPU"
+      },
+      {
+        "value": "Keras",
+        "label": "Porting Tensorflow  on IPU"
+      },
+      {
+        "value": "replication",
+        "label": "Model Replication (optional)"
+      }
+    ]
+  }
+  
+}
