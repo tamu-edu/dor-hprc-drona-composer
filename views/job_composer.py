@@ -93,7 +93,7 @@ def evaluate_dynamic_select():
     retriever_dir = os.path.dirname(os.path.abspath(retriever_path))
     retriever_script = os.path.basename(retriever_path)
     bash_command = f"bash {retriever_script}"
-    
+
     try:
         result = subprocess.run(
                 bash_command,
@@ -182,7 +182,7 @@ def iterate_schema(schema_dict):
     for key, value in schema_dict.items():
         yield key, value
 
-        if value.get("type") == "rowContainer" and "elements" in value:
+        if "Container" in value.get("type") and "elements" in value:
             yield from iterate_schema(value["elements"])
 
 
