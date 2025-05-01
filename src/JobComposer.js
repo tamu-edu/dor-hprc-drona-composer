@@ -42,39 +42,17 @@ function JobComposer({ error, setError, formRef,
               <div className="col-lg-12">
                 <div id="job-content" style={{ maxWidth: '100%' }}>
 
-                  {/* 
-                  <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name}
-                    //Hide from the
-                    type="hidden"
-                    style={{
-                      visibility: "hidden",
-                      position: "absolute",
-                      width: 0,
-                      height: 0,
-                      overflow: "hidden"
-                    }} /> */}
-
-                  {/* 
-                  <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation}
-                    style={{
-                      visibility: "hidden",
-                      position: "absolute",
-                      width: 0,
-                      height: 0,
-                      overflow: "hidden"
-                    }} /> */}
-                  {/* <Select
-
+                  {/* <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name} />
+                  <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation} />
+                  <Select
                     key="env_select"
                     name="runtime"
                     label="Environments"
-                    // options={props.environments}
-                    // onChange={() => { }}
+                    options={props.environments}
                     onChange={props.handleEnvChange}
                     value={props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
-                    showAddMore={false}
-                    isDisabled={true}
-                  // onAddMore={props.handleAddEnv}
+                    showAddMore={true}
+                    onAddMore={props.handleAddEnv}
                   /> */}
                   <Composer
                     environment={props.environment}

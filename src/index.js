@@ -8,7 +8,8 @@ import { GlobalFilesContext } from './GlobalFilesContext';
 
 export function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
-  const [environment, setEnvironment] = useState({ env: "IPUTutorial", src: "/scratch/user/" + document.user + "/drona_composer/environments" });
+  // const [environment, setEnvironment] = useState({ env: "IPUTutorial", src: "/scratch/user/" + document.user + "/drona_composer/environments" });
+  const [environment, setEnvironment] = useState([]);
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
   const [warningMessages, setWarningMessages] = useState([]);
@@ -40,24 +41,8 @@ export function App() {
   );
 
 
-
   const [environments, setEnvironments] = useState([]);
   const [error, setError] = useState(null);
-
-  const [streamOutput, setStreamOutput] = useState("");
-
-  // useEffect(() => {
-  //   const evtSource = new EventSource('/submit'); // If POST doesn’t work, switch to GET + jobId
-  //   evtSource.onmessage = (event) => {
-  //     console.log("Line:", event.data);
-  //     setOutput(prev => prev + event.data + "\n");
-  //   };
-  //   evtSource.onerror = (err) => {
-  //     console.error("Error streaming output", err);
-  //     evtSource.close();
-  //   };
-  //   return () => evtSource.close();
-  // }, []);
 
 
   useEffect(() => {
@@ -77,6 +62,19 @@ export function App() {
         console.error("Error fetching JSON data");
       });
   }, []);
+
+  useEffect(() => {
+    if (environments.length === 0) return;
+
+    // Find the tutorial env:
+    const tutEnv = environments.find(e => e.value === "IPUTutorial");
+
+
+    if (tutEnv) {
+      setEnvironment({ env: tutEnv.value, src: tutEnv.src });
+    }
+  }, [environments]);
+
 
   // //Update the job name as it starts
   useEffect(() => {
@@ -258,11 +256,11 @@ export function App() {
     };
 
     setOrCreateInput("name", "tutorial-job");
-    setOrCreateInput("runtime", "IPUTutorial");
-    setOrCreateInput("runtime_label", "IPUTutorial");
-    setOrCreateInput("location", runLocation);
+    setOrCreateInput("runtime", environment.env);
+    setOrCreateInput("runtime_label", environment.env);
+    setOrCreateInput("location", environment.src);
 
-  }, [runLocation]);
+  }, [environment]);
   //------------------------------------------------------------------
 
   const handleAddEnvironment = (newEnv) => {
@@ -271,12 +269,6 @@ export function App() {
   function handlePreview() {
     setJobStatus("new");
     const formData = new FormData(formRef.current);
-
-    // // Hardcoded the job name and the environment name
-    // formData.set("name", "tutorial-job");
-    // formData.set("runtime", "IPUTutorial");
-    // formData.set("runtime_label", "IPUTutorial");
-    // formData.set("location", runLocation);
 
     //Debug
     for (let [key, val] of formData.entries()) {

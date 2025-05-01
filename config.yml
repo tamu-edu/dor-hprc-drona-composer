@@ -1,16 +1,16 @@
 development: &common_settings
-  cluster_name: "Faster"
-  dashboard_url: "/pun/dev/Drona_Composer"
+  cluster_name: "[cluster-name]"
+  dashboard_url: "/pun/dev/[app-name]"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"
   home_page: "https://hprc.tamu.edu"
   modules_db_path: "/sw/hprc/sw/dor-hprc-tools-dashboard-utils/bin/"
-  driver_scripts_path: "/var/www/ood/apps/dev/huy04/gateway/drona/machine_driver_scripts"
+  driver_scripts_path: "/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts"
   default_python_venv: "/sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/"
   env_repo_github: "https://github.com/tamu-edu/dor-hprc-drona-environments.git"
 
 production:
   <<: *common_settings
-  dashboard_url: "/pun/sys/drona"
-  driver_scripts_path: "/var/www/ood/apps/sys/drona/machine_driver_scripts"
+  dashboard_url: "/pun/sys/[app-name]"
+  driver_scripts_path: "/var/www/ood/apps/sys/[app-name]/machine_driver_scripts"
   env_repo_github: "https://github.com/tamu-edu/dor-hprc-drona-environments.git"
