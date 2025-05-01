@@ -131,7 +131,7 @@ class Engine():
         user_id = os.getenv('USER')
 
         self.dynamic_additional_files = {}
-        files_path = os.path.join(env_path, "additional_files")
+        files_path = env_path
         additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
         
         if not os.path.exists(additional_files_path):
@@ -216,9 +216,12 @@ class Engine():
 
 
     def fetch_template(self, template_path):
-        with open(template_path) as text_file:
-            template = text_file.read()
-            return template
+        try:
+            with open(template_path) as text_file:
+                template = text_file.read()
+                return template
+        except FileNotFoundError:
+            return None
         
     def set_environment(self, environment, env_dir):
         self.environment = environment
@@ -276,7 +279,12 @@ class Engine():
             evaluated_map = {**dynamic_evaluated_map, **evaluated_map}
 
             template = self.fetch_template(os.path.join(self.env_dir, self.environment, "template.txt"))
-            self.script = self.replace_placeholders(template, evaluated_map, params)
+            
+            if template is not None:
+                self.script = self.replace_placeholders(template, evaluated_map, params)
+            else:
+                self.script = None
+
             self.driver = self.replace_placeholders(self.driver, evaluated_map, params)
             
             self.set_dynamic_additional_files(os.path.join(self.env_dir, self.environment) ,params)
@@ -295,10 +303,11 @@ class Engine():
 
             preview_job = {
                     "driver": self.driver, 
-                    "script": self.script, 
                     "warnings":  warnings,
                     "additional_files": self.additional_files 
             }
+            if self.script is not None:
+                preview_job["script"] = self.script
             
             return preview_job
         
@@ -306,14 +315,15 @@ class Engine():
         if self.environment is None:
             return "No environment selected"
         else:
-            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
-            job_file_path = os.path.join(params['location'], job_file_name)
-            # Create a file with the job script
-            with open(job_file_path, "w") as job_file:
-                self.script = params["run_command"]
-                self.script = self.script.replace("\t", " ")
-                self.script = re.sub(r'\r\n?|\r', '\n', self.script)
-                job_file.write(self.script)
+            if params.get("run_command") is not None:
+                job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
+                job_file_path = os.path.join(params['location'], job_file_name)
+                # Create a file with the job script
+                with open(job_file_path, "w") as job_file:
+                    self.script = params["run_command"]
+                    self.script = self.script.replace("\t", " ")
+                    self.script = re.sub(r'\r\n?|\r', '\n', self.script)
+                    job_file.write(self.script)
 
             self.additional_files = json.loads(params["additional_files"])
             for fname, content in self.additional_files.items():
@@ -323,8 +333,11 @@ class Engine():
                 with open(os.path.join(additional_job_file_path), "w") as ajob_file:
                     nfile = self.replace_placeholders(nfile, self.map, params)
                     ajob_file.write(nfile)
-
-            return job_file_path
+            
+            if params.get("run_command") is not None:
+                return job_file_path
+            else:
+                return None
     
     def generate_driver_script(self, params):
         if self.environment is None:

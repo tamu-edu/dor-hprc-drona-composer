@@ -131,18 +131,21 @@ async function processRerun(promptData) {
 
     const panes = [
       {
-        preview_name: "template.txt",
-        content: jobScript["script"],
-        name: "run_command",
-        order: -3
-      },
-      {
         preview_name: "driver.sh",
         content: jobScript["driver"],
         name: "driver",
         order: -2
       },
+	
     ];
+    if(jobScript["script"] != null){
+        panes.push({
+	      preview_name: "template.txt",
+	      content: jobScript["script"],
+	      name: "run_command",
+	      order: -3
+	});
+    }
 
     for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
       panes.push({ 
@@ -242,21 +245,27 @@ function handlePreview() {
         window.jQuery(previewRef.current).modal('hide');
       }
     } else {
+      
+      // Not sure if this has any effect
       setJobScript(jobScript["script"]);
+  
       const panes = [
-        {
-          preview_name: "template.txt",
-          content: jobScript["script"],
-          name: "run_command",
-          order: -3
-        },
         {
           preview_name: "driver.sh",
           content: jobScript["driver"],
           name: "driver",
           order: -2
         },
+	
       ];
+      if(jobScript["script"] != null){
+          panes.push({
+	        preview_name: "template.txt",
+	        content: jobScript["script"],
+	       name: "run_command",
+	        order: -3
+  	  });
+      }
 
       for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
         panes.push({ 
