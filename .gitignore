@@ -9,3 +9,4 @@ tmp/
 static/dist/
 logs/
 config.yml
+environments/
