@@ -447,7 +447,7 @@ export function App() {
         }
 
         if (request.status === 200) {
-          outputContainer.textContent += "\nJob submission completed successfully.";
+          outputContainer.textContent += "\nJob submission completed.";
         } else {
           outputContainer.textContent += `\nError: ${request.status}`;
         }

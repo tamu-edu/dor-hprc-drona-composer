@@ -107,6 +107,7 @@ function JobComposer({ error, setError, formRef,
               margin: "auto",
               marginBottom: "40px",
               borderRadius: "30px",
+              overflowY: "auto"
             }}
 
           />
