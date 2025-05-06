@@ -5,3 +5,7 @@
 node_modules/
 coverage/
 static/bundle.js
+tmp/
+static/dist/
+logs/
+config.yml
