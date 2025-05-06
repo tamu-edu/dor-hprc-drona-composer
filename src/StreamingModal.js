@@ -22,8 +22,8 @@ const modalStyle = {
   overflow: "hidden",
   display: "flex",
   flexDirection: "column",
-  width:"70%",
-  height: "50%",
+  width: "80%",
+  height: "70%",
 };
 
 const contentStyle = {
@@ -40,7 +40,7 @@ function StreamingModal({ isOpen, onClose, children }) {
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-        <div style={contentStyle}>
+        <div id="overflow-div" style={contentStyle}>
           {children}
         </div>
         <button
