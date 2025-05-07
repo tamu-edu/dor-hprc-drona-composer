@@ -151,18 +151,21 @@ export function App() {
 
       const panes = [
         {
-          preview_name: "template.txt",
-          content: jobScript["script"],
-          name: "run_command",
-          order: -3
-        },
-        {
           preview_name: "driver.sh",
           content: jobScript["driver"],
           name: "driver",
           order: -2
         },
+
       ];
+      if (jobScript["script"] != null) {
+        panes.push({
+          preview_name: "template.txt",
+          content: jobScript["script"],
+          name: "run_command",
+          order: -3
+        });
+      }
 
       for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
         panes.push({
@@ -270,11 +273,6 @@ export function App() {
     setJobStatus("new");
     const formData = new FormData(formRef.current);
 
-    //Debug
-    for (let [key, val] of formData.entries()) {
-      console.log(`${key}:`, val);
-    }
-
     if (!formData.has("runtime")) {
       alert("Environment is required.");
       return;
@@ -288,7 +286,6 @@ export function App() {
     }
 
     const action = document.dashboard_url + "/jobs/composer/preview";
-
     preview_job(action, formData, function (error, jobScript) {
       if (error) {
         alert(error);
@@ -296,21 +293,27 @@ export function App() {
           window.jQuery(previewRef.current).modal('hide');
         }
       } else {
+
+        // Not sure if this has any effect
         setJobScript(jobScript["script"]);
+
         const panes = [
-          {
-            preview_name: "template.txt",
-            content: jobScript["script"],
-            name: "run_command",
-            order: -3
-          },
           {
             preview_name: "driver.sh",
             content: jobScript["driver"],
             name: "driver",
             order: -2
           },
+
         ];
+        if (jobScript["script"] != null) {
+          panes.push({
+            preview_name: "template.txt",
+            content: jobScript["script"],
+            name: "run_command",
+            order: -3
+          });
+        }
 
         for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
           panes.push({
@@ -326,7 +329,6 @@ export function App() {
       }
     });
   }
-
   function handleAddEnv() {
     const modal = new bootstrap.Modal(envModalRef.current);
     modal.toggle();
@@ -356,35 +358,6 @@ export function App() {
     spinner.remove();
   }
 
-  // function submit_job(action, formData) {
-  //   var request = new XMLHttpRequest();
-
-  //   add_submission_loading_indicator();
-  //   request.open("POST", action, true);
-  //   request.onload = function (event) {
-  //     remove_submission_loading_indicator();
-  //     if (request.status == 200) {
-  //       alert(request.responseText);
-  //       window.location.reload();
-  //     } else {
-  //       alert(`Error ${request.status}. Try again!`);
-  //       window.location.reload();
-  //     }
-  //   };
-  //   request.onerror = function (event) {
-  //     remove_submission_loading_indicator();
-  //     alert("An error has occured. Please try again!");
-  //     window.location.reload();
-  //   };
-
-  //   console.log("Hello this is submit job form");
-  //   for (let [key, value] of formData.entries()) {
-  //     console.log(`${key}:`, value);
-  //   }
-
-
-  //   request.send(formData);
-  // }
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
 
@@ -447,7 +420,7 @@ export function App() {
         }
 
         if (request.status === 200) {
-          outputContainer.textContent += "\nJob submission completed successfully.";
+          outputContainer.textContent += "\nJob submission completed.";
         } else {
           outputContainer.textContent += `\nError: ${request.status}`;
         }

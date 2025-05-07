@@ -101,12 +101,13 @@ function JobComposer({ error, setError, formRef,
               backgroundColor: "#500000",
               color: "white",
               whiteSpace: "pre-wrap",
-              height: "400px",
+              height: "500px",
               display: "none",
               padding: "20px",
               margin: "auto",
               marginBottom: "40px",
               borderRadius: "30px",
+              overflowY: "auto"
             }}
 
           />
