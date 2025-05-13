@@ -1,3 +1,40 @@
+/**
+ * @name CollapsibleRowContainer
+ * @description A collapsible container component that organizes form fields in a horizontal row.
+ * Features a header with a toggle button to show/hide the content, making complex forms more
+ * manageable. Each child element is rendered by the FieldRenderer component in a 100% width layout.
+ *
+ * @example
+ * // Collapsible container with multiple form elements
+ * {
+ *   "type": "collapsibleRowContainer",
+ *   "title": "Personal Information",
+ *   "elements": {
+ *     "firstName": {
+ *       "type": "text",
+ *       "name": "firstName",
+ *       "label": "First Name",
+ *       "placeholder": "Enter first name"
+ *     },
+ *     "lastName": {
+ *       "type": "text",
+ *       "name": "lastName",
+ *       "label": "Last Name",
+ *       "placeholder": "Enter last name"
+ *     },
+ *     "email": {
+ *       "type": "text",
+ *       "name": "email",
+ *       "label": "Email Address",
+ *       "placeholder": "Enter email address"
+ *     }
+ *   }
+ * }
+ *
+ * @property {Object} elements - Object of field configuration objects to be rendered in the container
+ * @property {string} [title="Collapsible Row Container"] - Title displayed in the container header
+ */
+
 import React, { useState } from "react";
 import FieldRenderer from "../FieldRenderer";
 

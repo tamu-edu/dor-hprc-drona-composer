@@ -1,3 +1,24 @@
+/**
+ * @name Checkbox
+ * @description A checkbox input component that returns a specified value when checked and an empty 
+ * string when unchecked. The checkbox value is customizable and defaults to "Yes" if not specified.
+ *
+ * @example
+ * // Basic checkbox input
+ * {
+ *   "type": "checkbox",
+ *   "name": "agreeToTerms",
+ *   "label": "Checkbox",
+ *   "value": "Yes",
+ *   "help": "Toggle input that returns a value when checked"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} [value="Yes"] - Value to return when the checkbox is checked (defaults to "Yes")
+ * @property {string} [help] - Help text displayed below the input
+ */
+
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper"
 
