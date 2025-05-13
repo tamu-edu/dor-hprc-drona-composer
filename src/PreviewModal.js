@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import MultiPaneTextArea from "./MultiPaneTextArea";
 
@@ -15,10 +15,20 @@ const Portal = ({ children }) => {
   return ReactDOM.createPortal(children, el);
 };
 
-const PreviewModal = ({ previewRef, warningMessages, multiPaneRef, panes, setPanes }) => {
+const PreviewModal = ({ previewRef, warningMessages, multiPaneRef, panes, isPreviewOpen, setPanes }) => {
+  const prevIsOpenRef = useRef(isPreviewOpen);
+  
+
   return (
     <Portal>
-      <div ref={previewRef} className="modal fade bd-example-modal-lg" id="job-preview-modal" tabIndex="-1" role="dialog" aria-hidden="true">
+      <div 
+        ref={previewRef} 
+        className="modal fade bd-example-modal-lg" 
+        id="job-preview-modal" 
+        tabIndex="-1" 
+        role="dialog" 
+        aria-hidden="true"
+      >
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
@@ -37,14 +47,33 @@ const PreviewModal = ({ previewRef, warningMessages, multiPaneRef, panes, setPan
                 </div>
               )}
               <div id="job-preview-container">
-                <MultiPaneTextArea ref={multiPaneRef} panes={panes} setPanes={setPanes} />
+                <MultiPaneTextArea 
+                  ref={multiPaneRef} 
+                  panes={panes} 
+                  setPanes={setPanes} 
+                  isDisplayed={isPreviewOpen} 
+                />
               </div>
             </div>
             <div className="modal-footer">
               <div className="form-group row text-center">
                 <div id="job-submit-button-section" className="col-lg-12">
-                  <input type="submit" className="btn btn-primary maroon-button-filled" value="Submit" form="slurm-config-form" style={{ marginRight: "10px" }} />
-                  <button type="button" className="btn btn-secondary maroon-button-secondary" data-dismiss="modal" aria-label="Close" style={{ marginRight: "-15px" }}>Cancel</button>
+                  <input 
+                    type="submit" 
+                    className="btn btn-primary maroon-button-filled" 
+                    value="Submit" 
+                    form="slurm-config-form" 
+                    style={{ marginRight: "10px" }} 
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary maroon-button-secondary" 
+                    data-dismiss="modal" 
+                    aria-label="Close" 
+                    style={{ marginRight: "-15px" }}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
             </div>

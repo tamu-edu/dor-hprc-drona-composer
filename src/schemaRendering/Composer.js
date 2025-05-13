@@ -1,6 +1,7 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useRef } from "react";
 import FieldRenderer from './FieldRenderer';
 import { normalizeFields, updateFieldVisibility, updateFieldValue } from './utils/fieldUtils';
+import { FormValuesContext } from './FormValuesContext';
 import { evaluateCondition } from './utils/conditionEvaluator';
 
 import { Containers } from "./schemaElements/index"
@@ -190,14 +191,20 @@ const _updateVisibilityAndClearHidden = (fields, fullFields) => {
       });
     }
   }));
+  const contextValue = {
+    values: fields,
+    updateValue: handleValueChange
+  };
 
   return (
+  <FormValuesContext.Provider value={contextValue}>
     <FieldRenderer
       fields={fields}
       handleValueChange={handleValueChange}
       onFileChange={props.onFileChange}
       setError={props.setError}
     />
+  </FormValuesContext.Provider>
   );
 });
 
