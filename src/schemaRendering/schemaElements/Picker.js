@@ -1,3 +1,37 @@
+/**
+ * @component Picker
+ * @description A file and directory picker component that allows users to browse and select 
+ * files or directories from both local and remote locations. Features a modal browser interface 
+ * for navigating directory structures.
+ *
+ * @example
+ * // File/directory picker with both local and remote options
+ * {
+ *   "type": "picker",
+ *   "name": "outputLocation",
+ *   "label": "Picker",
+ *   "localLabel": "Browse Directories",
+ *   "remoteLabel": "Upload File",
+ *   "showFiles": "true",
+ *   "defaultLocation": "$HOME",
+ *   "defaultPaths": {
+ *     "HomeCustom": "$HOME"
+ *   },
+ *   "useHPCDefaultPaths": true,
+ *   "help": "Select a file or directory location"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} localLabel - Label for the local file browser button
+ * @property {string} [remoteLabel] - Label for remote file upload button (if omitted, remote upload option isn't shown)
+ * @property {string|boolean} [showFiles="false"] - Whether to show files in directory listings ("true" or "false")
+ * @property {string} [defaultLocation] - Default path to show in the input field
+ * @property {Object} [defaultPaths] - Custom paths to show as quick access buttons (key:label, value:path)
+ * @property {boolean} [useHPCDefaultPaths=true] - Whether to use system default paths
+ * @property {string} [help] - Help text displayed below the input
+ */
+
 import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
 import { GlobalFilesContext } from "../../GlobalFilesContext";
 import FormElementWrapper from "../utils/FormElementWrapper"

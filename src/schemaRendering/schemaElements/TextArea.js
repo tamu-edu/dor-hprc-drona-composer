@@ -1,3 +1,30 @@
+
+/**
+ * @component TextArea
+ * @description A multi-line text input field component for collecting longer text content.
+ * Provides an expandable text area with adjustable number of rows.
+ *
+ * @example
+ * // Basic textarea input
+ * {
+ *   "type": "textarea",
+ *   "name": "description",
+ *   "label": "TextArea",
+ *   "value": "This is a default value with multiple lines of text.\nThis is the second line.",
+ *   "rows": 6,
+ *   "placeholder": "Enter multi-line text here",
+ *   "help": "Multi-line text input for longer content"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} [value] - Default/initial value for the input
+ * @property {number} [rows=4] - Number of visible text rows
+ * @property {string} [placeholder] - Placeholder text shown when the field is empty
+ * @property {string} [help] - Help text displayed below the input
+ */
+
+
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 

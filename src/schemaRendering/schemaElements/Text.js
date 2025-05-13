@@ -1,3 +1,26 @@
+/**
+ * @component Text
+ * @description A standard text input field component for collecting single-line text input.
+ * Provides form control with label, help text, and placeholder support.
+ *
+ * @example
+ * // Basic text input
+ * {
+ *   "type": "text",
+ *   "name": "userName",
+ *   "label": "Text",
+ *   "value": "defaultValue",
+ *   "placeholder": "Enter your text here",
+ *   "help": "Standard single-line text input field"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} [value] - Default/initial value for the input
+ * @property {string} [placeholder] - Placeholder text shown when the field is empty
+ * @property {string} [help] - Help text displayed below the input
+ */
+
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 

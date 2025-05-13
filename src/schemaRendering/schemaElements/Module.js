@@ -1,3 +1,33 @@
+/**
+ * @component Module
+ * @description A module selection component that allows users to search and select software modules 
+ * from different toolchains. Features autocomplete suggestions from a server, toolchain selection,
+ * and visual representation of selected modules as removable badges.
+ *
+ * @example
+ * // Module selection component with multiple toolchains
+ * {
+ *   "type": "module",
+ *   "name": "moduleList",
+ *   "label": "Module",
+ *   "value": "gcc/9.3.0 openmpi/4.0.5",
+ *   "toolchains": [
+ *     { "value": "modules", "label": "Modules" },
+ *     { "value": "lmod-gcc", "label": "GCC Modules" },
+ *     { "value": "lmod-intel", "label": "Intel Modules" }
+ *   ],
+ *   "toolchainName": "toolchain",
+ *   "help": "Search and select software modules for your environment"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} [value] - Default/initial value as space-separated list of modules
+ * @property {Array} toolchains - Array of toolchain options, each with value and label properties
+ * @property {string} [toolchainName="toolchain"] - Name for the toolchain select input
+ * @property {string} [help] - Help text displayed below the input
+ */
+
 import React, { useState, useRef, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 

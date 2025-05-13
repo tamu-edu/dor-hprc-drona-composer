@@ -1,3 +1,25 @@
+/**
+ * @component Time
+ * @description A time duration input component that allows users to specify time periods
+ * using separate days, hours, and minutes fields. The component internally converts 
+ * these values to a combined "hours:minutes" format.
+ *
+ * @example
+ * // Time duration input with separate day/hour/minute fields
+ * {
+ *   "type": "time",
+ *   "name": "jobDuration",
+ *   "label": "Time",
+ *   "value": "36:30",
+ *   "help": "Specify a time duration in days, hours, and minutes"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} [value] - Default/initial value in format "HH:MM" where HH includes days converted to hours
+ * @property {string} [help] - Help text displayed below the input
+ */
+
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
