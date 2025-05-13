@@ -1,3 +1,28 @@
+/**
+ * @name AutocompleteSelect
+ * @description A dynamic search-based dropdown component that fetches options as you type.
+ * Uses a retriever script to dynamically search for and display matching options based on user input.
+ *
+ * @example
+ * // Dynamic search dropdown
+ * {
+ *   "type": "autocompleteSelect",
+ *   "name": "institution",
+ *   "label": "AutocompleteSelect",
+ *   "retriever": "retrievers/institution_search.sh",
+ *   "placeholder": "Search for an institution...",
+ *   "help": "Type at least 2 characters to search for institutions"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} retriever - Path to the script that fetches search results
+ * @property {string} [placeholder] - Placeholder text shown in the input field
+ * @property {object} [value] - Default/initial selected option (object with value and label)
+ * @property {string} [help] - Help text displayed below the input
+ * @property {boolean} [showAddMore=false] - Whether to show an add more button
+ */
+
 import React, { useState, useEffect, useRef } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { customSelectStyles } from "../utils/selectStyles";

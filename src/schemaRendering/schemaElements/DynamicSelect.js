@@ -1,3 +1,28 @@
+/**
+ * @name DynamicSelect
+ * @description A dropdown select component that dynamically loads its options from a
+ * retriever script. Handles loading states, unavailable options, and provides visual
+ * feedback when selected values become invalid.
+ *
+ * @example
+ * // Dynamic select with options loaded from a retriever
+ * {
+ *   "type": "dynamicSelect",
+ *   "name": "computeNode",
+ *   "label": "DynamicSelect",
+ *   "retriever": "retrievers/compute_nodes.sh",
+ *   "help": "Select a compute node (options loaded dynamically)"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} retriever - Path to the script that retrieves the select options
+ * @property {Object} [value] - Default/initial selected option (object with value and label)
+ * @property {Array} [options] - Initial options array, may be overridden by retriever
+ * @property {string} [help] - Help text displayed below the input
+ * @property {boolean} [showAddMore=false] - Whether to show an add more button
+ */
+
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { customSelectStyles } from "../utils/selectStyles";

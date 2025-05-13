@@ -1,3 +1,29 @@
+/**
+ * @name Uploader
+ * @description A file and directory uploader component that allows users to select and upload 
+ * individual files or entire directories. Displays a list of uploaded files and supports 
+ * removal of files.
+ *
+ * @example
+ * // File and directory uploader
+ * {
+ *   "type": "uploader",
+ *   "name": "dataFiles",
+ *   "label": "Uploader",
+ *   "multiple": true,
+ *   "acceptedFileTypes": ["text/*", "application/json", ".csv"],
+ *   "help": "Upload files or directories with support for multiple file selection"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {Array|string} [value] - Default/initial value, can be array of file objects or JSON string
+ * @property {boolean} [multiple=false] - Whether multiple file selection is allowed
+ * @property {Array} [acceptedFileTypes] - Array of MIME types or file extensions to accept
+ * @property {string} [help] - Help text displayed below the input
+ */
+
+
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { GlobalFilesContext } from "../../GlobalFilesContext";
 import FormElementWrapper from "../utils/FormElementWrapper";
