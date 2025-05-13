@@ -1,5 +1,5 @@
 /**
- * @component Module
+ * @name Module
  * @description A module selection component that allows users to search and select software modules 
  * from different toolchains. Features autocomplete suggestions from a server, toolchain selection,
  * and visual representation of selected modules as removable badges.

@@ -1,5 +1,5 @@
 /**
- * @component Text
+ * @name Text
  * @description A standard text input field component for collecting single-line text input.
  * Provides form control with label, help text, and placeholder support.
  *

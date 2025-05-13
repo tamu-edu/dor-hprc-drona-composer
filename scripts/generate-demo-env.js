@@ -138,7 +138,7 @@ function extractComponentNameFromJSDoc(jsDocComment) {
   if (!jsDocComment) return null;
 
   // Look for @component tag followed by a name
-  const componentTagRegex = /@component\s+(\w+)/;
+  const componentTagRegex = /@name\s+(\w+)/;
   const match = jsDocComment.match(componentTagRegex);
 
   return match ? match[1] : null;

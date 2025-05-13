@@ -1,5 +1,5 @@
 /**
- * @component AutocompleteSelect
+ * @name AutocompleteSelect
  * @description A dynamic search-based dropdown component that fetches options as you type.
  * Uses a retriever script to dynamically search for and display matching options based on user input.
  *

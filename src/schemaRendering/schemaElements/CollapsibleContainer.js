@@ -1,5 +1,5 @@
 /**
- * @component CollapsibleRowContainer
+ * @name CollapsibleRowContainer
  * @description A collapsible container component that organizes form fields in a horizontal row.
  * Features a header with a toggle button to show/hide the content, making complex forms more
  * manageable. Each child element is rendered by the FieldRenderer component in a 100% width layout.

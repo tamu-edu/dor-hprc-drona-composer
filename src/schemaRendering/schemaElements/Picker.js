@@ -1,5 +1,5 @@
 /**
- * @component Picker
+ * @name Picker
  * @description A file and directory picker component that allows users to browse and select 
  * files or directories from both local and remote locations. Features a modal browser interface 
  * for navigating directory structures.

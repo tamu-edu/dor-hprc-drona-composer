@@ -1,5 +1,5 @@
 /**
- * @component RowContainer
+ * @name RowContainer
  * @description A layout component that organizes form fields in a horizontal row.
  * It wraps multiple form elements in a responsive grid layout, with each child
  * element rendered by the FieldRenderer component in a column format.

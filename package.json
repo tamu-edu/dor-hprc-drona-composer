@@ -12,6 +12,7 @@
     "@uiw/codemirror-theme-eclipse": "^4.23.10",
     "@uiw/react-codemirror": "^4.23.10",
     "bootstrap": "^5.3.3",
+    "documentation": "^14.0.3",
     "react": "^18.2.0",
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18.2.0",
@@ -45,7 +46,8 @@
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "scripts": {
-    "demo": "node scripts/generate-demo-env.js", 
+    "demo": "node scripts/generate-demo-env.js",
+    "docs": "npx documentation build src/** -f html -o docs",
     "build": "webpack --config webpack.config.js --mode=development",
     "build:prod": "webpack --config webpack.config.js --mode=production",
     "build:prod:compress": "webpack --mode=production --env compress",

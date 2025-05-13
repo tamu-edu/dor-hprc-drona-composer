@@ -1,5 +1,5 @@
 /**
- * @component Select
+ * @name Select
  * @description A dropdown select component based on react-select that provides a customizable 
  * selection interface with support for styled options and an optional "add more" button.
  *

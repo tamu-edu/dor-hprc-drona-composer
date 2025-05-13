@@ -1,5 +1,5 @@
 /**
- * @component StaticText
+ * @name StaticText
  * @description Displays static or dynamically fetched text content. Can show plain text or HTML content
  * with options for dynamic content retrieval using script files, auto-refreshing, and manual refresh controls.
  *

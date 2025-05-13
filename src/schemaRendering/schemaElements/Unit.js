@@ -1,5 +1,5 @@
 /**
- * @component Unit
+ * @name Unit
  * @description A compound input component that combines a numeric value with a unit selector.
  * Useful for inputs like memory size (GB, MB), time duration (hours, minutes), or any
  * quantity that requires both a number and unit.

@@ -1,5 +1,5 @@
 /**
- * @component DynamicSelect
+ * @name DynamicSelect
  * @description A dropdown select component that dynamically loads its options from a
  * retriever script. Handles loading states, unavailable options, and provides visual
  * feedback when selected values become invalid.

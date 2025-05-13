@@ -1,5 +1,5 @@
 /**
- * @component Uploader
+ * @name Uploader
  * @description A file and directory uploader component that allows users to select and upload 
  * individual files or entire directories. Displays a list of uploaded files and supports 
  * removal of files.

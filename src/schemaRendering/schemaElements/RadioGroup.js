@@ -1,5 +1,5 @@
 /**
- * @component RadioGroup
+ * @name RadioGroup
  * @description A radio button group component that allows users to select a single option 
  * from a list of choices. Displays options horizontally with their labels.
  *

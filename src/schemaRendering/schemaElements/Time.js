@@ -1,5 +1,5 @@
 /**
- * @component Time
+ * @name Time
  * @description A time duration input component that allows users to specify time periods
  * using separate days, hours, and minutes fields. The component internally converts 
  * these values to a combined "hours:minutes" format.

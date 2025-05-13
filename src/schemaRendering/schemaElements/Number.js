@@ -1,5 +1,5 @@
 /**
- * @component Number
+ * @name Number
  * @description A numeric input field component for collecting numerical values.
  * Supports minimum, maximum, and step value constraints.
  *

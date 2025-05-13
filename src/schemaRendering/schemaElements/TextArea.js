@@ -1,6 +1,6 @@
 
 /**
- * @component TextArea
+ * @name TextArea
  * @description A multi-line text input field component for collecting longer text content.
  * Provides an expandable text area with adjustable number of rows.
  *

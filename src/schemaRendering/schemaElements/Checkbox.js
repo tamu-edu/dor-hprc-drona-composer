@@ -1,5 +1,5 @@
 /**
- * @component Checkbox
+ * @name Checkbox
  * @description A checkbox input component that returns a specified value when checked and an empty 
  * string when unchecked. The checkbox value is customizable and defaults to "Yes" if not specified.
  *
