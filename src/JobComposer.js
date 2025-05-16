@@ -90,10 +90,7 @@ function JobComposer({ error, setError,  formRef,
               </div>
             </div>
           {/* Generate button */}
-          <div className="d-flex justify-content-center mb-3">
-            <div className="invisible">
-              <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
-            </div>
+          <div className="d-flex justify-content-center mb-3">            
             {props.environment.env !== "" && (
               <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Generate" onClick={props.handlePreview} />
             )}
