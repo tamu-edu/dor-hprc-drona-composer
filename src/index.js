@@ -313,86 +313,91 @@ export function App() {
 
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
-
     window.jQuery(previewRef.current).modal('hide');
-
-    // Create a container for the output
+  
     var outputContainer = document.getElementById("streaming-output");
     var overflowDiv = document.getElementById("overflow-div");
-    // outputContainer.style.display = "block";
-
-    // Stream to the outputContainer
+  
+    outputContainer.style.whiteSpace = "pre";
+  
     outputContainer.textContent = "Starting job submission...\n";
-    // add_submission_loading_indicator();
-
+  
     request.open("POST", action, true);
-
-    // Critical: Set the correct properties for streaming
-    request.responseType = ""; // Empty string is important
+    request.responseType = "text";
     request.setRequestHeader("Cache-Control", "no-cache");
     request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
-    // Buffer for received data and incomplete lines
-    let received_data = "";
-    let leftover = "";
-
-    request.onprogress = function () {
-      // Get only the new data
-      const newData = request.responseText.substring(received_data.length);
-      // outputContainer.textContent += "NEW DATA REACHED \n";
+  
+    let processedLength = 0;
+  
+    let lines = ["Starting job submission...\n"];
+  
+    request.onprogress = function() {
+      const newData = request.responseText.substring(processedLength);
+    
       if (newData) {
-        received_data += newData;
-
-        // Combine leftover from previous chunk with new data
-        let lines = (leftover + newData).split(/\r?\n/);
-        // Save the last partial line for the next chunk
-        leftover = lines.pop();
-
-        // Append each complete line to the output
-        for (let line of lines) {
-          if (line.trim() !== "") {
-            outputContainer.textContent += line + "\n";
-            overflowDiv.scrollTop = outputContainer.scrollHeight;
-            // window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-
+        processedLength = request.responseText.length;
+        processOutput(newData);
+      }
+    };
+  
+    function processOutput(text) {
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+      
+        if (char === '\r') {
+          // Carriage return - go to beginning of current line
+          // Find the last line
+          let currentLine = lines[lines.length - 1];
+        
+          // Remove the current line's content, keeping any newline at the end
+          let endsWithNewline = currentLine.endsWith('\n');
+          lines[lines.length - 1] = endsWithNewline ? '\n' : '';
+        } 
+        else if (char === '\n') {
+          // Newline - start a new line
+          if (!lines[lines.length - 1].endsWith('\n')) {
+            lines[lines.length - 1] += '\n';
           }
+          lines.push('');
+        }
+        else {
+          // Regular character - append to current line
+          lines[lines.length - 1] += char;
         }
       }
-    };
-
-    request.onreadystatechange = function () {
-      // outputContainer.textContent += "ONE READY STATE CHANGE \n";
+    
+      // Update the display with all lines
+      outputContainer.textContent = lines.join('');
+    
+      // Scroll to bottom
+      overflowDiv.scrollTop = overflowDiv.scrollHeight;
+    }
+  
+    request.onreadystatechange = function() {
       if (request.readyState === 4) {
-        remove_submission_loading_indicator();
-
-        // Flush any remaining data (the last line)
-        if (leftover && leftover.trim() !== "") {
-          outputContainer.textContent += leftover + "\n";
-          overflowDiv.scrollTop = outputContainer.scrollHeight;
-          // window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-
-        }
-
+      
         if (request.status === 200) {
-          outputContainer.textContent += "\nJob submission completed.";
+          lines.push("\nJob submission completed.");
+          outputContainer.textContent = lines.join('');
         } else {
-          outputContainer.textContent += `\nError: ${request.status}`;
+          lines.push(`\nError: ${request.status}`);
+          outputContainer.textContent = lines.join('');
         }
-        overflowDiv.scrollTop = outputContainer.scrollHeight;
+      overflowDiv.scrollTop = overflowDiv.scrollHeight;
       }
     };
-
-    request.onerror = function () {
+  
+    request.onerror = function() {
       // remove_submission_loading_indicator();
-      outputContainer.textContent += "\nConnection error occurred.";
-      overflowDiv.scrollTop = outputContainer.scrollHeight;
+      lines.push("\nConnection error occurred.");
+      outputContainer.textContent = lines.join('');
+      overflowDiv.scrollTop = overflowDiv.scrollHeight;
     };
-
+  
     request.send(formData);
-    // outputContainer.textContent += "THE ENDDDD ";
-
     return false;
   }
+
 
   function handleRerunSubmit(event) {
     event.preventDefault();
