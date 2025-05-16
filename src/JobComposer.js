@@ -21,7 +21,7 @@ function JobComposer({ error, setError,  formRef,
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div className="card-header">
-          <h6 className="maroon-header">Job Composer</h6>
+          {/* <h6 className="maroon-header">Job Composer</h6> */}
         </div>
         <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
           <form
@@ -40,8 +40,35 @@ function JobComposer({ error, setError,  formRef,
             <div className="row">
               <div className="col-lg-12">
                 <div id="job-content" style={{ maxWidth: '100%' }}>
-                    <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name} />
-                    <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation} />
+                    {/* <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name} />
+                    <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation} /> */}
+                    <div className="form-group">
+                      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                        
+                        {/* Job Name (Label + Input Inline) */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                          <label htmlFor="job-name" style={{ whiteSpace: 'nowrap' }}>Job Name</label>
+                          <Text name="name" id="job-name" label="" onNameChange={props.sync_job_name} />
+                        </div>
+
+                        {/* Location (Label + Picker inline) */}
+                        <div style={{ display: 'flex', flexGrow: 1, gap: '1.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <label style={{ whiteSpace: 'nowrap' }}>Location</label>                          
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <Picker
+                              name="location"
+                              label=""
+                              localLabel="Change"
+                              defaultLocation={props.runLocation}
+                              style={{ width: '100%', alignItems: 'flex-start' }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <Select
                       key="env_select"
                       name="runtime"
@@ -68,7 +95,7 @@ function JobComposer({ error, setError,  formRef,
             </div>
                 {props.environment.env !== "" && (
               <div>
-                <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
+                <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Generate" onClick={props.handlePreview} />
               </div>
                 )}
                 <div>
@@ -87,7 +114,7 @@ function JobComposer({ error, setError,  formRef,
         </div>
         <div className="card-footer">
           <small className="text-muted">
-            ⚠️ Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
+            {/* ⚠️ Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts. */}
           </small>
         </div>
       </div>

@@ -6,6 +6,17 @@ const Label = ({ labelOnTop, name, label, help }) => {
   	className={`form-control-label ${labelOnTop ? "col-form-label" : "col-lg-3 col-form-label"}`}
  	htmlFor={name}
     >
+
+    {/* <label
+		className="form-control-label"
+		htmlFor={name}
+		style={{
+		margin: 0,
+		padding: 0,
+		width: 'auto',
+		whiteSpace: 'nowrap',
+      }}
+    > */}
       {label}
       {help && (
         <span
