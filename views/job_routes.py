@@ -33,8 +33,6 @@ def submit_job_route():
     engine = Engine()
     engine.set_environment(params.get('runtime'), params.get('env_dir'))
 
-    # Saving Files
-    # executable_script = save_file(files.get('executable_script'), params.get('location'))
     extra_files = files.getlist('files[]')
     for file in extra_files:
         save_file(file, params.get('location'))
@@ -42,51 +40,65 @@ def submit_job_route():
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
 
-    # Use stdbuf to force line-buffered output from bash
-    bash_cmd = ["stdbuf", "-oL", "-eL", "bash", driver_script_path]
+    # Use stdbuf with unbuffered mode for byte-level streaming
+    bash_cmd = ["stdbuf", "-o0", "-e0", "bash", driver_script_path]
 
     history_manager = JobHistoryManager()
 
-
     def generate():
-
-        # Spawn the process (no PTY needed)
+        # Spawn the process with binary mode and no buffering
         proc = subprocess.Popen(
             bash_cmd,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,    # merge stderr
-            text=True,                   # str not bytes
-            bufsize=1                    # line buffer
+            stderr=subprocess.STDOUT,  # merge stderr
+            text=False,               # binary mode (bytes not str)
+            bufsize=0                 # unbuffered
         )
 
         full_output = []
         job_id = None
+        chunk_size = 256  
+        buffer = b""
+
         try:
-            # 2-C: forward every line as soon as it arrives
-            for line in proc.stdout:
-                yield f"{line.rstrip()}\n\n"
-                
-                full_output.append(line)
-                # Detect job_id once
-                
-                if ((job_id is None) and (extract := extract_job_id(line))):                    
+            # Stream bytes as they arrive
+            while True:
+                chunk = proc.stdout.read(chunk_size)
+                if not chunk:
+                    break
+
+                yield chunk
+                # For job_id extraction, we need to accumulate and decode text
+                buffer += chunk
+                lines = buffer.split(b'\n')
+                # Keep the last (potentially incomplete) line in the buffer
+                buffer = lines.pop() if lines else b""
+
+                # Process complete lines for job_id extraction and history
+                for line in lines:
+                    line_str = line.decode('utf-8', errors='replace')
+                    full_output.append(line_str + '\n')
+
+                    # Detect job_id once
+                    if job_id is None and (extract := extract_job_id(line_str)):
+                        job_id = extract
+                        print(f"[DEBUG STREAM] job_id → {job_id}", flush=True)
+
+
+            # Process any remaining data in the buffer
+            if buffer:
+                line_str = buffer.decode('utf-8', errors='replace')
+                full_output.append(line_str)
+                if job_id is None and (extract := extract_job_id(line_str)):
                     job_id = extract
-                    print(f"[DEBUG STREAM] job_id → {job_id}", flush=True)
 
         finally:
             proc.stdout.close()
             proc.wait()
             rc = proc.returncode
+            # Might be better to save history when the job is originally submitted
 
-            # ---------- FINAL SSE ----------
-            # if rc == 0:
-            #     yield "event: done\ndata: {\"status\":\"ok\"}\n\n"
-            # else:
-            #     yield (
-            #         "event: done\ndata: "
-            #         f"{json.dumps({'status':'error','code':rc})}\n\n"
-            #     )
             # ---------- SAVE TO HISTORY ----------
             if rc == 0 and job_id:
                 history_manager.save_job(
@@ -100,18 +112,18 @@ def submit_job_route():
                 )
             # -------------------------------------
 
-    # ---------- 3.  Flask response ----------
+    # ---------- Flask response ----------
     resp = Response(
         stream_with_context(generate()),
-        mimetype="text/event-stream",       # critical for SSE!
+        mimetype="application/octet-stream", 
         direct_passthrough=True,
     )
-    resp.headers["Cache-Control"]     = "no-cache"
-    resp.headers["Connection"]        = "keep-alive"
-    resp.headers["X-Accel-Buffering"] = "no"       # nginx hint
+
+    resp.headers["Cache-Control"] = "no-cache"
+    resp.headers["Connection"] = "keep-alive"
+    resp.headers["X-Accel-Buffering"] = "no"
 
     return resp
-
 def preview_job_route():
     """Preview a job script without submitting it"""
     params = request.form
