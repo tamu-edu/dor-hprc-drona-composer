@@ -213,13 +213,13 @@ function Picker(props) {
 
   return (
     <div>
-      <FormElementWrapper
+      {/* <FormElementWrapper
         labelOnTop={props.labelOnTop}
         name={props.name}
         label={props.label}
         help={props.help}
-      >
-        <div style={{ display: "flex" }}>
+      > */}
+        <div style={{ display: "flex", gap: "0.5rem" }}>
           {showRemoteLabel && (
             <button
               type="button"
@@ -257,7 +257,7 @@ function Picker(props) {
             ref={inputRef}
           />
         </div>
-      </FormElementWrapper>
+      {/* </FormElementWrapper> */}
       <div
         className="modal fade"
         id={"local-file-picker-modal-" + props.name}
