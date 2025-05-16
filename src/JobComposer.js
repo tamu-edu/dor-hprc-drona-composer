@@ -45,13 +45,13 @@ function JobComposer({ error, setError,  formRef,
                     <div className="form-group">
                       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
                         
-                        {/* Job Name (Label + Input Inline) */}
+                        {/* Job Name */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                           <label htmlFor="job-name" style={{ whiteSpace: 'nowrap' }}>Job Name</label>
                           <Text name="name" id="job-name" label="" onNameChange={props.sync_job_name} />
                         </div>
 
-                        {/* Location (Label + Picker inline) */}
+                        {/* Location */}
                         <div style={{ display: 'flex', flexGrow: 1, gap: '1.5rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center' }}>
                             <label style={{ whiteSpace: 'nowrap' }}>Location</label>                          
@@ -89,24 +89,31 @@ function JobComposer({ error, setError,  formRef,
                 </div>
               </div>
             </div>
-          <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
+          {/* Generate button */}
+          <div className="d-flex justify-content-center mb-3">
             <div className="invisible">
               <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
             </div>
-                {props.environment.env !== "" && (
-              <div>
-                <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Generate" onClick={props.handlePreview} />
-              </div>
-                )}
-                <div>
-                  <button className="btn btn-primary maroon-button" onClick={(e) => {
-                    e.preventDefault();
-                    setShowHistory(!showHistory);
-                  }}>
-                {showHistory ? 'Hide History' : 'Show History'}
-              </button>
-            </div>
+            {props.environment.env !== "" && (
+              <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Generate" onClick={props.handlePreview} />
+            )}
           </div>
+
+          <hr className="my-4" style={{ borderColor: '#e1e1e1' }} />
+
+          {/* Show/Hide History button */}
+          <div className="d-flex justify-content-start mb-4">
+            <button
+              className="btn btn-primary maroon-button"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowHistory(!showHistory);
+              }}
+            >
+              {showHistory ? 'Hide History' : 'Show History'}
+            </button>
+          </div>
+
         </form>
           <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
             <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
