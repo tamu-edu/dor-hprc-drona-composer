@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import io from "socket.io-client";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
@@ -311,92 +312,170 @@ export function App() {
     spinner.remove();
   }
 
-  function submit_job(action, formData) {
-    var request = new XMLHttpRequest();
-    window.jQuery(previewRef.current).modal('hide');
+function submit_job(action, formData) {
+  var outputContainer = document.getElementById("streaming-output");
+  var overflowDiv = document.getElementById("overflow-div");
   
-    var outputContainer = document.getElementById("streaming-output");
-    var overflowDiv = document.getElementById("overflow-div");
+  window.jQuery(previewRef.current).modal('hide');
   
-    outputContainer.style.whiteSpace = "pre";
+  outputContainer.style.whiteSpace = "pre";
+  outputContainer.textContent = "Starting job submission...\n";
   
-    outputContainer.textContent = "Starting job submission...\n";
+  let lines = ["Starting job submission...\n"];
   
-    request.open("POST", action, true);
-    request.responseType = "text";
-    request.setRequestHeader("Cache-Control", "no-cache");
-    request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-  
-    let processedLength = 0;
-  
-    let lines = ["Starting job submission...\n"];
-  
-    request.onprogress = function() {
-      const newData = request.responseText.substring(processedLength);
-    
-      if (newData) {
-        processedLength = request.responseText.length;
-        processOutput(newData);
-      }
-    };
-  
-    function processOutput(text) {
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-      
-        if (char === '\r') {
-          // Carriage return - go to beginning of current line
-          // Find the last line
-          let currentLine = lines[lines.length - 1];
-        
-          // Remove the current line's content, keeping any newline at the end
-          let endsWithNewline = currentLine.endsWith('\n');
-          lines[lines.length - 1] = endsWithNewline ? '\n' : '';
-        } 
-        else if (char === '\n') {
-          // Newline - start a new line
-          if (!lines[lines.length - 1].endsWith('\n')) {
-            lines[lines.length - 1] += '\n';
-          }
-          lines.push('');
-        }
-        else {
-          // Regular character - append to current line
-          lines[lines.length - 1] += char;
-        }
-      }
-    
-      // Update the display with all lines
-      outputContainer.textContent = lines.join('');
-    
-      // Scroll to bottom
-      overflowDiv.scrollTop = overflowDiv.scrollHeight;
+  // Check if there are files to upload
+  let hasFiles = false;
+  for (const value of formData.values()) {
+    if (value instanceof File && value.size > 0) {
+      hasFiles = true;
+      break;
     }
+  }
   
-    request.onreadystatechange = function() {
-      if (request.readyState === 4) {
-      
-        if (request.status === 200) {
-          lines.push("\nJob submission completed.");
+  if (hasFiles) {
+    //Files are uploaded via HTTP
+    lines.push("Uploading files...\n");
+    outputContainer.textContent = lines.join('');
+    
+    var initialRequest = new XMLHttpRequest();
+    initialRequest.open("POST", action, true);
+    initialRequest.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    initialRequest.responseType = "json";
+    
+    initialRequest.onreadystatechange = function() {
+      if (initialRequest.readyState === 4) {
+        if (initialRequest.status === 200) {
+          lines.push("Files uploaded successfully. Starting job execution...\n");
           outputContainer.textContent = lines.join('');
+          overflowDiv.scrollTop = overflowDiv.scrollHeight;
+          connectSocket(formData);
         } else {
-          lines.push(`\nError: ${request.status}`);
+          lines.push(`\nError submitting files: ${initialRequest.status}\n`);
           outputContainer.textContent = lines.join('');
+          overflowDiv.scrollTop = overflowDiv.scrollHeight;
         }
-      overflowDiv.scrollTop = overflowDiv.scrollHeight;
       }
     };
+    
+    initialRequest.send(formData);
+  } else {
+    // No files, go straight to socket
+    connectSocket(formData);
+  }
   
-    request.onerror = function() {
-      // remove_submission_loading_indicator();
-      lines.push("\nConnection error occurred.");
+  function connectSocket(formData) {
+    // Convert FormData to plain object for socket transmission
+    const params = {};
+    for (const [key, value] of formData.entries()) {
+      if (!(value instanceof File)) {
+        params[key] = value;
+      }
+    }
+    
+    // Connect to Socket.IO
+    const socket = io({
+      transports: ['websocket'],
+      reconnection: true,     
+      reconnectionAttempts: 5,     // Try to reconnect 5 times
+      reconnectionDelay: 1000      // Start with 1 second delay
+    });
+    
+    // Handle connection events
+    socket.on('connect', function() {
+      socket.emit('run_job', { params });
+    });
+    
+    // Handle connection error
+    socket.on('connect_error', function(error) {
+      lines.push(`\nConnection error: ${error.message || 'Unknown error'}\n`);
       outputContainer.textContent = lines.join('');
       overflowDiv.scrollTop = overflowDiv.scrollHeight;
-    };
-  
-    request.send(formData);
-    return false;
+    });
+    
+    // Handle job starting event
+    socket.on('job_started', function(data) {
+      lines.push("Job process started.\n");
+      outputContainer.textContent = lines.join('');
+      overflowDiv.scrollTop = overflowDiv.scrollHeight;
+    });
+    
+    socket.on('output', function(data) {
+      try {
+   	const bytes = new Uint8Array(data.data);
+	const text = new TextDecoder('utf-8').decode(bytes);
+
+        processOutput(text);
+      } catch (e) {
+        console.error("Error processing output:", e);
+        lines.push(`\nError processing output: ${e.message}\n`);
+        outputContainer.textContent = lines.join('');
+        overflowDiv.scrollTop = overflowDiv.scrollHeight;
+      }
+    });
+    
+    // Handle job completion
+    socket.on('complete', function(data) {
+      const exitCode = data.exit_code;
+      
+      if (exitCode === 0) {
+        lines.push("\nJob completed successfully.");
+      } else {
+        lines.push(`\nJob failed with exit code ${exitCode}`);
+      }
+      
+      outputContainer.textContent = lines.join('');
+      overflowDiv.scrollTop = overflowDiv.scrollHeight;
+      
+      // Disconnect
+      socket.disconnect();
+    });
+    
+    // Handle errors
+    socket.on('error', function(data) {
+      lines.push(`\nError: ${data.message || 'Unknown error'}\n`);
+      outputContainer.textContent = lines.join('');
+      overflowDiv.scrollTop = overflowDiv.scrollHeight;
+    });
+    
+    // Handle disconnection
+    socket.on('disconnect', function(reason) {
+      if (reason !== 'io client disconnect') {
+        lines.push(`\nDisconnected: ${reason}\n`);
+        outputContainer.textContent = lines.join('');
+        overflowDiv.scrollTop = overflowDiv.scrollHeight;
+      }
+    });
   }
+  
+  // Handle escape characters (HTML does not handle them natively)
+  function processOutput(text) {
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (char === '\r') {
+        // Carriage return logic
+        let currentLine = lines[lines.length - 1];
+        let endsWithNewline = currentLine.endsWith('\n');
+        lines[lines.length - 1] = endsWithNewline ? '\n' : '';
+      }
+      else if (char === '\n') {
+        // Newline logic
+        if (!lines[lines.length - 1].endsWith('\n')) {
+          lines[lines.length - 1] += '\n';
+        }
+        lines.push('');
+      }
+      else {
+        // Regular character
+        lines[lines.length - 1] += char;
+      }
+    }
+    
+    outputContainer.textContent = lines.join('');
+    overflowDiv.scrollTop = overflowDiv.scrollHeight;
+  }
+  
+  return false;
+}
 
 
   function handleRerunSubmit(event) {
