@@ -9,39 +9,49 @@ import PreviewModal from "./PreviewModal";
 import StreamingModal from "./StreamingModal";
 import { useJobSocket } from "./hooks/useJobSocket";
 
-function JobComposer({ 
-  error, 
-  setError, 
+function JobComposer({
+  error,
+  setError,
   formRef,
   previewRef,
   envModalRef,
-  multiPaneRef, 
-  ...props 
+  multiPaneRef,
+  ...props
 }) {
   const [showHistory, setShowHistory] = useState(true);
   const [showStreaming, setShowStreaming] = useState(false);
-  
-  const { lines, isConnected, status, submitJob, reset } = useJobSocket();
-  
+
+  // Update to destructure rawOutput and htmlOutput if available
+  const { 
+    lines, 
+    rawOutput, 
+    htmlOutput, 
+    isConnected, 
+    status, 
+    submitJob, 
+    reset, 
+    sendInput 
+  } = useJobSocket();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!formRef.current) return;
-    
+
     const formData = new FormData(formRef.current);
     if (formData.get("name") === "") {
       alert("Job name is required.");
       return;
     }
-    
+
     const paneRefs = multiPaneRef.current.getPaneRefs();
     const additional_files = {};
-    
+
     paneRefs.forEach((ref) => {
       if (ref.current) {
         const current = ref.current;
         const name = current.getAttribute("name");
-        
+
         if (name === "driver" || name === "run_command") {
           formData.append(name, current.value);
         } else {
@@ -49,23 +59,23 @@ function JobComposer({
         }
       }
     });
-    
+
     formData.append("additional_files", JSON.stringify(additional_files));
-    
+
     formData.append("env_dir", props.environment.src);
-    
+
     if (props.globalFiles && props.globalFiles.length) {
       props.globalFiles.forEach((file) => {
         formData.append("files[]", file);
       });
     }
-    
+
     setShowStreaming(true);
-    
+
     const action = formRef.current.getAttribute("action");
     submitJob(action, formData);
   };
-  
+
   const handleCloseStreaming = () => {
     setShowStreaming(false);
     reset();
@@ -142,16 +152,20 @@ function JobComposer({
         </div>
         <div className="card-footer">
           <small className="text-muted">
-            ⚠️Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
+             Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
           </small>
         </div>
       </div>
 
-      <StreamingModal 
-        isOpen={showStreaming} 
+      {/* Pass both outputLines and htmlOutput (if available) to StreamingModal */}
+      <StreamingModal
+        isOpen={showStreaming}
         onClose={handleCloseStreaming}
         outputLines={lines}
+        rawOutput={rawOutput}
+        htmlOutput={htmlOutput} // Pass the HTML-formatted output if available
         status={status}
+        onSendInput={sendInput}
       />
 
       <EnvironmentModal envModalRef={envModalRef} />

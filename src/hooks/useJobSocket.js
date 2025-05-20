@@ -1,11 +1,87 @@
+// hooks/useJobSocket.js - with both ANSI colors and progress bar handling
 import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
+// Import ansi_up properly
+import { AnsiUp } from 'ansi_up';
+
+// Simple escape code handling for line length calculations
+function stripAnsiCodes(text) {
+  return text.replace(/\u001b\[\d+(?:;\d+)*m/g, '');
+}
+
 export function useJobSocket() {
-  const [lines, setLines] = useState(['Starting job submission...\n']);
+  // Raw accumulating buffer
+  const [outputBuffer, setOutputBuffer] = useState('Starting job submission...\n');
+  // Processed lines with proper CR handling
+  const [processedLines, setProcessedLines] = useState(['Starting job submission...\n']);
+  // HTML output with colors
+  const [htmlOutput, setHtmlOutput] = useState('');
+  
   const [isConnected, setIsConnected] = useState(false);
   const [status, setStatus] = useState(null);
   const socketRef = useRef(null);
+  
+  // Create ansi_up instance
+  const ansiUp = useRef(new AnsiUp());
+  
+  // Track accumulated data for proper CR handling
+  const accumulatedData = useRef('');
+  
+  // Process the current accumulated data with proper CR handling
+  const processBuffer = () => {
+    const rawText = accumulatedData.current;
+    
+    // Split into physical lines (by \n)
+    const physicalLines = rawText.split('\n');
+    
+    // Process each physical line to handle CRs properly
+    const processedOutput = [];
+    
+    physicalLines.forEach((line, index) => {
+      // For each physical line, process CRs to get the final state
+      if (line.includes('\r')) {
+        // Line has carriage returns - need special handling
+        let finalLine = '';
+        const segments = line.split('\r');
+        
+        // Process each segment (after a CR)
+        segments.forEach(segment => {
+          if (!finalLine) {
+            // First segment
+            finalLine = segment;
+          } else {
+            // Replace characters from the start of the line
+            const strippedSegment = stripAnsiCodes(segment);
+            const strippedFinalLine = stripAnsiCodes(finalLine);
+            
+            if (strippedSegment.length <= strippedFinalLine.length) {
+              // Replace only part of the line
+              finalLine = segment + finalLine.substring(strippedSegment.length);
+            } else {
+              // New segment is longer, replace the entire line
+              finalLine = segment;
+            }
+          }
+        });
+        
+        processedOutput.push(finalLine);
+      } else {
+        // No CRs in this line, just add it
+        processedOutput.push(line);
+      }
+      
+      // Add a newline for all but the last line
+    });
+    
+    // Set the processed lines
+    setProcessedLines(processedOutput);
+    
+    // Generate HTML with ANSI colors
+    const processedText = processedOutput.join('\n');
+    const html = ansiUp.current.ansi_to_html(processedText);
+    setHtmlOutput(html);
+  };
   
   // Cleanup function for the socket
   useEffect(() => {
@@ -15,42 +91,39 @@ export function useJobSocket() {
       }
     };
   }, []);
-
-  // Process a chunk of text with proper CR/LF handling
-  const processOutput = (text) => {
-    setLines(prevLines => {
-      const newLines = [...prevLines];
-      
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        if (char === '\r') {
-          // Carriage return - clear current line
-          let currentLine = newLines[newLines.length - 1];
-          let endsWithNewline = currentLine.endsWith('\n');
-          newLines[newLines.length - 1] = endsWithNewline ? '\n' : '';
-        }
-        else if (char === '\n') {
-          // Newline - start a new line
-          if (!newLines[newLines.length - 1].endsWith('\n')) {
-            newLines[newLines.length - 1] += '\n';
-          }
-          newLines.push('');
-        }
-        else {
-          // Regular character - append to current line
-          newLines[newLines.length - 1] += char;
-        }
-      }
-      
-      return newLines;
-    });
+  
+  // Append text to the accumulated buffer
+  const appendOutput = (text) => {
+    accumulatedData.current += text;
+    setOutputBuffer(prev => prev + text);
+    processBuffer();
   };
-
+  
+  // Send input to the server
+  const sendInput = (inputText) => {
+    if (!socketRef.current || !isConnected || status !== 'running') {
+      console.error('Cannot send input: socket not connected or job not running');
+      return false;
+    }
+    
+    console.log('Sending input:', inputText);
+    socketRef.current.emit('job_input', { input: inputText });
+    
+    // Add input to output
+    appendOutput(`$ ${inputText}\n`);
+    
+    return true;
+  };
+  
   const submitJob = (action, formData) => {
-    setLines(['Starting job submission...\n']);
+    // Reset state
+    accumulatedData.current = 'Starting job submission...\n';
+    setOutputBuffer('Starting job submission...\n');
+    setProcessedLines(['Starting job submission...\n']);
+    setHtmlOutput(ansiUp.current.ansi_to_html('Starting job submission...\n'));
     setStatus('submitting');
     
-    // Check if there are files to upload
+    // Check if we have files to upload
     let hasFiles = false;
     for (const value of formData.values()) {
       if (value instanceof File && value.size > 0) {
@@ -58,10 +131,10 @@ export function useJobSocket() {
         break;
       }
     }
-
+    
     if (hasFiles) {
-      // Step 1: Upload files via HTTP
-      setLines(prev => [...prev, 'Uploading files...\n']);
+      // Upload files via HTTP first
+      appendOutput('Uploading files...\n');
       
       const initialRequest = new XMLHttpRequest();
       initialRequest.open("POST", action, true);
@@ -71,10 +144,10 @@ export function useJobSocket() {
       initialRequest.onreadystatechange = function() {
         if (initialRequest.readyState === 4) {
           if (initialRequest.status === 200) {
-            setLines(prev => [...prev, 'Files uploaded successfully. Starting job via socket...\n']);
+            appendOutput('Files uploaded successfully. Connecting to socket...\n');
             connectSocket(formData);
           } else {
-            setLines(prev => [...prev, `\nError submitting files: ${initialRequest.status}\n`]);
+            appendOutput(`\nError submitting files: ${initialRequest.status}\n`);
             setStatus('error');
           }
         }
@@ -82,11 +155,11 @@ export function useJobSocket() {
       
       initialRequest.send(formData);
     } else {
-      // No files, connect directly
+      // No files, connect to socket directly
       connectSocket(formData);
     }
   };
-
+  
   const connectSocket = (formData) => {
     // Convert FormData to plain object
     const params = {};
@@ -96,12 +169,16 @@ export function useJobSocket() {
       }
     }
     
+    // Enable interactive mode
+    params.interactive = true;
+    
     // Close existing socket if any
     if (socketRef.current) {
       socketRef.current.disconnect();
     }
     
     // Connect to WebSocket
+    console.log('Connecting socket...');
     const socket = io({
       transports: ['websocket'],
       reconnection: true,
@@ -113,61 +190,83 @@ export function useJobSocket() {
     
     // Set up event handlers
     socket.on('connect', () => {
+      console.log('Socket connected:', socket.id);
       setIsConnected(true);
       socket.emit('run_job', { params });
     });
     
     socket.on('job_started', (data) => {
-      setLines(prev => [...prev, 'Job process started.\n']);
+      console.log('Job started:', data);
+      appendOutput('Job process started. Ready for input.\n');
       setStatus('running');
     });
     
     socket.on('output', (data) => {
       try {
-        const bytes = new Uint8Array(data.data);
-        const text = new TextDecoder('utf-8').decode(bytes);
-        processOutput(text);
+        // Handle ArrayBuffer format
+        if (data && data.data instanceof ArrayBuffer) {
+          const bytes = new Uint8Array(data.data);
+          const text = new TextDecoder('utf-8').decode(bytes);
+          appendOutput(text);
+        }
+        // Other formats (fallback)
+        else if (data && typeof data.data === 'string') {
+          appendOutput(data.data);
+        }
+        else if (typeof data === 'string') {
+          appendOutput(data);
+        }
+        else {
+          console.warn('Unexpected output format:', data);
+        }
       } catch (e) {
-        console.error("Error processing output:", e);
-        setLines(prev => [...prev, `\nError processing output: ${e.message}\n`]);
+        console.error('Error processing output:', e);
+        appendOutput(`\nError processing output: ${e.message}\n`);
       }
     });
     
     socket.on('complete', (data) => {
-      const exitCode = data.exit_code;
+      console.log('Job completed:', data);
+      const exitCode = data && data.exit_code !== undefined ? data.exit_code : 1;
       
       if (exitCode === 0) {
-        setLines(prev => [...prev, '\nJob completed successfully.']);
-        setStatus('completed');
+        appendOutput('\nJob completed successfully.\n');
       } else {
-        setLines(prev => [...prev, `\nJob failed with exit code ${exitCode}`]);
-        setStatus('failed');
+        appendOutput(`\nJob failed with exit code ${exitCode}\n`);
       }
       
+      setStatus(exitCode === 0 ? 'completed' : 'failed');
       socket.disconnect();
-      setIsConnected(false);
     });
     
     socket.on('error', (data) => {
-      setLines(prev => [...prev, `\nError: ${data.message || 'Unknown error'}\n`]);
+      console.error('Socket error:', data);
+      appendOutput(`\nError: ${data && data.message ? data.message : 'Unknown error'}\n`);
       setStatus('error');
     });
     
     socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
       setIsConnected(false);
       if (reason !== 'io client disconnect') {
-        setLines(prev => [...prev, `\nDisconnected: ${reason}\n`]);
+        appendOutput(`\nDisconnected: ${reason}\n`);
       }
     });
   };
 
   return {
-    lines,
+    rawOutput: outputBuffer,
+    lines: processedLines,
+    htmlOutput,  // Return the HTML-formatted output with colors
     isConnected,
     status,
     submitJob,
+    sendInput,
     reset: () => {
-      setLines(['Starting job submission...\n']);
+      accumulatedData.current = 'Starting job submission...\n';
+      setOutputBuffer('Starting job submission...\n');
+      setProcessedLines(['Starting job submission...\n']);
+      setHtmlOutput(ansiUp.current.ansi_to_html('Starting job submission...\n'));
       setStatus(null);
       if (socketRef.current) {
         socketRef.current.disconnect();
