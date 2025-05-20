@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import io from "socket.io-client";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
@@ -311,170 +312,6 @@ export function App() {
     spinner.remove();
   }
 
-  function submit_job(action, formData) {
-    var request = new XMLHttpRequest();
-    window.jQuery(previewRef.current).modal('hide');
-  
-    var outputContainer = document.getElementById("streaming-output");
-    var overflowDiv = document.getElementById("overflow-div");
-  
-    outputContainer.style.whiteSpace = "pre";
-  
-    outputContainer.textContent = "Starting job submission...\n";
-  
-    request.open("POST", action, true);
-    request.responseType = "text";
-    request.setRequestHeader("Cache-Control", "no-cache");
-    request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-  
-    let processedLength = 0;
-  
-    let lines = ["Starting job submission...\n"];
-  
-    request.onprogress = function() {
-      const newData = request.responseText.substring(processedLength);
-    
-      if (newData) {
-        processedLength = request.responseText.length;
-        processOutput(newData);
-      }
-    };
-  
-    function processOutput(text) {
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-      
-        if (char === '\r') {
-          // Carriage return - go to beginning of current line
-          // Find the last line
-          let currentLine = lines[lines.length - 1];
-        
-          // Remove the current line's content, keeping any newline at the end
-          let endsWithNewline = currentLine.endsWith('\n');
-          lines[lines.length - 1] = endsWithNewline ? '\n' : '';
-        } 
-        else if (char === '\n') {
-          // Newline - start a new line
-          if (!lines[lines.length - 1].endsWith('\n')) {
-            lines[lines.length - 1] += '\n';
-          }
-          lines.push('');
-        }
-        else {
-          // Regular character - append to current line
-          lines[lines.length - 1] += char;
-        }
-      }
-    
-      // Update the display with all lines
-      outputContainer.textContent = lines.join('');
-    
-      // Scroll to bottom
-      overflowDiv.scrollTop = overflowDiv.scrollHeight;
-    }
-  
-    request.onreadystatechange = function() {
-      if (request.readyState === 4) {
-      
-        if (request.status === 200) {
-          lines.push("\nJob submission completed.");
-          outputContainer.textContent = lines.join('');
-        } else {
-          lines.push(`\nError: ${request.status}`);
-          outputContainer.textContent = lines.join('');
-        }
-      overflowDiv.scrollTop = overflowDiv.scrollHeight;
-      }
-    };
-  
-    request.onerror = function() {
-      // remove_submission_loading_indicator();
-      lines.push("\nConnection error occurred.");
-      outputContainer.textContent = lines.join('');
-      overflowDiv.scrollTop = overflowDiv.scrollHeight;
-    };
-  
-    request.send(formData);
-    return false;
-  }
-
-
-  function handleRerunSubmit(event) {
-    event.preventDefault();
-    const data = rerunInfo;
-    const paneRefs = multiPaneRef.current.getPaneRefs();
-    const additionalFiles = {};
-
-    paneRefs.forEach((ref) => {
-      if (!ref.current) return;
-
-      const current = ref.current;
-      const name = current.getAttribute("name");
-
-      if (name === "driver" || name === "run_command") {
-        data[name] = current.value;
-      } else {
-        additionalFiles[name] = current.value;
-      }
-    });
-
-    data["additional_files"] = JSON.stringify(additionalFiles);
-
-    if (globalFiles && globalFiles.length) {
-      data["files"] = globalFiles;
-    }
-
-    const action = formRef.current.getAttribute("action");
-
-    // Convert dictionary to formData 
-    const formData = new FormData();
-
-    for (const [key, value] of Object.entries(data)) {
-      if (value instanceof File) {
-        formData.append(key, value);
-      } else if (Array.isArray(value)) {
-        value.forEach((item, index) => {
-          formData.append(`${key}[]`, item);
-        });
-      } else if (value !== null && value !== undefined) {
-        formData.append(key, String(value));
-      }
-    }
-    submit_job(action, formData);
-  }
-  function handleSubmit(event) {
-    event.preventDefault();
-
-    const formData = new FormData(formRef.current);
-
-    if (formData.get("name") === "") {
-      alert("Job name is required.");
-      return;
-    }
-    const paneRefs = multiPaneRef.current.getPaneRefs();
-    const additional_files = {};
-    paneRefs.forEach((ref) => {
-      if (ref.current) {
-        const current = ref.current;
-
-        const name = current.getAttribute("name");
-        if (name === "driver" || name === "run_command") {
-          formData.append(current.getAttribute("name"), current.value);
-        } else {
-          additional_files[name] = current.value;
-        }
-      }
-    });
-    formData.append("additional_files", JSON.stringify(additional_files));
-
-    globalFiles.forEach((file) => {
-      formData.append("files[]", file);
-    });
-
-    formData.append("env_dir", environment.src);
-    const action = formRef.current.getAttribute("action");
-    submit_job(action, formData);
-  }
 
   const handleJobScriptChange = (event) => {
     setJobScript(event.target.value);
@@ -493,8 +330,10 @@ export function App() {
           warningMessages={warningMessages}
           panes={panes}
           setPanes={setPanes}
-          handleSubmit={(jobStatus == "new") ? handleSubmit : handleRerunSubmit}
+	  jobStatus={jobStatus}
+	  globalFiles={globalFiles}
           handlePreview={handlePreview}
+	  rerunInfo={rerunInfo}
           handleEnvChange={handleEnvChange}
           handleAddEnv={handleAddEnv}
           handleUploadedFiles={handleUploadedFiles}
