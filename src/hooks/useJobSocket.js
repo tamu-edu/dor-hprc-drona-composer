@@ -102,8 +102,6 @@ export function useJobSocket() {
     
     
     // Upload files via HTTP first
-    appendOutput('Setting up the environment...\n');
-      
     const initialRequest = new XMLHttpRequest();
     initialRequest.open("POST", action, true);
     initialRequest.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -115,7 +113,7 @@ export function useJobSocket() {
 	  //Run the scripts and stream output using sockets
           connectSocket(initialRequest.response.bash_cmd);
         } else {
-          appendOutput(`\nError Setting up the environment: ${initialRequest.status}\n`);
+          appendOutput(`\nError starting the job: ${initialRequest.status}\n`);
           setStatus('error');
         }
       }

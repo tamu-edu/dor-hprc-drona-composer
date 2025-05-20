@@ -32,12 +32,80 @@ function JobComposer({
     sendInput 
   } = useJobSocket();
 
+
+  // Could be refactored to avoid duplicate code
+  const getFormData = () => {
+    const paneRefs = multiPaneRef.current.getPaneRefs();
+    if(props.jobStatus === "rerun"){
+      const data = props.rerunInfo;
+      const additionalFiles = {};
+
+      paneRefs.forEach((ref) => {
+        if (!ref.current) return;
+
+        const current = ref.current;
+        const name = current.getAttribute("name");
+
+        if (name === "driver" || name === "run_command") {
+          data[name] = current.value;
+        } else {
+          additionalFiles[name] = current.value;
+        }
+      });
+
+      data["additional_files"] = JSON.stringify(additionalFiles);
+
+      data["files"] = props.globalFiles;
+      
+      const formData = new FormData;
+      for (const [key, value] of Object.entries(data)) {
+        if (value instanceof File) {
+          formData.append(key, value);
+        } else if (Array.isArray(value)) {
+          value.forEach((item, index) => {
+            formData.append(`${key}[]`, item);
+          });
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
+      }
+
+      return formData;
+    }
+    else {
+      const formData =  new FormData(formRef.current)
+      const additional_files = {};
+
+      paneRefs.forEach((ref) => {
+        if (ref.current) {
+          const current = ref.current;
+          const name = current.getAttribute("name");
+
+          if (name === "driver" || name === "run_command") {
+            formData.append(name, current.value);
+          } else {
+            additional_files[name] = current.value;
+          }
+        }
+      });
+	    
+      formData.append("additional_files", JSON.stringify(additional_files));
+
+      formData.append("env_dir", props.environment.src);
+    
+      props.globalFiles.forEach((file) => {
+          formData.append("files[]", file);
+      });
+      
+      return formData;
+    }
+  }
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formRef.current) return;
-
-    const formData = new FormData(formRef.current);
+    const formData = getFormData();
 
     if (formData.get("name") === "") {
       alert("Job name is required.");
@@ -45,29 +113,7 @@ function JobComposer({
     }
 
     const paneRefs = multiPaneRef.current.getPaneRefs();
-    const additional_files = {};
 
-    paneRefs.forEach((ref) => {
-      if (ref.current) {
-        const current = ref.current;
-        const name = current.getAttribute("name");
-
-        if (name === "driver" || name === "run_command") {
-          formData.append(name, current.value);
-        } else {
-          additional_files[name] = current.value;
-        }
-      }
-    });
-
-    formData.append("additional_files", JSON.stringify(additional_files));
-
-    formData.append("env_dir", props.environment.src);
-    
-    props.globalFiles.forEach((file) => {
-        formData.append("files[]", file);
-    });
-    
     setShowStreaming(true);
 
     const action = formRef.current.getAttribute("action");
