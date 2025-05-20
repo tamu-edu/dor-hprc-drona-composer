@@ -44,49 +44,98 @@ const preStyle = {
   width: "100%",
 };
 
+// Input container with transition
 const inputContainerStyle = {
   display: "flex",
   padding: "0.5rem 1rem",
-  backgroundColor: "#3a0000",
+  backgroundColor: "#400000",
   borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+  transition: "max-height 0.3s ease, opacity 0.2s ease",
+  maxHeight: "60px",
+  opacity: 1,
+  overflow: "hidden",
+};
+
+const inputContainerHiddenStyle = {
+  maxHeight: "0",
+  opacity: 0,
+  padding: "0 1rem",
 };
 
 const inputStyle = {
   flex: 1,
-  backgroundColor: "#2a0000",
+  backgroundColor: "#300000",
   color: "white",
   border: "1px solid rgba(255, 255, 255, 0.3)",
   borderRadius: "0.25rem",
   padding: "0.5rem",
-  margin: "0 0.5rem 0 0",
+  marginRight: "0.5rem",
   fontFamily: "monospace",
+  outline: "none",
 };
 
 const sendButtonStyle = {
   padding: "0.5rem 1rem",
   border: "none",
-  borderRadius: "0.25rem",
+  borderRadius: "0.5rem",
   backgroundColor: "#333",
   color: "white",
   cursor: "pointer",
 };
 
-function StreamingModal({ isOpen, onClose, htmlOutput, status, onSendInput }) {
+// Button styles
+const buttonStyle = {
+  padding: "0.5rem 1rem",
+  border: "none",
+  borderRadius: "0.5rem",
+  color: "white",
+  cursor: "pointer",
+  marginLeft: "0.5rem",
+};
+
+const closeButtonStyle = {
+  ...buttonStyle,
+  backgroundColor: "#333",
+};
+
+const inputToggleStyle = {
+  ...buttonStyle,
+  backgroundColor: "#600020", // Darker maroon to match the theme
+  padding: "0.5rem 0.75rem",
+  display: "flex",
+  alignItems: "center",
+};
+
+function StreamingModal({ isOpen, onClose, outputLines, htmlOutput, status, onSendInput }) {
   const contentRef = useRef(null);
+  const inputRef = useRef(null);
   const [inputValue, setInputValue] = useState("");
+  const [showInput, setShowInput] = useState(false);
 
   // Auto-scroll to the bottom when output changes
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollTop = contentRef.current.scrollHeight;
     }
-  }, [htmlOutput]);
+  }, [outputLines, htmlOutput]);
 
-  // Input handler
+  // Focus the input field when it becomes visible
+  useEffect(() => {
+    if (showInput && inputRef.current) {
+      setTimeout(() => inputRef.current.focus(), 100);
+    }
+  }, [showInput]);
+
+  // Handle input submission
   const handleSendInput = () => {
     if (onSendInput && inputValue.trim()) {
       onSendInput(inputValue);
       setInputValue("");
+      
+      // Re-focus the input field
+      if (inputRef.current) {
+        setTimeout(() => inputRef.current.focus(), 50);
+      }
     }
   };
 
@@ -97,97 +146,96 @@ function StreamingModal({ isOpen, onClose, htmlOutput, status, onSendInput }) {
     }
   };
 
+  const toggleInput = (e) => {
+    e.stopPropagation(); // Prevent bubble to modal click handler
+    setShowInput(!showInput);
+  };
+
   if (!isOpen) return null;
 
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         <div id="overflow-div" style={contentStyle} ref={contentRef}>
-          {/* Use dangerouslySetInnerHTML to render the ANSI-colored HTML */}
-          <div
-            style={{ fontFamily: 'monospace', margin: 0 }}
-            dangerouslySetInnerHTML={{ __html: htmlOutput }}
-          />
+          {htmlOutput ? (
+            <div
+              style={preStyle}
+              dangerouslySetInnerHTML={{ __html: htmlOutput }}
+            />
+          ) : (
+            <pre style={preStyle}>
+              {outputLines.join('')}
+            </pre>
+          )}
         </div>
-
-        {/* Input field for interactive mode */}
-        {status === 'running' && (
+        
+        {/* Collapsible input field for interactive mode */}
+        {status === 'running' && onSendInput && (
           <div style={{
-            display: 'flex',
-            padding: '0.5rem',
-            backgroundColor: '#400000',
-            borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+            ...inputContainerStyle,
+            ...(showInput ? {} : inputContainerHiddenStyle)
           }}>
             <input
+              ref={inputRef}
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              style={{
-                flex: 1,
-                backgroundColor: '#300000',
-                color: 'white',
-                border: '1px solid #666',
-                borderRadius: '4px',
-                padding: '0.5rem',
-                marginRight: '0.5rem',
-                fontFamily: 'monospace'
-              }}
-              placeholder="Type input here..."
+              style={inputStyle}
+              placeholder="Type your command here..."
             />
             <button
               onClick={handleSendInput}
-              style={{
-                backgroundColor: '#555',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '0.5rem 1rem',
-                cursor: 'pointer'
-              }}
+              style={sendButtonStyle}
             >
               Send
             </button>
           </div>
         )}
-
-        {/* Status bar */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
+        
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
           alignItems: 'center',
           padding: '0.5rem 1rem',
           backgroundColor: '#400000',
-          borderTop: status === 'running' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)'
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
           <div>
             {status && (
-              <span style={{
+              <span style={{ 
                 fontWeight: 'bold',
-                color: status === 'completed' ? '#8eff8e' :
-                      status === 'failed' ? '#ff8e8e' :
+                color: status === 'completed' ? '#8eff8e' : 
+                      status === 'failed' ? '#ff8e8e' : 
                       status === 'running' ? '#8ee6ff' : 'white'
               }}>
                 Status: {status.charAt(0).toUpperCase() + status.slice(1)}
-                {status === 'running' && (
-                  <span className="blink"> ⬤</span>
-                )}
               </span>
             )}
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              padding: "0.5rem 1rem",
-              border: "none",
-              borderRadius: "0.5rem",
-              backgroundColor: "#333",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Close
-          </button>
+          
+          {/* Buttons group on the right */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {/* Show input toggle only when running */}
+            {status === 'running' && onSendInput && (
+              <button 
+                onClick={toggleInput}
+                style={{
+                  ...inputToggleStyle,
+                  backgroundColor: showInput ? '#700030' : '#600020'
+                }}
+                title={showInput ? "Hide input field" : "Show input field"}
+              >
+                {showInput ? "Hide Input" : "Input"}
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              style={closeButtonStyle}
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -195,4 +243,3 @@ function StreamingModal({ isOpen, onClose, htmlOutput, status, onSendInput }) {
 }
 
 export default StreamingModal;
-

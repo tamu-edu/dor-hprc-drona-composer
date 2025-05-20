@@ -34,7 +34,7 @@ def handle_job_input(data):
 
     if sid not in active_processes:
         print(f"⚡ No process found for sid {sid}", flush=True)
-        socketio.emit('error', {'message': 'No active process found for this session'})
+        socketio.emit('error', {'message': 'No active process found for this session'}, to=sid)
         return
 
     try:
@@ -51,12 +51,12 @@ def handle_job_input(data):
         # Send the input to the child process
         child.send(input_text)
         
-        socketio.emit('input_received', {'status': 'ok'})
+        socketio.emit('input_received', {'status': 'ok'}, to=sid)
     except Exception as e:
         import traceback
         print("⚡ Exception in handle_job_input:", flush=True)
         traceback.print_exc()
-        socketio.emit('error', {'message': f'Error sending input: {str(e)}'})
+        socketio.emit('error', {'message': f'Error sending input: {str(e)}'}, to=sid)
 
 # Socket event handler
 def handle_job_execution(data):
@@ -77,7 +77,7 @@ def handle_job_execution(data):
     bash_cmd = f"bash {driver_script_path}"
     
     # Notify client that job is starting
-    socketio.emit('job_started', {'status': 'Job starting in interactive mode'})
+    socketio.emit('job_started', {'status': 'Job starting in interactive mode'}, to=sid)
     
     # Start the job in a background task
     socketio.start_background_task(
@@ -130,7 +130,7 @@ def run_job_process(bash_cmd, params, bash_script_path, driver_script_path, sid,
                     data = child.read_nonblocking(size=1024, timeout=0.1)
                     if data:
                         # Process and emit output
-                        socketio.emit('output', {'data': data})
+                        socketio.emit('output', {'data': data}, to=sid)
                         
                         # Check for job ID
                         if job_id is None:
@@ -164,7 +164,7 @@ def run_job_process(bash_cmd, params, bash_script_path, driver_script_path, sid,
                         # Read any remaining data in the buffer
                         final_output = child.read()
                         if final_output:
-                            socketio.emit('output', {'data': final_output})
+                            socketio.emit('output', {'data': final_output}, to=sid)
                     except:
                         pass
                     break
@@ -177,7 +177,7 @@ def run_job_process(bash_cmd, params, bash_script_path, driver_script_path, sid,
                 # Even if we got EOF above, try to read any last output
                 final_output = child.read()
                 if final_output:
-                    socketio.emit('output', {'data': final_output})
+                    socketio.emit('output', {'data': final_output}, to=sid)
             except:
                 pass
             
@@ -195,13 +195,13 @@ def run_job_process(bash_cmd, params, bash_script_path, driver_script_path, sid,
                 del active_processes[sid]
             
             # Send completion event
-            socketio.emit('complete', {'exit_code': exit_code, 'job_id': job_id})
+            socketio.emit('complete', {'exit_code': exit_code, 'job_id': job_id}, to=sid)
             
     except Exception as e:
         import traceback
         print("🚀 Exception in run_job_process:", flush=True)
         traceback.print_exc()
-        socketio.emit('error', {'message': f'Error in job execution: {str(e)}'})
+        socketio.emit('error', {'message': f'Error in job execution: {str(e)}'}, to=sid)
         
         # Clean up storage
         if sid in active_processes:
