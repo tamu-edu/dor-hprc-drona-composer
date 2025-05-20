@@ -43,12 +43,21 @@ def submit_job_route():
     bash_script_path = engine.generate_script(params)
     driver_script_path = engine.generate_driver_script(params)
     
-    session_id = str(uuid.uuid4())
-    
-    #TODO Test this function, as it is currently not tested with additional files 
+    bash_cmd = f"bash {driver_script_path}"
+
+    history_manager = JobHistoryManager()
+
+    history_manager.save_job(
+        params,
+        files,
+        {
+            "bash_script":   bash_script_path,
+            "driver_script": driver_script_path
+        }
+    )
+
     return jsonify({
-        'status': 'ready',
-        'session_id': session_id
+        'bash_cmd': bash_cmd,
     })
 
 def preview_job_route():

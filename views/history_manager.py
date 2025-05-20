@@ -1,5 +1,6 @@
 import os
 import re
+import uuid
 import json
 from datetime import datetime
 from pathlib import Path
@@ -70,9 +71,10 @@ class JobHistoryManager:
         return transformed
 
 
-    def save_job(self,job_id, job_data, files, generated_files):
+    def save_job(self, job_data, files, generated_files):
         timestamp = datetime.now().isoformat()
         user = os.getenv('USER')
+        job_id = str(uuid.uuid4())
 
         form_data = self.transform_form_data(dict(job_data), job_data.get('location'))
         job_record = {

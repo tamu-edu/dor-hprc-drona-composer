@@ -573,6 +573,7 @@ function submit_job(action, formData) {
           panes={panes}
           setPanes={setPanes}
           handleSubmit={(jobStatus == "new") ? handleSubmit : handleRerunSubmit}
+	  globalFiles={globalFiles}
           handlePreview={handlePreview}
           handleEnvChange={handleEnvChange}
           handleAddEnv={handleAddEnv}

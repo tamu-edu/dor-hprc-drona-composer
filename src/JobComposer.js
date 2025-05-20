@@ -21,7 +21,6 @@ function JobComposer({
   const [showHistory, setShowHistory] = useState(true);
   const [showStreaming, setShowStreaming] = useState(false);
 
-  // Update to destructure rawOutput and htmlOutput if available
   const { 
     lines, 
     rawOutput, 
@@ -39,6 +38,7 @@ function JobComposer({
     if (!formRef.current) return;
 
     const formData = new FormData(formRef.current);
+
     if (formData.get("name") === "") {
       alert("Job name is required.");
       return;
@@ -63,13 +63,11 @@ function JobComposer({
     formData.append("additional_files", JSON.stringify(additional_files));
 
     formData.append("env_dir", props.environment.src);
-
-    if (props.globalFiles && props.globalFiles.length) {
-      props.globalFiles.forEach((file) => {
+    
+    props.globalFiles.forEach((file) => {
         formData.append("files[]", file);
-      });
-    }
-
+    });
+    
     setShowStreaming(true);
 
     const action = formRef.current.getAttribute("action");
@@ -97,7 +95,7 @@ function JobComposer({
             autoComplete="off"
             method="POST"
             encType="multipart/form-data"
-            onSubmit={handleSubmit} // Use our new handler
+            onSubmit={handleSubmit} 
             onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
             action={document.dashboard_url + "/jobs/composer/submit"}
             style={{ width: '100%' }}
@@ -157,13 +155,12 @@ function JobComposer({
         </div>
       </div>
 
-      {/* Pass both outputLines and htmlOutput (if available) to StreamingModal */}
       <StreamingModal
         isOpen={showStreaming}
         onClose={handleCloseStreaming}
         outputLines={lines}
         rawOutput={rawOutput}
-        htmlOutput={htmlOutput} // Pass the HTML-formatted output if available
+        htmlOutput={htmlOutput}
         status={status}
         onSendInput={sendInput}
       />
