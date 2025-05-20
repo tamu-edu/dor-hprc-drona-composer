@@ -105,13 +105,14 @@ function JobComposer({
   const handleSubmit = (e) => {
     e.preventDefault();
 
+
     const formData = getFormData();
 
     if (formData.get("name") === "") {
       alert("Job name is required.");
       return;
     }
-
+    window.jQuery(previewRef.current).modal('hide');
     const paneRefs = multiPaneRef.current.getPaneRefs();
 
     setShowStreaming(true);
