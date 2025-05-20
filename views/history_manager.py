@@ -74,7 +74,7 @@ class JobHistoryManager:
     def save_job(self, job_data, files, generated_files):
         timestamp = datetime.now().isoformat()
         user = os.getenv('USER')
-        job_id = str(uuid.uuid4())
+        job_id = str(int(uuid.uuid4().int & 0xFFFFFFFFF))
 
         form_data = self.transform_form_data(dict(job_data), job_data.get('location'))
         job_record = {

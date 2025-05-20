@@ -147,7 +147,7 @@ export function useJobSocket() {
     
     socket.on('job_started', (data) => {
       if(debug) console.log('Job started:', data);
-      appendOutput('Job process started. Ready for input.\n');
+      appendOutput('Job process started.\n');
       setStatus('running');
     });
     
