@@ -1,8 +1,10 @@
 import os
 import re
+import urllib.parse
 import subprocess
 import pexpect
-from flask import  request
+from flask import request
+import json
 
 # Shared socketio instance
 socketio = None
@@ -19,14 +21,37 @@ def init_socketio(socketio_instance, app_instance):
     global socketio, app
     socketio = socketio_instance
     app = app_instance
-
+    
     # Register socket event handlers
-    socketio.on_event('run_job', handle_job_execution)
+    socketio.on_event('connect', handle_connect)
     socketio.on_event('job_input', handle_job_input)
+    
+    # Keep this for backward compatibility
+    socketio.on_event('run_job', handle_job_execution)
+
+# New connection handler that starts the job automatically
+def handle_connect():
+    sid = request.sid
+    
+    if request.args and 'cmd' in request.args:
+        # URL-decoded command from query string
+        bash_cmd = request.args.get('cmd')
+        bash_cmd = urllib.parse.unquote(bash_cmd)
+        
+        # Start the job immediately
+        socketio.emit('job_started', {'status': 'Job starting in interactive mode'}, to=sid)
+        
+        # Launch the job process
+        socketio.start_background_task(
+            run_job_process,
+            bash_cmd,
+            sid,
+            True  # Interactive mode
+        )
 
 def handle_job_input(data):
-    sid = request.sid 
-
+    sid = request.sid
+    
     if sid not in active_processes:
         socketio.emit('error', {'message': 'No active process found for this session'}, to=sid)
         return
@@ -43,12 +68,11 @@ def handle_job_input(data):
     except Exception as e:
         socketio.emit('error', {'message': f'Error sending input: {str(e)}'}, to=sid)
 
-
+# Keep this for backward compatibility
 def handle_job_execution(data):
     bash_cmd = data.get('bash_cmd', "")
     interactive = data.get('interactive', True)
     sid = request.sid
-    
     
     socketio.emit('job_started', {'status': 'Job starting in interactive mode'}, to=sid)
     
@@ -59,22 +83,20 @@ def handle_job_execution(data):
         interactive
     )
 
-
 def run_job_process(bash_cmd, sid, interactive):
     history_manager = JobHistoryManager()
     
     try:
         env = os.environ.copy()
         env['TERM'] = 'xterm-256color'
-
         # Unbuffered output for real-time streaming
         env['PYTHONUNBUFFERED'] = '1'
         
         child = pexpect.spawn(
-            bash_cmd, 
-            env=env, 
+            bash_cmd,
+            env=env,
             encoding=None,    # Use binary mode
-            timeout=None,        # No timeout
+            timeout=None,     # No timeout
             echo=False        # Don't echo input
         )
         
@@ -85,10 +107,12 @@ def run_job_process(bash_cmd, sid, interactive):
         job_id = None
         buffer = b""
         
+        buffer_size = 4096 
+        
         try:
             while child.isalive():
                 try:
-                    data = child.read_nonblocking(size=1024, timeout=0.1)
+                    data = child.read_nonblocking(size=buffer_size, timeout=0.05)
                     if data:
                         socketio.emit('output', {'data': data}, to=sid)
                 except pexpect.TIMEOUT:
@@ -101,25 +125,24 @@ def run_job_process(bash_cmd, sid, interactive):
                     except:
                         pass
                     break
-                
-            
+                    
             try:
                 final_output = child.read()
                 if final_output:
                     socketio.emit('output', {'data': final_output}, to=sid)
             except:
                 pass
-            
+                
             exit_code = child.exitstatus if child.exitstatus is not None else 1
             
         finally:
             if child.isalive():
                 child.terminate(force=True)
-            
+                
             # Clean up storage, should change to clean this up when user disconnects
             if sid in active_processes:
                 del active_processes[sid]
-            
+                
             # Send completion event
             socketio.emit('complete', {'exit_code': exit_code, 'job_id': job_id}, to=sid)
             
@@ -132,4 +155,3 @@ def run_job_process(bash_cmd, sid, interactive):
             except:
                 pass
             del active_processes[sid]
-

@@ -135,6 +135,10 @@ export function useJobSocket() {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
+      query: {
+        cmd: bash_cmd,
+        interactive: interactive
+      },
       path: `${window.location.pathname.replace(/\/$/, '')}/socket.io`
     });
     
@@ -143,7 +147,6 @@ export function useJobSocket() {
     socket.on('connect', () => {
       if(debug) console.log('Socket connected:', socket.id);
       setIsConnected(true);
-      socket.emit('run_job', { "bash_cmd": bash_cmd, "interactive": interactive });
     });
     
     socket.on('job_started', (data) => {

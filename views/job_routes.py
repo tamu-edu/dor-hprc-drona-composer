@@ -56,6 +56,7 @@ def submit_job_route():
         }
     )
 
+
     return jsonify({
         'bash_cmd': bash_cmd,
     })
