@@ -130,11 +130,12 @@ export function useJobSocket() {
       socketRef.current.disconnect();
     }
     if(debug) console.log('Connecting socket...');
-    const socket = io({
-      transports: ['websocket'],
+    const socket = io(window.location.origin, {
+      transports: ['polling'],
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      path: `${window.location.pathname.replace(/\/$/, '')}/socket.io`
     });
     
     socketRef.current = socket;
