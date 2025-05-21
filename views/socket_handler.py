@@ -62,7 +62,6 @@ def handle_job_execution(data):
 
 def run_job_process(bash_cmd, sid, interactive):
     history_manager = JobHistoryManager()
-    import eventlet
     
     try:
         env = os.environ.copy()
@@ -103,8 +102,6 @@ def run_job_process(bash_cmd, sid, interactive):
                         pass
                     break
                 
-                # A bit of a hack (?) to make streaming not buffer but send immediately 
-                eventlet.sleep(0)
             
             try:
                 final_output = child.read()
