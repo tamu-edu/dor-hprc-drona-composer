@@ -130,11 +130,16 @@ export function useJobSocket() {
       socketRef.current.disconnect();
     }
     if(debug) console.log('Connecting socket...');
-    const socket = io({
-      transports: ['websocket'],
+    const socket = io(window.location.origin, {
+      transports: ['polling'],
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      query: {
+        cmd: bash_cmd,
+        interactive: interactive
+      },
+      path: `${window.location.pathname.replace(/\/$/, '')}/socket.io`
     });
     
     socketRef.current = socket;
@@ -142,7 +147,6 @@ export function useJobSocket() {
     socket.on('connect', () => {
       if(debug) console.log('Socket connected:', socket.id);
       setIsConnected(true);
-      socket.emit('run_job', { "bash_cmd": bash_cmd, "interactive": interactive });
     });
     
     socket.on('job_started', (data) => {

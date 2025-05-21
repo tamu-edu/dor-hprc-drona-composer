@@ -35,7 +35,7 @@ app.config['user'] = os.environ['USER']
 
 app.register_blueprint(job_composer, url_prefix="/jobs/composer")
 
-socketio = SocketIO(app, cors_allowed_origins="*",  async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins="*",  async_mode='threading')
 
 socket_handler.init_socketio(socketio, app)
 
