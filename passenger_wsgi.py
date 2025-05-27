@@ -1,4 +1,4 @@
-from app import app, socketio
+from app import app
 
 application = app
 

@@ -5,6 +5,7 @@ from .job_routes import register_job_routes
 from .file_utils import register_file_routes
 from .utils import register_utility_routes
 from .logger import Logger
+from .socket_handler import register_streaming_routes
 
 job_composer = Blueprint("job_composer", __name__)
 logger = Logger()
@@ -16,6 +17,7 @@ def init_blueprint(blueprint):
     register_job_routes(blueprint)
     register_file_routes(blueprint)
     register_utility_routes(blueprint)
+    register_streaming_routes(blueprint)
     return blueprint
 
 # Core routes
