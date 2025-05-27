@@ -13,12 +13,17 @@ from flask import request, jsonify, Blueprint
 # Directory for job communication
 JOBS_DIR = os.path.join('/var/www/ood/apps/dev/a11155/gateway/dor-hprc-drona-composer/active_jobs')
 
-def ensure_jobs_dir():
-    if not os.path.exists(JOBS_DIR):
-        os.makedirs(JOBS_DIR)
+def get_jobs_dir():
+    user = os.getenv('USER')
+    jobs_dir = os.path.join('/scratch/user', user, 'drona_composer', '.active_jobs')
+
+    if not os.path.exists(jobs_dir):
+        os.makedirs(jobs_dir)
+
+    return jobs_dir
 
 # Python pty is necessary to handle things carriage returns
-def create_pty_wrapper_script(job_id, bash_cmd):
+def create_pty_wrapper_script(job_id, jobs_dir, bash_cmd):
     """Create a Python wrapper script that uses PTY for proper terminal emulation"""
     wrapper_content = f'''#!/usr/bin/env python3
 import os
@@ -33,7 +38,7 @@ from datetime import datetime
 
 # Job configuration
 JOB_ID = "{job_id}"
-JOBS_DIR = "{JOBS_DIR}"
+JOBS_DIR = "{jobs_dir}"
 STATUS_FILE = os.path.join(JOBS_DIR, f"{{JOB_ID}}.json")
 OUTPUT_FILE = os.path.join(JOBS_DIR, f"{{JOB_ID}}.out")
 BASH_CMD = """{bash_cmd}"""
@@ -190,11 +195,11 @@ if __name__ == "__main__":
 
 def start_external_job(job_id, bash_cmd):
     """Start job as completely external process using PTY"""
-    ensure_jobs_dir()
+    jobs_dir = get_jobs_dir()
     
     # Create Python wrapper script with PTY support
-    wrapper_content = create_pty_wrapper_script(job_id, bash_cmd)
-    wrapper_path = os.path.join(JOBS_DIR, f"{job_id}_wrapper.py")
+    wrapper_content = create_pty_wrapper_script(job_id, jobs_dir, bash_cmd)
+    wrapper_path = os.path.join(jobs_dir, f"{job_id}_wrapper.py")
     
     with open(wrapper_path, 'w') as f:
         f.write(wrapper_content)
@@ -213,10 +218,10 @@ def start_external_job(job_id, bash_cmd):
 
 def get_job_status(job_id):
     """Quick file read - non-blocking"""
-    ensure_jobs_dir()
+    jobs_dir = get_jobs_dir()
 
-    status_file = os.path.join(JOBS_DIR, f"{job_id}.json")
-    output_file = os.path.join(JOBS_DIR, f"{job_id}.out")
+    status_file = os.path.join(jobs_dir, f"{job_id}.json")
+    output_file = os.path.join(jobs_dir, f"{job_id}.out")
 
     try:
         if os.path.exists(status_file):
@@ -303,10 +308,10 @@ def job_output_incremental_route(job_id, from_byte):
 
 def kill_job_route(job_id):
     """Kill a running job"""
-    ensure_jobs_dir()
+    jobs_dir = get_jobs_dir()
     
-    status_file = os.path.join(JOBS_DIR, f"{job_id}.json")
-    wrapper_file = os.path.join(JOBS_DIR, f"{job_id}_wrapper.py")
+    status_file = os.path.join(jobs_dir, f"{job_id}.json")
+    wrapper_file = os.path.join(jobs_dir, f"{job_id}_wrapper.py")
     
     try:
         # Find and kill the wrapper process
