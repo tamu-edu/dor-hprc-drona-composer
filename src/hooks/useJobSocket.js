@@ -16,12 +16,24 @@ export function useJobSocket() {
   const accumulatedData = useRef('');
   const currentJobId = useRef(null);
   const pollInterval = useRef(null);
+  const streamInterval = useRef(null);
   const outputPosition = useRef(0);
-  const baseUrl = useRef(''); // Store the base URL
+  const baseUrl = useRef('');
+  
 
-  const processBuffer = () => {
-    const rawText = accumulatedData.current;
-    const physicalLines = rawText.split('\n');
+  const DEBUG = false;
+  // Streaming parameters
+  const POLL_INTERVAL = 1000; // Poll server every 1000ms
+  const STREAM_CHUNKS = 10;   // Split each response into 10 chunks
+  const MIN_CHUNK_SIZE = 400;  // If text is smaller than this, output directly
+  const CHUNK_DELAY = POLL_INTERVAL / STREAM_CHUNKS; // 100ms between chunks
+  
+  // Streaming state
+  const chunkQueue = useRef([]); // Array of chunks to display
+  const isStreaming = useRef(false);
+
+  const processBuffer = (text) => {
+    const physicalLines = text.split('\n');
     const processedOutput = [];
 
     physicalLines.forEach((line) => {
@@ -56,10 +68,105 @@ export function useJobSocket() {
     setHtmlOutput(html);
   };
 
-  const appendOutput = (text) => {
-    accumulatedData.current += text;
-    setOutputBuffer(prev => prev + text);
-    processBuffer();
+  const splitIntoChunks = (text, numChunks) => {
+    if (!text || text.length === 0) return [];
+    
+    const chunkSize = Math.ceil(text.length / numChunks);
+    const chunks = [];
+    
+    for (let i = 0; i < text.length; i += chunkSize) {
+      chunks.push(text.slice(i, i + chunkSize));
+    }
+    
+    return chunks;
+  };
+
+  const startStreaming = () => {
+    if (isStreaming.current || chunkQueue.current.length === 0) return;
+    
+    isStreaming.current = true;
+    
+    const displayNextChunk = () => {
+      if (chunkQueue.current.length === 0) {
+        isStreaming.current = false;
+        return;
+      }
+      
+      // Dynamic chunking: if queue is long, combine multiple chunks to catch up
+      let chunksToTake = 1;
+      const queueLength = chunkQueue.current.length;
+      
+      if (queueLength > STREAM_CHUNKS * 3) {
+        chunksToTake = 4; // Very behind - take 4 chunks at once
+      } else if (queueLength > STREAM_CHUNKS * 2) {
+        chunksToTake = 3; // Behind - take 3 chunks at once
+      } else if (queueLength > STREAM_CHUNKS) {
+        chunksToTake = 2; // Slightly behind - take 2 chunks at once
+      }
+      
+      // Take the calculated number of chunks
+      let combinedChunk = '';
+      for (let i = 0; i < chunksToTake && chunkQueue.current.length > 0; i++) {
+        combinedChunk += chunkQueue.current.shift();
+      }
+      
+      accumulatedData.current += combinedChunk;
+      setOutputBuffer(accumulatedData.current);
+      processBuffer(accumulatedData.current);
+      
+      // Continue with next chunk if queue not empty
+      if (chunkQueue.current.length > 0) {
+        streamInterval.current = setTimeout(displayNextChunk, CHUNK_DELAY);
+      } else {
+        isStreaming.current = false;
+      }
+    };
+    
+    displayNextChunk();
+  };
+
+  const stopStreaming = () => {
+    if (streamInterval.current) {
+      clearTimeout(streamInterval.current);
+      streamInterval.current = null;
+    }
+    
+    // Flush remaining chunks immediately
+    while (chunkQueue.current.length > 0) {
+      const chunk = chunkQueue.current.shift();
+      accumulatedData.current += chunk;
+    }
+    
+    setOutputBuffer(accumulatedData.current);
+    processBuffer(accumulatedData.current);
+    isStreaming.current = false;
+  };
+
+  const finishJob = (finalMessage, finalStatus) => {
+    // Add final message to queue to ensure proper order
+    appendOutput(finalMessage, true); // immediate = true for completion messages
+    setStatus(finalStatus);
+    stopPolling();
+    setIsConnected(false);
+    
+    // Let streaming finish naturally - don't force stop
+    // The queue will empty and streaming will stop automatically
+  };
+
+  const appendOutput = (text, immediate = false) => {
+    // If text is small or immediate flag is set, output directly without chunking
+    if (immediate || text.length < MIN_CHUNK_SIZE) {
+      chunkQueue.current.push(text);
+    } else {
+      // Split new text into equal chunks
+      const chunks = splitIntoChunks(text, STREAM_CHUNKS);
+      chunkQueue.current.push(...chunks);
+    }
+    
+    // Start streaming if not already active
+    if (!isStreaming.current) {
+      startStreaming();
+    }
   };
 
   const stopPolling = () => {
@@ -70,77 +177,63 @@ export function useJobSocket() {
   };
 
   const extractBaseUrl = (action) => {
-    // Extract base URL from the action
-    // action is like: /pun/dev/dor-hprc-drona-composer/jobs/composer/submit
-    // we want: /pun/dev/dor-hprc-drona-composer/jobs/composer
     const match = action.match(/^(.+\/jobs\/composer)\//);
     if (match) {
       return match[1];
     }
-    // Fallback - try to get from current URL
     const path = window.location.pathname;
     const composerMatch = path.match(/^(.+\/jobs\/composer)/);
     if (composerMatch) {
       return composerMatch[1];
     }
-    // Last resort fallback
     return '/jobs/composer';
   };
 
   const startPolling = (jobId) => {
     stopPolling();
-    
+
     const poll = async () => {
       try {
         const url = `${baseUrl.current}/ws-job-output/${jobId}/${outputPosition.current}`;
-        console.log('[DEBUG] Polling URL:', url);
-        
+        if (DEBUG) console.log('[DEBUG] Polling URL:', url);
+
         const response = await fetch(url);
-        
+
         if (!response.ok) {
-          console.error('[DEBUG] Poll response not ok:', response.status);
+          if (DEBUG) console.error('[DEBUG] Poll response not ok:', response.status);
           return;
         }
-        
+
         const data = await response.json();
-        console.log('[DEBUG] Poll data:', data);
-        
+        if (DEBUG) console.log('[DEBUG] Poll data:', data);
+
         if (data.new_output) {
           appendOutput(data.new_output);
           outputPosition.current = data.total_length;
         }
-        
-        // Check if job is complete
+
+        // Check if job is complete - ensure all output is processed first
         if (data.status === 'completed') {
-          appendOutput('\nJob completed successfully.\n');
-          setStatus('completed');
-          stopPolling();
-          setIsConnected(false);
+          finishJob('\nJob completed successfully.\n', 'completed');
         } else if (data.status === 'failed') {
-          appendOutput(`\nJob failed with exit code ${data.exit_code || 1}\n`);
-          setStatus('failed');
-          stopPolling();
-          setIsConnected(false);
+          finishJob(`\nJob failed with exit code ${data.exit_code || 1}\n`, 'failed');
         } else if (data.status === 'error') {
-          appendOutput('\nJob encountered an error.\n');
-          setStatus('error');
-          stopPolling();
-          setIsConnected(false);
+          finishJob('\nJob encountered an error.\n', 'error');
         }
-        
+
       } catch (error) {
-        console.error('[DEBUG] Polling error:', error);
-        // Continue polling on errors, don't stop
+        if (DEBUG) console.error('[DEBUG] Polling error:', error);
       }
     };
-    
-    // Start polling every 300ms
-    pollInterval.current = setInterval(poll, 300);
+
+    // Poll every POLL_INTERVAL (1000ms)
+    pollInterval.current = setInterval(poll, POLL_INTERVAL);
   };
 
   useEffect(() => {
     return () => {
       stopPolling();
+      stopStreaming();
     };
   }, []);
 
@@ -152,9 +245,9 @@ export function useJobSocket() {
   const startHttpJob = async (bashCmd) => {
     try {
       const url = `${baseUrl.current}/ws-start-job`;
-      console.log('[DEBUG] Starting job URL:', url);
-      console.log('[DEBUG] Bash command:', bashCmd);
-      
+      if (DEBUG) console.log('[DEBUG] Starting job URL:', url);
+      if (DEBUG) console.log('[DEBUG] Bash command:', bashCmd);
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -164,56 +257,55 @@ export function useJobSocket() {
         body: JSON.stringify({ bash_cmd: bashCmd })
       });
 
-      console.log('[DEBUG] Start job response status:', response.status);
-      
+      if (DEBUG) console.log('[DEBUG] Start job response status:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[DEBUG] Start job error response:', errorText);
+        if (DEBUG) console.error('[DEBUG] Start job error response:', errorText);
         appendOutput(`\nError starting job: ${response.status}\n`);
         setStatus('error');
         return;
       }
 
       const data = await response.json();
-      console.log('[DEBUG] Start job response data:', data);
-      
+      if (DEBUG) console.log('[DEBUG] Start job response data:', data);
+
       if (data.job_id) {
         currentJobId.current = data.job_id;
         appendOutput('Job process started.\n');
         setStatus('running');
         setIsConnected(true);
-        
-        // Start polling for output
+
         startPolling(data.job_id);
       } else {
         appendOutput(`\nError: No job ID returned\n`);
         setStatus('error');
       }
-      
+
     } catch (error) {
-      console.error('[DEBUG] Start job error:', error);
+      if (DEBUG) console.error('[DEBUG] Start job error:', error);
       appendOutput(`\nConnection error: ${error.message}\n`);
       setStatus('error');
     }
   };
 
   const submitJob = (action, formData) => {
-    console.log('[DEBUG] Submit job called with action:', action);
-    
-    // Extract and store the base URL from the action
+    if (DEBUG) console.log('[DEBUG] Submit job called with action:', action);
+
     baseUrl.current = extractBaseUrl(action);
-    console.log('[DEBUG] Extracted base URL:', baseUrl.current);
-    
-    // Reset state
+    if (DEBUG) console.log('[DEBUG] Extracted base URL:', baseUrl.current);
+
+    // Reset all state
+    stopStreaming();
+    chunkQueue.current = [];
     accumulatedData.current = 'Starting job submission...\n';
     setOutputBuffer('Starting job submission...\n');
     setProcessedLines(['Starting job submission...\n']);
     setHtmlOutput(ansiUp.current.ansi_to_html('Starting job submission...\n'));
     setStatus('submitting');
     outputPosition.current = 0;
-    
+
     try {
-      // First, submit the job via your existing form endpoint
       const initialRequest = new XMLHttpRequest();
       initialRequest.open("POST", action, true);
       initialRequest.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -221,11 +313,10 @@ export function useJobSocket() {
 
       initialRequest.onreadystatechange = function() {
         if (initialRequest.readyState === 4) {
-          console.log('[DEBUG] Initial request status:', initialRequest.status);
-          console.log('[DEBUG] Initial request response:', initialRequest.response);
-          
+          if (DEBUG) console.log('[DEBUG] Initial request status:', initialRequest.status);
+          if (DEBUG) console.log('[DEBUG] Initial request response:', initialRequest.response);
+
           if (initialRequest.status === 200 && initialRequest.response && initialRequest.response.bash_cmd) {
-            // Now start the job via HTTP
             startHttpJob(initialRequest.response.bash_cmd);
           } else {
             appendOutput(`\nError starting the job: ${initialRequest.status}\n`);
@@ -235,15 +326,15 @@ export function useJobSocket() {
       };
 
       initialRequest.onerror = function() {
-        console.error('[DEBUG] Initial request error');
+        if (DEBUG) console.error('[DEBUG] Initial request error');
         appendOutput('\nConnection error during job submission.\n');
         setStatus('error');
       };
 
       initialRequest.send(formData);
-      
+
     } catch (error) {
-      console.error('[DEBUG] Submit job error:', error);
+      if (DEBUG) console.error('[DEBUG] Submit job error:', error);
       appendOutput(`\nError: ${error.message}\n`);
       setStatus('error');
     }
@@ -258,8 +349,10 @@ export function useJobSocket() {
     submitJob,
     sendInput,
     reset: () => {
-      console.log('[DEBUG] Reset called');
+      if (DEBUG) console.log('[DEBUG] Reset called');
       stopPolling();
+      stopStreaming();
+      chunkQueue.current = [];
       accumulatedData.current = 'Starting job submission...\n';
       setOutputBuffer('Starting job submission...\n');
       setProcessedLines(['Starting job submission...\n']);
