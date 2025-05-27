@@ -92,19 +92,11 @@ export function useJobSocket() {
         return;
       }
       
-      // Dynamic chunking: if queue is long, combine multiple chunks to catch up
       let chunksToTake = 1;
       const queueLength = chunkQueue.current.length;
       
-      if (queueLength > STREAM_CHUNKS * 3) {
-        chunksToTake = 4; // Very behind - take 4 chunks at once
-      } else if (queueLength > STREAM_CHUNKS * 2) {
-        chunksToTake = 3; // Behind - take 3 chunks at once
-      } else if (queueLength > STREAM_CHUNKS) {
-        chunksToTake = 2; // Slightly behind - take 2 chunks at once
-      }
+      chunksToTake = Math.floor(queueLength / STREAM_CHUNKS) + 1;
       
-      // Take the calculated number of chunks
       let combinedChunk = '';
       for (let i = 0; i < chunksToTake && chunkQueue.current.length > 0; i++) {
         combinedChunk += chunkQueue.current.shift();
