@@ -31,11 +31,14 @@ function JobComposer({
     sendInput
   } = useJobSocket();
 
+  // Check if job is currently running
+  const isJobRunning = status === 'submitting' || status === 'running';
+
   // Could be refactored to avoid duplicate code
   const getFormData = () => {
     const paneRefs = multiPaneRef.current?.getPaneRefs();
     if(!paneRefs) return null;
-    
+
     if(props.jobStatus === "rerun"){
       const data = props.rerunInfo;
       const additionalFiles = {};
@@ -119,6 +122,12 @@ function JobComposer({
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Block submission if job is already running
+    if (isJobRunning) {
+      alert("A job is already running. Please wait for it to complete before submitting another job.");
+      return;
+    }
+
     const formData = getFormData();
     if (!formData) {
       alert("Error preparing form data.");
@@ -192,12 +201,12 @@ function JobComposer({
               </div>
               {props.environment && props.environment.env !== "" && (
                 <div>
-                  <input 
-                    type="button" 
-                    id="job-preview-button" 
-                    className="btn btn-primary maroon-button" 
-                    value="Preview" 
-                    onClick={handlePreview} 
+                  <input
+                    type="button"
+                    id="job-preview-button"
+                    className="btn btn-primary maroon-button"
+                    value="Preview"
+                    onClick={handlePreview}
                   />
                 </div>
               )}
@@ -237,6 +246,8 @@ function JobComposer({
         status={status}
         // Workflow
         onSubmit={handleSubmit}
+        // Job control
+        isJobRunning={isJobRunning}
       />
 
       <EnvironmentModal envModalRef={envModalRef} />
