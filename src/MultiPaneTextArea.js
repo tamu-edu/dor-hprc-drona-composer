@@ -144,7 +144,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
   };
 
   const editorWrapperStyle = {
-    height: '400px',
+    height: '100%',
     overflow: 'auto'
   };
 
@@ -194,7 +194,7 @@ const MultiPaneTextArea = forwardRef(({ panes, setPanes, isDisplayed }, ref) => 
                     }
                   }}
                   value={pane.content || ''}
-                  height="400px"
+                  height="100%"
                   theme={eclipse}
                   extensions={[
                     ...getLanguageExtension(pane.preview_name),
