@@ -5,8 +5,7 @@ import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
 import EnvironmentModal from "./EnvironmentModal";
-import PreviewModal from "./PreviewModal";
-import StreamingModal from "./StreamingModal";
+import SplitScreenModal from "./SplitScreenModal";
 import { useJobSocket } from "./hooks/useJobSocket";
 
 function JobComposer({
@@ -19,23 +18,27 @@ function JobComposer({
   ...props
 }) {
   const [showHistory, setShowHistory] = useState(true);
-  const [showStreaming, setShowStreaming] = useState(false);
+  const [showSplitScreenModal, setShowSplitScreenModal] = useState(false);
 
-  const { 
-    lines, 
-    rawOutput, 
-    htmlOutput, 
-    isConnected, 
-    status, 
-    submitJob, 
-    reset, 
-    sendInput 
+  const {
+    lines,
+    rawOutput,
+    htmlOutput,
+    isConnected,
+    status,
+    submitJob,
+    reset,
+    sendInput
   } = useJobSocket();
 
+  // Check if job is currently running
+  const isJobRunning = status === 'submitting' || status === 'running';
 
   // Could be refactored to avoid duplicate code
   const getFormData = () => {
-    const paneRefs = multiPaneRef.current.getPaneRefs();
+    const paneRefs = multiPaneRef.current?.getPaneRefs();
+    if(!paneRefs) return null;
+
     if(props.jobStatus === "rerun"){
       const data = props.rerunInfo;
       const additionalFiles = {};
@@ -55,8 +58,10 @@ function JobComposer({
 
       data["additional_files"] = JSON.stringify(additionalFiles);
 
-      data["files"] = props.globalFiles;
-      
+      if (props.globalFiles) {
+        data["files"] = props.globalFiles;
+      }
+
       const formData = new FormData;
       for (const [key, value] of Object.entries(data)) {
         if (value instanceof File) {
@@ -73,7 +78,7 @@ function JobComposer({
       return formData;
     }
     else {
-      const formData =  new FormData(formRef.current)
+      const formData = new FormData(formRef.current)
       const additional_files = {};
 
       paneRefs.forEach((ref) => {
@@ -88,41 +93,59 @@ function JobComposer({
           }
         }
       });
-	    
+
       formData.append("additional_files", JSON.stringify(additional_files));
 
-      formData.append("env_dir", props.environment.src);
-    
-      props.globalFiles.forEach((file) => {
-          formData.append("files[]", file);
-      });
-      
+      if (props.environment && props.environment.src) {
+        formData.append("env_dir", props.environment.src);
+      }
+
+      if (props.globalFiles && props.globalFiles.length > 0) {
+        props.globalFiles.forEach((file) => {
+            formData.append("files[]", file);
+        });
+      }
+
       return formData;
     }
   }
 
+  const handlePreview = () => {
+    // Call the original preview handler to prepare data
+    if (props.handlePreview) {
+      props.handlePreview();
+    }
+    // Then show our split screen modal
+    setShowSplitScreenModal(true);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Block submission if job is already running
+    if (isJobRunning) {
+      alert("A job is already running. Please wait for it to complete before submitting another job.");
+      return;
+    }
 
     const formData = getFormData();
+    if (!formData) {
+      alert("Error preparing form data.");
+      return;
+    }
 
     if (formData.get("name") === "") {
       alert("Job name is required.");
       return;
     }
-    window.jQuery(previewRef.current).modal('hide');
-    const paneRefs = multiPaneRef.current.getPaneRefs();
 
-    setShowStreaming(true);
-
+    // Start the job submission - modal stays open to show streaming
     const action = formRef.current.getAttribute("action");
     submitJob(action, formData);
   };
 
-  const handleCloseStreaming = () => {
-    setShowStreaming(false);
+  const handleCloseSplitScreenModal = () => {
+    setShowSplitScreenModal(false);
     reset();
   };
 
@@ -142,7 +165,7 @@ function JobComposer({
             autoComplete="off"
             method="POST"
             encType="multipart/form-data"
-            onSubmit={handleSubmit} 
+            onSubmit={handleSubmit}
             onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
             action={document.dashboard_url + "/jobs/composer/submit"}
             style={{ width: '100%' }}
@@ -158,12 +181,12 @@ function JobComposer({
                     label="Environments"
                     options={props.environments}
                     onChange={props.handleEnvChange}
-                    value={props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
+                    value={props.environment && props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
                     showAddMore={true}
                     onAddMore={props.handleAddEnv}
                   />
                   <Composer
-                    environment={props.environment}
+                    environment={props.environment || {}}
                     fields={props.fields}
                     onFileChange={props.handleUploadedFiles}
                     setError={setError}
@@ -176,9 +199,15 @@ function JobComposer({
               <div className="invisible">
                 <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
               </div>
-              {props.environment.env !== "" && (
+              {props.environment && props.environment.env !== "" && (
                 <div>
-                  <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={props.handlePreview} />
+                  <input
+                    type="button"
+                    id="job-preview-button"
+                    className="btn btn-primary maroon-button"
+                    value="Preview"
+                    onClick={handlePreview}
+                  />
                 </div>
               )}
               <div>
@@ -202,25 +231,26 @@ function JobComposer({
         </div>
       </div>
 
-      <StreamingModal
-        isOpen={showStreaming}
-        onClose={handleCloseStreaming}
-        outputLines={lines}
-        rawOutput={rawOutput}
-        htmlOutput={htmlOutput}
-        status={status}
-        onSendInput={sendInput}
-      />
-
-      <EnvironmentModal envModalRef={envModalRef} />
-      <PreviewModal
-        previewRef={previewRef}
+      <SplitScreenModal
+        isOpen={showSplitScreenModal}
+        onClose={handleCloseSplitScreenModal}
+        // Preview props
         warningMessages={props.warningMessages}
         multiPaneRef={multiPaneRef}
         panes={props.panes}
         setPanes={props.setPanes}
-        isPreviewOpen={props.isPreviewOpen}
+        // Streaming props
+        outputLines={lines}
+        rawOutput={rawOutput}
+        htmlOutput={htmlOutput}
+        status={status}
+        // Workflow
+        onSubmit={handleSubmit}
+        // Job control
+        isJobRunning={isJobRunning}
       />
+
+      <EnvironmentModal envModalRef={envModalRef} />
     </div>
   );
 }
