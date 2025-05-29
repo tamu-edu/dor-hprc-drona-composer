@@ -101,10 +101,10 @@ function StaticText(props) {
             const fieldValue = getFieldValue(currentFormValues, fieldName);
 
             if (fieldValue !== undefined) {
-              params.append(key, fieldValue);
+              params.append(key, JSON.stringify(fieldValue));
             }
           } else {
-            params.append(key, value);
+            params.append(key, JSON.stringify(value));
           }
         });
       }

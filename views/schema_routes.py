@@ -59,6 +59,12 @@ def execute_script(
     # Prepare environment variables
     execution_env = os.environ.copy()
     if env_vars:
+        for key, value in env_vars.items():
+            try:
+                parsed = json.loads(value)
+                env_vars[key] = parsed.get('value', parsed) if isinstance(parsed, dict) else str(parsed)
+            except:
+                pass
         execution_env.update(env_vars)
     
     try:
@@ -89,7 +95,6 @@ def execute_script(
             try:
                 return json.loads(result.stdout)
             except json.JSONDecodeError as e:
-                print("Got here")
                 raise APIError(
                     f"The {script_type.lower()} script did not return valid JSON",
                     status_code=400,
