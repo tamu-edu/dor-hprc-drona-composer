@@ -1,63 +1,18 @@
-/**
- * @name DragDropContainer
- * @description A drag-and-drop container component that allows users to build forms
- * or configurations by dragging elements from a palette into a drop zone.
- * Supports both form building (text inputs, selects, etc.) and specialized use cases
- * like neural network layer composition.
- *
- * @example
- * // Basic drag-drop container for form building
- * {
- *   "type": "dragDropContainer",
- *   "title": "Form Builder",
- *   "availableElements": ["text", "number", "select", "checkbox"],
- *   "allowReorder": true,
- *   "allowEdit": true,
- *   "elements": []
- * }
- *
- * // Neural network layer builder
- * {
- *   "type": "dragDropContainer", 
- *   "title": "Neural Network Layers",
- *   "availableElements": ["dense", "conv2d", "dropout", "activation"],
- *   "elementTemplates": {
- *     "dense": {
- *       "type": "dense",
- *       "label": "Dense Layer",
- *       "properties": {
- *         "units": {"type": "number", "default": 64},
- *         "activation": {"type": "select", "options": ["relu", "sigmoid", "tanh"], "default": "relu"}
- *       }
- *     }
- *   },
- *   "elements": []
- * }
- *
- * @property {string} [title="Drag & Drop Builder"] - Title displayed at the top
- * @property {Array} availableElements - Array of element types available in the palette
- * @property {Object} [elementTemplates] - Templates defining properties for each element type
- * @property {boolean} [allowReorder=true] - Whether elements can be reordered
- * @property {boolean} [allowEdit=true] - Whether element properties can be edited
- * @property {boolean} [allowRemove=true] - Whether elements can be removed
- * @property {Array} [elements=[]] - Initial elements in the drop zone
- */
-
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   DndContext,
-  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
   useSensor,
   useSensors,
-  PointerSensor,
-  KeyboardSensor,
-  closestCenter,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
+  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-  arrayMove,
 } from "@dnd-kit/sortable";
 
 import ElementPalette from "./DragDrop/ElementPalette";
@@ -65,107 +20,157 @@ import DropZone from "./DragDrop/DropZone";
 import PropertyEditor from "./DragDrop/PropertyEditor";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
-// Default element templates for common form elements
+// Enhanced DragOverlay Component
+function DragOverlayComponent({ activeId, elementTemplates, elements }) {
+  if (!activeId) return null;
+
+  // Check if it's a new element from palette or existing element
+  const isNewElement = Object.keys(elementTemplates).includes(activeId);
+  const existingElement = elements.find(el => el.id === activeId);
+  
+  if (isNewElement) {
+    const template = elementTemplates[activeId];
+    return (
+      <div className="bg-white border rounded shadow-lg p-3" style={{
+        borderLeft: "4px solid #500000",
+        minWidth: "200px",
+        transform: "rotate(2deg)",
+        cursor: "grabbing"
+      }}>
+        <div className="d-flex align-items-center gap-2 mb-2">
+          <div className="fw-semibold text-dark">{template?.label || activeId}</div>
+        </div>
+        {template?.description && (
+          <div className="text-muted small mb-2">{template.description}</div>
+        )}
+
+        {template.config && Object.keys(template.config).length > 0 && (
+          <div className="small text-muted">
+            {Object.entries(template.config)
+              .slice(0, 2)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(", ")}
+            {Object.keys(template.config).length > 2 && "..."}
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  if (existingElement) {
+    return (
+      <div className="bg-white border rounded shadow-lg p-3" style={{
+        borderLeft: "4px solid #500000",
+        minWidth: "200px",
+        transform: "rotate(-1deg)",
+        cursor: "grabbing"
+      }}>
+        <div className="d-flex align-items-center gap-2 mb-2">
+          <div className="fw-semibold text-dark">{existingElement.label}</div>
+        </div>
+        <div className="text-muted small mb-2">{existingElement.type}</div>
+        {existingElement.config && Object.keys(existingElement.config).length > 0 && (
+          <div className="small text-muted">
+            {Object.entries(existingElement.config)
+              .slice(0, 2)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(", ")}
+            {Object.keys(existingElement.config).length > 2 && "..."}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback for unknown elements
+  return (
+    <div className="bg-white border rounded shadow-lg p-3" style={{
+      borderLeft: "4px solid #6c757d",
+      minWidth: "150px",
+      cursor: "grabbing"
+    }}>
+      <div className="fw-semibold text-dark">{activeId}</div>
+    </div>
+  );
+}
+
 function DragDropContainer(props) {
   const {
     title = "Drag & Drop Builder",
-    availableElements = ["text", "number", "select", "checkbox"],
+    availableElements = [],
     elementTemplates = {},
-    allowReorder = true,
     allowEdit = true,
-    allowRemove = true,
     elements: initialElements = {},
-    onChange = props.onChange,
-    index = props.index,
-    currentValues,
-    setError,
+    onChange,
+    index,
     name,
     label,
     help,
     labelOnTop
   } = props;
 
-  const [value, setValue] = useState("TESFD");
-  
-  console.log("DragDropContainer initialized with props:", {
-    name,
-    index,
-    onChange: !!onChange,
-    initialElements,
-    value: props.value,
-    props
-  });
- 
-  
-  // Initialize state from props.value (current form value) or initialElements (schema default)
   const [elements, setElements] = useState(() => {
-    let initialElementsArray = [];
-    
-    // First try to get elements from current form value (props.value)
     if (props.value && typeof props.value === 'string') {
       try {
         const parsedValue = JSON.parse(props.value);
-        initialElementsArray = Object.values(parsedValue);
-        console.log("DragDropContainer: Loading from form value:", initialElementsArray);
+        return Array.isArray(parsedValue) ? parsedValue : Object.values(parsedValue);
       } catch (e) {
-        console.log("DragDropContainer: Failed to parse form value, using schema default");
-        initialElementsArray = Object.values(initialElements || {});
+        return Object.values(initialElements || {});
       }
-    } else {
-      // Fall back to schema default
-      initialElementsArray = Object.values(initialElements || {});
-      console.log("DragDropContainer: Using schema default elements:", initialElementsArray);
     }
-    
-    return initialElementsArray;
+    return Object.values(initialElements || {});
   });
-  
-  console.log(elements);
+
   const [activeId, setActiveId] = useState(null);
   const [editingElement, setEditingElement] = useState(null);
 
-  // Update elements when props.value changes (form state update)
   useEffect(() => {
     if (props.value && typeof props.value === 'string') {
       try {
         const parsedValue = JSON.parse(props.value);
         const newElements = Array.isArray(parsedValue) ? parsedValue : Object.values(parsedValue);
-        // Only update if the elements are actually different to prevent infinite loops
         if (JSON.stringify(newElements) !== JSON.stringify(elements)) {
-          console.log("DragDropContainer: Form value changed, updating elements:", newElements);
           setElements(newElements);
         }
       } catch (e) {
-        console.log("DragDropContainer: Failed to parse updated form value");
+        // Invalid JSON, ignore
       }
     }
   }, [props.value, elements]);
 
-  const mergedTemplates = elementTemplates; 
-
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px of movement before starting drag
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
-  // Generate unique ID for new elements
   const generateId = () => `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-  // Handle drag start
+  const notifyChange = useCallback((newElements) => {
+    const value = JSON.stringify(newElements);
+    if (onChange) {
+      onChange(index, value);
+    }
+  }, [onChange, index]);
+
   const handleDragStart = useCallback((event) => {
     setActiveId(event.active.id);
+    
+    // Add haptic feedback on supported devices
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
   }, []);
 
-  // Handle drag end
   const handleDragEnd = useCallback((event) => {
     const { active, over } = event;
-    
-    console.log("DragDropContainer: Drag ended", { active: active?.id, over: over?.id });
-    
+
     if (!over) {
-      console.log("DragDropContainer: No drop target found");
       setActiveId(null);
       return;
     }
@@ -173,119 +178,93 @@ function DragDropContainer(props) {
     const activeId = active.id;
     const overId = over.id;
 
-    // Check if we're dropping from palette to drop zone
-    if (availableElements.includes(activeId) && overId === "drop-zone") {
-      const template = mergedTemplates[activeId];
+    // Handle insertion zones
+    const isInsertionZone = overId.startsWith('insertion-');
+    const insertionIndex = isInsertionZone ? parseInt(overId.split('-')[1]) : null;
+
+    // Add new element from palette
+    if (availableElements.includes(activeId)) {
+      const template = elementTemplates[activeId];
       if (template) {
         const newElement = {
           id: generateId(),
           type: activeId,
           ...template,
-          // Initialize properties with default values
           config: Object.keys(template.properties || {}).reduce((acc, key) => {
             acc[key] = template.properties[key].default;
             return acc;
           }, {})
         };
-        
-        const newElements = [...elements, newElement];
+
+        let newElements;
+        if (isInsertionZone) {
+          // Insert at specific position
+          newElements = [...elements];
+          newElements.splice(insertionIndex, 0, newElement);
+        } else {
+          // Add to end (drop-zone or other areas)
+          newElements = [...elements, newElement];
+        }
+
         setElements(newElements);
+        notifyChange(newElements);
         
-        // Convert array back to dictionary format for parent
-        const elementsDict = newElements.reduce((acc, el, idx) => {
-          acc[`element_${idx}`] = el;
-          return acc;
-        }, {});
-        
-        // Notify parent component of change - pass simple string like Text component
-        const value = JSON.stringify(newElements);
-        console.log("DragDropContainer: Adding element, calling onChange with:", {
-          index,
-          value,
-          newElements
-        });
-        if (onChange) {
-          onChange(index, value);
+        // Haptic feedback for successful drop
+        if (navigator.vibrate) {
+          navigator.vibrate([50, 50, 50]);
         }
       }
     }
-    // Handle reordering within drop zone
-    else if (allowReorder && elements.find(el => el.id === activeId) && elements.find(el => el.id === overId)) {
+    // Reorder existing elements
+    else if (elements.find(el => el.id === activeId)) {
       const oldIndex = elements.findIndex(el => el.id === activeId);
-      const newIndex = elements.findIndex(el => el.id === overId);
-      
+      let newIndex;
+
+      if (isInsertionZone) {
+        // Dropping on insertion zone
+        newIndex = insertionIndex;
+        // Adjust for removal of element from old position
+        if (oldIndex < insertionIndex) {
+          newIndex = insertionIndex - 1;
+        }
+      } else if (elements.find(el => el.id === overId)) {
+        // Dropping on another element
+        newIndex = elements.findIndex(el => el.id === overId);
+      } else {
+        // Dropping on drop-zone or other areas - move to end
+        newIndex = elements.length - 1;
+      }
+
       if (oldIndex !== newIndex) {
         const newElements = arrayMove(elements, oldIndex, newIndex);
         setElements(newElements);
+        notifyChange(newElements);
         
-        // Convert array back to dictionary format for parent
-        const elementsDict = newElements.reduce((acc, el, idx) => {
-          acc[`element_${idx}`] = el;
-          return acc;
-        }, {});
-        
-        const value = JSON.stringify(newElements);
-        console.log("DragDropContainer: Reordering elements, calling onChange with:", {
-          index,
-          value,
-          newElements
-        });
-        if (onChange) {
-          onChange(index, value);
+        // Haptic feedback for reorder
+        if (navigator.vibrate) {
+          navigator.vibrate(100);
         }
       }
     }
 
     setActiveId(null);
-  }, [elements, availableElements, mergedTemplates, allowReorder, onChange, index]);
+  }, [elements, availableElements, elementTemplates, notifyChange]);
 
-  // Handle element removal
   const handleRemoveElement = useCallback((elementId) => {
     const newElements = elements.filter(el => el.id !== elementId);
     setElements(newElements);
-    
-    // Convert array back to dictionary format for parent
-    const elementsDict = newElements.reduce((acc, el, idx) => {
-      acc[`element_${idx}`] = el;
-      return acc;
-    }, {});
-    
-    const value = JSON.stringify(newElements);
-    console.log("DragDropContainer: Removing element, calling onChange with:", {
-      index,
-      value,
-      newElements
-    });
-    if (onChange) {
-      onChange(index, value);
-    }
-  }, [elements, onChange, index]);
+    notifyChange(newElements);
+  }, [elements, notifyChange]);
 
-  // Handle element property update
   const handleUpdateElement = useCallback((elementId, updates) => {
-    const newElements = elements.map(el => 
-      el.id === elementId 
+    const newElements = elements.map(el =>
+      el.id === elementId
         ? { ...el, config: { ...el.config, ...updates } }
         : el
     );
     setElements(newElements);
-    
-    // Convert array back to dictionary format for parent
-    const elementsDict = newElements.reduce((acc, el, idx) => {
-      acc[`element_${idx}`] = el;
-      return acc;
-    }, {});
-    
-    const value = JSON.stringify(newElements);
-    console.log("DragDropContainer: Updating element, calling onChange with:", {
-      index,
-      value,
-      newElements
-    });
-    if (onChange) {
-      onChange(index, value);
-    }
-  }, [elements, onChange, index]);
+    notifyChange(newElements);
+  }, [elements, notifyChange]);
 
   return (
     <FormElementWrapper
@@ -293,96 +272,77 @@ function DragDropContainer(props) {
       name={name}
       label={label}
       help={help}
+      useLabel={false}
     >
-      <div style={{
-        border: "1px solid #dee2e6",
-        borderRadius: "0.5rem",
-        padding: "1rem",
-        marginBottom: "1rem",
-        backgroundColor: "#f8f9fa"
-      }}>
-        <h4 style={{ 
-          marginBottom: "1rem", 
-          color: "#500000",
-          fontWeight: "600" 
-        }}>
+      <div className="border rounded p-4 mb-4 bg-light">
+        <h4 className="mb-4 fw-semibold" style={{ color: "#500000" }}>
           {title}
         </h4>
-      
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div style={{ 
-          display: "flex", 
-          gap: "1rem",
-          minHeight: "400px"
-        }}>
-          {/* Element Palette */}
-          <div style={{ flex: "0 0 250px" }}>
-            <ElementPalette
-              availableElements={availableElements}
-              elementTemplates={mergedTemplates}
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="d-flex gap-4" style={{ minHeight: "500px" }}>
+            <div style={{ flex: "0 0 280px" }}>
+              <ElementPalette
+                availableElements={availableElements}
+                elementTemplates={elementTemplates}
+              />
+            </div>
+
+            <div className="flex-grow-1">
+              <SortableContext
+                items={elements.map(el => el.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <DropZone
+                  elements={elements}
+                  allowEdit={allowEdit}
+                  onRemoveElement={handleRemoveElement}
+                  onEditElement={setEditingElement}
+                />
+              </SortableContext>
+            </div>
+          </div>
+
+          <DragOverlay dropAnimation={{
+            duration: 250,
+            easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+          }}>
+            <DragOverlayComponent 
+              activeId={activeId} 
+              elementTemplates={elementTemplates}
+              elements={elements}
+            />
+          </DragOverlay>
+        </DndContext>
+
+        {editingElement && (
+          <div className="mt-4">
+            <PropertyEditor
+              element={editingElement}
+              template={elementTemplates[editingElement.type]}
+              onSave={(updates) => {
+                handleUpdateElement(editingElement.id, updates);
+                setEditingElement(null);
+              }}
+              onCancel={() => setEditingElement(null)}
             />
           </div>
-          
-          {/* Drop Zone */}
-          <div style={{ flex: "1" }}>
-            <SortableContext 
-              items={elements.map(el => el.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <DropZone
-                elements={elements}
-                allowReorder={allowReorder}
-                allowEdit={allowEdit}
-                allowRemove={allowRemove}
-                onRemoveElement={handleRemoveElement}
-                onEditElement={setEditingElement}
-              />
-            </SortableContext>
-          </div>
-        </div>
-
-        <DragOverlay>
-          {activeId ? (
-            <div style={{
-              padding: "0.5rem",
-              backgroundColor: "#fff",
-              border: "2px solid #500000",
-              borderRadius: "0.25rem",
-              boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
-            }}>
-              {mergedTemplates[activeId]?.label || activeId}
-            </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-
-      {/* Property Editor Modal */}
-      {editingElement && (
-        <PropertyEditor
-          element={editingElement}
-          template={mergedTemplates[editingElement.type]}
-          onSave={(updates) => {
-            handleUpdateElement(editingElement.id, updates);
-            setEditingElement(null);
-          }}
-          onCancel={() => setEditingElement(null)}
-        />
-      )}
+        )}
       </div>
+
       <input
         type="hidden"
         name={props.name}
         id={props.id}
         value={JSON.stringify(elements.map(el => ({
-              type: el.type,
-              config: el.config
-            })), null, 2)}
-        placeholder={props.placeholder}
+          type: el.type,
+          config: el.config
+        })))}
         className="form-control"
       />
     </FormElementWrapper>

@@ -1,38 +1,54 @@
-/**
- * @name ElementPalette
- * @description A palette component that displays draggable elements available for
- * adding to the drop zone. Each element shows its name, icon, and description
- * and can be dragged into the form builder area.
- */
-
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 
-// Icon mapping for different element types
-const ELEMENT_ICONS = {
-  // Form elements
-  text: "📝",
-  number: "🔢", 
-  select: "📋",
-  checkbox: "☑️",
-  textarea: "📄",
-  radio: "⚪",
-  date: "📅",
-  time: "⏰",
+// CSS for hover effects and improved styling
+const styles = `
+  .draggable-element:hover:not(.dragging) {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
+    cursor: pointer;
+  }
   
-  // Neural network layers
-  dense: "🔗",
-  conv2d: "🌐",
-  dropout: "❌",
-  activation: "⚡",
-  flatten: "📏",
-  maxpooling2d: "⬇️",
-  batchnormalization: "📊",
+  .draggable-element {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
   
-  // Container elements
-  container: "📦",
-  section: "📂"
-};
+  .dragging {
+    opacity: 0 !important;
+    pointer-events: none;
+    transform: scale(0.95);
+    cursor: grabbing !important;
+  }
+  
+  .scrollable-elements {
+    scrollbar-width: thin;
+    scrollbar-color: #6c757d #f8f9fa;
+  }
+  
+  .scrollable-elements::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollable-elements::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 3px;
+  }
+  
+  .scrollable-elements::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 3px;
+  }
+  
+  .scrollable-elements::-webkit-scrollbar-thumb:hover {
+    background: #495057;
+  }
+  
+  .search-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+  }
+`;
 
 function DraggableElement({ elementType, template }) {
   const {
@@ -52,72 +68,19 @@ function DraggableElement({ elementType, template }) {
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? "grabbing" : "grab",
-        padding: "0.75rem",
-        margin: "0.25rem 0",
-        backgroundColor: "#fff",
-        border: "1px solid #dee2e6",
-        borderRadius: "0.375rem",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        transition: "all 0.2s ease",
-        userSelect: "none"
-      }}
+      className={`p-3 my-1 bg-white border rounded shadow-sm user-select-none draggable-element ${
+        isDragging ? "dragging" : ""
+      }`}
+      style={style}
       {...listeners}
       {...attributes}
-      onMouseEnter={(e) => {
-        if (!isDragging) {
-          e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-          e.target.style.transform = "translateY(-2px)";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isDragging) {
-          e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
-          e.target.style.transform = "translateY(0)";
-        }
-      }}
     >
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        marginBottom: "0.25rem"
-      }}>
-        <span style={{ fontSize: "1.25rem" }}>
-          {ELEMENT_ICONS[elementType] || "📋"}
-        </span>
-        <span style={{ 
-          fontWeight: "600", 
-          fontSize: "0.875rem",
-          color: "#333"
-        }}>
-          {template?.label || elementType}
-        </span>
+      <div className="fw-semibold small text-dark mb-1">
+        {template?.label || elementType}
       </div>
-      
       {template?.description && (
-        <div style={{
-          fontSize: "0.75rem",
-          color: "#666",
-          marginTop: "0.25rem"
-        }}>
+        <div className="text-muted mb-1" style={{ fontSize: "0.75rem" }}>
           {template.description}
-        </div>
-      )}
-      
-      {/* Show basic properties preview */}
-      {template?.properties && Object.keys(template.properties).length > 0 && (
-        <div style={{
-          fontSize: "0.7rem",
-          color: "#888",
-          marginTop: "0.25rem",
-          fontStyle: "italic"
-        }}>
-          {Object.keys(template.properties).slice(0, 3).join(", ")}
-          {Object.keys(template.properties).length > 3 && "..."}
         </div>
       )}
     </div>
@@ -125,53 +88,120 @@ function DraggableElement({ elementType, template }) {
 }
 
 function ElementPalette({ availableElements, elementTemplates }) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter elements based on search term
+  const filteredElements = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return availableElements;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    return availableElements.filter((elementType) => {
+      const template = elementTemplates[elementType];
+      const label = template?.label || elementType;
+      const description = template?.description || "";
+      
+      return (
+        elementType.toLowerCase().includes(searchLower) ||
+        label.toLowerCase().includes(searchLower) ||
+        description.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [availableElements, elementTemplates, searchTerm]);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
+
   return (
-    <div style={{
-      backgroundColor: "#fff",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.375rem",
-      padding: "1rem",
-      height: "100%"
-    }}>
-      <h5 style={{ 
-        marginBottom: "1rem",
-        fontSize: "1rem",
-        fontWeight: "600",
-        color: "#500000",
-        borderBottom: "1px solid #eee",
-        paddingBottom: "0.5rem"
-      }}>
-        Available Elements
-      </h5>
-      
-      <div style={{ 
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.25rem",
-        maxHeight: "calc(100% - 60px)",
-        overflowY: "auto"
-      }}>
-        {availableElements.map((elementType) => (
-          <DraggableElement
-            key={elementType}
-            elementType={elementType}
-            template={elementTemplates[elementType]}
-          />
-        ))}
+    <>
+      <style>{styles}</style>
+      <div className="bg-white border rounded h-100 d-flex flex-column">
+        {/* Header */}
+        <div className="p-4 border-bottom">
+          <h5 className="mb-3 fw-semibold text-dark" style={{ color: "#500000" }}>
+            Available Elements
+          </h5>
+          
+          {/* Search Input */}
+          <div className="position-relative">
+            <input
+              type="text"
+              className="form-control search-input"
+              placeholder="Search elements..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              style={{ paddingRight: searchTerm ? "2.5rem" : "1rem" }}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-1 p-1 border-0 bg-transparent text-muted"
+                onClick={clearSearch}
+                style={{ fontSize: "0.8rem" }}
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          
+          {/* Search Results Info */}
+          {searchTerm && (
+            <div className="mt-2 small text-muted">
+              {filteredElements.length} of {availableElements.length} elements
+            </div>
+          )}
+        </div>
+
+        {/* Scrollable Elements List */}
+        <div className="flex-grow-1 overflow-hidden">
+          <div
+            className="h-100 p-3 overflow-auto scrollable-elements"
+            style={{ 
+              maxHeight: "100%",
+            }}
+          >
+            {filteredElements.length > 0 ? (
+              <div className="d-flex flex-column gap-1">
+                {filteredElements.map((elementType) => (
+                  <DraggableElement
+                    key={elementType}
+                    elementType={elementType}
+                    template={elementTemplates[elementType]}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-muted py-4">
+                <div className="mb-2">No elements found</div>
+                {searchTerm && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={clearSearch}
+                  >
+                    Clear search
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-3 border-top bg-light">
+          <div className="text-center text-muted small">
+            Drag elements to the drop zone
+          </div>
+        </div>
       </div>
-      
-      <div style={{
-        marginTop: "1rem",
-        padding: "0.5rem",
-        backgroundColor: "#f8f9fa",
-        borderRadius: "0.25rem",
-        fontSize: "0.75rem",
-        color: "#666",
-        textAlign: "center"
-      }}>
-        💡 Drag elements to the drop zone →
-      </div>
-    </div>
+    </>
   );
 }
 
