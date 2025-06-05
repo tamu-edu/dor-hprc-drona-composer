@@ -1,10 +1,12 @@
 import React from "react";
 import Label from "./Label";
 
-const FormElementWrapper = ({ labelOnTop, name, label, help, children }) => {
+const FormElementWrapper = ({ labelOnTop, name, label, help, children, useLabel=true }) => {
 return (
     <div className="form-group">
-      {labelOnTop ? (
+
+      {useLabel ? 
+      labelOnTop ? (
         // Label on top of the input field
         <>
           <Label labelOnTop name={name} label={label} help={help} />
@@ -16,6 +18,8 @@ return (
           <Label name={name} label={label} help={help} />
           <div className="col-lg-9">{children}</div>
         </div>
+      ) : (
+        <div>{children}</div>
       )}
     </div>
   );

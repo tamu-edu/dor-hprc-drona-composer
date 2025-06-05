@@ -7,63 +7,174 @@ import os
 from machine_driver_scripts.utils import *
 import importlib.util
 
-def replace_flag(match, flag_dict):
-    flagchar, flagname = match.group(1), match.group(2)
-    if flagname in flag_dict and flag_dict[flagname] != "":
-        return f"-{flagchar} {flag_dict[flagname]}"
-    else:
-        return ""
-
-def replace_no_flag(match, flag_dict):
-    flagname = match.group(1)
-    if flagname in flag_dict:
-        return flag_dict[flagname]
-    else:
-        return ""
-
 def process_function(value, environment, env_dir):
-    pattern = r'!(\w+)\((.*?)\)'
-    matches = re.findall(pattern, value)
-
+    def find_function_calls(text):
+        calls = []
+        i = 0
+        while i < len(text):
+            # Skip var tags
+            if text[i:i+5] == '<var>':
+                i += 5
+                while i < len(text) - 5 and text[i:i+6] != '</var>':
+                    i += 1
+                if i < len(text) - 5:
+                    i += 6  # Skip closing tag
+                continue
+            # Check for function call
+            if text[i] == '!':
+                # Try to match function pattern starting from current position
+                func_match = re.match(r'!(\w+)\(', text[i:])
+                if func_match:
+                    start = i
+                    func_name = func_match.group(1)
+                    i += len(func_match.group(0))  # Move past the opening parenthesis
+                    params_start = i
+                    # Find the matching closing parenthesis
+                    while i < len(text):
+                        if text[i] == ')':
+                            # Found our closing parenthesis
+                            params = text[params_start:i]
+                            calls.append((start, i + 1, func_name, params))
+                            i += 1  # Move past the closing parenthesis
+                            break
+                        elif text[i] in ['"', "'"]:
+                            # Skip quoted string with proper escape handling
+                            quote = text[i]
+                            i += 1
+                            while i < len(text):
+                                if text[i] == '\\':
+                                    # Skip escaped character
+                                    i += 2  # Skip both backslash and escaped char
+                                    if i > len(text):  # Bounds check
+                                        break
+                                elif text[i] == quote:
+                                    # Found unescaped closing quote
+                                    i += 1  # Skip closing quote
+                                    break
+                                else:
+                                    i += 1
+                        elif text[i:i+5] == '<var>':
+                            # Skip var tag
+                            i += 5
+                            while i < len(text) - 5 and text[i:i+6] != '</var>':
+                                i += 1
+                            if i < len(text) - 5:
+                                i += 6  # Skip closing tag
+                        else:
+                            i += 1
+                else:
+                    i += 1
+            else:
+                i += 1
+        return calls 
+    # Load modules
     global_utils_path = os.path.join("machine_driver_scripts", "utils.py")
-    
     spec = importlib.util.spec_from_file_location("global_utils", global_utils_path)
     global_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(global_module)
     
-    for match in matches:
-        function_name = match[0]
-        variables = [variable.strip() for variable in match[1].split(",")] if match[1] else []
-        
-        local_function_path = os.path.join(env_dir, environment, "utils.py")
-        
-        local_module = None
-        if os.path.exists(local_function_path):
-            spec = importlib.util.spec_from_file_location("utils", local_function_path)
-            local_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(local_module)
+    local_function_path = os.path.join(env_dir, environment, "utils.py")
+    local_module = None
+    if os.path.exists(local_function_path):
+        spec = importlib.util.spec_from_file_location("utils", local_function_path)
+        local_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(local_module)
+        for func_name in dir(global_module):
+            if callable(getattr(global_module, func_name)):
+                setattr(local_module, func_name, getattr(global_module, func_name))
+    
+    # Process function calls (in reverse order to maintain string positions)
+    calls = find_function_calls(value)
+    for start, end, function_name, params_str in reversed(calls):
+        # Parse parameters, handling quoted strings and tagged variables
+        def parse_parameters(params_str):
+            if not params_str.strip():
+                return []
             
-            for func_name in dir(global_module):
-                if callable(getattr(global_module, func_name)):
-                    setattr(local_module, func_name, getattr(global_module, func_name))
+            params = []
+            current_param = ""
+            i = 0
+            
+            while i < len(params_str):
+                if params_str[i] == ',':
+                    params.append(current_param.strip())
+                    current_param = ""
+                elif params_str[i] in ['"', "'"]:
+                    # Copy quoted string as-is
+                    quote = params_str[i]
+                    current_param += quote
+                    i += 1
+                    while i < len(params_str) and params_str[i] != quote:
+                        current_param += params_str[i]
+                        i += 1
+                    if i < len(params_str):
+                        current_param += params_str[i]  # Add closing quote
+                elif params_str[i:i+5] == '<var>':
+                    # Copy var tag as-is
+                    start = i
+                    i += 5
+                    while i < len(params_str) - 5 and params_str[i:i+6] != '</var>':
+                        i += 1
+                    i += 6  # Include closing tag
+                    current_param += params_str[start:i]
+                    continue  # Skip the i += 1 at the end
+                else:
+                    current_param += params_str[i]
+                i += 1
+            
+            if current_param.strip():
+                params.append(current_param.strip())
+            
+            return params
         
+        variables = parse_parameters(params_str) if params_str else []
+        
+        # Remove quotes from string parameters and unwrap tagged variables
+        processed_variables = []
+        for var in variables:
+            var = var.strip()
+            # Remove outer quotes if present
+            if (var.startswith('"') and var.endswith('"')) or (var.startswith("'") and var.endswith("'")):
+                var = var[1:-1]
+            # Remove variable tags
+            if var.startswith('<var>') and var.endswith('</var>'):
+                var = var[5:-6]
+            processed_variables.append(var)
+        
+        # Get the function
         if local_module and function_name in dir(local_module) and callable(getattr(local_module, function_name)):
             dynamic_function = getattr(local_module, function_name)
         elif function_name in dir(global_module) and callable(getattr(global_module, function_name)):
             dynamic_function = getattr(global_module, function_name)
         else:
-            return (f"Function {function_name} not found in local or global utils.py.")
+            return f"Function {function_name} not found in local or global utils.py."
         
+        # Execute the function
         try:
-            result = dynamic_function(*variables)
+            result = dynamic_function(*processed_variables)
         except Exception as e:
             result = f"Error: {e}"
         
         if result is None:
-            return ""
-
-        value = value.replace(f"!{function_name}({match[1]})", result) 
+            result = ""
+        
+        # Replace the function call with the result
+        value = value[:start] + str(result) + value[end:]
+    
     return value
+
+def replace_flag(match, params):
+    flag = match.group(1)
+    param_name = match.group(2)
+    if param_name in params:
+        return f"-{flag} <var>{params[param_name]}</var>"
+    return match.group(0)
+
+def replace_no_flag(match, params):
+    param_name = match.group(1)
+    if param_name in params:
+        return f"<var>{params[param_name]}</var>"
+    return match.group(0)
 
 
 class Engine():
@@ -81,6 +192,33 @@ class Engine():
     def set_schema(self, schema_path):
         with open(schema_path) as json_file:
             self.schema = json.load(json_file)
+
+    def evaluate_map(self, map, params):
+        print(map)
+        print("---------")
+        for key, value in map.items():
+            # 2. Replace the params name with the actual values in form fields
+            # Keys with flag
+        
+            pattern_flag = r'-(.) \$(\w+)'
+            value = re.sub(pattern_flag, lambda match: replace_flag(match, params), value)
+
+
+            # Keys with no flag
+            pattern_no_flag = r'\$(\w+)'
+            value = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), value)
+        
+            # Process functions
+            value = process_function(value, self.environment, self.env_dir)
+        
+        
+            # Remove variable tags
+            value = re.sub(r'<var>(.*?)</var>', r'\1', value)
+        
+        
+            map[key] = value
+        print("Result:\n", map)
+        return map
 
     def set_map(self, map_path):
         with open(map_path) as json_file:
@@ -235,21 +373,6 @@ class Engine():
         if os.path.exists(os.path.join(env_dir, environment, "schema.json")):
             self.set_schema(os.path.join(env_dir, environment, "schema.json"))
 
-        
-    def evaluate_map(self, map, params):
-        for key, value in map.items():
-            ## 2. Replace the params name with the actual values in form fields
-            # Keys with flag
-            pattern_flag = r'-(.) \$(\w+)'
-            value = re.sub(pattern_flag, lambda match: replace_flag(match, params), value)
-
-            # Keys with no flag
-            pattern_no_flag = r'\$(\w+)'
-            value = re.sub(pattern_no_flag, lambda match: replace_no_flag(match, params), value)
-
-            value = process_function(value, self.environment, self.env_dir)
-            map[key] = value
-        return map
     
     def custom_replace(self, template, map, params):
         for key, value in map.items():
