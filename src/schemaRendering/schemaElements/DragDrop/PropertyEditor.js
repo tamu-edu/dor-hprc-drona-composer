@@ -143,7 +143,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
         }}>
           <h4 style={{
             margin: 0,
-            color: "#500000",
+            color: "maroon",
             fontWeight: "600"
           }}>
             Edit {template.label}
@@ -170,7 +170,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
           marginBottom: "1.5rem",
           fontSize: "0.9rem"
         }}>
-          <strong>Type:</strong> {element.type} | <strong>ID:</strong> {element.id}
+          <strong>Type:</strong> {element.type}
         </div>
 
         <div style={{ marginBottom: "1.5rem" }}>
@@ -219,7 +219,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
             marginBottom: "0.75rem",
             fontSize: "0.9rem",
             fontWeight: "600",
-            color: "#500000"
+            color: "maroon"
           }}>
             Preview
           </h6>
@@ -262,7 +262,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
             onClick={handleSave}
             style={{
               padding: "0.5rem 1rem",
-              backgroundColor: "#500000",
+              backgroundColor: "maroon",
               color: "white",
               border: "none",
               borderRadius: "0.25rem",

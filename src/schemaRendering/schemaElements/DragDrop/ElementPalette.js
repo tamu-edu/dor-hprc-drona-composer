@@ -194,12 +194,6 @@ function ElementPalette({ availableElements, elementTemplates }) {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-3 border-top bg-light">
-          <div className="text-center text-muted small">
-            Drag elements to the drop zone
-          </div>
-        </div>
       </div>
     </>
   );
