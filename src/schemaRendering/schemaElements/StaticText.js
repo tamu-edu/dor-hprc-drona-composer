@@ -1,3 +1,58 @@
+/**
+ * @name StaticText
+ * @description Displays static or dynamically fetched text content. Can show plain text or HTML content
+ * with options for dynamic content retrieval using script files, auto-refreshing, and manual refresh controls.
+ *
+ * @example
+ * // Basic static text
+ * {
+ *   "type": "staticText",
+ *   "name": "infoText",
+ *   "label": "Information",
+ *   "value": "This is some static text",
+ *   "help": "Simple static text display"
+ * }
+ *
+ * @example
+ * // Dynamic text that fetches from a script retriever
+ * {
+ *   "type": "staticText",
+ *   "name": "dynamicContent",
+ *   "label": "Script Output",
+ *   "isDynamic": true,
+ *   "retriever": "retrievers/text_retriever.sh",
+ *   "retrieverParams": { "id": "$userId" },
+ *   "showRefreshButton": true
+ * }
+ *
+ * @example
+ * // Dynamic HTML content with auto-refresh
+ * {
+ *   "type": "staticText",
+ *   "name": "liveHtmlContent",
+ *   "label": "Server Status",
+ *   "isDynamic": true,
+ *   "retriever": "retrievers/server_status.sh",
+ *   "allowHtml": true,
+ *   "refreshInterval": 30
+ * }
+ *
+ *
+ * @property {string} name - Input field name
+ * @property {string} [label] - Display label for the field
+ * @property {boolean} [labelOnTop=false] - Whether to display label above the content
+ * @property {string} [help] - Help text displayed below the content
+ * @property {string} [value] - Static text content (used when isDynamic is false)
+ * @property {boolean} [isDynamic=false] - Whether content should be fetched from a script retriever
+ * @property {string} [retriever] - Path to the script file that will generate dynamic content
+ * @property {Object} [retrieverParams] - Parameters passed to the script as environment variables, values with $ prefix will be replaced with form values
+ * @property {boolean} [allowHtml=false] - Whether to render content as HTML using dangerouslySetInnerHTML
+ * @property {boolean} [showRefreshButton=false] - Whether to show a manual refresh button for dynamic content
+ * @property {number} [refreshInterval] - Auto-refresh interval in seconds
+ * @property {boolean} [isHeading=false] - Whether to style the text as a heading with larger, bold font
+ * @property {function} [setError] - Function to handle errors during content fetching
+ */
+
 import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { FormValuesContext } from "../FormValuesContext";
@@ -46,10 +101,10 @@ function StaticText(props) {
             const fieldValue = getFieldValue(currentFormValues, fieldName);
 
             if (fieldValue !== undefined) {
-              params.append(key, fieldValue);
+              params.append(key, JSON.stringify(fieldValue));
             }
           } else {
-            params.append(key, value);
+            params.append(key, JSON.stringify(value));
           }
         });
       }
@@ -188,7 +243,7 @@ function StaticText(props) {
             dangerouslySetInnerHTML={createMarkup(content)}
           />
         ) : (
-          <span className={`${props.isHeading ? 'text-xl font-bold' : ''}`}>
+          <span className={`${props.isHeading ? 'text-xl font-bold' : ''}`}     style={{ whiteSpace: 'pre-line' }}>
             {content}
           </span>
         )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import io from "socket.io-client";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
@@ -261,7 +262,10 @@ export function App() {
     setOrCreateInput("name", "tutorial-job");
     setOrCreateInput("runtime", environment.env);
     setOrCreateInput("runtime_label", environment.env);
-    setOrCreateInput("location", environment.src);
+
+
+
+    setOrCreateInput("location", "/scratch/user/" + document.user + "/drona_composer/runs" + environment.env);
 
   }, [environment]);
   //------------------------------------------------------------------
@@ -277,13 +281,14 @@ export function App() {
       alert("Environment is required.");
       return;
     }
-
     if (window.jQuery) {
       window.jQuery(previewRef.current).modal('show');
     } else {
       console.error("jQuery not available - cannot show modal");
       return;
     }
+    console.log("received");
+	  console.log(document.dashboard_url)
 
     const action = document.dashboard_url + "/jobs/composer/preview";
     preview_job(action, formData, function (error, jobScript) {
@@ -358,6 +363,7 @@ export function App() {
     spinner.remove();
   }
 
+// TUTORIAL BRANCH
   function submit_job(action, formData) {
     var request = new XMLHttpRequest();
 
@@ -517,6 +523,7 @@ export function App() {
     const action = formRef.current.getAttribute("action");
     submit_job(action, formData);
   }
+// END OF TUTORIAL
 
   const handleJobScriptChange = (event) => {
     setJobScript(event.target.value);
@@ -536,7 +543,10 @@ export function App() {
           panes={panes}
           setPanes={setPanes}
           handleSubmit={(jobStatus == "new") ? handleSubmit : handleRerunSubmit}
+	  jobStatus={jobStatus}
+	  globalFiles={globalFiles}
           handlePreview={handlePreview}
+	  rerunInfo={rerunInfo}
           handleEnvChange={handleEnvChange}
           handleAddEnv={handleAddEnv}
           handleUploadedFiles={handleUploadedFiles}
