@@ -32,7 +32,7 @@ function DragOverlayComponent({ activeId, elementTemplates, elements }) {
     const template = elementTemplates[activeId];
     return (
       <div className="bg-white border rounded shadow-lg p-3" style={{
-        borderLeft: "4px solid #500000",
+        borderLeft: "4px solid maroon",
         minWidth: "200px",
         transform: "rotate(2deg)",
         cursor: "grabbing"
@@ -60,7 +60,7 @@ function DragOverlayComponent({ activeId, elementTemplates, elements }) {
   if (existingElement) {
     return (
       <div className="bg-white border rounded shadow-lg p-3" style={{
-        borderLeft: "4px solid #500000",
+        borderLeft: "4px solid maroon",
         minWidth: "200px",
         transform: "rotate(-1deg)",
         cursor: "grabbing"
@@ -275,7 +275,7 @@ function DragDropContainer(props) {
       useLabel={false}
     >
       <div className="border rounded p-4 mb-4 bg-light">
-        <h4 className="mb-4 fw-semibold" style={{ color: "#500000" }}>
+        <h4 className="mb-4 fw-semibold" style={{ color: "maroon" }}>
           {title}
         </h4>
 

@@ -1,0 +1,8 @@
+{
+  "FORM_NAME": "$form_name",
+  "FORM_DESCRIPTION": "$form_description",
+  "GENERATE_CODE": "$generate_code",
+  "FORM_ELEMENTS": "!convert_array_to_schema($form_elements)",
+  "TIMESTAMP": "!current_timestamp()",
+  "ALL_VALUES": "!json_encode_values()"
+}

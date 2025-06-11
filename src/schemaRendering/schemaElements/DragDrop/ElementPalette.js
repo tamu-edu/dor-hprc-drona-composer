@@ -8,45 +8,64 @@ const styles = `
     transform: translateY(-2px);
     cursor: pointer;
   }
-  
+
   .draggable-element {
     transition: all 0.2s ease;
     cursor: pointer;
   }
-  
+
   .dragging {
     opacity: 0 !important;
     pointer-events: none;
     transform: scale(0.95);
     cursor: grabbing !important;
   }
-  
+
   .scrollable-elements {
     scrollbar-width: thin;
     scrollbar-color: #6c757d #f8f9fa;
   }
-  
+
   .scrollable-elements::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
   }
-  
+
   .scrollable-elements::-webkit-scrollbar-track {
     background: #f8f9fa;
-    border-radius: 3px;
+    border-radius: 4px;
   }
-  
+
   .scrollable-elements::-webkit-scrollbar-thumb {
     background: #6c757d;
-    border-radius: 3px;
+    border-radius: 4px;
   }
-  
+
   .scrollable-elements::-webkit-scrollbar-thumb:hover {
     background: #495057;
   }
-  
+
   .search-input:focus {
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
     border-color: #86b7fe;
+  }
+
+  .element-palette-container {
+    height: 100%;
+    max-height: 60vh;
+    min-height: 300px;
+  }
+
+  .elements-scroll-container {
+    flex: 1;
+    min-height: 0; /* Important for flexbox scrolling */
+    overflow: hidden;
+  }
+
+  .elements-scroll-area {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
   }
 `;
 
@@ -101,7 +120,7 @@ function ElementPalette({ availableElements, elementTemplates }) {
       const template = elementTemplates[elementType];
       const label = template?.label || elementType;
       const description = template?.description || "";
-      
+
       return (
         elementType.toLowerCase().includes(searchLower) ||
         label.toLowerCase().includes(searchLower) ||
@@ -121,15 +140,15 @@ function ElementPalette({ availableElements, elementTemplates }) {
   return (
     <>
       <style>{styles}</style>
-      <div className="bg-white border rounded h-100 d-flex flex-column">
-        {/* Header */}
-        <div className="p-4 border-bottom">
-          <h5 className="mb-3 fw-semibold text-dark" style={{ color: "#500000" }}>
-            Available Elements
+      <div className="bg-white border rounded element-palette-container d-flex flex-column">
+        {/* Header - Fixed */}
+        <div className="p-4 border-bottom flex-shrink-0">
+          <h5 className="mb-0 fw-semibold text-dark" style={{ color: "#500000" }}>
+            Available Elements:
           </h5>
-          
+
           {/* Search Input */}
-          <div className="position-relative">
+          <div className="mt-3 position-relative">
             <input
               type="text"
               className="form-control search-input"
@@ -141,7 +160,7 @@ function ElementPalette({ availableElements, elementTemplates }) {
             {searchTerm && (
               <button
                 type="button"
-                className="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-1 p-1 border-0 bg-transparent text-muted"
+                className="btn btn-sm position-absolute top-100 end-0 translate-middle-y me-1 p-1 border-0 bg-transparent text-muted"
                 onClick={clearSearch}
                 style={{ fontSize: "0.8rem" }}
                 title="Clear search"
@@ -150,7 +169,7 @@ function ElementPalette({ availableElements, elementTemplates }) {
               </button>
             )}
           </div>
-          
+
           {/* Search Results Info */}
           {searchTerm && (
             <div className="mt-2 small text-muted">
@@ -159,14 +178,9 @@ function ElementPalette({ availableElements, elementTemplates }) {
           )}
         </div>
 
-        {/* Scrollable Elements List */}
-        <div className="flex-grow-1 overflow-hidden">
-          <div
-            className="h-100 p-3 overflow-auto scrollable-elements"
-            style={{ 
-              maxHeight: "100%",
-            }}
-          >
+        {/* Scrollable Elements List - Flexible */}
+        <div className="elements-scroll-container">
+          <div className="elements-scroll-area scrollable-elements">
             {filteredElements.length > 0 ? (
               <div className="d-flex flex-column gap-1">
                 {filteredElements.map((elementType) => (
@@ -191,13 +205,6 @@ function ElementPalette({ availableElements, elementTemplates }) {
                 )}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-3 border-top bg-light">
-          <div className="text-center text-muted small">
-            Drag elements to the drop zone
           </div>
         </div>
       </div>
