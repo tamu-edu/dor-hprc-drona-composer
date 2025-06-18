@@ -6,6 +6,7 @@ importlib-metadata==4.8.3
 itsdangerous==2.0.1
 requests
 eventlet
+jsonref
 flask-socketio
 Jinja2>=3.1.4
 MarkupSafe>=2.0.1
