@@ -1,6 +1,7 @@
 from flask import request, jsonify, current_app as app
 import os
 import json
+import jsonref
 import subprocess
 import traceback
 from .error_handler import APIError, handle_api_error
@@ -124,17 +125,20 @@ def get_schema_route(environment):
     """Get schema.json for a specific environment"""
     env_dir = request.args.get("src")
     if env_dir is None:
-        schema_path = os.path.join('environments', environment, 'schema.json')
+        base_path = os.path.join('environments', environment)
     else:
-        schema_path = os.path.join(env_dir, environment, 'schema.json')
+        base_path = os.path.join(env_dir, environment)
 
+    schema_path = os.path.join(base_path, "schema.json")
     if os.path.exists(schema_path):
         schema_data = open(schema_path, 'r').read()
     else:
         raise APIError(f"Schema file not found: {schema_path}", status_code=404)
 
     try:
-        schema_dict = json.loads(schema_data)
+        abs_path = os.path.abspath(base_path)
+        base_uri = f'file:///{abs_path.lstrip("/").replace(os.sep, "/")}/'
+        schema_dict = jsonref.loads(schema_data, base_uri=base_uri, proxies=False)
     except json.JSONDecodeError as e:
         raise APIError("Invalid schema JSON", status_code=400, details={'error': str(e)})
 
@@ -149,7 +153,7 @@ def get_schema_route(environment):
             element["isEvaluated"] = False
             element["isShown"] = False
 
-    return json.dumps(schema_dict)
+    return jsonref.dumps(schema_dict)
 
 def get_map_route(environment):
     """Get map.json for a specific environment"""
