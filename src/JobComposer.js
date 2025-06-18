@@ -186,13 +186,10 @@ function JobComposer({
                 </div>
               </div>
             </div>
-            <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
-              <div className="invisible">
-                <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
-              </div>
+            <div className="d-flex align-items-center justify-content-center" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
               {props.environment.env !== "" && (
                 <div>
-                  <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Preview" onClick={handlePreview} />
+                  <input type="button" id="job-preview-button" className="btn btn-primary maroon-button " value="Start" onClick={handlePreview} />
                 </div>
               )}
               {/* <div>
