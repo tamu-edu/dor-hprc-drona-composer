@@ -115,7 +115,6 @@ function JobComposer({
 
   const handlePreview = () => {
     // Call the original preview handler to prepare data
-    console.log("Hey, workd")
     if (props.handlePreview) {
       props.handlePreview();
     }

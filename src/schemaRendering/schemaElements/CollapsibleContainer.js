@@ -82,8 +82,9 @@ function CollapsibleRowContainer({
   currentValues,
   setError,
   title = "Collapsible Row Container",
+  ...props
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(props.isCollapsed || false);
   
   function toggleCollapse(e) {
     e.preventDefault();

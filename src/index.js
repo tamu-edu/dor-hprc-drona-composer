@@ -287,8 +287,6 @@ export function App() {
       console.error("jQuery not available - cannot show modal");
       return;
     }
-    console.log("received");
-	  console.log(document.dashboard_url)
 
     const action = document.dashboard_url + "/jobs/composer/preview";
     preview_job(action, formData, function (error, jobScript) {
