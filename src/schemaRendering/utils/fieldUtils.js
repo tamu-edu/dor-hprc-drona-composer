@@ -24,7 +24,7 @@ export const updateFieldVisibility = (fields, evaluateCondition) => {
       ...field,
       isVisible,
       // Clear value if field becomes invisible
-      value: isVisible ? field.value : "",
+      value: (isVisible || field.type === "staticText") ? field.value : "",
       // Recursively update nested elements
       elements: field.elements 
         ? updateFieldVisibility(field.elements, evaluateCondition) 

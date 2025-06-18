@@ -124,7 +124,7 @@ const _updateVisibilityAndClearHidden = (fields, fullFields) => {
     const processed = {
       ...field,
       isVisible,
-      value: (isVisible ? field.value : "")
+      value: ((isVisible || field.type === "staticText") ? field.value : "")
     };
 
     if (Containers.includes(field.type) && field.elements) {
