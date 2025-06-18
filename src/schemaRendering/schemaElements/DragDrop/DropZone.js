@@ -95,41 +95,46 @@ function SortableElement({
             </div>
           </div>
 
-          {element.config && Object.keys(element.config).length > 0 && (
-            <div className="text-muted text-truncate" style={{
-              fontSize: "0.7rem",
-              maxWidth: "200px"
-            }}>
-              {Object.entries(element.config)
-                .slice(0, 2)
-                .map(([key, value]) => `${key}: ${value}`)
-                .join(", ")}
-              {Object.keys(element.config).length > 2 && "..."}
-            </div>
-          )}
         </div>
 
-        <div className="d-flex gap-2">
-          {allowEdit && (
-            <button
-              onClick={() => onEditElement(element)}
-              className="btn btn-sm btn-primary"
-              style={{ fontSize: "0.75rem" }}
-              title="Edit properties"
-            >
-              Edit
-            </button>
-          )}
-
-          <button
-            onClick={() => onRemoveElement(element.id)}
-            className="btn btn-sm btn-danger"
-            style={{ fontSize: "0.75rem" }}
-            title="Remove element"
-          >
-            Remove
-          </button>
-        </div>
+	 <div className="d-flex gap-2">
+  {allowEdit && (
+    <button
+     onClick={(e) => {
+       e.preventDefault();
+       onEditElement(element);
+     }}
+    className="btn btn-sm"
+    style={{
+      fontSize: "0.75rem",
+      backgroundColor: "#6c757d",
+      color: "white",
+      border: "none",
+      marginRight: "5px"
+    }}
+    onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
+    onMouseOver={(e) => e.target.style.backgroundColor = '#545b62'}
+    title="Edit properties"
+    >
+      Edit
+    </button>
+  )}
+  <button
+    onClick={() => onRemoveElement(element.id)}
+    className="btn btn-sm"
+    style={{
+      fontSize: "0.75rem",
+      backgroundColor: "maroon",
+      color: "white",
+      border: "none"
+    }}
+    onMouseOver={(e) => e.target.style.backgroundColor = '#500000'}
+    onMouseOut={(e) => e.target.style.backgroundColor = 'maroon'}
+    title="Remove element"
+  >
+    Remove
+  </button>
+</div>
       </div>
     </div>
   );
@@ -152,13 +157,13 @@ function DropZone({
       style={{
         minHeight: "400px",
         backgroundColor: isOver ? "#f0f8ff" : "#fafafa",
-        borderColor: isOver ? "#500000" : "#dee2e6",
+        borderColor: isOver ? "maroon" : "#500000",
         transition: "all 0.3s ease"
       }}
     >
       <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-        <h5 className="mb-0 fw-semibold" style={{ color: "#500000" }}>
-          Drop Zone
+        <h5 className="mb-0 fw-semibold" style={{ color: "maroon" }}>
+          Selected Elements: 
         </h5>
         <span className="text-muted" style={{ fontSize: "0.8rem" }}>
           {elements.length} element{elements.length !== 1 ? 's' : ''}
@@ -169,9 +174,6 @@ function DropZone({
         <div className="d-flex flex-column align-items-center justify-content-center text-muted text-center"
           style={{ height: "300px" }}
         >
-          <div className="mb-3" style={{ fontSize: "3rem" }}>
-            ⬇
-          </div>
           <div className="mb-2" style={{ fontSize: "1.1rem" }}>
             Drop elements here
           </div>

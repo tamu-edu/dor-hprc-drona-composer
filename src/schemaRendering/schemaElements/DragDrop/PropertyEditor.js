@@ -35,7 +35,7 @@ function PropertyField({ property, value, onChange, propertyKey }) {
 
     case "checkbox":
       return (
-        <div style={{ display: "flex", alignItems: "center", marginLeft: "20px", gap: "0.5rem" }}>
+        <div style={{ position: "relative", display: "flex", alignItems: "center", marginLeft: "20px", gap: "0.5rem" }}>
           <input
             type="checkbox"
             checked={value !== undefined ? value : defaultValue || false}
@@ -110,19 +110,28 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
     onSave(values);
   };
 
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onCancel();
+    }
+  };
+
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 1000
-    }}>
+    <div 
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000
+      }}
+      onClick={handleBackdropClick}
+    >
       <div style={{
         backgroundColor: "#fff",
         borderRadius: "0.5rem",
@@ -143,7 +152,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
         }}>
           <h4 style={{
             margin: 0,
-            color: "#500000",
+            color: "maroon",
             fontWeight: "600"
           }}>
             Edit {template.label}
@@ -170,7 +179,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
           marginBottom: "1.5rem",
           fontSize: "0.9rem"
         }}>
-          <strong>Type:</strong> {element.type} | <strong>ID:</strong> {element.id}
+          <strong>Type:</strong> {element.type}
         </div>
 
         <div style={{ marginBottom: "1.5rem" }}>
@@ -219,7 +228,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
             marginBottom: "0.75rem",
             fontSize: "0.9rem",
             fontWeight: "600",
-            color: "#500000"
+            color: "maroon"
           }}>
             Preview
           </h6>
@@ -262,7 +271,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
             onClick={handleSave}
             style={{
               padding: "0.5rem 1rem",
-              backgroundColor: "#500000",
+              backgroundColor: "maroon",
               color: "white",
               border: "none",
               borderRadius: "0.25rem",

@@ -1,0 +1,632 @@
+{
+  "formBuilder": {
+    "type": "dragDropContainer",
+    "title": "Schema Builder",
+    "name": "form_elements",
+    "help": "Build your form schema by dragging and dropping elements",
+    "availableElements": [
+      "text",
+      "textarea", 
+      "number",
+      "select",
+      "checkbox",
+      "radioGroup",
+      "time",
+      "unit",
+      "staticText",
+      "uploader",
+      "autocompleteSelect",
+      "dynamicSelect",
+      "module",
+      "picker"
+    ],
+    "allowReorder": true,
+    "allowEdit": true,
+    "allowRemove": true,
+    "elementTemplates": {
+      "text": {
+        "type": "text",
+        "label": "Text Input",
+        "description": "Standard single-line text input field",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "textField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text", 
+            "default": "Text Input",
+            "help": "Display label for the field"
+          },
+          "placeholder": {
+            "type": "text",
+            "default": "Enter text here",
+            "help": "Placeholder text shown when field is empty"
+          },
+          "value": {
+            "type": "text",
+            "default": "",
+            "help": "Default value for the field"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "textarea": {
+        "type": "textarea",
+        "label": "Text Area",
+        "description": "Multi-line text input for longer content",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "textareaField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Text Area",
+            "help": "Display label for the field"
+          },
+          "placeholder": {
+            "type": "text", 
+            "default": "Enter multi-line text here",
+            "help": "Placeholder text shown when field is empty"
+          },
+          "value": {
+            "type": "text",
+            "default": "",
+            "help": "Default value for the field"
+          },
+          "rows": {
+            "type": "number",
+            "default": 4,
+            "min": 1,
+            "max": 20,
+            "help": "Number of visible text lines"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "number": {
+        "type": "number",
+        "label": "Number Input",
+        "description": "Numeric input with min/max constraints",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "numberField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Number",
+            "help": "Display label for the field"
+          },
+          "value": {
+            "type": "number",
+            "default": 0,
+            "help": "Default numeric value"
+          },
+          "min": {
+            "type": "number",
+            "default": "",
+            "help": "Minimum allowed value"
+          },
+          "max": {
+            "type": "number", 
+            "default": "",
+            "help": "Maximum allowed value"
+          },
+          "step": {
+            "type": "number",
+            "default": 1,
+            "help": "Step increment for the field"
+          },
+          "placeholder": {
+            "type": "text",
+            "default": "Enter a number",
+            "help": "Placeholder text shown when field is empty"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "select": {
+        "type": "select",
+        "label": "Select Dropdown",
+        "description": "Select one option from the dropdown",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "selectField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Select",
+            "help": "Display label for the field"
+          },
+          "options": {
+            "type": "textarea",
+            "default": "[\n  {\"value\": \"option1\", \"label\": \"Option 1\"},\n  {\"value\": \"option2\", \"label\": \"Option 2\"},\n  {\"value\": \"option3\", \"label\": \"Option 3\"}\n]",
+            "help": "JSON array of option objects with value and label"
+          },
+          "value": {
+            "type": "text",
+            "default": "",
+            "help": "Default selected value"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "checkbox": {
+        "type": "checkbox",
+        "label": "Checkbox",
+        "description": "Toggle input that returns a value when checked",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "checkboxField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Checkbox",
+            "help": "Display label for the checkbox"
+          },
+          "value": {
+            "type": "text",
+            "default": "Yes",
+            "help": "Value returned when checkbox is checked"
+          },
+          "checked": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Default checked state"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "radioGroup": {
+        "type": "radioGroup",
+        "label": "Radio Group",
+        "description": "Select one option from multiple choices",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "radioField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Radio Group",
+            "help": "Display label for the radio group"
+          },
+          "options": {
+            "type": "textarea",
+            "default": "[\n  {\"value\": \"low\", \"label\": \"Low\"},\n  {\"value\": \"medium\", \"label\": \"Medium\"},\n  {\"value\": \"high\", \"label\": \"High\"}\n]",
+            "help": "JSON array of option objects with value and label"
+          },
+          "value": {
+            "type": "text",
+            "default": "",
+            "help": "Default selected value"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "time": {
+        "type": "time",
+        "label": "Time Input",
+        "description": "Specify a time duration in days, hours, and minutes",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "timeField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Time",
+            "help": "Display label for the time field"
+          },
+          "value": {
+            "type": "text",
+            "default": "00:30",
+            "help": "Default time value (HH:MM format)"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "unit": {
+        "type": "unit",
+        "label": "Unit Input", 
+        "description": "Select a numeric value with units",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "unitField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Unit",
+            "help": "Display label for the unit field"
+          },
+          "value": {
+            "type": "text",
+            "default": "16",
+            "help": "Default numeric value"
+          },
+          "units": {
+            "type": "textarea",
+            "default": "[\n  {\"value\": \"MB\", \"label\": \"MB\"},\n  {\"value\": \"GB\", \"label\": \"GB\"},\n  {\"value\": \"TB\", \"label\": \"TB\"}\n]",
+            "help": "JSON array of unit objects with value and label"
+          },
+          "defaultUnit": {
+            "type": "text",
+            "default": "GB",
+            "help": "Default selected unit"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "staticText": {
+        "type": "staticText",
+        "label": "Static Text",
+        "description": "Simple static text display",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "staticField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Information",
+            "help": "Display label for the static text"
+          },
+          "value": {
+            "type": "textarea",
+            "default": "This is some static text",
+            "help": "Static text content to display"
+          },
+          "isDynamic": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether content is loaded dynamically"
+          },
+          "retriever": {
+            "type": "text",
+            "default": "",
+            "help": "Script path for dynamic content retrieval"
+          },
+          "allowHtml": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether to allow HTML in the content"
+          },
+          "showRefreshButton": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Show manual refresh button for dynamic content"
+          },
+          "refreshInterval": {
+            "type": "number",
+            "default": "",
+            "help": "Auto-refresh interval in seconds (for dynamic content)"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "uploader": {
+        "type": "uploader",
+        "label": "File Uploader",
+        "description": "Upload files or directories with support for multiple file selection",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "uploaderField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Uploader",
+            "help": "Display label for the uploader"
+          },
+          "multiple": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Allow selection of multiple files"
+          },
+          "acceptedFileTypes": {
+            "type": "textarea",
+            "default": "[\"text/*\", \"application/json\", \".csv\"]",
+            "help": "JSON array of accepted file types/extensions"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "autocompleteSelect": {
+        "type": "autocompleteSelect",
+        "label": "Autocomplete Select",
+        "description": "Search and select from dynamic options",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "autocompleteField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Autocomplete Select",
+            "help": "Display label for the autocomplete field"
+          },
+          "retriever": {
+            "type": "text",
+            "default": "retrievers/search.sh",
+            "help": "Script path for retrieving search results"
+          },
+          "placeholder": {
+            "type": "text",
+            "default": "Search for an option...",
+            "help": "Placeholder text for the search input"
+          },
+          "minSearchLength": {
+            "type": "number",
+            "default": 2,
+            "help": "Minimum characters required to trigger search"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "dynamicSelect": {
+        "type": "dynamicSelect",
+        "label": "Dynamic Select",
+        "description": "Select with options loaded dynamically based on other field values",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "dynamicSelectField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Dynamic Select",
+            "help": "Display label for the dynamic select"
+          },
+          "retriever": {
+            "type": "text",
+            "default": "retrievers/dynamic_options.sh",
+            "help": "Script path for retrieving options"
+          },
+          "retrieverParams": {
+            "type": "textarea",
+            "default": "{\n  \"dependsOn\": \"$otherField\",\n  \"type\": \"production\"\n}",
+            "help": "JSON object with parameters passed to retriever script"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "module": {
+        "type": "module",
+        "label": "Module Selector",
+        "description": "Search and select software modules for your environment",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "moduleField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Module",
+            "help": "Display label for the module selector"
+          },
+          "value": {
+            "type": "text",
+            "default": "",
+            "help": "Default selected modules (space-separated)"
+          },
+          "toolchains": {
+            "type": "textarea",
+            "default": "[\n  {\"value\": \"modules\", \"label\": \"Modules\"},\n  {\"value\": \"lmod-gcc\", \"label\": \"GCC Modules\"},\n  {\"value\": \"lmod-intel\", \"label\": \"Intel Modules\"}\n]",
+            "help": "JSON array of available toolchain options"
+          },
+          "toolchainName": {
+            "type": "text",
+            "default": "toolchain",
+            "help": "Name for the toolchain selection field"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      },
+      "picker": {
+        "type": "picker",
+        "label": "File/Directory Picker",
+        "description": "Select a file or directory location",
+        "properties": {
+          "name": {
+            "type": "text",
+            "default": "pickerField",
+            "help": "Field name/identifier"
+          },
+          "label": {
+            "type": "text",
+            "default": "Picker",
+            "help": "Display label for the picker"
+          },
+          "localLabel": {
+            "type": "text",
+            "default": "Browse Directories",
+            "help": "Label for local browsing option"
+          },
+          "remoteLabel": {
+            "type": "text",
+            "default": "Upload File",
+            "help": "Label for remote upload option"
+          },
+          "showFiles": {
+            "type": "checkbox",
+            "default": true,
+            "help": "Whether to show files in addition to directories"
+          },
+          "defaultLocation": {
+            "type": "text",
+            "default": "$HOME",
+            "help": "Default starting location for file browser"
+          },
+          "useHPCDefaultPaths": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Include HPC-specific default paths"
+          },
+          "defaultPaths": {
+            "type": "textarea",
+            "default": "{\n  \"Home\": \"$HOME\",\n  \"Scratch\": \"$SCRATCH\"\n}",
+            "help": "JSON object of quick-access paths"
+          },
+          "required": {
+            "type": "checkbox",
+            "default": false,
+            "help": "Whether this field is required"
+          },
+          "help": {
+            "type": "text",
+            "default": "",
+            "help": "Help text displayed below the field"
+          }
+        }
+      }
+    }
+  },
+  "schemaName": {
+    "type": "text",
+    "label": "Schema Name",
+    "name": "schema_name", 
+    "help": "Give your form schema a descriptive name",
+    "placeholder": "Enter schema name",
+    "value": "My Form Schema"
+  },
+  "schemaDescription": {
+    "type": "textarea",
+    "label": "Schema Description",
+    "name": "schema_description",
+    "help": "Describe what this form schema is used for",
+    "placeholder": "Enter a description for this schema",
+    "rows": 3
+  },
+  "generateOutput": {
+    "type": "checkbox",
+    "label": "Generate JSON Output",
+    "name": "generate_output",
+    "help": "Generate the final JSON schema file",
+    "value": true
+  }
+}
