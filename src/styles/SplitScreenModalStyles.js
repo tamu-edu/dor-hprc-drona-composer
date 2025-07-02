@@ -51,6 +51,16 @@ const styles = {
     border: "none",
   },
 
+  minimizeButton: {
+    fontSize: "1.5rem",
+    cursor: "pointer",
+    color: "white",
+    padding: "0.25rem",
+    lineHeight: 1,
+    background: "none",
+    border: "none",
+  },
+
   contentContainer: {
     display: "flex",
     flexGrow: 1,
@@ -154,21 +164,21 @@ const styles = {
     flexDirection: "column",
   },
 
-  warningAlert: {
+  messageAlert: {
     marginBottom: '1rem',
     fontSize: '13px',
   },
 
-  warningTitle: {
+  alertTitle: {
     fontSize: '14px',
   },
 
-  warningList: {
+  alertList: {
     marginBottom: 0,
     paddingLeft: '1.2rem',
   },
 
-  warningItem: {
+  alertItem: {
     marginBottom: '0.25rem',
   },
 
@@ -342,6 +352,34 @@ const styles = {
       backgroundColor: "#6c757d",
       color: "white",
     },
+  },
+
+  // Minimized modal styles
+  minimizedContainer: {
+    position: "fixed",
+    bottom: "20px",
+    right: "20px",
+    zIndex: 1001,
+    cursor: "pointer",
+    transition: "transform 0.2s ease",
+  },
+
+  minimizedIcon: {
+    width: "60px",
+    height: "60px",
+    borderRadius: "50%",
+    backgroundColor: "#500000",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+    transition: "box-shadow 0.2s ease",
+  },
+
+  minimizedText: {
+    color: "white",
+    fontSize: "16px",
+    fontWeight: "600",
   },
 };
 

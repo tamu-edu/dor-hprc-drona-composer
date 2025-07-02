@@ -6,18 +6,30 @@ import { usePaneManagement } from "./hooks/usePaneManagement";
 import PreviewPanel from "./PreviewPanel";
 import StreamingPanel from "./StreamingPanel";
 
-const ModalHeader = ({ title, onClose, styles }) => {
+const ModalHeader = ({ title, onClose, onMinimize, styles }) => {
   return (
     <div style={styles.header}>
       <h5 style={styles.title}>{title}</h5>
-      <button
-        style={styles.closeButton}
-        onClick={onClose}
-        onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-      >
-        ×
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button
+          style={styles.minimizeButton}
+          onClick={onMinimize}
+          onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+          onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+          title="Minimize"
+        >
+          −
+        </button>
+        <button
+          style={styles.closeButton}
+          onClick={onClose}
+          onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+          onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+          title="Close"
+        >
+          ×
+        </button>
+      </div>
     </div>
   );
 };
@@ -74,10 +86,25 @@ const ModalFooter = ({ onClose, styles }) => {
   );
 };
 
+const MinimizedModal = ({ onExpand, styles }) => {
+  return (
+    <div
+      style={styles.minimizedContainer}
+      onClick={onExpand}
+      onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
+      onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+    >
+      <div style={styles.minimizedIcon}>
+        <span style={styles.minimizedText}>JC</span>
+      </div>
+    </div>
+  );
+};
+
 const SplitScreenModal = ({
   isOpen,
   onClose,
-  warningMessages,
+  messages,
   multiPaneRef,
   panes,
   setPanes,
@@ -88,6 +115,7 @@ const SplitScreenModal = ({
 }) => {
   const contentRef = useRef(null);
   const modalRef = useRef(null);
+  const [isMinimized, setIsMinimized] = React.useState(false);
   
   const { leftWidth, isResizing, handleMouseDown } = useResizeHandle(55);
   const { sortedPanes, activePane, setActivePane } = usePaneManagement(panes);
@@ -99,7 +127,19 @@ const SplitScreenModal = ({
     }
   }, [outputLines, htmlOutput]);
 
+  const handleMinimize = () => {
+    setIsMinimized(true);
+  };
+
+  const handleExpand = () => {
+    setIsMinimized(false);
+  };
+
   if (!isOpen) return null;
+
+  if (isMinimized) {
+    return <MinimizedModal onExpand={handleExpand} styles={styles} />;
+  }
 
   return (
     <div style={styles.overlay} onClick={onClose}>
@@ -109,7 +149,7 @@ const SplitScreenModal = ({
         ref={modalRef}
         data-modal-ref
       >
-        <ModalHeader title="Job Preview" onClose={onClose} styles={styles} />
+        <ModalHeader title="Job Preview" onClose={onClose} onMinimize={handleMinimize} styles={styles} />
 
         <div style={styles.contentContainer}>
           <PreviewPanel
@@ -117,7 +157,7 @@ const SplitScreenModal = ({
             sortedPanes={sortedPanes}
             activePane={activePane}
             setActivePane={setActivePane}
-            warningMessages={warningMessages}
+            messages={messages}
             multiPaneRef={multiPaneRef}
             panes={panes}
             setPanes={setPanes}

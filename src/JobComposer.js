@@ -154,7 +154,7 @@ function JobComposer({
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div className="card-header">
-          <h6 className="maroon-header">Job Composer</h6>
+          {/* <h6 className="maroon-header">Job Composer</h6> */}
         </div>
         <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
           <form
@@ -219,14 +219,14 @@ function JobComposer({
                 </button>
               </div>
             </div>
-          </form>
-          <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
+          </form>          <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
             <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
           </div>
         </div>
         <div className="card-footer">
           <small className="text-muted">
              Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
+
           </small>
         </div>
       </div>
@@ -235,7 +235,7 @@ function JobComposer({
         isOpen={showSplitScreenModal}
         onClose={handleCloseSplitScreenModal}
         // Preview props
-        warningMessages={props.warningMessages}
+        messages={props.messages}
         multiPaneRef={multiPaneRef}
         panes={props.panes}
         setPanes={props.setPanes}

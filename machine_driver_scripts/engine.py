@@ -332,24 +332,24 @@ class Engine():
     
     def get_globals(self):
         return globals()
-   
-    def get_warnings(self, params):
+
+    def get_messages(self, params):
         user_id = os.getenv('USER')
-        warnings_path = os.path.join("/tmp", f"{user_id}.warnings")
-        if not os.path.exists(warnings_path):
+        messages_path = os.path.join("/tmp", f"{user_id}.messages")
+        if not os.path.exists(messages_path):
             return []
 
-        warnings = []
+        messages = []
         
-        with open(warnings_path, 'r') as file: 
-            warnings_dict = json.load(file)
+        with open(messages_path, 'r') as file: 
+            messages_dict = json.load(file)
  
-        if "warnings" in warnings_dict:
-            warnings = warnings_dict["warnings"] 
+        if "messages" in messages_dict:
+            messages = messages_dict["messages"] 
 
-        os.remove(warnings_path)
+        os.remove(messages_path)
 
-        return warnings
+        return messages
         
 
 
@@ -422,11 +422,11 @@ class Engine():
                 file["content"] = self.replace_placeholders(file["content"], evaluated_map, params)
                 self.additional_files[fname] = file 
             
-            warnings = self.get_warnings(params)
+            messages = self.get_messages(params)
 
             preview_job = {
                     "driver": self.driver, 
-                    "warnings":  warnings,
+                    "messages":  messages,
                     "additional_files": self.additional_files 
             }
             if self.script is not None:
