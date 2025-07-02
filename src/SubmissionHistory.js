@@ -214,7 +214,15 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
   if (!isExpanded) return null;
 
   return (
-    <div className="mt-4">
+    <div
+      className="mt-4 p-4 rounded"
+      style={{
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    }}
+    >
+    <h5 className="mb-3" style={{ fontWeight: '600' }}>Job Submission History</h5>
       <div className="date-inputs mb-3">
         <label htmlFor="startDate">From</label>
         <input
@@ -240,26 +248,28 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
         </button>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={filteredData}
-        customStyles={tableCustomStyles}
-        responsive
-        pagination
-        noDataComponent="No jobs have been submitted yet."
-            sortIcon={
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="currentColor"
-      style={{ marginLeft: '4px' }}
-    >
-      <path d="M6 9L2 5h8L6 9z"/>
-    </svg>
+      <div style={{ overflowX: 'auto'}}>
+        <DataTable
+          columns={columns}
+          data={filteredData}
+          customStyles={tableCustomStyles}
+          responsive
+          pagination
+          noDataComponent="No jobs have been submitted yet."
+              sortIcon={
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        fill="currentColor"
+        style={{ marginLeft: '4px' }}
+      >
+        <path d="M6 9L2 5h8L6 9z"/>
+      </svg>
   }
       />
     </div>
+  </div>
   );
 };
 
