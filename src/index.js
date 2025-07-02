@@ -12,7 +12,7 @@ export function App() {
   const [environment, setEnvironment] = useState({ env: "", src: "" });
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
-  const [warningMessages, setWarningMessages] = useState([]);
+  const [messages, setMessages] = useState([]);
 
   const [panes, setPanes] = useState([{ title: "", name: "", content: "" }]);
   const [jobStatus, setJobStatus] = useState("new"); // new | rerun
@@ -278,7 +278,7 @@ export function App() {
         }
 
         setPanes(panes);
-        setWarningMessages(jobScript["warnings"]);
+        setMessages(jobScript["messages"]);
       }
     });
   }
@@ -327,7 +327,7 @@ export function App() {
           environments={environments}
           fields={fields}
           runLocation={runLocation}
-          warningMessages={warningMessages}
+          messages={messages}
           panes={panes}
           setPanes={setPanes}
 	  jobStatus={jobStatus}

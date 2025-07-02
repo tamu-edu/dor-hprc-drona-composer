@@ -235,7 +235,7 @@ function JobComposer({
         isOpen={showSplitScreenModal}
         onClose={handleCloseSplitScreenModal}
         // Preview props
-        warningMessages={props.warningMessages}
+        messages={props.messages}
         multiPaneRef={multiPaneRef}
         panes={props.panes}
         setPanes={props.setPanes}

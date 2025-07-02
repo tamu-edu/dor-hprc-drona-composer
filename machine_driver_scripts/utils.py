@@ -24,19 +24,28 @@ def drona_add_additional_file(additional_file, preview_name = "", preview_order 
         json.dump(additional_files, file)
 
 
+def drona_add_error(error):
+    drona_add_message(error, "error")
+    
 def drona_add_warning(warning):
+    drona_add_message(warning, "warning")
+
+def drona_add_note(note):
+    drona_add_message(note, "note")
+    
+def drona_add_message(msg_text, msg_type):
     user_id = os.getenv('USER')
     
-    warnings_path = os.path.join("/tmp", f"{user_id}.warnings")
-    if os.path.exists(warnings_path):
-        with open(warnings_path, 'r') as file:
-            warnings = json.load(file)
+    msg_path = os.path.join("/tmp", f"{user_id}.messages")
+    if os.path.exists(msg_path):
+        with open(msg_path, 'r') as file:
+            messages = json.load(file)
     else:
-        warnings = {'warnings': []}    
+        messages = {'messages': []}    
     
-    warnings['warnings'].append(warning)
-    with open(warnings_path, "w") as file:
-        json.dump(warnings, file)
+    messages['messages'].append({"type": msg_type, "text": msg_text})
+    with open(msg_path, "w") as file:
+        json.dump(messages, file)
 
 def drona_add_mapping(key, evaluation_str):
     user_id = os.getenv('USER')

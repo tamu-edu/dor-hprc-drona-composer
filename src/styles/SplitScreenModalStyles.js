@@ -164,21 +164,21 @@ const styles = {
     flexDirection: "column",
   },
 
-  warningAlert: {
+  messageAlert: {
     marginBottom: '1rem',
     fontSize: '13px',
   },
 
-  warningTitle: {
+  alertTitle: {
     fontSize: '14px',
   },
 
-  warningList: {
+  alertList: {
     marginBottom: 0,
     paddingLeft: '1.2rem',
   },
 
-  warningItem: {
+  alertItem: {
     marginBottom: '0.25rem',
   },
 

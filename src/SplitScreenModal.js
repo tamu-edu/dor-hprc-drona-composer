@@ -104,7 +104,7 @@ const MinimizedModal = ({ onExpand, styles }) => {
 const SplitScreenModal = ({
   isOpen,
   onClose,
-  warningMessages,
+  messages,
   multiPaneRef,
   panes,
   setPanes,
@@ -157,7 +157,7 @@ const SplitScreenModal = ({
             sortedPanes={sortedPanes}
             activePane={activePane}
             setActivePane={setActivePane}
-            warningMessages={warningMessages}
+            messages={messages}
             multiPaneRef={multiPaneRef}
             panes={panes}
             setPanes={setPanes}
