@@ -6,7 +6,9 @@ import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
 import EnvironmentModal from "./EnvironmentModal";
 import SplitScreenModal from "./SplitScreenModal";
+import ConfirmationModal from "./ConfirmationModal";
 import { useJobSocket } from "./hooks/useJobSocket";
+
 
 function JobComposer({
   error,
@@ -19,6 +21,8 @@ function JobComposer({
 }) {
   const [showHistory, setShowHistory] = useState(true);
   const [showSplitScreenModal, setShowSplitScreenModal] = useState(false);
+  const [isSplitScreenMinimized, setIsSplitScreenMinimized] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
   const {
     lines,
@@ -31,10 +35,8 @@ function JobComposer({
     sendInput
   } = useJobSocket();
 
-  // Check if job is currently running
   const isJobRunning = status === 'submitting' || status === 'running';
 
-  // Could be refactored to avoid duplicate code
   const getFormData = () => {
     const paneRefs = multiPaneRef.current?.getPaneRefs();
     if(!paneRefs) return null;
@@ -111,11 +113,31 @@ function JobComposer({
   }
 
   const handlePreview = () => {
-    // Call the original preview handler to prepare data
+    if (isSplitScreenMinimized) {
+      setShowConfirmationModal(true);
+      return;
+    }
+    
     if (props.handlePreview) {
       props.handlePreview();
     }
-    // Then show our split screen modal
+    setShowSplitScreenModal(true);
+  };
+
+  const handleConfirmOverwrite = () => {
+    setShowConfirmationModal(false);
+    setIsSplitScreenMinimized(false);
+    reset(); 
+    
+    if (props.handlePreview) {
+      props.handlePreview();
+    }
+    setShowSplitScreenModal(true);
+  };
+
+  const handleConfirmRestore = () => {
+    setShowConfirmationModal(false);
+    setIsSplitScreenMinimized(false);
     setShowSplitScreenModal(true);
   };
 
@@ -139,6 +161,11 @@ function JobComposer({
       return;
     }
 
+    if (isSplitScreenMinimized) {
+      setIsSplitScreenMinimized(false);
+      setShowSplitScreenModal(true);
+    }
+
     // Start the job submission - modal stays open to show streaming
     const action = formRef.current.getAttribute("action");
     submitJob(action, formData);
@@ -146,7 +173,16 @@ function JobComposer({
 
   const handleCloseSplitScreenModal = () => {
     setShowSplitScreenModal(false);
+    setIsSplitScreenMinimized(false);
     reset();
+  };
+
+  const handleMinimizeSplitScreenModal = () => {
+    setIsSplitScreenMinimized(true);
+  };
+
+  const handleExpandSplitScreenModal = () => {
+    setIsSplitScreenMinimized(false);
   };
 
   return (
@@ -234,6 +270,9 @@ function JobComposer({
       <SplitScreenModal
         isOpen={showSplitScreenModal}
         onClose={handleCloseSplitScreenModal}
+        onMinimize={handleMinimizeSplitScreenModal}
+        onExpand={handleExpandSplitScreenModal}
+        forceMinimized={isSplitScreenMinimized}
         // Preview props
         messages={props.messages}
         multiPaneRef={multiPaneRef}
@@ -251,6 +290,13 @@ function JobComposer({
       />
 
       <EnvironmentModal envModalRef={envModalRef} />
+      
+      <ConfirmationModal
+        isOpen={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        onConfirm={handleConfirmOverwrite}
+        onCancel={handleConfirmRestore}
+      />
     </div>
   );
 }
