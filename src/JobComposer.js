@@ -241,7 +241,7 @@ function JobComposer({
                     type="button"
                     id="job-preview-button"
                     className="btn btn-primary maroon-button"
-                    value="Preview"
+                    value={props.previewButtonText || "Preview"}
                     onClick={handlePreview}
                   />
                 </div>
@@ -294,8 +294,12 @@ function JobComposer({
       <ConfirmationModal
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
-        onConfirm={handleConfirmOverwrite}
-        onCancel={handleConfirmRestore}
+        onConfirm={handleConfirmRestore}
+        onCancel={handleConfirmOverwrite}
+        title="Existing Preview Found"
+        message="An existing preview found. Would you like to restore it?"
+        confirmText="Restore Existing"
+        cancelText="Create New Preview"
       />
     </div>
   );

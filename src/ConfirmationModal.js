@@ -1,6 +1,15 @@
 import React from "react";
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, onCancel }) => {
+const ConfirmationModal = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  onCancel, 
+  title,
+  message,
+  confirmText,
+  cancelText
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -38,7 +47,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, onCancel }) => {
             margin: 0,
             color: "white",
           }}>
-            Existing Preview Found
+            {title}
           </h5>
         </div>
         
@@ -51,7 +60,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, onCancel }) => {
             lineHeight: "1.6",
             color: "#495057"
           }}>
-            A minimized job preview is already open. What would you like to do?
+            {message}
           </p>
           
           <div style={{
@@ -76,7 +85,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, onCancel }) => {
               onMouseOver={(e) => e.target.style.backgroundColor = '#545b62'}
               onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
             >
-              Restore Existing
+              {cancelText}
             </button>
             
             <button
@@ -95,7 +104,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, onCancel }) => {
               onMouseOver={(e) => e.target.style.backgroundColor = '#500000'}
               onMouseOut={(e) => e.target.style.backgroundColor = 'maroon'}
             >
-              Create New Preview
+              {confirmText}
             </button>
           </div>
         </div>
