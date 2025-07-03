@@ -6,8 +6,8 @@ function stripAnsiCodes(text) {
 }
 
 export function useJobSocket() {
-  const [outputBuffer, setOutputBuffer] = useState('Starting job submission...\n');
-  const [processedLines, setProcessedLines] = useState(['Starting job submission...\n']);
+  const [outputBuffer, setOutputBuffer] = useState('');
+  const [processedLines, setProcessedLines] = useState([]);
   const [htmlOutput, setHtmlOutput] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [status, setStatus] = useState(null);
@@ -206,7 +206,7 @@ export function useJobSocket() {
 
         // Check if job is complete - ensure all output is processed first
         if (data.status === 'completed') {
-          finishJob('\nJob completed successfully.\n', 'completed');
+          finishJob('', 'completed');
         } else if (data.status === 'failed') {
           finishJob(`\nJob failed with exit code ${data.exit_code || 1}\n`, 'failed');
         } else if (data.status === 'error') {
@@ -264,7 +264,7 @@ export function useJobSocket() {
 
       if (data.job_id) {
         currentJobId.current = data.job_id;
-        appendOutput('Job process started.\n');
+        appendOutput('');
         setStatus('running');
         setIsConnected(true);
 
@@ -290,10 +290,10 @@ export function useJobSocket() {
     // Reset all state
     stopStreaming();
     chunkQueue.current = [];
-    accumulatedData.current = 'Starting job submission...\n';
-    setOutputBuffer('Starting job submission...\n');
-    setProcessedLines(['Starting job submission...\n']);
-    setHtmlOutput(ansiUp.current.ansi_to_html('Starting job submission...\n'));
+    accumulatedData.current = '';
+    setOutputBuffer('');
+    setProcessedLines(['']);
+    setHtmlOutput(ansiUp.current.ansi_to_html(''));
     setStatus('submitting');
     outputPosition.current = 0;
 
@@ -345,10 +345,10 @@ export function useJobSocket() {
       stopPolling();
       stopStreaming();
       chunkQueue.current = [];
-      accumulatedData.current = 'Starting job submission...\n';
-      setOutputBuffer('Starting job submission...\n');
-      setProcessedLines(['Starting job submission...\n']);
-      setHtmlOutput(ansiUp.current.ansi_to_html('Starting job submission...\n'));
+      accumulatedData.current = '';
+      setOutputBuffer('');
+      setProcessedLines(['']);
+      setHtmlOutput(ansiUp.current.ansi_to_html(''));
       setStatus(null);
       currentJobId.current = null;
       outputPosition.current = 0;
