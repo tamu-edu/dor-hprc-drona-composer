@@ -13,25 +13,31 @@ const ConfirmationModal = ({
   if (!isOpen) return null;
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0, 0, 0, 0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 1050,
-    }}>
-      <div style={{
-        background: "white",
-        borderRadius: "0.5rem",
-        boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
-        width: "500px",
-        maxWidth: "90%",
-      }}>
+    <div 
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1050,
+      }}
+      onClick={onClose}
+    >
+      <div 
+        style={{
+          background: "white",
+          borderRadius: "0.5rem",
+          boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
+          width: "500px",
+          maxWidth: "90%",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div style={{
           backgroundColor: "#500000",
           color: "white",
