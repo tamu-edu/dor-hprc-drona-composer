@@ -297,9 +297,9 @@ function JobComposer({
         onConfirm={handleConfirmRestore}
         onCancel={handleConfirmOverwrite}
         title="Existing Preview Found"
-        message="An existing preview found. Would you like to restore it?"
-        confirmText="Restore Existing"
-        cancelText="Create New Preview"
+        message="An existing was preview found. Would you like to restore it?"
+        confirmText="Restore"
+        cancelText="Create New"
       />
     </div>
   );
