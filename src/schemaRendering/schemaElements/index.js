@@ -15,6 +15,7 @@ import DynamicSelect from "./DynamicSelect";
 import TextArea from "./TextArea";
 import StaticText from "./StaticText";
 import AutocompleteSelect from "./AutocompleteSelect";
+import DragDropContainer from "./DragDropContainer";
 
 
 export {
@@ -35,7 +36,8 @@ export {
 	StaticText,
 	AutocompleteSelect,
 	CollapsibleRowContainer,
-	CollapsibleColContainer
+	CollapsibleColContainer,
+	DragDropContainer
 }
 
 export const componentsMap = {
@@ -55,8 +57,9 @@ export const componentsMap = {
   staticText: StaticText,
   autocompleteSelect: AutocompleteSelect,
   collapsibleRowContainer: CollapsibleRowContainer,
-  collapsibleColContainer: CollapsibleColContainer
+  collapsibleColContainer: CollapsibleColContainer,
+  dragDropContainer: DragDropContainer
 };
 
-export const Containers = ["rowContainer", "collapsibleRowContainer", "collapsibleColContainer"];
+export const Containers = ["rowContainer", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer"];
 

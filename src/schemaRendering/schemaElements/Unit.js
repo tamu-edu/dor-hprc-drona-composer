@@ -1,3 +1,31 @@
+/**
+ * @name Unit
+ * @description A compound input component that combines a numeric value with a unit selector.
+ * Useful for inputs like memory size (GB, MB), time duration (hours, minutes), or any
+ * quantity that requires both a number and unit.
+ *
+ * @example
+ * // Memory size input with unit selection
+ * {
+ *   "type": "unit",
+ *   "name": "memorySize",
+ *   "label": "Unit",
+ *   "value": "16GB",
+ *   "units": [
+ *     { "value": "MB", "label": "MB" },
+ *     { "value": "GB", "label": "GB" },
+ *     { "value": "TB", "label": "TB" }
+ *   ],
+ *   "help": "Select a numeric value with units"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} [value] - Default/initial value in format "numberunit" (e.g., "16GB")
+ * @property {Array} units - Array of unit options, each with value and label properties
+ * @property {string} [help] - Help text displayed below the input
+ */
+
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 
