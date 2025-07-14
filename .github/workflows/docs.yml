@@ -1,4 +1,4 @@
-name: Build and Deploy Documentation
+name: Build and Deploy JSDoc Documentation
 
 
 
@@ -6,15 +6,13 @@ on:
 
   push:
 
-    branches: [ main, hprc-dev ]  # Build on both branches
+    branches: [ main, hprc-dev ]
 
   pull_request:
 
     branches: [ main ]
 
 
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 
 permissions:
 
@@ -26,8 +24,6 @@ permissions:
 
 
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-
 concurrency:
 
   group: "pages"
@@ -38,15 +34,13 @@ concurrency:
 
 jobs:
 
-  # Build job
-
   build:
 
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Checkout
+      - name: Checkout repository
 
         uses: actions/checkout@v4
 
@@ -64,35 +58,19 @@ jobs:
 
           
 
-      - name: Install dependencies
+      - name: Install npm dependencies
 
         run: npm ci
 
         
 
-      - name: Setup Python
+      - name: Generate documentation with JSDoc
 
-        uses: actions/setup-python@v4
-
-        with:
-
-          python-version: '3.x'
-
-          
-
-      - name: Install MkDocs
-
-        run: pip install mkdocs-material mkdocstrings[javascript]
+        run: npm run docs
 
         
 
-      - name: Build documentation
-
-        run: mkdocs build
-
-        
-
-      - name: Setup Pages
+      - name: Setup GitHub Pages
 
         if: github.ref == 'refs/heads/main'
 
@@ -100,7 +78,7 @@ jobs:
 
         
 
-      - name: Upload artifact
+      - name: Upload documentation artifact
 
         if: github.ref == 'refs/heads/main'
 
@@ -108,15 +86,11 @@ jobs:
 
         with:
 
-          path: './site'
+          path: './docs'
 
 
-
-  # Deployment job
 
   deploy:
-
-    # Only deploy from main branch
 
     if: github.ref == 'refs/heads/main'
 
