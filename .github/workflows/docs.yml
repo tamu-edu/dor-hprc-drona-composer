@@ -2,9 +2,9 @@ name: Build and Deploy Documentation
 
 on:
   push:
-    branches: [ main ]  # Change to your default branch name if different
+    branches: [ hprc-dev, master ]  # Change to your default branch name if different
   pull_request:
-    branches: [ main ]
+    branches: [ hprc-dev, master ]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
