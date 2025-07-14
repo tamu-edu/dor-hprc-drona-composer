@@ -54,7 +54,9 @@
   },
   "scripts": {
     "demo": "node scripts/generate-demo-env.js",
-    "docs": "npx documentation build src/** -f html -o docs",
+	"docs": "npx documentation build src/** -f html -o docs --theme ./docs-theme",
+    "docs:serve": "npx documentation serve src/** --watch --theme ./docs-theme",
+    "docs:deploy": "npm run docs",
     "build": "webpack --config webpack.config.js --mode=development",
     "build:prod": "webpack --config webpack.config.js --mode=production",
     "build:prod:compress": "webpack --mode=production --env compress",
