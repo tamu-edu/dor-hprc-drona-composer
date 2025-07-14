@@ -1,0 +1,45 @@
+{
+
+  "source": {
+
+    "include": ["./src"],
+
+    "includePattern": "\\.(js|jsx)$",
+
+    "exclude": ["node_modules/"]
+
+  },
+
+  "opts": {
+
+    "destination": "./docs/",
+
+    "recurse": true
+
+  },
+
+  "templates": {
+
+    "cleverLinks": false,
+
+    "monospaceLinks": false,
+
+    "default": {
+
+      "outputSourceFiles": true,
+
+      "layoutFile": "./docs-theme/layout.tmpl",
+
+      "staticFiles": {
+
+        "include": ["./docs-theme/static"]
+
+      }
+
+    }
+
+  },
+
+  "plugins": ["plugins/markdown"]
+
+}
