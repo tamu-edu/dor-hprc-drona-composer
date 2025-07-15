@@ -17,10 +17,11 @@ function JobComposer({
   previewRef,
   envModalRef,
   multiPaneRef,
+  showSplitScreenModal,
+  setShowSplitScreenModal,
   ...props
 }) {
   const [showHistory, setShowHistory] = useState(true);
-  const [showSplitScreenModal, setShowSplitScreenModal] = useState(false);
   const [isSplitScreenMinimized, setIsSplitScreenMinimized] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 

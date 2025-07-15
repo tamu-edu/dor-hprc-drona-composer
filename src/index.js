@@ -22,6 +22,7 @@ export function App() {
   const [isRerunPromptOpen, setIsRerunPromptOpen] = useState(false);
   const [pendingRerunRow, setPendingRerunRow] = useState(null);
   const [showRerunModal, setShowRerunModal] = useState(false);
+  const [showSplitScreenModal, setShowSplitScreenModal] = useState(false);
 
   const rerunPromptModalRef = useRef(null);
 
@@ -125,8 +126,7 @@ export function App() {
 
       const jobScript = await response.json();
 
-      const modal = new bootstrap.Modal(previewRef.current);
-      modal.show();
+      setShowSplitScreenModal(true);
 
       setJobScript(jobScript["script"]);
 
@@ -158,7 +158,7 @@ export function App() {
       }
 
       setPanes(panes);
-      setWarningMessages([]);
+      setMessages([]);
       setRerunInfo({
         ...pendingRerunRow,
         name: promptData.jobName,
@@ -345,6 +345,8 @@ export function App() {
           handleRerun={handleRerun}
           handleForm={handleForm}
           composerRef={composerRef}
+          showSplitScreenModal={showSplitScreenModal}
+          setShowSplitScreenModal={setShowSplitScreenModal}
         />
         {showRerunModal && (
           <RerunPromptModal
