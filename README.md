@@ -1,4 +1,3 @@
-**NOTE: This is still in Beta development, and needs a code cleanup**
 
 
 Drona Composer, developed by High Performance Research Computing (HPRC) at Texas A&M University, is a tool that assists researchers in creating and submitting any type of job (including complex multi-stage jobs) using a 100% graphical interface. It guides the researcher in providing job-specific information, generating all necessary job files, and submitting the job on the user's behalf. 
