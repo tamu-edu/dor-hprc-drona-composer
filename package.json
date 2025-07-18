@@ -54,7 +54,9 @@
   },
   "scripts": {
     "demo": "node scripts/generate-demo-env.js",
-    "docs": "npx documentation build src/** -f html -o docs",
+	"docs": "npx jsdoc src/** -d docs -c jsdoc.conf.json",
+    "docs:serve": "cd docs && python3 -m http.server 8080 2>/dev/null || python -m http.server 8080",
+    "docs:deploy": "npm run docs",
     "build": "webpack --config webpack.config.js --mode=development",
     "build:prod": "webpack --config webpack.config.js --mode=production",
     "build:prod:compress": "webpack --mode=production --env compress",

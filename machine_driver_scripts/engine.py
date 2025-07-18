@@ -372,12 +372,40 @@ class Engine():
             self.set_map(os.path.join(env_dir, environment, "map.json"))
         if os.path.exists(os.path.join(env_dir, environment, "schema.json")):
             self.set_schema(os.path.join(env_dir, environment, "schema.json"))
+            
+    def custom_replace_with_indentation(self, template, map, params):
+        """
+        Replace placeholders while preserving indentation for multi-line values.
+        Could potentially be optimized.
+        """
+        for key, value in map.items():
+            placeholder = "[" + key + "]"
+            lines = template.split('\n')
+            new_lines = []
 
+            for line in lines:
+                if placeholder in line:
+                    indent_match = re.match(r'^(\s*)', line)
+                    base_indent = indent_match.group(1) if indent_match else ''
+                    
+                    value_lines = str(value).split('\n')
+
+                    replaced_line = line.replace(placeholder, value_lines[0])
+                    new_lines.append(replaced_line)
+                    
+                    # Add remaining lines with proper indentation
+                    for value_line in value_lines[1:]:
+                        if value_line.strip(): 
+                            new_lines.append(base_indent + value_line)
+                        else:
+                            new_lines.append(value_line)  # Keep empty lines as-is
+                else:
+                    new_lines.append(line)
+            template = '\n'.join(new_lines)
+        return template
     
     def custom_replace(self, template, map, params):
-        for key, value in map.items():
-            template = template.replace("["+key+"]", value)
-        return template
+        return self.custom_replace_with_indentation(template, map, params)
 
     def replace_placeholders(self, input_script, map, params):
         job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
