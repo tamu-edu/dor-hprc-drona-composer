@@ -10,12 +10,14 @@ To setup/install Drona Composer, see the instructions below. If you have any que
 
 ## OOD passenger app
 
-Drona Composer is also a Passenger Phusion app using React/Flask. Before you can use Drona Composer, you need to run setup to install the dependencies. After cloning the repo inside OOD (either sys or dev directory), enter the Drona Composer directory and run the following command:
+Drona Composer is wrapped as a Passenger Phusion app using React/Flask. Before you can use Drona Composer, you need to run setup to install the dependencies. After cloning the repo inside OOD (either sys or dev directory), enter the Drona Composer directory and run the following command:
 
 ```
 ./setup
 ```
 This will install all the Python dependencies in requirements.txt. It will also create the **environments** directory. After running the setup script, the app should be ready to use. The first time you run the app, it will show the typical "Initialize App" screen.
+
+On TAMU clusters, all installations went smoothly so far, without any issues. If you face any issues when trying to install the app, please contact help@hprc.tamu.edu for help.
 
 ### Potential Installation Issues
 
