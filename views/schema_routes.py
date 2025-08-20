@@ -5,6 +5,12 @@ import jsonref
 import subprocess
 import traceback
 from .error_handler import APIError, handle_api_error
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from tasks.retriever_tasks import execute_script_async
+from celery_app import celery_app
 
 def iterate_schema(schema_dict):
     """Generator that yields all elements in the schema including nested ones"""
@@ -174,20 +180,35 @@ def get_map_route(environment):
 def evaluate_dynamic_select_route():
     """Execute a script to generate options for a dynamic select component"""
     retriever_path = request.args.get("retriever_path")
+    async_mode = request.args.get("async", "false").lower() == "true"
     
-    result = execute_script(
-        retriever_path=retriever_path,
-        script_type="Dynamic Select",
-        parse_json=False 
-    )
-    
-    return result
+    if async_mode:
+        # Start async task and return task ID
+        task = execute_script_async.delay(
+            retriever_path=retriever_path,
+            script_type="Dynamic Select",
+            parse_json=False 
+        )
+        return jsonify({
+            "task_id": task.id,
+            "status": "PENDING",
+            "message": "Task started successfully"
+        })
+    else:
+        # Execute synchronously
+        result = execute_script(
+            retriever_path=retriever_path,
+            script_type="Dynamic Select",
+            parse_json=False 
+        )
+        return result
 
 @handle_api_error
 def evaluate_autocomplete_route():
     """Execute a script to generate autocomplete options based on a query"""
     retriever_path = request.args.get("retriever_path")
     query = request.args.get("query")
+    async_mode = request.args.get("async", "false").lower() == "true"
 
     if not query:
         raise APIError("Search query is required", status_code=400)
@@ -195,35 +216,113 @@ def evaluate_autocomplete_route():
     # Pass query as environment variable
     env_vars = {"SEARCH_QUERY": query}
     
-    result = execute_script(
-        retriever_path=retriever_path,
-        env_vars=env_vars,
-        script_type="Autocomplete",
-        parse_json=True  #
-    )
-    
-    return jsonify(result)
+    if async_mode:
+        # Start async task and return task ID
+        task = execute_script_async.delay(
+            retriever_path=retriever_path,
+            env_vars=env_vars,
+            script_type="Autocomplete",
+            parse_json=True
+        )
+        return jsonify({
+            "task_id": task.id,
+            "status": "PENDING",
+            "message": "Task started successfully"
+        })
+    else:
+        # Execute synchronously
+        result = execute_script(
+            retriever_path=retriever_path,
+            env_vars=env_vars,
+            script_type="Autocomplete",
+            parse_json=True
+        )
+        return jsonify(result)
 
 @handle_api_error
 def evaluate_dynamic_text_route():
     """Execute a script to generate dynamic text content"""
     retriever_path = request.args.get("retriever_path")
+    async_mode = request.args.get("async", "false").lower() == "true"
     
-    # Get all request args except retriever_path as env vars
+    # Get all request args except retriever_path and async as env vars
     env_vars = {
         k.upper(): v for k, v in request.args.items() 
-        if k != "retriever_path"
+        if k not in ["retriever_path", "async"]
     }
     
-    # Execute the script with better error handling
-    result = execute_script(
-        retriever_path=retriever_path,
-        env_vars=env_vars,
-        script_type="Dynamic Text",
-        parse_json=False
-    )
+    if async_mode:
+        # Start async task and return task ID
+        task = execute_script_async.delay(
+            retriever_path=retriever_path,
+            env_vars=env_vars,
+            script_type="Dynamic Text",
+            parse_json=False
+        )
+        return jsonify({
+            "task_id": task.id,
+            "status": "PENDING",
+            "message": "Task started successfully"
+        })
+    else:
+        # Execute synchronously
+        result = execute_script(
+            retriever_path=retriever_path,
+            env_vars=env_vars,
+            script_type="Dynamic Text",
+            parse_json=False
+        )
+        return result
+
+@handle_api_error
+def get_task_status_route():
+    """Get the status of a Celery task"""
+    task_id = request.args.get("task_id")
     
-    return result
+    if not task_id:
+        raise APIError("Task ID is required", status_code=400)
+    
+    task = celery_app.AsyncResult(task_id)
+    
+    if task.state == 'PENDING':
+        # Task is waiting to be processed
+        response = {
+            'task_id': task_id,
+            'state': task.state,
+            'status': 'Task is pending...'
+        }
+    elif task.state == 'PROGRESS':
+        # Task is currently being processed
+        response = {
+            'task_id': task_id,
+            'state': task.state,
+            'status': task.info.get('status', 'Processing...'),
+            'progress': task.info
+        }
+    elif task.state == 'SUCCESS':
+        # Task completed successfully
+        response = {
+            'task_id': task_id,
+            'state': task.state,
+            'result': task.result
+        }
+    elif task.state == 'FAILURE':
+        # Task failed
+        response = {
+            'task_id': task_id,
+            'state': task.state,
+            'error': str(task.info),
+            'traceback': task.traceback
+        }
+    else:
+        # Unknown state
+        response = {
+            'task_id': task_id,
+            'state': task.state,
+            'status': 'Unknown task state'
+        }
+    
+    return jsonify(response)
 
 def register_schema_routes(blueprint):
     """Register all schema-related routes to the blueprint"""
@@ -232,3 +331,4 @@ def register_schema_routes(blueprint):
     blueprint.route('/evaluate_dynamic_select', methods=['GET'])(evaluate_dynamic_select_route)
     blueprint.route('/evaluate_autocomplete', methods=['GET'])(evaluate_autocomplete_route)
     blueprint.route('/evaluate_dynamic_text', methods=['GET'])(evaluate_dynamic_text_route)
+    blueprint.route('/task_status', methods=['GET'])(get_task_status_route)

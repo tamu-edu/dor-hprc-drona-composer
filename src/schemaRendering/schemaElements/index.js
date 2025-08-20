@@ -16,6 +16,7 @@ import TextArea from "./TextArea";
 import StaticText from "./StaticText";
 import AutocompleteSelect from "./AutocompleteSelect";
 import DragDropContainer from "./DragDropContainer";
+import JsonEditor from "./JsonEditor";
 
 
 export {
@@ -37,7 +38,8 @@ export {
 	AutocompleteSelect,
 	CollapsibleRowContainer,
 	CollapsibleColContainer,
-	DragDropContainer
+	DragDropContainer,
+	JsonEditor
 }
 
 export const componentsMap = {
@@ -58,8 +60,9 @@ export const componentsMap = {
   autocompleteSelect: AutocompleteSelect,
   collapsibleRowContainer: CollapsibleRowContainer,
   collapsibleColContainer: CollapsibleColContainer,
-  dragDropContainer: DragDropContainer
+  dragDropContainer: DragDropContainer,
+  jsonEditor: JsonEditor
 };
 
-export const Containers = ["rowContainer", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer"];
+export const Containers = ["rowContainer", "colContainer", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer"];
 

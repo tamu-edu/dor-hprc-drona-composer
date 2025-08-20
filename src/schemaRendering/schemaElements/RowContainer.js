@@ -38,6 +38,7 @@ import FieldRenderer from "../FieldRenderer";
 
 function RowContainer({
   elements,
+  orientation,
   index,
   onChange,
   startingIndex,
@@ -52,7 +53,7 @@ function RowContainer({
         fields={elements}
         handleValueChange={onChange}
         labelOnTop
-        fieldStyles="col"
+        fieldStyles={orientation ? orientation : "col"}
         startingIndex={startingIndex}
 	currentValues={currentValues}
      	setError={setError}

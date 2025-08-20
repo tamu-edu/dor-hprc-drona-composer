@@ -8,9 +8,12 @@ requests
 eventlet
 jsonref
 flask-socketio
+celery>=5.3.0
+redis>=4.5.0
 Jinja2>=3.1.4
 MarkupSafe>=2.0.1
 PyYAML>=6.0.1
 typing-extensions>=4.1.1
 Werkzeug>=3.0.3
 zipp>=3.19.1
+a2wsgi

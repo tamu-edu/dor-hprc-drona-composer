@@ -50,6 +50,7 @@
  * @property {boolean} [showRefreshButton=false] - Whether to show a manual refresh button for dynamic content
  * @property {number} [refreshInterval] - Auto-refresh interval in seconds
  * @property {boolean} [isHeading=false] - Whether to style the text as a heading with larger, bold font
+ * @property {boolean} [useAsync=true] - Whether to use async Celery execution for long-running scripts
  * @property {function} [setError] - Function to handle errors during content fetching
  */
 
@@ -58,15 +59,23 @@ import FormElementWrapper from "../utils/FormElementWrapper";
 import { FormValuesContext } from "../FormValuesContext";
 import { getFieldValue } from "../utils/fieldUtils";
 
+import config from '@config';
+
 function StaticText(props) {
   const [content, setContent] = useState(props.value || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [taskId, setTaskId] = useState(null);
+  const [taskStatus, setTaskStatus] = useState(null);
   const refreshTimerRef = useRef(null);
 
   const { values: formValues } = useContext(FormValuesContext);
   
   const formValuesRef = useRef(formValues);
+  
+  const devUrl = config.development.dashboard_url;
+  const prodUrl = config.production.dashboard_url;
+  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
   
   useEffect(() => {
     formValuesRef.current = formValues;
@@ -83,6 +92,56 @@ function StaticText(props) {
   const createMarkup = (html) => {
     return { __html: html };
   };
+
+  const pollTaskStatus = useCallback(async (taskId) => {
+    try {
+      const response = await fetch(`${curUrl}/jobs/composer/task_status?task_id=${encodeURIComponent(taskId)}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get task status: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setTaskStatus(data.state);
+
+      if (data.state === 'SUCCESS') {
+        if (data.result && data.result.result !== undefined) {
+          const taskResult = data.result.result;
+          setContent(typeof taskResult === 'string' ? taskResult : JSON.stringify(taskResult));
+        } else {
+          setContent('');
+        }
+        setTaskId(null);
+        setIsLoading(false);
+      } else if (data.state === 'FAILURE') {
+        setError(data.error || 'Content generation failed');
+        if (props.setError) {
+          props.setError({
+            message: data.error || 'Content generation failed',
+            status_code: 500,
+            details: data
+          });
+        }
+        setTaskId(null);
+        setIsLoading(false);
+      } else if (data.state === 'PROGRESS') {
+        setTimeout(() => pollTaskStatus(taskId), 1000);
+      } else {
+        setTimeout(() => pollTaskStatus(taskId), 1000);
+      }
+    } catch (error) {
+      setError('Failed to check task status');
+      if (props.setError) {
+        props.setError({
+          message: 'Failed to check task status',
+          status_code: 500,
+          details: error.message
+        });
+      }
+      setTaskId(null);
+      setIsLoading(false);
+    }
+  }, [curUrl, props.setError]);
 
   const fetchContent = useCallback(async () => {
     if (!props.isDynamic || !props.retrieverPath) return;
@@ -109,33 +168,56 @@ function StaticText(props) {
         });
       }
 
+      // Add async parameter - default to true unless explicitly disabled
+      const useAsync = props.useAsync !== false;
+      if (useAsync) {
+        params.append('async', 'true');
+      }
+
       const queryString = params.toString();
-      const requestUrl = `${document.dashboard_url}/jobs/composer/evaluate_dynamic_text?retriever_path=${encodeURIComponent(props.retrieverPath)}${queryString ? `&${queryString}` : ''}`;
+      const requestUrl = `${curUrl}/jobs/composer/evaluate_dynamic_text?retriever_path=${encodeURIComponent(props.retrieverPath)}${queryString ? `&${queryString}` : ''}`;
 
       const response = await fetch(requestUrl);
 
       if (!response.ok) {
         const errorData = await response.json();
         props.setError?.({
-          message: errorData.message || 'Failed to retrieve select options',
+          message: errorData.message || 'Failed to retrieve content',
           status_code: response.status,
           details: errorData.details || errorData
         });
+        setIsLoading(false);
         return;
       }
 
-      const data = await response.text();
-      setContent(data);
+      if (useAsync) {
+        const data = await response.json();
+        if (data.task_id) {
+          // Async mode - start polling for results
+          setTaskId(data.task_id);
+          setTaskStatus('PENDING');
+          setTimeout(() => pollTaskStatus(data.task_id), 1000);
+        } else {
+          // Fallback to sync if no task_id returned
+          const textData = typeof data === 'string' ? data : JSON.stringify(data);
+          setContent(textData);
+          setIsLoading(false);
+        }
+      } else {
+        // Synchronous mode
+        const data = await response.text();
+        setContent(data);
+        setIsLoading(false);
+      }
     } catch (err) {
       console.error("Error fetching content:", err);
       setError(err.message || "Failed to load content");
+      setIsLoading(false);
       if (props.setError) {
         props.setError(err);
       }
-    } finally {
-      setIsLoading(false);
     }
-  }, [props.isDynamic, props.retrieverPath, props.retrieverParams, props.setError]);
+  }, [props.isDynamic, props.retrieverPath, props.retrieverParams, props.setError, props.useAsync, curUrl, pollTaskStatus]);
 
   const debouncedFetchContent = useCallback(
     (() => {

@@ -33,6 +33,7 @@
  * @property {Array} [options] - Initial options array, may be overridden by retriever
  * @property {string} [help] - Help text displayed below the input
  * @property {boolean} [showAddMore=false] - Whether to show an add more button
+ * @property {boolean} [useAsync=true] - Whether to use async Celery execution for long-running scripts
  */
 
 import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from "react";
@@ -50,6 +51,8 @@ function DynamicSelect(props) {
   const [options, setOptions] = useState(props.options || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isValueInvalid, setIsValueInvalid] = useState(false);
+  const [taskId, setTaskId] = useState(null);
+  const [taskStatus, setTaskStatus] = useState(null);
 
   const { values: formValues } = useContext(FormValuesContext);
   const formValuesRef = useRef(formValues);
@@ -57,6 +60,11 @@ function DynamicSelect(props) {
   useEffect(() => {
     formValuesRef.current = formValues;
   }, [formValues]);
+
+  // Debug options state changes
+  useEffect(() => {
+    console.log('Options state changed:', options, 'Length:', options.length, 'isLoading:', isLoading, 'isEvaluated:', isEvaluated);
+  }, [options, isLoading, isEvaluated]);
 
   const relevantFieldNames = useMemo(() => {
     if (!props.retrieverParams) return [];
@@ -98,6 +106,75 @@ function DynamicSelect(props) {
     }
   }, [options, value, isEvaluated]);
 
+  const pollTaskStatus = useCallback(async (taskId) => {
+    try {
+      const response = await fetch(`${curUrl}/jobs/composer/task_status?task_id=${encodeURIComponent(taskId)}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get task status: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setTaskStatus(data.state);
+      
+      // Debug logging
+      console.log('Task status response:', data);
+
+      if (data.state === 'SUCCESS') {
+        if (data.result && data.result.result !== undefined) {
+          // Parse the result from Celery task
+          let options;
+          const taskResult = data.result.result;
+          
+          if (typeof taskResult === 'string') {
+            try {
+              // Try to parse as JSON first
+              options = JSON.parse(taskResult);
+            } catch (e) {
+              // If not JSON, treat as plain text and create single option
+              options = [{ value: taskResult.trim(), label: taskResult.trim() }];
+            }
+          } else {
+            options = taskResult;
+          }
+          
+          const finalOptions = Array.isArray(options) ? options : [];
+          console.log('Setting options:', finalOptions);
+          setOptions(finalOptions);
+          setIsEvaluated(true);
+        } else {
+          // Handle case where result structure is different
+          setOptions([]);
+          setIsEvaluated(true);
+        }
+        setTaskId(null);
+        setIsLoading(false);
+      } else if (data.state === 'FAILURE') {
+        props.setError({
+          message: data.error || 'Task failed',
+          status_code: 500,
+          details: data
+        });
+        setTaskId(null);
+        setIsLoading(false);
+      } else if (data.state === 'PROGRESS') {
+        // Continue polling
+        setTimeout(() => pollTaskStatus(taskId), 1000);
+      } else {
+        // PENDING or other states - continue polling
+        setTimeout(() => pollTaskStatus(taskId), 1000);
+      }
+    } catch (error) {
+      props.setError({
+        message: 'Failed to check task status',
+        status_code: 500,
+        details: error.message
+      });
+      setTaskId(null);
+      setIsLoading(false);
+    }
+  }, [curUrl, props.setError]);
+
   const fetchOptions = useCallback(async () => {
     const retrieverPath = props.retrieverPath || props.retriever;
 
@@ -131,6 +208,12 @@ function DynamicSelect(props) {
         });
       }
 
+      // Add async parameter - default to true unless explicitly disabled
+      const useAsync = props.useAsync !== false;
+      if (useAsync) {
+        params.append('async', 'true');
+      }
+
       const queryString = params.toString();
       const requestUrl = `${curUrl}/jobs/composer/evaluate_dynamic_text?retriever_path=${encodeURIComponent(retrieverPath)}${queryString ? `&${queryString}` : ''}`;
 
@@ -143,18 +226,28 @@ function DynamicSelect(props) {
           status_code: response.status,
           details: errorData.details || errorData
         });
+        setIsLoading(false);
         return;
       }
 
       const data = await response.json();
-      setOptions(data);
-      setIsEvaluated(true);
+      
+      if (useAsync && data.task_id) {
+        // Async mode - start polling for results
+        setTaskId(data.task_id);
+        setTaskStatus('PENDING');
+        setTimeout(() => pollTaskStatus(data.task_id), 1000);
+      } else {
+        // Synchronous mode - process results immediately
+        setOptions(data);
+        setIsEvaluated(true);
+        setIsLoading(false);
+      }
     } catch (error) {
       props.setError(error);
-    } finally {
       setIsLoading(false);
     }
-  }, [props.retrieverPath, props.retriever, props.retrieverParams, props.setError, curUrl]);
+  }, [props.retrieverPath, props.retriever, props.retrieverParams, props.setError, props.useAsync, curUrl, pollTaskStatus]);
 
   const debouncedFetchOptions = useCallback(
     (() => {
@@ -216,9 +309,22 @@ function DynamicSelect(props) {
   };
 
   const getNoOptionsMessage = () => {
-    if (isLoading) return "Loading options...";
+    if (isLoading) {
+      if (taskStatus === 'PROGRESS') return "Processing options...";
+      if (taskStatus === 'PENDING') return "Task queued...";
+      return "Loading options...";
+    }
     if (isEvaluated && options.length === 0) return "No options available";
     return "No options found";
+  };
+
+  const getPlaceholderText = () => {
+    if (isLoading) {
+      if (taskStatus === 'PROGRESS') return "Processing options...";
+      if (taskStatus === 'PENDING') return "Task queued...";
+      return "Loading options...";
+    }
+    return "-- Choose an option --";
   };
 
   return (
@@ -230,6 +336,7 @@ function DynamicSelect(props) {
     >
       <div style={{ display: "flex" }}>
         <Select
+          key={`select-${options.length}-${isEvaluated}`}
           menuPortalTarget={document.body}
           menuPosition="fixed"
           value={value}
@@ -251,7 +358,7 @@ function DynamicSelect(props) {
             container: (base) => ({ ...base, flexGrow: 1 }),
           }}
           noOptionsMessage={getNoOptionsMessage}
-          placeholder={isLoading ? "Loading options..." : "-- Choose an option --"}
+          placeholder={getPlaceholderText()}
         />
         <input
           type="hidden"
