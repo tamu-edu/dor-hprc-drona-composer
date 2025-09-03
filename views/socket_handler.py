@@ -23,7 +23,7 @@ def get_jobs_dir():
     return jobs_dir
 
 # Python pty is necessary to handle things carriage returns
-def create_pty_wrapper_script(job_id, jobs_dir, bash_cmd):
+def create_pty_wrapper_script(job_id, jobs_dir, bash_cmd, drona_job_id=None):
     """Create a Python wrapper script that uses PTY for proper terminal emulation"""
     wrapper_content = f'''#!/usr/bin/env python3
 import os
@@ -82,6 +82,9 @@ def run_command_with_pty():
             'LINES': '24',
             'PYTHONUNBUFFERED': '1'
         }})
+        
+        # Add DRONA_WF_ID if provided
+        {f"env['DRONA_WF_ID'] = '{drona_job_id}'" if drona_job_id else ""}
         
         # Start process with PTY
         proc = subprocess.Popen(
@@ -193,12 +196,12 @@ if __name__ == "__main__":
 '''
     return wrapper_content
 
-def start_external_job(job_id, bash_cmd):
+def start_external_job(job_id, bash_cmd, drona_job_id=None):
     """Start job as completely external process using PTY"""
     jobs_dir = get_jobs_dir()
     
     # Create Python wrapper script with PTY support
-    wrapper_content = create_pty_wrapper_script(job_id, jobs_dir, bash_cmd)
+    wrapper_content = create_pty_wrapper_script(job_id, jobs_dir, bash_cmd, drona_job_id)
     wrapper_path = os.path.join(jobs_dir, f"{job_id}_wrapper.py")
     
     with open(wrapper_path, 'w') as f:
@@ -256,6 +259,7 @@ def start_job_route():
     """Replace WebSocket job start"""
     data = request.get_json()
     bash_cmd = data.get('bash_cmd', '')
+    drona_job_id = data.get('drona_job_id')
 
     if not bash_cmd:
         return jsonify({'error': 'No bash_cmd provided'}), 400
@@ -263,7 +267,7 @@ def start_job_route():
     job_id = str(uuid.uuid4())
 
     # Start external job (non-blocking)
-    start_external_job(job_id, bash_cmd)
+    start_external_job(job_id, bash_cmd, drona_job_id)
 
     return jsonify({
         'job_id': job_id,

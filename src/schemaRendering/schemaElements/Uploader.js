@@ -125,7 +125,6 @@ function Uploader(props) {
         }
       }));
 
-      // Update state if any files were recreated
       const hasChanges = newFiles.some(
         (file, index) => 
           file.originalFile !== uploadedFiles[index].originalFile ||
@@ -212,8 +211,19 @@ function Uploader(props) {
       originalFile: file
     }));
 
-    setUploadedFiles(prevFiles => [...prevFiles, ...filesArray]);
+    const newUploadedFiles = [...uploadedFiles, ...filesArray];
+    setUploadedFiles(newUploadedFiles);
     setGlobalFiles(prevFiles => [...prevFiles, ...filesArray.map(f => f.originalFile)]);
+    
+    if (props.onChange) {
+      const jsonValue = newUploadedFiles.length > 0 
+        ? JSON.stringify(newUploadedFiles.map(file => ({
+            filename: file.filename,
+            filepath: file.filepath
+          })))
+        : "";
+      props.onChange(props.index, jsonValue);
+    }
   }
 
   function removeFile(index) {
@@ -231,11 +241,20 @@ function Uploader(props) {
       });
     }
 
-    setUploadedFiles((prevFiles) => {
-      const newFiles = [...prevFiles];
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
+    const newUploadedFiles = [...uploadedFiles];
+    newUploadedFiles.splice(index, 1);
+    setUploadedFiles(newUploadedFiles);
+    
+    // Update form state for conditional evaluation
+    if (props.onChange) {
+      const jsonValue = newUploadedFiles.length > 0 
+        ? JSON.stringify(newUploadedFiles.map(file => ({
+            filename: file.filename,
+            filepath: file.filepath
+          })))
+        : "";
+      props.onChange(props.index, jsonValue);
+    }
   }
 
   return (

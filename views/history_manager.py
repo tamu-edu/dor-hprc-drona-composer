@@ -91,7 +91,7 @@ class JobHistoryManager:
             },
             'script': job_data.get('run_command'),
             'driver': job_data.get('driver'),
-            'additional_files': json.loads(job_data.get('additional_files')),
+            'additional_files': json.loads(job_data.get('additional_files', '{}')),
             'form_data': form_data
         }
 
@@ -112,7 +112,7 @@ class JobHistoryManager:
             try:
                 with open(history_file, 'w') as f:
                     json.dump(history, f, indent=2)
-                return True
+                return job_record
             except PermissionError:
                 return False
         except PermissionError:
