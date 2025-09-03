@@ -70,7 +70,11 @@ function Picker(props) {
         ? currentFile.webkitRelativePath
         : currentFile.name;
       inputRef.current.value = path;
+      setValue(path);
       setGlobalFiles((prevFiles) => [...prevFiles, currentFile]);
+      if (props.onChange) {
+        props.onChange(props.index, path);
+      }
     }
   }, [uploadedFiles]);
   
