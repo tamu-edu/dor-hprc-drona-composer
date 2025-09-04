@@ -47,7 +47,7 @@ def submit_job_route():
 
     history_manager = JobHistoryManager()
 
-    history_manager.save_job(
+    job_record = history_manager.save_job(
         params,
         files,
         {
@@ -56,10 +56,17 @@ def submit_job_route():
         }
     )
 
-
-    return jsonify({
-        'bash_cmd': bash_cmd,
-    })
+    # Handle case where save_job returns False on error
+    if isinstance(job_record, dict) and 'job_id' in job_record:
+        return jsonify({
+            'bash_cmd': bash_cmd,
+            'drona_job_id': job_record['job_id']
+        })
+    else:
+        # If save_job failed, still return bash_cmd but without drona_job_id
+        return jsonify({
+            'bash_cmd': bash_cmd
+        })
 
 def preview_job_route():
     """Preview a job script without submitting it"""

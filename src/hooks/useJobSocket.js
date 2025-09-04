@@ -21,7 +21,7 @@ export function useJobSocket() {
   const baseUrl = useRef('');
   
 
-  const DEBUG = false;
+  const DEBUG = true;
   // Streaming parameters
   const POLL_INTERVAL = 1000; // Poll server every 1000ms
   const STREAM_CHUNKS = 10;   // Split each response into 10 chunks
@@ -234,11 +234,12 @@ export function useJobSocket() {
     return false;
   };
 
-  const startHttpJob = async (bashCmd) => {
+  const startHttpJob = async (bashCmd, drona_job_id = null) => {
     try {
       const url = `${baseUrl.current}/ws-start-job`;
       if (DEBUG) console.log('[DEBUG] Starting job URL:', url);
       if (DEBUG) console.log('[DEBUG] Bash command:', bashCmd);
+      if (DEBUG) console.log('[DEBUG] Drona job ID:', drona_job_id);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -246,7 +247,10 @@ export function useJobSocket() {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         },
-        body: JSON.stringify({ bash_cmd: bashCmd })
+        body: JSON.stringify({ 
+          bash_cmd: bashCmd,
+          ...(drona_job_id && { drona_job_id: drona_job_id })
+        })
       });
 
       if (DEBUG) console.log('[DEBUG] Start job response status:', response.status);
@@ -309,7 +313,7 @@ export function useJobSocket() {
           if (DEBUG) console.log('[DEBUG] Initial request response:', initialRequest.response);
 
           if (initialRequest.status === 200 && initialRequest.response && initialRequest.response.bash_cmd) {
-            startHttpJob(initialRequest.response.bash_cmd);
+            startHttpJob(initialRequest.response.bash_cmd, initialRequest.response.drona_job_id);
           } else {
             appendOutput(`\nError starting the job: ${initialRequest.status}\n`);
             setStatus('error');
