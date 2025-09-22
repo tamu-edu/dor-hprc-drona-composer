@@ -64,13 +64,20 @@ function StaticText(props) {
   const [error, setError] = useState(null);
   const refreshTimerRef = useRef(null);
 
-  const { values: formValues } = useContext(FormValuesContext);
+  const { values: formValues, updateValue } = useContext(FormValuesContext);
   
   const formValuesRef = useRef(formValues);
   
   useEffect(() => {
     formValuesRef.current = formValues;
   }, [formValues]);
+
+  // Update form context whenever content changes (for conditional logic)
+  useEffect(() => {
+    if (updateValue && props.name) {
+      updateValue(props.name, content);
+    }
+  }, [content, updateValue, props.name]);
 
   const relevantFieldNames = useMemo(() => {
     if (!props.retrieverParams) return [];
