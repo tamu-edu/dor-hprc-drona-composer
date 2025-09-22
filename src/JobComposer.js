@@ -157,10 +157,6 @@ function JobComposer({
       return;
     }
 
-    if (formData.get("name") === "") {
-      alert("Job name is required.");
-      return;
-    }
 
     if (isSplitScreenMinimized) {
       setIsSplitScreenMinimized(false);

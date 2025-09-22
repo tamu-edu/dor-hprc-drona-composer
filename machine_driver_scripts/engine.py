@@ -408,7 +408,10 @@ class Engine():
         return self.custom_replace_with_indentation(template, map, params)
 
     def replace_placeholders(self, input_script, map, params):
-        job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
+        if params['name'] == 'unnamed':
+            job_file_name = "template.txt"
+        else:
+            job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
         output = self.custom_replace(input_script, map, params)
         output = output.replace("[job-file-name]", job_file_name)
         output = output.replace("\t", " ")
@@ -467,7 +470,10 @@ class Engine():
             return "No environment selected"
         else:
             if params.get("run_command") is not None:
-                job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
+                if params['name'] == 'unnamed':
+                    job_file_name = "template.txt"
+                else:
+                    job_file_name = f"{params['name'].replace('-', '_').replace(' ', '_')}.job"
                 job_file_path = os.path.join(params['location'], job_file_name)
                 # Create a file with the job script
                 with open(job_file_path, "w") as job_file:

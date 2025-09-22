@@ -14,6 +14,7 @@ import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
 import TextArea from "./TextArea";
 import StaticText from "./StaticText";
+import Hidden from "./Hidden";
 import AutocompleteSelect from "./AutocompleteSelect";
 import DragDropContainer from "./DragDropContainer";
 
@@ -34,6 +35,7 @@ export {
 	DynamicSelect,
 	TextArea,
 	StaticText,
+	Hidden,
 	AutocompleteSelect,
 	CollapsibleRowContainer,
 	CollapsibleColContainer,
@@ -55,6 +57,7 @@ export const componentsMap = {
   dynamicSelect: DynamicSelect,
   textarea: TextArea,
   staticText: StaticText,
+  hidden: Hidden,
   autocompleteSelect: AutocompleteSelect,
   collapsibleRowContainer: CollapsibleRowContainer,
   collapsibleColContainer: CollapsibleColContainer,
