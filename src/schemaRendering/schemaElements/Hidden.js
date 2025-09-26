@@ -106,8 +106,8 @@ function Hidden(props) {
         return;
       }
 
-      // Script executed successfully but we don't need the result
-      await response.text();
+      const data = await response.text();
+      setValue(data);
     } catch (err) {
       console.error("Error executing hidden script:", err);
       setError(err.message || "Failed to execute script");
