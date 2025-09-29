@@ -36,7 +36,7 @@ export function App() {
   const envModalRef = useRef(null);
   const multiPaneRef = useRef(null);
 
-  const defaultRunLocation = "/scratch/user/" + document.user + "/drona_composer/runs";
+  const defaultRunLocation = document.drona_dir + "/runs";
   const [runLocation, setRunLocation] = useState(
     defaultRunLocation
   );

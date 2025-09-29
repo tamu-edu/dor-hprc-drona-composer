@@ -2,8 +2,9 @@ from flask import request, jsonify, current_app as app
 import os
 import json
 from .error_handler import APIError, handle_api_error
-from .utils import create_folder_if_not_exist
+from .utils import create_folder_if_not_exist, get_drona_dir
 from .env_repo_manager import EnvironmentRepoManager
+
 
 def get_directories(path):
     """Get list of directories in a given path"""
@@ -20,7 +21,7 @@ def _get_environments():
 
     user_envs_path = request.args.get("user_envs_path")
     if user_envs_path is None:
-        user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+        user_envs_path = os.path.join(get_drona_dir(), 'environments')
         try:
             create_folder_if_not_exist(user_envs_path)
         except (PermissionError, OSError):
@@ -69,7 +70,7 @@ def add_environment_route():
             repo_url=app.config['env_repo_github'],
             repo_dir="./environments-repo"
     )
-    user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
+    user_envs_path = os.path.join(get_drona_dir(), 'environments')
 
     try:
         repo_manager.copy_environment_to_user(env, user_envs_path)

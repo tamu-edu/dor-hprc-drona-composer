@@ -8,6 +8,30 @@ def create_folder_if_not_exist(dir_path):
     if not os.path.isdir(dir_path):
         os.makedirs(dir_path)
 
+
+def get_drona_config():
+    current_user = os.getenv("USER")
+    config_dir = f"/home/{current_user}/.drona/"
+
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+
+    config_file = os.path.join(config_dir, "config.json")
+
+    if not os.path.exists(config_file):
+        default_config = {
+            "drona_dir": f"/scratch/user/{current_user}/drona_composer",
+        }
+        with open(config_file, 'w') as f:
+            json.dump(default_config, f, indent=2)
+
+    with open(config_file, 'r') as f:
+        return json.load(f)
+
+def get_drona_dir():
+    config = get_drona_config()
+    return config["drona_dir"]
+
 @handle_api_error
 def get_main_paths_route():
     """Get system and user paths for file operations"""

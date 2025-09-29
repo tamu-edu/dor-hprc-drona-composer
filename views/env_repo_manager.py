@@ -6,6 +6,7 @@ import subprocess
 from flask import current_app as app
 from typing import Dict, List
 from subprocess import PIPE
+from .utils import get_drona_dir
 
 def create_folder_if_not_exist(dir_path):
     if not os.path.isdir(dir_path):
@@ -54,7 +55,7 @@ class EnvironmentRepoManager:
             env_info = {
                 "env": env_name,
                 "description": env_data.get("description", "No description available"),
-                "src": f"/scratch/user/{os.getenv('USER')}/drona_composer/environments",
+                "src": f"{get_drona_dir()}/environments",
                 "category": env_data.get("category", "Uncategorized"),
                 "version": env_data.get("version", "1.0.0"),
                 "cluster": env_data.get("cluster", "Unknown"),
