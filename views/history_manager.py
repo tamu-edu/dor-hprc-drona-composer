@@ -4,6 +4,7 @@ import uuid
 import json
 from datetime import datetime
 from pathlib import Path
+from .utils import get_drona_dir
 
 class JobHistoryManager:
     def __init__(self):
@@ -11,7 +12,7 @@ class JobHistoryManager:
 
     def get_job(self, job_id):
         user = os.getenv('USER')
-        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        base_dir = os.path.join(get_drona_dir(), 'jobs')
         try:
             Path(base_dir).mkdir(parents=True, exist_ok=True)
             history_file = os.path.join(base_dir, f"{user}_history.json")
@@ -96,7 +97,7 @@ class JobHistoryManager:
             'form_data': form_data
         }
 
-        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        base_dir = os.path.join(get_drona_dir(), 'jobs')
         try:
             Path(base_dir).mkdir(parents=True, exist_ok=True)
             history_file = os.path.join(base_dir, f"{user}_history.json")
@@ -122,7 +123,7 @@ class JobHistoryManager:
     def get_user_history(self):
         user = os.getenv('USER')
 
-        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        base_dir = os.path.join(get_drona_dir(), 'jobs')
         try:
             Path(base_dir).mkdir(parents=True, exist_ok=True)
             history_file = os.path.join(base_dir, f"{user}_history.json")
