@@ -259,24 +259,6 @@ function Picker(props) {
         useLabel={props.useLabel}
       >
         <div style={{ display: "flex", gap: "0.5rem" }}>
-
-          <input
-            type="file"
-            style={{ display: "none" }}
-            multiple
-            ref={remoteInput}
-            onChange={(e) => handleFileChange(e.target.files)}
-          />
-          <input
-            type="text"
-            name={props.name}
-            id={props.id}
-            // value={value}
-            value={value}
-            className="form-control"
-            onChange={handleValueChange}
-            ref={inputRef}
-          />
           {showRemoteLabel && (
             <button
               type="button"
@@ -287,6 +269,13 @@ function Picker(props) {
               {props.remoteLabel}
             </button>
           )}
+          <input
+            type="file"
+            style={{ display: "none" }}
+            multiple
+            ref={remoteInput}
+            onChange={(e) => handleFileChange(e.target.files)}
+          />
           <button
             type="button"
             className="btn btn-primary maroon-button"
@@ -296,6 +285,16 @@ function Picker(props) {
           >
             {props.localLabel}
           </button>
+          <input
+            type="text"
+            name={props.name}
+            id={props.id}
+            // value={value}
+            value={value}
+            className="form-control"
+            onChange={handleValueChange}
+            ref={inputRef}
+          />
         </div>
       </FormElementWrapper>
       <div
@@ -400,7 +399,7 @@ function Picker(props) {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }
 
