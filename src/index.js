@@ -40,7 +40,7 @@ export function App() {
   const [runLocation, setRunLocation] = useState(
     defaultRunLocation
   );
-
+  const [baseRunLocation, setBaseRunLocation] = useState(defaultRunLocation)
 
 
   const [environments, setEnvironments] = useState([]);
@@ -64,10 +64,14 @@ export function App() {
       });
   }, []);
 
-  function sync_job_name(name) {
+  function sync_job_name(name, customRunLocation) {
+    // console.log(customRunLocation)
+    const preferredLocation = customRunLocation || baseRunLocation;
+    // console.log("here is the run location " + baseRunLocation)
     setRunLocation(
-      defaultRunLocation + "/" + name
+      preferredLocation + "/" + name
     );
+    setBaseRunLocation(preferredLocation);
   }
 
   useEffect(() => {
@@ -330,10 +334,10 @@ export function App() {
           messages={messages}
           panes={panes}
           setPanes={setPanes}
-	  jobStatus={jobStatus}
-	  globalFiles={globalFiles}
+          jobStatus={jobStatus}
+          globalFiles={globalFiles}
           handlePreview={handlePreview}
-	  rerunInfo={rerunInfo}
+          rerunInfo={rerunInfo}
           handleEnvChange={handleEnvChange}
           handleAddEnv={handleAddEnv}
           handleUploadedFiles={handleUploadedFiles}
@@ -347,6 +351,7 @@ export function App() {
           composerRef={composerRef}
           showSplitScreenModal={showSplitScreenModal}
           setShowSplitScreenModal={setShowSplitScreenModal}
+          setBaseRunLocation={setBaseRunLocation}
         />
         {showRerunModal && (
           <RerunPromptModal

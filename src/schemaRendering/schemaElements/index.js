@@ -17,6 +17,7 @@ import StaticText from "./StaticText";
 import Hidden from "./Hidden";
 import AutocompleteSelect from "./AutocompleteSelect";
 import DragDropContainer from "./DragDropContainer";
+import JobNameLocation from "./JobNameLocation";
 
 
 export {
@@ -39,29 +40,31 @@ export {
 	AutocompleteSelect,
 	CollapsibleRowContainer,
 	CollapsibleColContainer,
-	DragDropContainer
+	DragDropContainer,
+	JobNameLocation
 }
 
 export const componentsMap = {
-  text: Text,
-  select: Select,
-  number: Number,
-  checkbox: Checkbox,
-  rowContainer: RowContainer,
-  radioGroup: RadioGroup,
-  picker: Picker,
-  uploader: Uploader,
-  time: Time,
-  module: Module,
-  unit: Unit,
-  dynamicSelect: DynamicSelect,
-  textarea: TextArea,
-  staticText: StaticText,
-  hidden: Hidden,
-  autocompleteSelect: AutocompleteSelect,
-  collapsibleRowContainer: CollapsibleRowContainer,
-  collapsibleColContainer: CollapsibleColContainer,
-  dragDropContainer: DragDropContainer
+	text: Text,
+	select: Select,
+	number: Number,
+	checkbox: Checkbox,
+	rowContainer: RowContainer,
+	radioGroup: RadioGroup,
+	picker: Picker,
+	uploader: Uploader,
+	time: Time,
+	module: Module,
+	unit: Unit,
+	dynamicSelect: DynamicSelect,
+	textarea: TextArea,
+	staticText: StaticText,
+	autocompleteSelect: AutocompleteSelect,
+	collapsibleRowContainer: CollapsibleRowContainer,
+	collapsibleColContainer: CollapsibleColContainer,
+	dragDropContainer: DragDropContainer,
+	jobNameLocation: JobNameLocation
+
 };
 
 export const Containers = ["rowContainer", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer"];
