@@ -7,7 +7,9 @@ import SubmissionHistory from "./SubmissionHistory";
 import EnvironmentModal from "./EnvironmentModal";
 import SplitScreenModal from "./SplitScreenModal";
 import ConfirmationModal from "./ConfirmationModal";
+import RequiredFieldsModal from "./RequiredFieldsModal";
 import { useJobSocket } from "./hooks/useJobSocket";
+import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 
 
 function JobComposer({
@@ -24,6 +26,8 @@ function JobComposer({
   const [showHistory, setShowHistory] = useState(true);
   const [isSplitScreenMinimized, setIsSplitScreenMinimized] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [showRequiredFieldsModal, setShowRequiredFieldsModal] = useState(false);
+  const [missingRequiredFields, setMissingRequiredFields] = useState([]);
 
   const {
     lines,
@@ -114,11 +118,22 @@ function JobComposer({
   }
 
   const handlePreview = () => {
+    // Validate required fields before showing preview
+    if (props.composerRef?.current) {
+      const currentFields = props.composerRef.current.getFields();
+      const validation = validateRequiredFields(currentFields);
+      if (!validation.isValid) {
+        setMissingRequiredFields(validation.missingFields);
+        setShowRequiredFieldsModal(true);
+        return;
+      }
+    }
+
     if (isSplitScreenMinimized) {
       setShowConfirmationModal(true);
       return;
     }
-    
+
     if (props.handlePreview) {
       props.handlePreview();
     }
@@ -151,12 +166,22 @@ function JobComposer({
       return;
     }
 
+    // Validate required fields before submission
+    if (props.composerRef?.current) {
+      const currentFields = props.composerRef.current.getFields();
+      const validation = validateRequiredFields(currentFields);
+      if (!validation.isValid) {
+        setMissingRequiredFields(validation.missingFields);
+        setShowRequiredFieldsModal(true);
+        return;
+      }
+    }
+
     const formData = getFormData();
     if (!formData) {
       alert("Error preparing form data.");
       return;
     }
-
 
     if (isSplitScreenMinimized) {
       setIsSplitScreenMinimized(false);
@@ -297,6 +322,12 @@ function JobComposer({
         message="An existing was preview found. Would you like to restore it?"
         confirmText="Restore"
         cancelText="Create New"
+      />
+
+      <RequiredFieldsModal
+        isOpen={showRequiredFieldsModal}
+        onClose={() => setShowRequiredFieldsModal(false)}
+        missingFields={missingRequiredFields}
       />
     </div>
   );
