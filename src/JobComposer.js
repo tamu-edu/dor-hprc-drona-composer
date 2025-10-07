@@ -44,9 +44,9 @@ function JobComposer({
 
   const getFormData = () => {
     const paneRefs = multiPaneRef.current?.getPaneRefs();
-    if(!paneRefs) return null;
+    if (!paneRefs) return null;
 
-    if(props.jobStatus === "rerun"){
+    if (props.jobStatus === "rerun") {
       const data = props.rerunInfo;
       const additionalFiles = {};
 
@@ -109,7 +109,7 @@ function JobComposer({
 
       if (props.globalFiles && props.globalFiles.length > 0) {
         props.globalFiles.forEach((file) => {
-            formData.append("files[]", file);
+          formData.append("files[]", file);
         });
       }
 
@@ -143,8 +143,8 @@ function JobComposer({
   const handleConfirmOverwrite = () => {
     setShowConfirmationModal(false);
     setIsSplitScreenMinimized(false);
-    reset(); 
-    
+    reset();
+
     if (props.handlePreview) {
       props.handlePreview();
     }
@@ -211,9 +211,7 @@ function JobComposer({
     <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div className="card-header">
-          {/* <h6 className="maroon-header">Job Composer</h6> */}
-        </div>
+
         <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
           <form
             ref={formRef}
@@ -231,8 +229,6 @@ function JobComposer({
             <div className="row">
               <div className="col-lg-12">
                 <div id="job-content" style={{ maxWidth: '100%' }}>
-                  <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name} />
-                  <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation} />
                   <Select
                     key="env_select"
                     name="runtime"
@@ -249,10 +245,15 @@ function JobComposer({
                     onFileChange={props.handleUploadedFiles}
                     setError={setError}
                     ref={props.composerRef}
+                    sync_job_name={props.sync_job_name}
+                    runLocation={props.runLocation}
+                    setRunLocation={props.setRunLocation}
+                    customRunLocation={props.customRunLocation}
                   />
                 </div>
               </div>
             </div>
+
             <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
               <div className="invisible">
                 <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
@@ -277,13 +278,14 @@ function JobComposer({
                 </button>
               </div>
             </div>
+
           </form>          <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
             <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
           </div>
         </div>
         <div className="card-footer">
           <small className="text-muted">
-             Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
+            Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
 
           </small>
         </div>
@@ -312,7 +314,7 @@ function JobComposer({
       />
 
       <EnvironmentModal envModalRef={envModalRef} />
-      
+
       <ConfirmationModal
         isOpen={showConfirmationModal}
         onClose={() => setShowConfirmationModal(false)}
