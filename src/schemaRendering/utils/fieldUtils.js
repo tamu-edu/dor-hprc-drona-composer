@@ -64,3 +64,56 @@ export const getFieldValue = (fields, fieldName) => {
   }
   return undefined;
 };
+
+// Helper to get all fields recursively (flattened)
+export const getAllFields = (fields) => {
+  fields = normalizeFields(fields);
+  if (!fields || !Array.isArray(fields)) return [];
+
+  const allFields = [];
+
+  fields.forEach(field => {
+    if (!field) return;
+
+    allFields.push(field);
+
+    if (field.elements) {
+      const nestedFields = getAllFields(field.elements);
+      allFields.push(...nestedFields);
+    }
+  });
+
+  return allFields;
+};
+
+// Validate required fields
+export const validateRequiredFields = (fields) => {
+  const allFields = getAllFields(fields);
+
+  const missingFields = allFields.filter(field => {
+    if (!field.required) return false;
+    if (field.isVisible === false) return false;
+
+    const value = field.value;
+
+    if (value === null || value === undefined || value === '') return true;
+    if (typeof value === 'string' && value.trim() === '') return true;
+    if (Array.isArray(value) && value.length === 0) return true;
+
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      if (!value || Object.keys(value).length === 0) return true;
+      if (value.hasOwnProperty('value') && (!value.value || value.value === '')) return true;
+    }
+
+    return false;
+  });
+
+  return {
+    isValid: missingFields.length === 0,
+    missingFields: missingFields.map(field => ({
+      name: field.name,
+      label: field.label || field.name,
+      type: field.type
+    }))
+  };
+};

@@ -140,11 +140,11 @@ const Composer = forwardRef((props, ref) => {
       return processed;
     });
 
-    return { fields: newFields, hasChanged };
-  };
-  //
-  //
-  // Expose setValues method
+  return { fields: newFields, hasChanged };
+};
+	//
+	//
+  // Expose setValues method and getFields method
   useImperativeHandle(ref, () => ({
     setValues: (dictionary) => {
       if (!dictionary || typeof dictionary !== 'object') {
@@ -189,6 +189,9 @@ const Composer = forwardRef((props, ref) => {
           return prevFields;
         }
       });
+    },
+    getFields: () => {
+      return fields;
     }
   }));
   const contextValue = {
