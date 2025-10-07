@@ -229,37 +229,6 @@ function JobComposer({
             <div className="row">
               <div className="col-lg-12">
                 <div id="job-content" style={{ maxWidth: '100%' }}>
-                  {/* <Text name="name" id="job-name" label="Job Name" onNameChange={props.sync_job_name} />
-                  <Picker name="location" label="Location" localLabel="Change" defaultLocation={props.runLocation} /> */}
-
-                  {/* <div className="form-group">
-                    <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-
-                      {/* {/* Job Name  *
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                        <label htmlFor="job-name" style={{ whiteSpace: 'nowrap' }}>Job Name</label>
-                        <Text name="name" id="job-name" useLabel={false} onNameChange={props.sync_job_name} />
-                      </div>
-
-                      {/* {/* Location  *
-                      <div style={{ display: 'flex', flexGrow: 1, gap: '1.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <label style={{ whiteSpace: 'nowrap' }}>Location</label>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <Picker
-                            name="location"
-                            label=""
-                            localLabel="Change"
-                            defaultLocation={props.runLocation}
-                            style={{ width: '100%', alignItems: 'flex-start' }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
-
-
                   <Select
                     key="env_select"
                     name="runtime"
