@@ -278,27 +278,6 @@ function JobComposer({
                 </button>
               </div>
             </div>
-            {/* Generate button */}
-            {/* <div className="d-flex justify-content-center mb-3">
-              {props.environment.env !== "" && (
-                <input type="button" id="job-preview-button" className="btn btn-primary maroon-button" value="Generate" onClick={props.handlePreview} />
-              )}
-            </div> */}
-
-            {/* <hr className="my-4" style={{ borderColor: '#e1e1e1' }} /> */}
-
-            {/* Show/Hide History button */}
-            {/* <div className="d-flex justify-content-start mb-4">
-              <button
-                className="btn btn-primary maroon-button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowHistory(!showHistory);
-                }}
-              >
-                {showHistory ? 'Hide History' : 'Show History'}
-              </button>
-            </div> */}
 
           </form>          <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
             <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
