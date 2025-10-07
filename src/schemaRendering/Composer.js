@@ -144,7 +144,7 @@ const _updateVisibilityAndClearHidden = (fields, fullFields) => {
 };
 	//
 	//
-  // Expose setValues method
+  // Expose setValues method and getFields method
   useImperativeHandle(ref, () => ({
     setValues: (dictionary) => {
       if (!dictionary || typeof dictionary !== 'object') {
@@ -189,6 +189,9 @@ const _updateVisibilityAndClearHidden = (fields, fullFields) => {
           return prevFields;
         }
       });
+    },
+    getFields: () => {
+      return fields;
     }
   }));
   const contextValue = {
