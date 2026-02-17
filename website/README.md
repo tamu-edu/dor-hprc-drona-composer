@@ -192,17 +192,17 @@ The server will start on port 3000 (or the next available port). Note the port p
 In a **separate terminal on your local machine**, set up port forwarding:
 
 ```bash
-ssh -L 3000:localhost:3000 <your-username>@<login-node>.hprc.tamu.edu
+ssh -L 3000:localhost:3000 <your-username>@<portal-node>.hprc.tamu.edu
 ```
 
 Replace:
 - `<your-username>` — your HPRC NetID
-- `<login-node>` — the cluster login host (e.g. `grace`, `faster`, `aces`)
+- `<login-node>` — the cluster portal host (e.g. `portal-grace`, `portal-faster`, `portal-aces?`)
 
 For example:
 
 ```bash
-ssh -L 3000:grace042:3000 netid@grace.hprc.tamu.edu
+ssh -L 3000:localhost:3000 a11155@portal-grace.hprc.tamu.edu
 ```
 
 ### Step 3: View in your browser
@@ -211,9 +211,7 @@ Open `http://localhost:3000/dor-hprc-drona-composer/` in your local browser. Hot
 
 ### Tips
 
-- If port 3000 is taken, Docusaurus will suggest another port. Match the `-L` source and destination ports accordingly (e.g. `-L 3001:grace042:3001`).
-- You can add `-N` to the SSH command to skip opening a remote shell: `ssh -N -L 3000:...`
-- For VS Code Remote-SSH users, port forwarding is handled automatically.
+- If port 3000 is taken, Docusaurus will suggest another port. Match the `-L` source and desti?nation ports accordingly (e.g. `-L 3001:localhost:3001`). Rarely, your local machine port will be occupied by something else, and can lead to long debugging sessions, so if it does not work, try setting your port to something else, (-L 9999:localhost:3000), this way access the website via `http://localhost:9999/dor-hprc-drona-composer/`
 
 ## Building for Production
 

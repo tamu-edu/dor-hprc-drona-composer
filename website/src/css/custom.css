@@ -19,11 +19,11 @@
   --tamu-maroon: #500000;
   --tamu-white: #ffffff;
   --tamu-black: #000000;
-  --tamu-navy: #2F3E51; 
+  --tamu-navy: #2F3E51;
   --tamu-gray: #707070;
   --tamu-tan: #D6D2C4;
   --tamu-light-gray: #F6F6F6;
-  --tamu-gellow: #FCE300;
+  --tamu-yellow: #FCE300;
   --tamu-light-blue: #AEB7CF;
 
   /* Enhanced Typography */
@@ -49,15 +49,50 @@
   --ifm-global-shadow-tl: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-.docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.1);
-  display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
+/* =============================================================================
+   DARK MODE THEME
+   ============================================================================= */
+[data-theme='dark'] {
+  /* Lighter maroon accent for dark mode - more vibrant */
+  --ifm-color-primary: #c14242;
+  --ifm-color-primary-dark: #b33939;
+  --ifm-color-primary-darker: #a83636;
+  --ifm-color-primary-darkest: #8a2d2d;
+  --ifm-color-primary-light: #cf4b4b;
+  --ifm-color-primary-lighter: #d84f4f;
+  --ifm-color-primary-lightest: #e55c5c;
+
+  --tamu-maroon-light: #c14242;
+  --tamu-maroon-lighter: #d84f4f;
+
+  /* Dark mode color palette */
+  --tamu-dark-bg: #1b1b1d;
+  --tamu-dark-bg-secondary: #242526;
+  --tamu-dark-border: #3a3a3c;
+  
+  /* Docusaurus dark mode overrides */
+  --ifm-background-color: #1b1b1d;
+  --ifm-background-surface-color: #242526;
+  --ifm-navbar-background-color: #1b1b1d;
+  --ifm-footer-background-color: #242526;
+  --ifm-color-content: #e3e3e3;
+  --ifm-heading-color: #ffffff;
+  --ifm-link-color: #a83232;
+  --ifm-link-hover-color: #c94545;
+  --ifm-menu-color: #e3e3e3;
+  --ifm-toc-border-color: #3a3a3c;
+  
+  /* Code blocks */
+  --ifm-code-background: #2a2a2c;
+  
+  /* Shadows for dark mode */
+  --ifm-global-shadow-lw: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --ifm-global-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --ifm-global-shadow-tl: 0 8px 16px rgba(0, 0, 0, 0.5);
 }
 
-html[data-theme='dark'] .docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.3);
+[data-theme='dark'] .docusaurus-highlight-code-line {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* =============================================================================
@@ -71,7 +106,11 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 .navbar {
   background: var(--tamu-maroon) !important;
   box-shadow: var(--ifm-global-shadow-md);
-  #border-bottom: 3px solid var(--tamu-t-gray);
+}
+
+[data-theme='dark'] .navbar {
+  background: var(--tamu-dark-bg) !important;
+  border-bottom: 1px solid var(--tamu-dark-border);
 }
 
 .navbar__brand {
@@ -101,8 +140,16 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
   text-decoration: none;
 }
 
+[data-theme='dark'] .navbar__item .navbar__link:hover {
+  color: var(--tamu-maroon-lighter) !important;
+}
+
 .navbar__item .navbar__link--active {
   color: var(--tamu-light-gray) !important;
+}
+
+[data-theme='dark'] .navbar__item .navbar__link--active {
+  color: var(--tamu-maroon-lighter) !important;
 }
 
 .navbar__link {
@@ -118,6 +165,11 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
   border: 1px solid var(--tamu-light-gray);
 }
 
+[data-theme='dark'] .dropdown__menu {
+  background-color: var(--tamu-dark-bg-secondary) !important;
+  border: 1px solid var(--tamu-dark-border);
+}
+
 .dropdown__link {
   color: var(--tamu-white) !important;
 }
@@ -125,6 +177,11 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 .dropdown__link:hover {
   background-color: rgba(0, 102, 204, 0.1) !important;
   color: var(--tamu-light-gray) !important;
+}
+
+[data-theme='dark'] .dropdown__link:hover {
+  background-color: rgba(168, 50, 50, 0.2) !important;
+  color: var(--tamu-maroon-lighter) !important;
 }
 
 /* Hero Section - Professional TAMU Styling */
@@ -135,6 +192,11 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
   text-align: center;
   position: relative;
   overflow: hidden;
+}
+
+[data-theme='dark'] .hero {
+  background: linear-gradient(135deg, var(--tamu-dark-bg) 0%, #2F3E51 150%);
+  border-bottom: 2px solid var(--tamu-maroon-light);
 }
 
 .hero__title {
@@ -167,251 +229,164 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
   padding-left: 1.5rem;
 }
 
+[data-theme='dark'] .menu__list-item-collapsible .menu__link {
+  color: #e3e3e3;
+}
+
 .menu__link {
   border-radius: 0;
   transition: all 0.2s ease;
-  border-left: 3px solid transparent;
-  padding-left: 1.5rem;
 }
 
 .menu__link:hover {
-  background-color: var(--tamu-light-gray);
-  border-left-color: var(--tamu-maroon);
+  background-color: rgba(80, 0, 0, 0.05);
+  border-left: 3px solid var(--tamu-maroon);
+}
+
+[data-theme='dark'] .menu__link:hover {
+  background-color: rgba(168, 50, 50, 0.1);
+  border-left: 3px solid var(--tamu-maroon-light);
 }
 
 .menu__link--active {
   background-color: rgba(80, 0, 0, 0.08);
-  color: var(--tamu-maroon) !important;
-  border-left-color: var(--tamu-maroon);
-  font-weight: 600;
-}
-
-/* Content Area Styling */
-.markdown h1 {
-  color: var(--tamu-maroon);
-  border-bottom: 2px solid var(--hprc-accent);
-  padding-bottom: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.markdown h2 {
-  color: var(--tamu-gray);
-  border-bottom: 1px solid var(--tamu-light-gray);
-  padding-bottom: 0.3rem;
-  margin-top: 2rem;
-}
-
-.markdown h3 {
-  color: var(--hprc-secondary);
-  margin-top: 1.5rem;
-}
-
-/* Code Blocks - HPRC Style */
-.prism-code {
-  border-radius: var(--ifm-border-radius);
-  border: 1px solid var(--tamu-light-gray);
-  box-shadow: var(--ifm-global-shadow-lw);
-}
-
-.token.title {
-  color: var(--tamu-maroon);
-}
-
-/* Tables */
-.markdown table {
-  border-collapse: collapse;
-  margin: 1.5rem 0;
-  box-shadow: var(--ifm-global-shadow-lw);
-  border-radius: var(--ifm-border-radius);
-  overflow: hidden;
-}
-
-.markdown table thead {
-  background-color: var(--tamu-maroon);
-  color: var(--tamu-white);
-}
-
-.markdown table th,
-.markdown table td {
-  border: 1px solid var(--tamu-light-gray);
-  padding: 0.75rem;
-}
-
-.markdown table tbody tr:nth-child(even) {
-  background-color: var(--tamu-light-gray);
-}
-
-/* Documentation Cards */
-.card {
-  border: 1px solid var(--tamu-light-gray);
-  border-radius: var(--ifm-border-radius);
-  transition: all 0.3s ease;
-  box-shadow: var(--ifm-global-shadow-lw);
-  overflow: hidden;
-}
-
-.card:hover {
-  border-color: var(--tamu-maroon);
-  box-shadow: var(--ifm-global-shadow-md);
-  transform: translateY(-2px);
-}
-
-/* Badges and Labels */
-.badge--primary {
-  background-color: var(--tamu-maroon);
-  color: var(--tamu-white);
-}
-
-.badge--secondary {
-  background-color: var(--tamu-gray);
-  color: var(--tamu-white);
-}
-
-.badge--success {
-  background-color: var(--tamu-green);
-}
-
-.badge--warning {
-  background-color: var(--tamu-orange);
-}
-
-.badge--info {
-  background-color: var(--tamu-blue);
-}
-
-/* Table of Contents */
-.table-of-contents {
   border-left: 3px solid var(--tamu-maroon);
-  padding-left: 1rem;
-}
-
-.table-of-contents__link {
-  color: var(--tamu-gray);
-  transition: color 0.2s ease;
-}
-
-.table-of-contents__link:hover {
-  color: var(--tamu-maroon);
-}
-
-.table-of-contents__link--active {
   color: var(--tamu-maroon);
   font-weight: 600;
 }
 
-/* Footer - HPRC Professional */
-.footer--dark {
-  background: linear-gradient(135deg, var(--tamu-maroon) 0%, var(--tamu-navy) 150%);
-  border-top: 3px solid var(--tamu-light-gray);
+[data-theme='dark'] .menu__link--active {
+  background-color: rgba(168, 50, 50, 0.15);
+  border-left: 3px solid var(--tamu-maroon-light);
+  color: var(--tamu-maroon-lighter);
+}
+
+/* Code blocks - better contrast in dark mode */
+[data-theme='dark'] code {
+  background-color: var(--ifm-code-background);
+  color: #e3e3e3;
+}
+
+/* Admonitions (callouts) */
+[data-theme='dark'] .alert {
+  background-color: var(--tamu-dark-bg-secondary);
+  border-color: var(--tamu-dark-border);
+}
+
+/* Cards and containers */
+[data-theme='dark'] .card {
+  background-color: var(--tamu-dark-bg-secondary);
+  border-color: var(--tamu-dark-border);
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+
+
+/* Footer - Maroon in light mode, dark in dark mode */
+.footer {
+  background-color: var(--tamu-maroon) !important;
+}
+
+[data-theme='dark'] .footer {
+  background-color: var(--tamu-dark-bg-secondary) !important;
 }
 
 .footer__title {
-  color: var(--tamu-light-gray);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.footer__link-item {
-  color: rgba(255, 255, 255, 0.8);
-  transition: color 0.2s ease;
-}
-
-.footer__link-item:hover {
-  color: var(--tamu-light-blue);
-}
-
-/* Alerts and Admonitions */
-.alert {
-  border-radius: var(--ifm-border-radius);
-  box-shadow: var(--ifm-global-shadow-lw);
-}
-
-.alert--primary {
-  border-left: 4px solid var(--tamu-maroon);
-}
-
-.alert--secondary {
-  border-left: 4px solid var(--tamu-gray);
-}
-
-.alert--success {
-  border-left: 4px solid var(--tamu-green);
-}
-
-.alert--info {
-  border-left: 4px solid var(--tamu-blue);
-}
-
-.alert--warning {
-  border-left: 4px solid var(--tamu-orange);
-}
-
-/* Responsive Design */
-@media screen and (max-width: 996px) {
-  .hero__title {
-    font-size: 2.5rem;
-  }
-
-  .navbar__title {
-    font-size: 1.2rem;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .hero {
-    padding: 3rem 1rem;
-  }
-
-  .hero__title {
-    font-size: 2rem;
-  }
-
-  .navbar__title {
-    font-size: 1rem;
-  }
-}
-
-/* Custom HPRC Utility Classes */
-.text-maroon {
-  color: var(--tamu-maroon) !important;
-}
-
-.bg-maroon {
-  background-color: var(--tamu-maroon) !important;
   color: var(--tamu-white) !important;
 }
 
-.border-maroon {
-  border-color: var(--tamu-maroon) !important;
+.footer__item {
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.hprc-highlight {
-  background: linear-gradient(120deg, transparent 0%, var(--hprc-accent) 0%, var(--hprc-accent) 100%);
-  background-size: 100% 3px;
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  padding-bottom: 2px;
+.footer__link-item {
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Loading and Transition States */
-.loading {
-  position: relative;
-  overflow: hidden;
+.footer__link-item:hover {
+  color: var(--tamu-white) !important;
 }
 
-.loading::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
+[data-theme='dark'] .footer__link-item:hover {
+  color: var(--tamu-maroon-lighter) !important;
+}
+
+.footer__copyright {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Tables - Maroon headers in light mode */
+table {
+  border-collapse: collapse;
   width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--hprc-accent), transparent);
-  animation: loading 1.5s infinite;
 }
 
-@keyframes loading {
-  0% { left: -100%; }
-  100% { left: 100%; }
+table thead tr {
+  background-color: var(--tamu-maroon) !important;
+}
+
+table thead th {
+  color: var(--tamu-white) !important;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tamu-maroon);
+}
+
+table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+table tbody tr:hover {
+  background-color: rgba(80, 0, 0, 0.05);
+}
+
+table tbody td {
+  padding: 0.75rem 1rem;
+}
+
+/* Dark mode tables */
+[data-theme='dark'] table thead tr {
+  background-color: var(--tamu-maroon-light) !important;
+}
+
+[data-theme='dark'] table thead th {
+  border: 1px solid var(--tamu-maroon-light);
+}
+
+[data-theme='dark'] table tbody tr {
+  border-bottom: 1px solid var(--tamu-dark-border);
+}
+
+[data-theme='dark'] table tbody tr:hover {
+  background-color: rgba(168, 50, 50, 0.1);
+}
+
+[data-theme='dark'] table tbody td {
+  color: #e3e3e3;
+
+}
+
+
+
+html[data-theme='light'] button[class*='toggleButton']:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Force the icon to be white in light mode */
+html[data-theme='light'] button[class*='toggleButton'] svg {
+  color: white !important;
+  fill: white !important;
+}
+
+
+html[data-theme='dark'] button[class*='toggleButton']:hover {
+  background-color: rgba(168, 50, 50, 0.35) !important;
+  border-color: var(--tamu-maroon-lighter) !important;
 }

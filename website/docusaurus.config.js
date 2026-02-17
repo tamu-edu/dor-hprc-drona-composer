@@ -37,7 +37,16 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
     ],
   ],
 
-  themes: ['@docusaurus/theme-mermaid', '@docusaurus/theme-live-codeblock'],
+  themes: [
+    '@docusaurus/theme-mermaid',
+    '@docusaurus/theme-live-codeblock',
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+      },
+    ],
+  ],
 
   markdown: {
     mermaid: true,
@@ -61,21 +70,6 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             label: 'Documentation',
           },
           {
-            type: 'dropdown',
-            label: 'Components',
-            position: 'left',
-            items: [
-              {
-                label: 'Frontend',
-                to: '/docs/frontend/overview',
-              },
-              {
-                label: 'Backend',
-                to: '/docs/backend/api-routes',
-              },
-            ],
-          },
-          {
             href: 'https://hprc.tamu.edu',
             label: 'HPRC Portal',
             position: 'right',
@@ -88,7 +82,6 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
         ],
       },
       footer: {
-        style: 'dark',
         links: [
           {
             title: 'Documentation',
@@ -144,10 +137,13 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Texas A&M University.`,
       },
-      // Disable dark mode toggle button
       colorMode: {
-        disableSwitch: true,
-      },
+        defaultMode: 'light',
+        disableSwitch: false,
+     },
+     mermaid: {
+        theme: { light: 'neutral', dark: 'dark' }, 
+     },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,

@@ -14,28 +14,31 @@ const sidebars = {
   tutorialSidebar: [
     {
       type: 'category',
-      label: 'User Guide',
-      items: [
-        'user-guide/using-drona',
-        'user-guide/primers',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Overview',
+      label: 'Getting Started',
       items: [
         'overview/intro',
-        'overview/architecture',
-        'overview/getting-started',
+        'quick-start',
         'overview/installation',
+        'overview/architecture',
       ],
     },
     {
       type: 'category',
-      label: 'Frontend',
+      label: 'Using Drona',
       items: [
-        'frontend/overview',
-        'frontend/form-components',
+        'user-guide/using-drona',
+        'environments/user-workflows',
+        {
+          type: 'category',
+          label: 'Existing Workflows',
+          items: [
+            'using-drona/workflows/generic',
+            'using-drona/workflows/alphafold',
+            'using-drona/workflows/huggingface',
+            'using-drona/workflows/lammps',
+          ],
+        },
+        'using-drona/monitoring',
       ],
     },
     {
@@ -44,11 +47,35 @@ const sidebars = {
       items: [
         'environments/overview',
         'environments/schema',
+        'frontend/form-components',
         'environments/map',
-        'environments/user-workflows',
+        'environments/driver',
+        'environments/utils',
         'environments/publishing',
-	'environments/retriever-scripts',
-	'environments/database'
+        'environments/database',
+        {
+          type: 'category',
+          label: 'Advanced Features',
+          items: [
+            'environments/retriever-scripts',
+            'environments/conditionals',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Integrations',
+      items: [
+        'integrations/open-ondemand',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Tutorials',
+      items: [
+        'tutorials',
+        'user-guide/primers',
       ],
     },
     'citations',

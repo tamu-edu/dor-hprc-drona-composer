@@ -2,40 +2,80 @@
 sidebar_position: 1
 ---
 
-# Introduction to Drona
+# Introduction
 
-**Drona** is an HPC workflow assistant that eliminates the steep learning curve for running scientific workflows on high-performance computing resources. It abstracts HPC complexities while maintaining full researcher control over their computational workflows.
+**Drona Workflow Engine** is an HPC workflow assistant and framework developed by [Texas A&M University HPRC](https://hprc.tamu.edu). It provides a 100% graphical interface for creating and submitting computational jobs — researchers provide workflow-specific information through dynamic forms, and Drona generates all necessary scripts, validates the configuration, and submits the job on their behalf.
 
-## What is Drona?
+![Drona Workflow Interface](/img/drona2_prev.png)
 
-Drona addresses a critical challenge: HPC resources are increasingly complex while becoming more popular among novice researchers who lack traditional HPC skills. This creates inefficiencies and places burden on both researchers and HPC support teams.
+## The Problem
 
-Drona provides a user-friendly GUI that guides researchers through configuring their scientific workflows. It generates all necessary scripts, displays them in an editable preview window for transparency and control, then submits jobs on the researcher's behalf.
+HPC resources are becoming increasingly complex while simultaneously growing more popular among researchers who may lack traditional HPC skills. Writing Slurm scripts, managing modules, configuring multi-stage pipelines — these tasks create a steep learning curve that leads to frustration, inefficient resource usage, and increased burden on HPC support teams.
 
-## Core Capabilities
+## How Drona Solves It
 
-**Workflow Assistant**: Intuitive interface guides researchers through scientific workflow configuration without requiring deep HPC knowledge.
+Drona abstracts HPC complexity behind intuitive, workflow-specific forms while keeping the researcher in full control.
 
-**Full Transparency**: All generated scripts are displayed in an editable preview window, ensuring complete visibility and control over the computational process.
+### Guided Workflow Configuration
 
-**Extensible Framework**: Researchers and administrators can create, customize, and share new workflows using Drona's declarative framework.
+Researchers select a workflow environment and fill out a dynamic form tailored to that specific use case. The form adapts based on user selections — fields appear, hide, and validate in real time. No Slurm syntax or HPC knowledge required.
 
-**Advanced Feedback**: Dynamic validation and feedback help researchers provide correct and meaningful workflow configuration.
+![Drona Input Form](/img/user-guide/input-form.png)
 
-## Getting Started
+### Full Transparency
 
-Ready to start using Drona Composer? Check out our [Getting Started Guide](./getting-started) to learn how to:
+Before submission, Drona displays all generated scripts in a fully editable preview window. Researchers can review exactly what will run, make adjustments, and catch issues before they reach the scheduler. A message pane provides validation warnings and environment-specific guidance.
 
-1. Set up your development environment
-2. Create your first workflow
-3. Submit and monitor jobs
-4. Customize environments for your needs
+![Drona Preview Window](/img/user-guide/preview-window.png)
 
-## Need Help?
+### Extensible Framework
 
-- 📚 **Documentation**: Browse through our comprehensive documentation
-- 🐛 **Issues**: Report bugs or request features on [GitHub](https://github.com/tamu-edu/dor-hprc-drona-composer/issues)
-- 💬 **Support**: Contact the HPRC team at [hprc.tamu.edu](https://hprc.tamu.edu/contact/)
+Drona is not just an assistant — it's a framework. Workflows are defined declaratively through a small set of configuration files:
+
+- **`schema.json`** — Defines the form interface and field behavior
+- **`map.json`** — Maps form values to job script variables
+- **`driver.sh`** — Template for the generated job script
+- **`utils.py`** — Optional custom processing logic
+
+Anyone can create, customize, and share workflows. System administrators deploy workflows for all users, while researchers can develop and test their own in a personal workspace.
+
+```mermaid
+graph LR
+    A[User Input Form] <--> B[schema.json]
+    B <--> C[Retriever Scripts]
+    B --> D[map.json]
+    D <--> E[utils.py]
+    D --> F[driver.sh]
+    F --> G[Job Submission]
+
+    style A fill:#e8f5e8
+    style B fill:#e1f5fe
+    style C fill:#e1f5fe
+    style D fill:#fff3e0
+    style E fill:#fff3e0
+    style F fill:#fce4ec
+    style G fill:#ffebee
+```
+
+### Dynamic Content
+
+Workflows can include retriever scripts that fetch live data — available GPU types, module versions, running job statuses — and populate form fields dynamically. This enables workflows that respond to the current state of the cluster.
+
+### Validation and Feedback
+
+Drona analyzes input values and provides warnings before submission. For example, it might flag that a GPU was requested for longer than the cluster's maximum GPU wall time, or that a required module is not available on the selected cluster.
+
+## Who Is Drona For?
+
+- **Researchers** who want to run scientific workflows on HPC without learning Slurm
+- **HPC administrators** who want to provide guided, validated job submission for their users
+- **Workflow developers** who want to build shareable, reusable computational environments
+
+## Next Steps
+
+- [Quick Start](../quick-start) — Install Drona and get it running
+- [Environment Development](../environments/overview) — Learn how workflows are built
+- [Schema Files](../environments/schema) — Understand the form definition system
 
 ---
 
