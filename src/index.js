@@ -49,10 +49,13 @@ export function App() {
   const [environments, setEnvironments] = useState([]);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    console.log("locationPickedByUser changed ->", locationPickedByUser);
+  }, [locationPickedByUser]);
 
-  // useEffect(() => {
-  //   console.log("runLocation changed ->", runLocation);
-  // }, [runLocation]);
+  useEffect(() => {
+    console.log("runLocation changed ->", runLocation);
+  }, [runLocation]);
 
   // useEffect(() => {
   //   console.log("dronaJobId changed ->", dronaJobId);
@@ -333,10 +336,10 @@ export function App() {
 
     const action = document.dashboard_url + "/jobs/composer/preview";
 
-    // console.log("FormData: ")
-    // for (const [key, value] of formData.entries()) {
-    //   console.log(key, value);
-    // }
+    console.log("FormData: ")
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
 
     preview_job(action, formData, function (error, jobScript) {
       if (error) {
