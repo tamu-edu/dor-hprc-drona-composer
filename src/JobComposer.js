@@ -35,6 +35,7 @@ function JobComposer({
   const [missingRequiredFields, setMissingRequiredFields] = useState([]);
   const [configBlocked, setConfigBlocked] = useState(false);
 
+  const [workflowMode, setWorkflowmode] = useState(null)
 
   const {
     lines,

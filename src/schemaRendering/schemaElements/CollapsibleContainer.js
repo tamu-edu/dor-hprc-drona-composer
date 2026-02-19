@@ -82,6 +82,7 @@ function CollapsibleRowContainer({
   currentValues,
   setError,
   title = "Collapsible Row Container",
+  locationProps = {},
   ...props
 }) {
   const [isCollapsed, setIsCollapsed] = useState(props.isCollapsed || false);
@@ -116,6 +117,7 @@ function CollapsibleRowContainer({
             startingIndex={startingIndex}
             currentValues={currentValues}
             setError={setError}
+            locationProps={locationProps}
           />
         </div>
       </div>
@@ -133,6 +135,7 @@ function CollapsibleColContainer({
   currentValues,
   setError,
   title = "Collapsible Column Container",
+  locationProps = {},
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   
@@ -171,6 +174,7 @@ function CollapsibleColContainer({
             startingIndex={startingIndex}
             currentValues={currentValues}
             setError={setError}
+            locationProps={locationProps}
           />
         </div>
       </div>

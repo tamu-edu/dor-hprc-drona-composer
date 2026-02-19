@@ -30,6 +30,7 @@ const FieldRenderer = ({
             fieldStyles={fieldStyles}
             setError={setError}
             {...locationProps}
+            locationProps={locationProps}
           />
         </div>
       );
