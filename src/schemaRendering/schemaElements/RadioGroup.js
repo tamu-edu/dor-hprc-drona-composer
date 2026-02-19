@@ -9,7 +9,7 @@
  *   "type": "radioGroup",
  *   "name": "priority",
  *   "label": "RadioGroup",
- *    
+ *   "style": "button",
  *   "options": [
  *     { "value": "low", "label": "Low" },
  *     { "value": "medium", "label": "Medium" },
