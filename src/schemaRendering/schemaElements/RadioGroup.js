@@ -1,6 +1,6 @@
 /**
  * @name RadioGroup
- * @description A radio button group component that allows users to select a single option 
+ * @description A radio button group component that allows users to select a single option
  * from a list of choices. Displays options horizontally with their labels.
  *
  * @example
@@ -43,21 +43,52 @@ function RadioGroup(props) {
     if (props.onChange) props.onChange(props.index, newValue);
   }
 
-  const optionList = props.options.map((option) => (
-    <div className="form-check form-check-inline" key={option.value}>
-      <input
-        type="radio"
-        className="form-check-input"
-        value={option.value}
-        name={props.name}
-        checked={value === option.value}
-        onChange={handleValueChange}
-      />
-      <label className="form-check-label" htmlFor={`${props.name}-${option.value}`}>
+  const optionList = props.options.map((option) => {
+    const isSelected = value === option.value;
+    const optionClassName = isSelected ? "maroon-button-filled" : "maroon-button";
+
+    return (
+      <label
+        key={option.value}
+        className={`btn btn-primary ${optionClassName}`}
+        style={{
+          position: 'relative',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0.375rem 0.875rem',
+          fontSize: '1rem',
+          fontWeight: '450',
+          transition: 'background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
+          userSelect: 'none',
+          whiteSpace: 'nowrap',
+          lineHeight: '1.5',
+          marginBottom: 0,
+        }}
+      >
+        {/* Visually hidden radio — keeps native form submission & accessibility */}
+        <input
+          type="radio"
+          value={option.value}
+          name={props.name}
+          checked={isSelected}
+          onChange={handleValueChange}
+          style={{
+            position: 'absolute',
+            opacity: 0,
+            width: '1px',
+            height: '1px',
+            margin: '-1px',
+            padding: 0,
+            border: 0,
+            overflow: 'hidden',
+            clip: 'rect(0,0,0,0)',
+          }}
+        />
         {option.label}
       </label>
-    </div>
-  ));
+    );
+  });
 
   return (
     <FormElementWrapper
@@ -66,7 +97,9 @@ function RadioGroup(props) {
       label={props.label}
       help={props.help}
     >
-      {optionList}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+        {optionList}
+      </div>
     </FormElementWrapper>
   );
 }
