@@ -9,6 +9,7 @@
  *   "type": "radioGroup",
  *   "name": "priority",
  *   "label": "RadioGroup",
+ *    
  *   "options": [
  *     { "value": "low", "label": "Low" },
  *     { "value": "medium", "label": "Medium" },
@@ -22,6 +23,7 @@
  * @property {string} [label] - Display label for the field
  * @property {Array} options - Array of option objects, each with value and label properties
  * @property {string} [value] - Default/initial selected value
+ * @property {string} [style] - Render variant; set to "button" for button-style radio options
  * @property {string} [help] - Help text displayed below the input
  */
 
@@ -30,6 +32,7 @@ import FormElementWrapper from "../utils/FormElementWrapper"
 
 function RadioGroup(props) {
   const [value, setValue] = useState("");
+  const isButtonStyle = props.style === "button";
 
   useEffect(() => {
     if (props.value != "") {
@@ -44,49 +47,63 @@ function RadioGroup(props) {
   }
 
   const optionList = props.options.map((option) => {
+    const optionId = `${props.name}-${option.value}`;
     const isSelected = value === option.value;
-    const optionClassName = isSelected ? "maroon-button-filled" : "maroon-button";
+
+    if (isButtonStyle) {
+      return (
+        <div
+          className="d-inline-block mb-1"
+          key={option.value}
+          style={{ marginRight: "0.5rem" }}
+        >
+          <input
+            id={optionId}
+            type="radio"
+            className="btn-check"
+            value={option.value}
+            name={props.name}
+            checked={isSelected}
+            onChange={handleValueChange}
+            autoComplete="off"
+            style={{
+              position: "absolute",
+              opacity: 0,
+              width: 0,
+              height: 0,
+              pointerEvents: "none",
+            }}
+          />
+          <label
+            className={`btn ${isSelected ? "maroon-button-filled" : "maroon-button"}`}
+            htmlFor={optionId}
+          >
+            {option.label}
+          </label>
+        </div>
+      );
+    }
 
     return (
-      <label
-        key={option.value}
-        className={`btn btn-primary ${optionClassName}`}
-        style={{
-          position: 'relative',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0.375rem 0.875rem',
-          fontSize: '1rem',
-          fontWeight: '450',
-          transition: 'background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
-          userSelect: 'none',
-          whiteSpace: 'nowrap',
-          lineHeight: '1.5',
-          marginBottom: 0,
-        }}
-      >
-        {/* Visually hidden radio — keeps native form submission & accessibility */}
+      <div className="form-check form-check-inline" key={option.value}>
         <input
+          id={optionId}
           type="radio"
+          className="form-check-input"
           value={option.value}
           name={props.name}
           checked={isSelected}
           onChange={handleValueChange}
-          style={{
-            position: 'absolute',
-            opacity: 0,
-            width: '1px',
-            height: '1px',
-            margin: '-1px',
-            padding: 0,
-            border: 0,
-            overflow: 'hidden',
-            clip: 'rect(0,0,0,0)',
-          }}
+          style={{ accentColor: "maroon" }}
         />
-        {option.label}
-      </label>
+        <label
+          className="form-check-label"
+          htmlFor={optionId}
+          style={{ color: isSelected ? "maroon" : "inherit" }}
+        >
+          {option.label}
+        </label>
+      </div>
     );
   });
 
@@ -97,9 +114,7 @@ function RadioGroup(props) {
       label={props.label}
       help={props.help}
     >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-        {optionList}
-      </div>
+      {optionList}
     </FormElementWrapper>
   );
 }
