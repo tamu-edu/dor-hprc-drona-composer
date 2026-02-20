@@ -43,7 +43,8 @@ function RowContainer({
   startingIndex,
   onSizeChange,
   currentValues,
-  setError
+  setError,
+  locationProps = {}
 }) {
 
   return (
@@ -54,8 +55,9 @@ function RowContainer({
         labelOnTop
         fieldStyles="col"
         startingIndex={startingIndex}
-	currentValues={currentValues}
-     	setError={setError}
+        currentValues={currentValues}
+        setError={setError}
+        locationProps={locationProps}
       />
     </div>
   );
