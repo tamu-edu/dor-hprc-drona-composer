@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Architecture
 
-Drona Composer is a React/Flask application that transforms JSON-based workflow definitions into dynamic forms for HPC job submission. This page describes how the major components fit together.
+Drona Workflow Engine is a React/Flask application that transforms JSON-based workflow definitions into dynamic forms for HPC job submission. This page describes how the major components fit together.
 
 ## High-Level Overview
 

@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Installation
 
-This guide covers the full installation process and configuration details for Drona Composer.
+This guide covers the full installation process and configuration details for Drona Workflow Engine.
 
 ## Prerequisites
 

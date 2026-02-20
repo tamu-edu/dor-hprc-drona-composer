@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Quick Start
 
-Drona Composer is a React/Flask application that provides a graphical interface for creating and submitting HPC jobs. This guide covers the essential steps to get it running.
+Drona Workflow Engine is a React/Flask application that provides a graphical interface for creating and submitting HPC jobs. This guide covers the essential steps to get it running.
 
 ## Prerequisites
 

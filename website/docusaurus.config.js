@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
   title: 'Drona Workflow Engine',
   tagline: 'High Performance Computing Workflow Composer Documentation',
   url: 'https://tamu-edu.github.io',
-  baseUrl: '/dor-hprc-drona-composer/',
+  baseUrl: '/a11155/drona-docs',
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/hprc_tungsten.png',
@@ -91,12 +91,24 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                 to: '/docs/overview/intro',
               },
               {
-                label: 'Frontend Components',
-                to: '/docs/frontend/overview',
+                label: 'Using Drona',
+                to: '/docs/user-guide/using-drona',
               },
               {
-                label: 'Backend API',
-                to: '/docs/backend/overview',
+                label: 'Environment Development',
+                to: '/docs/environments/overview',
+              },
+              {
+                label: 'Integrations',
+                to: '/docs/integrations/open-ondemand',
+              },
+              {
+                label: 'Tutorials',
+                to: '/docs/tutorials',
+              },
+              {
+                label: 'Citations',
+                to: '/docs/citations',
               },
             ],
           },
@@ -104,16 +116,16 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             title: 'Texas A&M HPRC',
             items: [
               {
-                label: 'HPRC Portal',
-                href: 'https://hprc.tamu.edu',
+                label: 'HPRC Portals',
+                href: 'https://hprc.tamu.edu/kb/User-Guides/Portal/#how-to-access',
               },
               {
                 label: 'User Guide',
-                href: 'https://hprc.tamu.edu/user-guide/',
+                href: 'https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_wfe/',
               },
               {
-                label: 'Support',
-                href: 'https://hprc.tamu.edu/contact/',
+                label: 'Contact Us',
+                href: 'https://hprc.tamu.edu/about/contact.html',
               },
             ],
           },
@@ -128,14 +140,10 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
                 label: 'Issues & Bug Reports',
                 href: 'https://github.com/tamu-edu/dor-hprc-drona-composer/issues',
               },
-              {
-                label: 'Contributing',
-                href: 'https://github.com/tamu-edu/dor-hprc-drona-composer/blob/master/CONTRIBUTING.md',
-              },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Texas A&M University.`,
+        copyright: `Copyright © ${new Date().getFullYear()} <a href="http://www.tamu.edu/" style="color: #fff;">Texas A&M University</a>.`,
       },
       colorMode: {
         defaultMode: 'light',

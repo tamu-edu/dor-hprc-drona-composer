@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Getting Started
 
-This guide will help you get up and running with Drona Composer quickly.
+This guide will help you get up and running with Drona Workflow Engine quickly.
 
 ## Prerequisites
 
@@ -16,9 +16,9 @@ Before you begin, ensure you have the following:
 
 ## Quick Start
 
-### Step 1: Access Drona Composer
+### Step 1: Access Drona Workflow Engine
 
-Navigate to the Drona Composer interface through your HPRC portal:
+Navigate to the Drona Workflow Engine interface through your HPRC portal:
 
 ```
 https://portal.hprc.tamu.edu/drona-composer

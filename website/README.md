@@ -270,6 +270,21 @@ GIT_USER=<your-github-username> USE_SSH=true npm run deploy
 
 This builds the site and pushes to the configured deployment branch. This is generally not needed since the GitHub Action handles it.
 
+### Deploying to Courant (staging)
+
+Use `sync_courant.sh` to rsync the built site to the Courant staging server.
+
+```bash
+cd website
+npm run build
+./sync_courant.sh          # syncs to courant.hprc.tamu.edu/$USER/drona-docs/
+./sync_courant.sh -r       # syncs to the root path (/drona-docs/) instead
+```
+
+**Important:** Before building, update `baseUrl` in `docusaurus.config.js` to match the Courant path (e.g. `/$USER/drona-docs/` or `/drona-docs/`), otherwise assets and links will break.
+
+Other flags: `-d` for dry run, `-f` to skip confirmation, `-u <user>` to specify your Courant username.
+
 ## Key Configuration Files
 
 | File | Purpose |

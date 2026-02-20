@@ -4,9 +4,10 @@ sidebar_position: 1
 
 # Workflow Development Overview
 
-Drona Composer workflows are self-contained workflow definitions that transform user input forms into executable computational jobs. Each Drona Workflow defines the complete user experience, from form interface to job execution, enabling specialized workflows for different research domains and computational frameworks.
+Drona Workflow Engine workflows are self-contained workflow definitions that transform user input forms into executable computational jobs. Each Drona Workflow defines the complete user experience, from form interface to job execution, enabling specialized workflows for different research domains and computational frameworks.
 
-![Workflow Architecture Overview](/img/docusaurus.png)
+<!-- TODO: Potential image here -->
+<!-- ![Workflow Architecture Overview](/img/docusaurus.png) -->
 
 ## What are Drona Workflows?
 

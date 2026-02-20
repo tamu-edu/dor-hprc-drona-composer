@@ -6,8 +6,6 @@ sidebar_position: 1
 
 **Drona Workflow Engine** is an HPC workflow assistant and framework developed by [Texas A&M University HPRC](https://hprc.tamu.edu). It provides a 100% graphical interface for creating and submitting computational jobs — researchers provide workflow-specific information through dynamic forms, and Drona generates all necessary scripts, validates the configuration, and submits the job on their behalf.
 
-![Drona Workflow Interface](/img/drona2_prev.png)
-
 ## The Problem
 
 HPC resources are becoming increasingly complex while simultaneously growing more popular among researchers who may lack traditional HPC skills. Writing Slurm scripts, managing modules, configuring multi-stage pipelines — these tasks create a steep learning curve that leads to frustration, inefficient resource usage, and increased burden on HPC support teams.

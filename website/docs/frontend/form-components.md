@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Form Components
 
-Documentation for all form components in the Drona Composer system. Components are used in JSON schema files by specifying the appropriate `type` field.
+Documentation for all form components in the Drona Workflow Engine system. Components are used in JSON schema files by specifying the appropriate `type` field.
 
 ## Common Properties
 

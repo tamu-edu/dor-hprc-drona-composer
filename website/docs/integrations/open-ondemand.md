@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Open OnDemand
 
-Drona Composer is designed to run as a [Passenger](https://www.phusionpassenger.com/) app within [Open OnDemand](https://openondemand.org/) (OOD). This page covers how to deploy Drona as both a development and production OOD application.
+Drona Workflow Engine is designed to run as a [Passenger](https://www.phusionpassenger.com/) app within [Open OnDemand](https://openondemand.org/) (OOD). This page covers how to deploy Drona as both a development and production OOD application.
 
 ## How It Works
 

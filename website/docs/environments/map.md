@@ -6,8 +6,6 @@ sidebar_position: 3
 
 Map files (`map.json`) define how form field values are transformed into job variables, resource allocations, and execution parameters. These files serve as the bridge between user input and the actual job execution environment.
 
-![Map Structure](/img/docusaurus.png)
-
 ## Map File Organization
 
 Every Drona Workflow must contain a file called `map.json` in its root directory. This file defines the variable mappings and transformations that convert form data into executable job parameters.

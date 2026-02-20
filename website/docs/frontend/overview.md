@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Frontend Overview
 
-The Drona Composer frontend is a modern React application that provides an intuitive interface for creating and managing HPC workflows.
+The Drona Workflow Engine frontend is a modern React application that provides an intuitive interface for creating and managing HPC workflows.
 
 ## Architecture
 
