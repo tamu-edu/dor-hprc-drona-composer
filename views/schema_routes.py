@@ -10,7 +10,7 @@ from .utils import get_envs_dir, get_runtime_dir
 
 CONTAINER_TYPES = {
     "rowContainer", "container", "collapsibleRowContainer",
-    "collapsibleColContainer", "dragDropContainer"
+    "collapsibleColContainer", "dragDropContainer", "jobNameLocation"
 }
 
 def iterate_schema(schema_dict):
