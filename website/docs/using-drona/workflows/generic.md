@@ -36,13 +36,8 @@ When creating a job with the Generic Workflow, you'll encounter the following se
 
 ### Module Selection
 
-- **Add modules** — Load software modules required by your job. The module search is dynamic — start typing to find available software packages. 
-- **Toolchain selection** — Choose a specific toolchain if needed:
-  - No toolchain (default)
-  - foss/2023b
-  - foss/2024a
-  - intel/2023b
-  - intel/2024a
+- **Add modules** — Load software modules required by your job. The module selector provides dynamic search capabilities — simply start typing to filter available software packages. This interactive approach makes it easy to find and select modules without manually typing names, which helps avoid typos and ensures you're using the correct module names available on your cluster. Selected modules appear as blue bubbles that can be easily removed if needed.
+- **Toolchain selection** — If available, you can optionally select a specific toolchain to organize your module selections. The available toolchains depend on your cluster's configuration.
 
 ### Task Configuration
 
@@ -69,63 +64,7 @@ When you check the "Advanced task options" box, additional fields become availab
 - **Project Account** — Optionally select a different project account than your default. This is useful if you have multiple accounts and want to charge the job to a specific one.
 - **Additional SLURM parameters** — Advanced field for specifying additional SLURM flags (e.g., `--exclusive`, `--reservation=NAME`). Only use this if you're familiar with SLURM options.
 
-## Workflow Architecture
 
-The Generic Workflow consists of the following core components:
-
-### 1. Schema Definition (schema.json)
-
-Defines the user interface presented in the Drona Composer, including:
-- Form field types and configurations
-- Help text and labels for each field
-- Conditional visibility of advanced options
-- Dynamic content retrieval for modules and accounts
-
-### 2. Job Template (template.txt)
-
-A SLURM submission script template with placeholders for:
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=[JOBNAME]
-#SBATCH --time=[TIME] --mem=[MEM]
-#SBATCH --ntasks=[TASKS] --nodes=[NODES] --cpus-per-task=[CPUS]
-#SBATCH --output=out.%j --error=error.%j
-[PARTITION]
-[EXTRA]
-
-module purge
-module load WebProxy [MODULES]
-cd [flocation]
-# ADD YOUR COMMANDS BELOW
-```
-
-Where:
-- `[JOBNAME]` — User-assigned job name
-- `[TIME]` — Wall time limit
-- `[MEM]` — Total memory allocation
-- `[TASKS]`, `[NODES]`, `[CPUS]` — Task parallelism configuration
-- `[PARTITION]` — SLURM partition (automatically set by cluster)
-- `[EXTRA]` — Additional SLURM parameters from the form
-- `[MODULES]` — User-selected software modules
-- `[flocation]` — Working directory for the job
-
-You add your custom job commands at the bottom of this template where the comment indicates.
-
-### 3. Execution Driver (driver.sh)
-
-Handles job submission:
-
-```bash
-#!/bin/bash
-source /etc/profile
-
-cd [flocation]
- 
-/sw/local/bin/sbatch [job-file-name]
-```
-
-The driver submits your configured job script to the SLURM scheduler.
 
 ## Using the Generic Workflow
 
