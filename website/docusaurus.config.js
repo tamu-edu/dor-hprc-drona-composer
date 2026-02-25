@@ -70,11 +70,6 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             label: 'Documentation',
           },
           {
-            href: 'https://hprc.tamu.edu',
-            label: 'HPRC Portal',
-            position: 'right',
-          },
-          {
             href: 'https://github.com/tamu-edu/dor-hprc-drona-composer',
             label: 'GitHub',
             position: 'right',
