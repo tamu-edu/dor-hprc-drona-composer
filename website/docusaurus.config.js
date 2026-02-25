@@ -113,23 +113,6 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             ],
           },
           {
-            title: 'Texas A&M HPRC',
-            items: [
-              {
-                label: 'HPRC Portals',
-                href: 'https://hprc.tamu.edu/kb/User-Guides/Portal/#how-to-access',
-              },
-              {
-                label: 'User Guide',
-                href: 'https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_wfe/',
-              },
-              {
-                label: 'Contact Us',
-                href: 'https://hprc.tamu.edu/about/contact.html',
-              },
-            ],
-          },
-          {
             title: 'Development',
             items: [
               {
@@ -139,6 +122,19 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
               {
                 label: 'Issues & Bug Reports',
                 href: 'https://github.com/tamu-edu/dor-hprc-drona-composer/issues',
+              },
+            ],
+          },
+          {
+            title: 'Texas A&M HPRC',
+            items: [
+              {
+                label: 'User Guide',
+                href: 'https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_wfe/',
+              },
+              {
+                label: 'Contact Us',
+                href: 'https://hprc.tamu.edu/about/contact.html',
               },
             ],
           },
