@@ -71,7 +71,6 @@ def get_modules_route():
     modules_db_path = os.path.join(module_db_root, f"{toolchain}.sqlite3")
     #modules_db_path = request.args.get("module_db_root") + f'{toolchain}.sqlite3'
     #modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
-    print("ROOT:", module_db_root)
 
     with sqlite3.connect(modules_db_path) as modules_db:
         cursor = modules_db.cursor()
