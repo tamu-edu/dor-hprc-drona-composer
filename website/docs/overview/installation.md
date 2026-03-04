@@ -16,13 +16,10 @@ This guide covers the full installation process and configuration details for Dr
 
 The setup script automates the following steps:
 
-1. **Detects the cluster name** using the `clustername` command and capitalizes it
-2. **Configures `config.yml` and `manifest.yml`** by replacing `[cluster-name]`, `[app-name]`, and `[user-name]` placeholders with actual values
-3. **Creates directories** — `environments/` for workflow definitions and `logs/` for application logging
-4. **Sets up a Python virtual environment** in `.venv` and installs dependencies from `requirements.txt`
-5. **Installs frontend dependencies** (`babel-loader`, `@babel/core`, `@babel/preset-react`) and builds the React frontend
-
-If your system does not have a `clustername` command, you will need to set the cluster name manually before running setup or modify the script accordingly.
+1. **Configures `config.yml` and `manifest.yml`** by replacing `[app-name]` and `[user-name]` placeholders with actual values
+2. **Creates directories** — `environments/` for workflow definitions and `logs/` for application logging
+3. **Sets up a Python virtual environment** in `.venv` and installs dependencies from `requirements.txt`
+4. **Installs frontend dependencies** (`babel-loader`, `@babel/core`, `@babel/preset-react`) and builds the React frontend
 
 ## Manual Installation
 

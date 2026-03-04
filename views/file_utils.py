@@ -64,7 +64,12 @@ def get_modules_route():
     """Get list of modules matching a query"""
     query = request.args.get('query')
     toolchain = request.args.get('toolchain')
-    modules_db_path = request.args.get("module_db_root") + f'{toolchain}.sqlite3'
+    
+    module_db_root = request.args.get("module_db_root")
+    if not module_db_root:
+        module_db_root = app.config["modules_db_path"]
+    modules_db_path = os.path.join(module_db_root, f"{toolchain}.sqlite3")
+    #modules_db_path = request.args.get("module_db_root") + f'{toolchain}.sqlite3'
     #modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
 
     with sqlite3.connect(modules_db_path) as modules_db:

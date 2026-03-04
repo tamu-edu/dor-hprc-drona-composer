@@ -78,7 +78,10 @@ function Module(props) {
     }
 
     try {
-      const suggestURL = `${document.dashboard_url}/jobs/composer/modules?query=${query}&toolchain=${toolchain}&module_db_root=${encodeURIComponent(moduleDbRoot)}`;
+      let suggestURL = `${document.dashboard_url}/jobs/composer/modules?query=${query}&toolchain=${toolchain}`;
+      if (moduleDbRoot) {
+	    suggestURL += `&module_db_root=${encodeURIComponent(moduleDbRoot)}`;
+      }
       const response = await fetch(suggestURL);
       const data = await response.json();
       setSuggestions(data.data || []);
