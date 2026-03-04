@@ -4,7 +4,7 @@
 USER_NAME=$(whoami)
 USER_UID=$(id -u)
 
-${HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm_cgroups_template.html"}
+HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm_cgroups_template.html"
 
 # Define Absolute Paths
 CPU_PATH="/sys/fs/cgroup/cpu,cpuacct/slurm/uid_$USER_UID/job_$JOBID"
