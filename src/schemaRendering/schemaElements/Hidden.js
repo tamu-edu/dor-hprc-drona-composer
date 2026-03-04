@@ -114,8 +114,8 @@ function Hidden(props) {
     };
   }, [retrieverPath, props.refreshInterval]);
 
-  // Return absolutely nothing - completely hidden
-  return null;
+  // Return input of type hidden so that it can be parse and map in map.json
+  return <input type="hidden" name={props.name} value={value} />; 
 }
 
 export default Hidden;
