@@ -38,6 +38,50 @@ When referencing Drona Workflow Engine in publications, please use the following
 
 ---
 
+## References
+
+### Generating Scientific Workflows With Drona Environments
+
+**Authors:** Marinus Pennings, Honggao Liu, and Andrii Kryvenko
+
+**Published in:** Practice and Experience in Advanced Research Computing 2025: The Power of Collaboration (PEARC '25), 2025
+
+**DOI:** [10.1145/3708035.3736104](https://doi.org/10.1145/3708035.3736104)
+
+Please use the following citation:
+
+> Marinus Pennings, Honggao Liu, and Andrii Kryvenko. 2025. Generating Scientific Workflows With Drona Environments. In *Practice and Experience in Advanced Research Computing 2025: The Power of Collaboration* (PEARC '25). Association for Computing Machinery, New York, NY, USA, Article 39, 5 pages. https://doi.org/10.1145/3708035.3736104
+
+---
+
+### Democratizing Scientific Machine Learning through Expert-Encoded Workflow Templates
+
+**Authors:** Andrii Kryvenko, Marinus Pennings, and Honggao Liu
+
+**Published in:** Science Gateways 2025 (SG25), Green Bay, WI, 2025
+
+**DOI:** [10.5281/zenodo.17450205](https://doi.org/10.5281/zenodo.17450205)
+
+Please use the following citation:
+
+> Andrii Kryvenko, Marinus Pennings, and Honggao Liu. 2025. Democratizing Scientific Machine Learning through Expert-Encoded Workflow Templates. In *Proceedings of Science Gateways 2025* (SG25). Zenodo. https://doi.org/10.5281/zenodo.17450205
+
+---
+
+### Is it an HPC Workflow Assistant? Is it a Framework? It's Drona Workflow Engine
+
+**Authors:** Andrii Kryvenko, Duy Pham, Marinus Pennings, and Honggao Liu
+
+**Published in:** Proceedings of the SC '25 Workshops of the International Conference for High Performance Computing, Networking, Storage and Analysis (SC Workshops '25), 2025
+
+**DOI:** [10.1145/3731599.3767431](https://doi.org/10.1145/3731599.3767431)
+
+Please use the following citation:
+
+> Andrii Kryvenko, Duy Pham, Marinus Pennings, and Honggao Liu. 2025. Is it an HPC Workflow Assistant? Is it a Framework? It's Drona Workflow Engine. In *Proceedings of the SC '25 Workshops of the International Conference for High Performance Computing, Networking, Storage and Analysis* (SC Workshops '25). Association for Computing Machinery, New York, NY, USA, 705–714. https://doi.org/10.1145/3731599.3767431
+
+---
+
 <!-- To add more papers, copy the template below and fill in the details:
 
 ### Paper Title
