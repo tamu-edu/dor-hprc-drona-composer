@@ -286,7 +286,7 @@ class Engine():
         
         
             # Remove variable tags
-            value = re.sub(r'<var>(.*?)</var>', r'\1', value)
+            value = re.sub(r'<var>(.*?)\n*</var>', r'\1', value, flags=re.DOTALL)
         
         
             map[key] = value
