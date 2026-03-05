@@ -1,6 +1,6 @@
 #!/bin/bash
 
-${HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm-seff-template.html"}
+HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm-seff-template.html"
 ROWS=""
 
 # Function to pick color based on efficiency percentage
@@ -41,5 +41,5 @@ for JID in "${JOBIDS[@]}"; do
 done
 
 # Final injection
-CONTENT=$(cat "$HTMLTEMPLATE")
+CONTENT=$(cat "$HTML_TEMPLATE")
 echo "${CONTENT//\{\{TABLE_ROWS\}\}/$ROWS}"
