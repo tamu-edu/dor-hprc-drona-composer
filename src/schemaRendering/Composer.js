@@ -144,7 +144,7 @@ const Composer = forwardRef((props, ref) => {
       const processed = {
         ...field,
         isVisible,
-        value: ((isVisible || field.type === "staticText") ? field.value : "")
+        value: ((isVisible || field.type === "staticText" || field.type === "dynamicViewer") ? field.value : "")
       };
 
       if (Containers.includes(field.type) && field.elements) {

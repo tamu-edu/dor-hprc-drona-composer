@@ -300,6 +300,32 @@ def evaluate_script_route():
 
 
 
+@handle_api_error
+def read_file_route():
+    """Read a .js file from the environment directory and return its text content"""
+    file_path = request.args.get("file_path")
+    if not file_path:
+        raise APIError("file_path is required", status_code=400)
+
+    if not file_path.endswith('.js'):
+        raise APIError("Only .js files can be read via this endpoint", status_code=403)
+
+    final_path = file_path
+    if not os.path.isabs(file_path):
+        env_dir = request.args.get("DRONA_ENV_DIR")
+        if not env_dir:
+            raise APIError("DRONA_ENV_DIR is required for relative file paths", status_code=400)
+        final_path = os.path.join(env_dir, file_path)
+
+    if not os.path.exists(final_path):
+        raise APIError(f"File not found: {file_path}", status_code=404)
+
+    with open(final_path, 'r') as f:
+        content = f.read()
+
+    return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+
 def register_schema_routes(blueprint):
     """Register all schema-related routes to the blueprint"""
     blueprint.route('/schema/<environment>', methods=['GET'])(get_schema_route)
@@ -308,3 +334,4 @@ def register_schema_routes(blueprint):
     blueprint.route('/evaluate_autocomplete', methods=['GET'])(evaluate_autocomplete_route)
     blueprint.route('/evaluate_dynamic_text', methods=['GET'])(evaluate_dynamic_text_route)
     blueprint.route('/evaluate_script', methods=['GET'])(evaluate_script_route)
+    blueprint.route('/read_file', methods=['GET'])(read_file_route)
