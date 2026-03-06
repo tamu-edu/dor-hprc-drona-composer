@@ -230,6 +230,7 @@ function DynamicViewer(props) {
       } else if (event.data.type === 'security-block') {
         setSecurityBlock(event.data.reason);
         setStatus('blocked');
+      }
     };
 
     window.addEventListener('message', handleMessage);
