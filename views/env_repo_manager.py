@@ -6,6 +6,7 @@ import subprocess
 from flask import current_app as app
 from typing import Dict, List
 from subprocess import PIPE
+from .utils import get_envs_dir
 
 def create_folder_if_not_exist(dir_path):
     if not os.path.isdir(dir_path):
@@ -50,11 +51,14 @@ class EnvironmentRepoManager:
             # Skip if cluster name is specified and doesn't match
             #if cluster_name and env_data.get("cluster", "").lower() != cluster_name.lower():
             #    continue
-
+            eres = get_envs_dir()
+            if not eres["ok"]:
+                raise RuntimeError(f"envs dir unavailable: {eres['reason']}")
+            
             env_info = {
                 "env": env_name,
                 "description": env_data.get("description", "No description available"),
-                "src": f"/scratch/user/{os.getenv('USER')}/drona_composer/environments",
+                "src": eres["path"],
                 "category": env_data.get("category", "Uncategorized"),
                 "version": env_data.get("version", "1.0.0"),
                 "cluster": env_data.get("cluster", "Unknown"),

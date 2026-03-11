@@ -1,0 +1,30 @@
+<div id="cgroup-dashboard" style="width: 100%; font-family: 'JetBrains Mono', monospace; background: #0b0f19; border: 1px solid #334155; border-radius: 8px; overflow: hidden; color: #cbd5e1;">
+    <div style="background: #1e293b; padding: 8px 15px; border-bottom: 2px solid #0f172a; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #10b981; font-weight: bold; font-size: 12px;">SYSTEM_MONITOR :: JOB_{{JOB_ID}}</span>
+        <span style="color: #64748b; font-size: 10px;">NODE: {{NODE_NAME}}</span>
+    </div>
+
+    <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        
+        <div style="border-left: 3px solid #38bdf8; padding-left: 15px;">
+            <div style="color: #38bdf8; font-size: 10px; font-weight: 800; margin-bottom: 10px;">EXECUTION & SCHEDULING</div>
+            <div style="margin-bottom: 5px;">CPU TIME: <span style="color: #f8fafc;">{{CPU_TIME}}s</span></div>
+            <div style="margin-bottom: 5px;">THROTTLED: <span style="color: #ef4444;">{{CPU_THROTTLE}}ms</span></div>
+            <div style="margin-bottom: 5px;">THREADS: <span style="color: #f8fafc;">{{PID_COUNT}}</span></div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">CORES: {{CPU_SET}}</div>
+        </div>
+
+        <div style="border-left: 3px solid #fbbf24; padding-left: 15px;">
+            <div style="color: #fbbf24; font-size: 10px; font-weight: 800; margin-bottom: 10px;">MEMORY ACCOUNTING</div>
+            <div style="margin-bottom: 5px;">CURRENT: <span style="color: #f8fafc;">{{CUR_MEM}}</span></div>
+            <div style="margin-bottom: 5px;">PEAK: <span style="color: #fbbf24;">{{MAX_MEM}}</span></div>
+            <div style="margin-bottom: 5px;">CACHE: <span style="color: #94a3b8;">{{MEM_CACHE}}</span></div>
+            <div style="margin-bottom: 5px;">RSS: <span style="color: #94a3b8;">{{MEM_RSS}}</span></div>
+        </div>
+
+    </div>
+
+    <div style="background: #0f172a; padding: 10px 15px; border-top: 1px solid #1e293b; font-size: 10px;">
+        <span style="color: #475569;">ACTIVE_TASKS:</span> <span style="color: #94a3b8;">{{PID_LIST}}</span>
+    </div>
+</div>

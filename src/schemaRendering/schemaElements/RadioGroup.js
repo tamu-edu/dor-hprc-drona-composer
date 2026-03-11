@@ -1,6 +1,6 @@
 /**
  * @name RadioGroup
- * @description A radio button group component that allows users to select a single option 
+ * @description A radio button group component that allows users to select a single option
  * from a list of choices. Displays options horizontally with their labels.
  *
  * @example
@@ -9,6 +9,7 @@
  *   "type": "radioGroup",
  *   "name": "priority",
  *   "label": "RadioGroup",
+ *   "style": "button",
  *   "options": [
  *     { "value": "low", "label": "Low" },
  *     { "value": "medium", "label": "Medium" },
@@ -22,6 +23,7 @@
  * @property {string} [label] - Display label for the field
  * @property {Array} options - Array of option objects, each with value and label properties
  * @property {string} [value] - Default/initial selected value
+ * @property {string} [style] - Render variant; set to "button" for button-style radio options
  * @property {string} [help] - Help text displayed below the input
  */
 
@@ -30,6 +32,7 @@ import FormElementWrapper from "../utils/FormElementWrapper"
 
 function RadioGroup(props) {
   const [value, setValue] = useState("");
+  const isButtonStyle = props.style === "button";
 
   useEffect(() => {
     if (props.value != "") {
@@ -43,21 +46,66 @@ function RadioGroup(props) {
     if (props.onChange) props.onChange(props.index, newValue);
   }
 
-  const optionList = props.options.map((option) => (
-    <div className="form-check form-check-inline" key={option.value}>
-      <input
-        type="radio"
-        className="form-check-input"
-        value={option.value}
-        name={props.name}
-        checked={value === option.value}
-        onChange={handleValueChange}
-      />
-      <label className="form-check-label" htmlFor={`${props.name}-${option.value}`}>
-        {option.label}
-      </label>
-    </div>
-  ));
+  const optionList = props.options.map((option) => {
+    const optionId = `${props.name}-${option.value}`;
+    const isSelected = value === option.value;
+
+    if (isButtonStyle) {
+      return (
+        <div
+          className="d-inline-block mb-1"
+          key={option.value}
+          style={{ marginRight: "0.5rem" }}
+        >
+          <input
+            id={optionId}
+            type="radio"
+            className="btn-check"
+            value={option.value}
+            name={props.name}
+            checked={isSelected}
+            onChange={handleValueChange}
+            autoComplete="off"
+            style={{
+              position: "absolute",
+              opacity: 0,
+              width: 0,
+              height: 0,
+              pointerEvents: "none",
+            }}
+          />
+          <label
+            className={`btn ${isSelected ? "maroon-button-filled" : "maroon-button"}`}
+            htmlFor={optionId}
+          >
+            {option.label}
+          </label>
+        </div>
+      );
+    }
+
+    return (
+      <div className="form-check form-check-inline" key={option.value}>
+        <input
+          id={optionId}
+          type="radio"
+          className="form-check-input"
+          value={option.value}
+          name={props.name}
+          checked={isSelected}
+          onChange={handleValueChange}
+          style={{ accentColor: "maroon" }}
+        />
+        <label
+          className="form-check-label"
+          htmlFor={optionId}
+          style={{ color: isSelected ? "maroon" : "inherit" }}
+        >
+          {option.label}
+        </label>
+      </div>
+    );
+  });
 
   return (
     <FormElementWrapper

@@ -1,0 +1,20 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- TAMU Logo Design -->
+  <defs>
+    <linearGradient id="tamuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#500000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#370000;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="24" cy="24" r="22" fill="url(#tamuGrad)" stroke="#FFFFFF" stroke-width="2"/>
+
+  <!-- TAMU Text -->
+  <text x="24" y="20" font-family="serif" font-size="12" font-weight="bold"
+        text-anchor="middle" fill="#FFFFFF">TAMU</text>
+
+  <!-- Subtitle -->
+  <text x="24" y="32" font-family="sans-serif" font-size="6" font-weight="normal"
+        text-anchor="middle" fill="#FFFFFF">HPRC</text>
+</svg>

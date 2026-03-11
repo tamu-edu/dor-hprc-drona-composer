@@ -1,17 +1,26 @@
 import { getFieldValue } from './fieldUtils';
 
+
+const trimVal = (val) => {
+  if (val == null) return '';
+  if (typeof val === 'string') {
+    return val.trim();
+  }
+  return String(val);
+};
+
 export const evaluateCondition = (condition, fields) => {
   // Add early return for null/empty conditions
-  if (!condition) return false;  // Changed from undefined to false for consistency
+  if (!condition) return false; 
 
   const evaluateAtomicCondition = (expr) => {
     const [fieldName, expectedValue] = expr.split(".");
     const actualValue = getFieldValue(fields, fieldName);
     // Handle objects with value property (like Select components)
     if (typeof actualValue === 'object' && actualValue?.value !== undefined) {
-      return actualValue.value === expectedValue;
+      return trimVal(actualValue.value) === trimVal(expectedValue);
     }
-    return actualValue === expectedValue;
+    return trimVal(actualValue) === trimVal(expectedValue);
   };
 
   const evaluateExpression = (expr) => {

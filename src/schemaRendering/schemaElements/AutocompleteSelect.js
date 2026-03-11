@@ -23,10 +23,12 @@
  * @property {boolean} [showAddMore=false] - Whether to show an add more button
  */
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
+import { FormValuesContext } from "../FormValuesContext";
 import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
+import { executeScript } from "../utils/utils";
 
 function AutocompleteSelect(props) {
   const [inputValue, setInputValue] = useState("");
@@ -35,6 +37,8 @@ function AutocompleteSelect(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isValueInvalid, setIsValueInvalid] = useState(false);
+
+  const { values: formValues, updateValue, environment } = useContext(FormValuesContext);  
   
   const debounceTimerRef = useRef(null);
   const minCharsToSearch = 2;
@@ -81,31 +85,19 @@ function AutocompleteSelect(props) {
         throw new Error("Retriever path is not set");
       }
 
-      const response = await fetch(
-        `${document.dashboard_url}/jobs/composer/evaluate_autocomplete?retriever_path=${encodeURIComponent(retrieverPath)}&query=${encodeURIComponent(query)}`
-      );
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw {
-          message: errorData.message || 'Failed to retrieve search options',
-          status_code: response.status,
-          details: errorData.details || errorData
-        };
-      }
-      
-      const data = await response.json();
+      const data = await executeScript({
+        retrieverPath: retrieverPath,
+        retrieverParams: { SEARCH_QUERY: query },
+        formValues: {},
+	environment: environment,
+        parseJSON: true,
+        onError: props.setError
+      });
+
       setOptions(data);
     } catch (err) {
       console.error("Search error:", err);
       setError(err.message || "Search failed");
-      if (props.setError) {
-        props.setError({
-          message: "Failed to retrieve search results",
-          status_code: err.status_code || 500,
-          details: err.details || { error: err.message || "Unknown error" }
-        });
-      }
     } finally {
       setIsLoading(false);
     }

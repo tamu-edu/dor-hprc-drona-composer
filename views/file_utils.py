@@ -25,8 +25,8 @@ def save_file(file, location):
 
 def fetch_subdirectories(path):
     """Get subdirectories and files in a directory"""
-    subdirectories = [os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))]
-    subfiles = [os.path.basename(entry) for entry in os.listdir(path) if os.path.isfile(os.path.join(path, entry))]
+    subdirectories = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))])
+    subfiles = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isfile(os.path.join(path, entry))])  
     return {"subdirectories": subdirectories, "subfiles": subfiles}
 
 def download_file_route():
@@ -64,7 +64,13 @@ def get_modules_route():
     """Get list of modules matching a query"""
     query = request.args.get('query')
     toolchain = request.args.get('toolchain')
-    modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
+    
+    module_db_root = request.args.get("module_db_root")
+    if not module_db_root:
+        module_db_root = app.config["modules_db_path"]
+    modules_db_path = os.path.join(module_db_root, f"{toolchain}.sqlite3")
+    #modules_db_path = request.args.get("module_db_root") + f'{toolchain}.sqlite3'
+    #modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
 
     with sqlite3.connect(modules_db_path) as modules_db:
         cursor = modules_db.cursor()

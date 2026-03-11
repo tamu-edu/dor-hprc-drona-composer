@@ -14,7 +14,9 @@
 
     "destination": "./docs/",
 
-    "recurse": true
+    "recurse": true,
+
+    "template": "./docs-theme/"
 
   },
 
@@ -27,8 +29,6 @@
     "default": {
 
       "outputSourceFiles": true,
-
-      "layoutFile": "./docs-theme/layout.tmpl",
 
       "staticFiles": {
 

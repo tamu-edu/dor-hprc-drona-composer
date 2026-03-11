@@ -1,0 +1,117 @@
+
+<div id="sstat-large-container" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
+    <style>
+        #sstat-large-container .glass-card {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 24px 20px 20px 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        #sstat-large-container .floating-title {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff; /* Match your dashboard background */
+            padding: 2px 16px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+        }
+
+        #sstat-large-container .live-dot {
+            width: 8px; height: 8px; background: #10b981; border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
+        }
+
+        #sstat-large-container .stat-box {
+            display: flex; flex-direction: column; flex: 1; text-align: center;
+        }
+
+        #sstat-large-container .label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        #sstat-large-container .val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px; /* Significantly larger */
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 10px;
+        }
+
+        #sstat-large-container .progress-container {
+            width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden;
+        }
+
+        .fill-cpu { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+        .fill-mem { background: linear-gradient(90deg, #10b981, #34d399); }
+        .fill-io { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    </style>
+
+    <!--    <div style="display: grid; grid-template-columns: repeat(4, 1fr); padding: 12px; gap: 20px;"> -->
+        <div class="glass-card">
+        <div class="floating-title">
+            <div class="live-dot"></div> SSTAT RESOURCE UTILIZATION
+        </div>
+
+        <div style="border-left: 2px solid #fbbf24; padding-left: 10px;">
+            <div style="color: #64748b; font-size: 9px; font-weight: 800;">MEMORY (MAX/AVE)</div>
+            <div style="font-size: 12px; margin-top: 4px;">
+                <span style="color: #fbbf24;">{{MAX_RSS}}</span> / {{AVE_RSS}}
+            </div>
+            <div style="color: #475569; font-size: 10px; margin-top: 2px;">VM: {{MAX_VM}}</div>
+        </div>
+
+        <div style="border-left: 2px solid #10b981; padding-left: 10px;">
+            <div style="color: #64748b; font-size: 9px; font-weight: 800;">CPU TIME (AVE/MIN)</div>
+            <div style="font-size: 12px; margin-top: 4px;">
+                <span style="color: #10b981;">{{AVE_CPU}}</span> / {{MIN_CPU}}
+            </div>
+            <div style="color: #475569; font-size: 10px; margin-top: 2px;">TASKS: {{N_TASKS}}</div>
+        </div>
+
+        <div style="border-left: 2px solid #a855f7; padding-left: 10px;">
+            <div style="color: #64748b; font-size: 9px; font-weight: 800;">DISK I/O (READ/WRITE)</div>
+            <div style="font-size: 12px; margin-top: 4px;">
+                <span style="color: #a855f7;">{{AVE_READ}}</span>
+            </div>
+            <div style="color: #a855f7; font-size: 12px;">{{AVE_WRITE}}</div>
+        </div>
+
+        <div style="border-left: 2px solid #f43f5e; padding-left: 10px;">
+            <div style="color: #64748b; font-size: 9px; font-weight: 800;">PAGE DATA (MAX/AVE)</div>
+            <div style="font-size: 12px; margin-top: 4px;">
+                <span style="color: #f43f5e;">{{MAX_PAGE}}</span> / {{AVE_PAGE}}
+            </div>
+            <div style="color: #475569; font-size: 10px; margin-top: 2px;">CONSUMED: {{CPU_FREQ}}</div>
+        </div>
+	<!--	</div> -->
+    </div>
+</div>
+

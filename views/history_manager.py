@@ -1,34 +1,82 @@
 import os
-import re
+import sqlite3
 import uuid
 import json
 from datetime import datetime
 from pathlib import Path
+from .utils import get_drona_dir
+
 
 class JobHistoryManager:
     def __init__(self):
-        return
+        self.db_path = None
+        dd = get_drona_dir()
+        if not dd or not dd.get("ok"):
+            # no config yet
+            return
+            
+        drona_dir = dd.get("drona_dir")
+        if not drona_dir:
+            return
 
-    def get_job(self, job_id):
-        user = os.getenv('USER')
-        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        base_dir = Path(drona_dir) / "jobs"
         try:
             Path(base_dir).mkdir(parents=True, exist_ok=True)
-            history_file = os.path.join(base_dir, f"{user}_history.json")
-
-            try:
-                with open(history_file, 'r') as f:
-                    history = json.load(f)
-                    for job in history:
-                        if job.get('job_id') == str(job_id):
-                            return job
-            except (FileNotFoundError, json.JSONDecodeError):
-                return None
-            except PermissionError:
-                return None
+            self.db_path = os.path.join(base_dir, 'job_history.db')
+            self._ensure_database()
         except PermissionError:
+            self.db_path = None
+
+    def _ensure_database(self):
+        """Create database and tables if they don't exist."""
+        if not self.db_path:
+            return
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("PRAGMA foreign_keys = ON")
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS job_history (
+                        drona_id     TEXT PRIMARY KEY,
+                        name         TEXT,
+                        environment  TEXT NOT NULL,
+                        location     TEXT,
+                        runtime_meta TEXT NOT NULL DEFAULT '',
+                        start_time   TEXT,
+                        status       TEXT,
+                        env_params   TEXT NOT NULL
+                    )
+                """)
+                conn.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_job_history_environment 
+                    ON job_history(environment)
+                """)
+                conn.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_job_history_start_time 
+                    ON job_history(start_time)
+                """)
+                conn.commit()
+        except (sqlite3.Error, PermissionError):
+            pass
+
+    def get_job(self, job_id):
+        if not self.db_path:
             return None
-        return None
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.execute(
+                    "SELECT * FROM job_history WHERE drona_id = ?",
+                    (str(job_id),)
+                )
+                row = cursor.fetchone()
+                
+                if row:
+                    # Parse env_params and return it as the job
+                    env_params = json.loads(row['env_params'])
+                    return env_params
+                return None
+        except (sqlite3.Error, PermissionError, json.JSONDecodeError):
+            return None
 
     def transform_form_data(self, form_data, location):
         transformed = {}
@@ -70,13 +118,16 @@ class JobHistoryManager:
                 continue
         return transformed
 
-
-    def save_job(self, job_data, files, generated_files):
+    def save_job(self, job_data, files, generated_files, job_id=None):
         timestamp = datetime.now().isoformat()
         user = os.getenv('USER')
-        job_id = str(int(uuid.uuid4().int & 0xFFFFFFFFF))
+        if job_id is None:
+            job_id = str(int(uuid.uuid4().int & 0xFFFFFFFFF))
+        else:
+            job_id = str(job_id)
 
         form_data = self.transform_form_data(dict(job_data), job_data.get('location'))
+        
         job_record = {
             'job_id': job_id,
             'name': job_data.get('name'),
@@ -95,42 +146,55 @@ class JobHistoryManager:
             'form_data': form_data
         }
 
-        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        if not self.db_path:
+            return False
+
+        # Extract environment for the database column
+        runtime = job_data.get('runtime')
+        if isinstance(runtime, dict):
+            environment = runtime.get('value') or runtime.get('label') or 'unknown'
+        else:
+            environment = str(runtime or 'unknown')
+
         try:
-            Path(base_dir).mkdir(parents=True, exist_ok=True)
-            history_file = os.path.join(base_dir, f"{user}_history.json")
-            try:
-                with open(history_file, 'r') as f:
-                    history = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                history = []
-            except PermissionError:
-                return False
-
-            history.append(job_record)
-
-            try:
-                with open(history_file, 'w') as f:
-                    json.dump(history, f, indent=2)
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("PRAGMA foreign_keys = ON")
+                conn.execute("""
+                    INSERT INTO job_history 
+                    (drona_id, name, environment, location, runtime_meta, start_time, status, env_params)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    job_id,
+                    job_data.get('name'),
+                    environment,
+                    job_data.get('location'),
+                    '',  # runtime_meta initially empty string
+                    timestamp,
+                    None,  # status is None by default
+                    json.dumps(job_record)
+                ))
+                conn.commit()
                 return job_record
-            except PermissionError:
-                return False
-        except PermissionError:
+        except (sqlite3.Error, PermissionError):
             return False
 
     def get_user_history(self):
-        user = os.getenv('USER')
-
-        base_dir = os.path.join('/scratch/user', user, 'drona_composer', 'jobs')
+        if not self.db_path:
+            return []
         try:
-            Path(base_dir).mkdir(parents=True, exist_ok=True)
-            history_file = os.path.join(base_dir, f"{user}_history.json")
-            try:
-                with open(history_file, 'r') as f:
-                    return json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                return []
-            except PermissionError:
-                return []
-        except PermissionError:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.execute(
+                    "SELECT * FROM job_history ORDER BY start_time DESC"
+                )
+                rows = cursor.fetchall()
+                
+                history = []
+                for row in rows:
+                    # Parse and return just the env_params (job_record)
+                    env_params = json.loads(row['env_params'])
+                    history.append(env_params)
+                
+                return history
+        except (sqlite3.Error, PermissionError, json.JSONDecodeError):
             return []

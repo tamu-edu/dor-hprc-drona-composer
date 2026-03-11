@@ -19,7 +19,8 @@ export function useJobSocket() {
   const streamInterval = useRef(null);
   const outputPosition = useRef(0);
   const baseUrl = useRef('');
-  
+
+
 
   const DEBUG = true;
   // Streaming parameters
@@ -27,7 +28,8 @@ export function useJobSocket() {
   const STREAM_CHUNKS = 10;   // Split each response into 10 chunks
   const MIN_CHUNK_SIZE = 400;  // If text is smaller than this, output directly
   const CHUNK_DELAY = POLL_INTERVAL / STREAM_CHUNKS; // 100ms between chunks
-  
+
+
   // Streaming state
   const chunkQueue = useRef([]); // Array of chunks to display
   const isStreaming = useRef(false);
@@ -70,42 +72,52 @@ export function useJobSocket() {
 
   const splitIntoChunks = (text, numChunks) => {
     if (!text || text.length === 0) return [];
-    
+
+
     const chunkSize = Math.ceil(text.length / numChunks);
     const chunks = [];
-    
+
+
     for (let i = 0; i < text.length; i += chunkSize) {
       chunks.push(text.slice(i, i + chunkSize));
     }
-    
+
+
     return chunks;
   };
 
   const startStreaming = () => {
     if (isStreaming.current || chunkQueue.current.length === 0) return;
-    
+
+
     isStreaming.current = true;
-    
+
+
     const displayNextChunk = () => {
       if (chunkQueue.current.length === 0) {
         isStreaming.current = false;
         return;
       }
-      
+
+
       let chunksToTake = 1;
       const queueLength = chunkQueue.current.length;
-      
+
+
       chunksToTake = Math.floor(queueLength / STREAM_CHUNKS) + 1;
-      
+
+
       let combinedChunk = '';
       for (let i = 0; i < chunksToTake && chunkQueue.current.length > 0; i++) {
         combinedChunk += chunkQueue.current.shift();
       }
-      
+
+
       accumulatedData.current += combinedChunk;
       setOutputBuffer(accumulatedData.current);
       processBuffer(accumulatedData.current);
-      
+
+
       // Continue with next chunk if queue not empty
       if (chunkQueue.current.length > 0) {
         streamInterval.current = setTimeout(displayNextChunk, CHUNK_DELAY);
@@ -113,7 +125,8 @@ export function useJobSocket() {
         isStreaming.current = false;
       }
     };
-    
+
+
     displayNextChunk();
   };
 
@@ -122,13 +135,13 @@ export function useJobSocket() {
       clearTimeout(streamInterval.current);
       streamInterval.current = null;
     }
-    
+
     // Flush remaining chunks immediately
     while (chunkQueue.current.length > 0) {
       const chunk = chunkQueue.current.shift();
       accumulatedData.current += chunk;
     }
-    
+
     setOutputBuffer(accumulatedData.current);
     processBuffer(accumulatedData.current);
     isStreaming.current = false;
@@ -140,7 +153,7 @@ export function useJobSocket() {
     setStatus(finalStatus);
     stopPolling();
     setIsConnected(false);
-    
+
     // Let streaming finish naturally - don't force stop
     // The queue will empty and streaming will stop automatically
   };
@@ -154,7 +167,8 @@ export function useJobSocket() {
       const chunks = splitIntoChunks(text, STREAM_CHUNKS);
       chunkQueue.current.push(...chunks);
     }
-    
+
+
     // Start streaming if not already active
     if (!isStreaming.current) {
       startStreaming();
@@ -234,7 +248,7 @@ export function useJobSocket() {
     return false;
   };
 
-  const startHttpJob = async (bashCmd, drona_job_id = null) => {
+  const startHttpJob = async (bashCmd, drona_job_id = null, job_location = null, env_name = null, env_dir = null) => {
     try {
       const url = `${baseUrl.current}/ws-start-job`;
       if (DEBUG) console.log('[DEBUG] Starting job URL:', url);
@@ -247,9 +261,12 @@ export function useJobSocket() {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           bash_cmd: bashCmd,
-          ...(drona_job_id && { drona_job_id: drona_job_id })
+          ...(drona_job_id && { drona_job_id: drona_job_id }),
+          ...(job_location && { job_location: job_location }),
+          ...(env_name && { env_name: env_name }),
+          ...(env_dir && { env_dir: env_dir })
         })
       });
 
@@ -306,14 +323,21 @@ export function useJobSocket() {
       initialRequest.open("POST", action, true);
       initialRequest.setRequestHeader("X-Requested-With", "XMLHttpRequest");
       initialRequest.responseType = "json";
+      // initialRequest.responseType = "text";
 
-      initialRequest.onreadystatechange = function() {
+
+
+      initialRequest.onreadystatechange = function () {
         if (initialRequest.readyState === 4) {
-          if (DEBUG) console.log('[DEBUG] Initial request status:', initialRequest.status);
-          if (DEBUG) console.log('[DEBUG] Initial request response:', initialRequest.response);
+          if (DEBUG) {
+            console.log('[DEBUG] status:', initialRequest.status);
+            console.log('[DEBUG] headers:\n' + initialRequest.getAllResponseHeaders());
+            // console.log('[DEBUG] raw responseText:', initialRequest.responseText);
+          }
 
-          if (initialRequest.status === 200 && initialRequest.response && initialRequest.response.bash_cmd) {
-            startHttpJob(initialRequest.response.bash_cmd, initialRequest.response.drona_job_id);
+          if (initialRequest.status === 200 && initialRequest.response && initialRequest.response.bash_cmd && initialRequest.response.drona_job_id && initialRequest.response.location) {
+            startHttpJob(initialRequest.response.bash_cmd, initialRequest.response.drona_job_id, initialRequest.response.location,
+              initialRequest.response.env_name, initialRequest.response.env_dir);
           } else {
             appendOutput(`\nError starting the job: ${initialRequest.status}\n`);
             setStatus('error');
@@ -321,7 +345,7 @@ export function useJobSocket() {
         }
       };
 
-      initialRequest.onerror = function() {
+      initialRequest.onerror = function () {
         if (DEBUG) console.error('[DEBUG] Initial request error');
         appendOutput('\nConnection error during job submission.\n');
         setStatus('error');
