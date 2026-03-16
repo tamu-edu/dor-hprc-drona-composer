@@ -57,7 +57,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Drona Composer',
+        title: 'Drona Workflow Engine',
         logo: {
           alt: 'Texas A&M University Logo',
           src: 'img/tamu-icon.png',
