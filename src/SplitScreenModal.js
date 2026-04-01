@@ -56,7 +56,7 @@ const ResizeHandle = ({ isResizing, onMouseDown, styles }) => {
   );
 };
 
-const ModalFooter = ({ onClose, styles }) => {
+const ModalFooter = ({ onClose, styles, isSubmitDisabled }) => {
   return (
     <div style={styles.footer}>
       <div style={styles.footerTip}>
@@ -67,9 +67,22 @@ const ModalFooter = ({ onClose, styles }) => {
         <button
           type="submit"
           form="slurm-config-form"
-          style={styles.button.primary}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#500000'}
-          onMouseOut={(e) => e.target.style.backgroundColor = 'maroon'}
+          disabled={isSubmitDisabled}
+          style={{
+            ...styles.button.primary,
+            opacity: isSubmitDisabled ? 0.65 : 1,
+            cursor: isSubmitDisabled ? 'not-allowed' : 'pointer'
+          }}
+          onMouseOver={(e) => {
+            if (!isSubmitDisabled) {
+              e.target.style.backgroundColor = '#500000';
+            }
+          }}
+          onMouseOut={(e) => {
+            if (!isSubmitDisabled) {
+              e.target.style.backgroundColor = 'maroon';
+            }
+          }}
         >
           Submit Job
         </button>
@@ -114,7 +127,8 @@ const SplitScreenModal = ({
   onSubmit,
   onMinimize: onMinimizeCallback,
   onExpand: onExpandCallback,
-  forceMinimized = null
+  forceMinimized = null,
+  isSubmitDisabled = false
 }) => {
   const contentRef = useRef(null);
   const modalRef = useRef(null);
@@ -196,7 +210,7 @@ const SplitScreenModal = ({
           />
         </div>
 
-        <ModalFooter onClose={onClose} styles={styles} />
+        <ModalFooter onClose={onClose} styles={styles} isSubmitDisabled={isSubmitDisabled} />
       </div>
     </div>
   );
