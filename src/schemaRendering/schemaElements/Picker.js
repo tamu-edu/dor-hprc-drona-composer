@@ -161,13 +161,22 @@ function Picker(props) {
   function handleSubFilesClick(event) {
     const fullPath = event.target.value;
     setCurrentPath(fullPath);
+    setSubDirs([]);
+    setSubFiles([]);
   }
 
   function handleBackClick() {
-    const path = currentPath.split("/");
-    path.pop();
-    const newPath = path.join("/");
+    const pathParts = currentPath.split("/");
+    pathParts.pop();
+    const newPath = pathParts.join("/");
     setCurrentPath(newPath);
+
+    if (newPath === "") {
+      setSubDirs([]);
+      setSubFiles([]);
+      return;
+    }
+
     fetch(
       document.dashboard_url +
       "/jobs/composer/subdirectories?path=" +
@@ -197,31 +206,6 @@ function Picker(props) {
   function handleSaveChange() {
     setValue(currentPath);
     if (props.onChange) props.onChange(props.index, currentPath);
-    // clean up if previous use remote files
-    let currentFiles = remoteInput.current.files;
-    for (let i = 0; i < currentFiles.length; i++) {
-      setUploadedFiles((prevFiles) => {
-        let fileToRemove = currentFiles[i];
-        let indexToRemove = prevFiles.indexOf(fileToRemove);
-        prevFiles.splice(indexToRemove, 1);
-        return prevFiles;
-      });
-      setGlobalFiles((prevFiles) => {
-        let fileToRemove = currentFiles[i];
-        let indexToRemove = prevFiles.indexOf(fileToRemove);
-        prevFiles.splice(indexToRemove, 1);
-        return prevFiles;
-      });
-    }
-  }
-
-  function handleFileChange(files) {
-    const filesArray = Array.from(files);
-    let newFiles = [];
-    filesArray.forEach((file) => {
-      newFiles.push(file);
-      setUploadedFiles((prevFiles) => [...prevFiles, file]);
-    });
   }
 
   function handleRemoteClick() {
@@ -244,10 +228,50 @@ function Picker(props) {
     remoteInput.current.click();
   }
 
+  function handleFileChange(files) {
+    const filesArray = Array.from(files);
+    let newFiles = [];
+    filesArray.forEach((file) => {
+      newFiles.push(file);
+      setUploadedFiles((prevFiles) => [...prevFiles, file]);
+    });
+  }
 
   // Returns false if showFiles is undefined, returns true if showFiles is boolean and true or is a string its toLowerCase is "true"
   const isShowFiles = Boolean(props.showFiles) && props.showFiles.toString().toLowerCase() === "true";
   const showRemoteLabel = props.remoteLabel ? true : false;
+
+  // "local" = open cluster browser modal, "remote" = upload local file
+  const [pickerMode, setPickerMode] = useState("local");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const currentLabel = pickerMode === "local" ? props.localLabel : props.remoteLabel;
+
+  function handleMainButtonClick() {
+    if (props.disableChange) return;
+    if (pickerMode === "local") {
+      const modalEl = document.getElementById("local-file-picker-modal-" + props.name);
+      if (modalEl && window.$) window.$(modalEl).modal("show");
+    } else {
+      handleRemoteClick();
+    }
+  }
+
+  function handleSelectMode(mode) {
+    setPickerMode(mode);
+    setDropdownOpen(false);
+  }
 
   return (
     <div>
@@ -259,16 +283,72 @@ function Picker(props) {
         useLabel={props.useLabel}
       >
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          {showRemoteLabel && (
-            <button
-              type="button"
-              className="btn btn-primary maroon-button"
-              style={{ marginRight: "2px" }}
-              onClick={handleRemoteClick}
-            >
-              {props.remoteLabel}
-            </button>
-          )}
+          <div style={{ position: "relative" }} ref={dropdownRef}>
+            {/* Main action button */}
+            <div className="btn-group">
+              <button
+                type="button"
+                className="btn btn-primary maroon-button"
+                onClick={handleMainButtonClick}
+                style={{ cursor: props.disableChange ? "not-allowed" : "pointer", whiteSpace: "nowrap" }}
+                disabled={props.disableChange}
+              >
+                {currentLabel}
+              </button>
+              {showRemoteLabel && (
+                <button
+                  type="button"
+                  className="btn btn-primary maroon-button dropdown-toggle dropdown-toggle-split"
+                  onClick={() => setDropdownOpen((o) => !o)}
+                  disabled={props.disableChange}
+                >
+                  <span className="sr-only">Toggle Dropdown</span>
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown menu — styled like image 2: plain list, shadow, no Bootstrap box */}
+            {showRemoteLabel && dropdownOpen && (
+              <div style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                zIndex: 1000,
+                background: "#fff",
+                minWidth: "180px",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                borderRadius: "4px",
+                padding: "4px 0",
+                marginTop: "2px",
+              }}>
+                <button
+                  type="button"
+                  onClick={() => handleSelectMode("local")}
+                  style={{
+                    display: "block", width: "100%", textAlign: "left",
+                    padding: "10px 16px", fontSize: "14px",
+                    background: pickerMode === "local" ? "#f5f5f5" : "none",
+                    border: "none", cursor: "pointer", color: "#333",
+                  }}
+                >
+                  {props.localLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectMode("remote")}
+                  style={{
+                    display: "block", width: "100%", textAlign: "left",
+                    padding: "10px 16px", fontSize: "14px",
+                    background: pickerMode === "remote" ? "#f5f5f5" : "none",
+                    border: "none", cursor: "pointer", color: "#333",
+                  }}
+                >
+                  {props.remoteLabel}
+                </button>
+              </div>
+            )}
+          </div>
+
           <input
             type="file"
             style={{ display: "none" }}
@@ -276,30 +356,11 @@ function Picker(props) {
             ref={remoteInput}
             onChange={(e) => handleFileChange(e.target.files)}
           />
-          <button
-            type="button"
-            className="btn btn-primary maroon-button"
-            data-toggle="modal"
-            data-target={"#local-file-picker-modal-" + props.name}
-            style={{
-              marginRight: "2px",
-              cursor: props.disableChange ? "not-allowed" : "pointer",
-              display: "block",               // ensure it spans full line
-              justifyContent: "center",    // center text horizontally
-              whiteSpace: "nowrap",        // prevent text from wrapping
-              width: "auto",               // allow width to expand only to content
-              alignItems: "center",        // vertically center text/icons
 
-            }}
-            readOnly={props.disableChange}
-          >
-            {props.localLabel}
-          </button>
           <input
             type="text"
             name={props.name}
             id={props.id}
-            // value={value}
             value={value}
             className="form-control"
             onChange={handleValueChange}
@@ -308,6 +369,7 @@ function Picker(props) {
           />
         </div>
       </FormElementWrapper>
+
       <div
         className="modal fade"
         id={"local-file-picker-modal-" + props.name}
@@ -318,28 +380,27 @@ function Picker(props) {
       >
         <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
-            <div className="modal-header" style={{ position: "sticky", top: "0", zIndex: "3"}}>
+            <div className="modal-header" style={{ position: "sticky", top: "0", zIndex: "3" }}>
               <h5 className="modal-title" id="exampleModalLabel">
                 {props.label}
               </h5>
-	  	<div className="d-flex align-items-center">
-	      		<button
-                	type="button"
-                	className="btn btn-secondary"
-                	data-dismiss="modal"
-             		>
-                	Close
-              		</button>
-              
-	  		<button
-                	type="button"
-                	className="btn btn-primary"
-                	data-dismiss="modal"
-                	onClick={handleSaveChange}
-             		>
-                	Save changes
-           		</button>
-		</div>
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  data-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  data-dismiss="modal"
+                  onClick={handleSaveChange}
+                >
+                  Save changes
+                </button>
+              </div>
             </div>
             <div className="modal-body">
               <div className="container">
@@ -371,34 +432,34 @@ function Picker(props) {
                   </button>
                 ))}
                 <br />
-	  	<div>
-                {subDirs.map((path) => (
-                  <button
-                    key={path[1]}
-                    type="button"
-                    className="btn btn-outline-primary"
-                    value={path[1]}
-                    onClick={handleSubDirsClick}
-                    style={{ marginRight: "2px", marginBottom: "2px" }}
-                  >
-                    {path[0]}
-                  </button>
-                ))}
-                {isShowFiles &&
-                  subFiles.map((path) => (
+                <div>
+                  {subDirs.map((path) => (
                     <button
                       key={path[1]}
                       type="button"
-                      className="btn btn-outline-secondary"
+                      className="btn btn-outline-primary"
                       value={path[1]}
-                      onClick={handleSubFilesClick}
+                      onClick={handleSubDirsClick}
                       style={{ marginRight: "2px", marginBottom: "2px" }}
                     >
                       {path[0]}
                     </button>
                   ))}
-                <br />
-	  	</div>
+                  {isShowFiles &&
+                    subFiles.map((path) => (
+                      <button
+                        key={path[1]}
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        value={path[1]}
+                        onClick={handleSubFilesClick}
+                        style={{ marginRight: "2px", marginBottom: "2px" }}
+                      >
+                        {path[0]}
+                      </button>
+                    ))}
+                  <br />
+                </div>
               </div>
             </div>
           </div>

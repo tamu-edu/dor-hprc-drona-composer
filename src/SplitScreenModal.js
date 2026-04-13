@@ -115,7 +115,8 @@ const SplitScreenModal = ({
   onSubmit,
   onMinimize: onMinimizeCallback,
   onExpand: onExpandCallback,
-  forceMinimized = null
+  forceMinimized = null,
+  isSubmitDisabled = false
 }) => {
   const contentRef = useRef(null);
   const modalRef = useRef(null);

@@ -85,16 +85,14 @@ const Composer = forwardRef((props, ref) => {
     }
   }, [props.fields, props.setError]);
 
-  // useEffect(() => {
-  //   console.log("locationPickedByUser changed ->", props.locationPickedByUser);
-  // }, [props.locationPickedByUser]);
+
 
 
   // Handle value changes
   const handleValueChange = (fieldName, value, { silent } = {}) => {
 
     // If user choose the location themselves, mark as user-picked
-    // console.log("Change location:" + fieldName + " values: " + value);
+    console.log("Change " + fieldName + ": values: " + value);
     if (fieldName === "location" && !silent) {
       props.setLocationPickedByUser?.(true);
     }

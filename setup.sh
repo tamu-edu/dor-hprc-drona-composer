@@ -3,7 +3,7 @@ set -eo pipefail
 IFS=$'\n\t'
 
 CURRENTDIR=`basename "$PWD"`
-CLUSTERNAME=$(clustername)
+CLUSTERNAME="HPC"
 
 # Capitalize first letter of CLUSTERNAME
 CLUSTERNAME="$(tr '[:lower:]' '[:upper:]' <<< ${CLUSTERNAME:0:1})${CLUSTERNAME:1}"
@@ -33,4 +33,4 @@ pip install -r requirements.txt
 
 
 npm install -D babel-loader @babel/core @babel/preset-react
-npm run build
+npm run build:prod:compress

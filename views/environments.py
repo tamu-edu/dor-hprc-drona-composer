@@ -15,7 +15,8 @@ def _get_environments():
     system_environments = []
     try:
         system_environments = get_directories("./environments")
-        system_environments = [{"env": env, "src": "./environments", "is_user_env": False} for env in system_environments]
+        system_env_path = os.path.abspath("./environments")
+        system_environments = [{"env": env, "src": system_env_path, "is_user_env": False} for env in system_environments]
     except (PermissionError, FileNotFoundError, OSError):
         system_environments = []
     

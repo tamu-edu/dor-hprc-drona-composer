@@ -10,6 +10,32 @@ Drona Workflow Engine (or just Drona) provides a 100% graphical interface to cre
 
 Drona is available on all HPRC Portals. Once you log in to your favorite portal, go to the **Jobs** tab and select **Drona Workflow Engine**. This will open a new window showing the Drona Workflow Engine interface.
 
+
+## First-Time Initialization
+
+When you launch Drona for the first time, you will be prompted to choose where your Drona data should be stored. This location is saved in a configuration file at:
+
+```
+~/.drona/config.json
+```
+
+This file tells Drona where to find and store all of your data. Here is an example `config.json`:
+
+```json
+{
+  "drona_dir": "/scratch/user/<username>/drona_wfe"
+}
+```
+
+The `drona_dir` path is where Drona will store your environments, workflows, and job outputs. You can point this to any directory you have access to, such as your `$SCRATCH` directory on HPC systems.
+
+:::note
+
+If you ever need to change your storage location, simply update the `drona_dir` path in `~/.drona/config.json` and restart Drona.
+
+If `~/.drona/config.json` is missing or the specified directory does not exist, Drona will prompt you to reconfigure on next launch.
+:::
+
 ## Drona Environments
 
 Drona provides a number of environments to choose from. To select an environment, use the **Environments Dropdown**.

@@ -1,4 +1,4 @@
-import {Containers} from "../schemaElements/index"
+import { Containers } from "../schemaElements/index"
 
 export const normalizeFields = (fields) => {
   return Object.entries(fields).map(([name, field]) => ({
@@ -7,8 +7,8 @@ export const normalizeFields = (fields) => {
     isVisible: field.isVisible || !field.condition,
     value: field.type === "checkbox" ? (field.checked ? field.value : "") : (field.value || ""),
     // Recursively normalize nested elements in rowContainer
-    elements: Containers.includes(field.type) && field.elements 
-      ? normalizeFields(field.elements) 
+    elements: Containers.includes(field.type) && field.elements
+      ? normalizeFields(field.elements)
       : undefined
   }));
 };
@@ -16,8 +16,8 @@ export const normalizeFields = (fields) => {
 export const updateFieldVisibility = (fields, evaluateCondition) => {
   return fields.map(field => {
     // Update visibility based on condition
-    const isVisible = field.condition 
-      ? evaluateCondition(field.condition, fields) 
+    const isVisible = field.condition
+      ? evaluateCondition(field.condition, fields)
       : true;
 
     return {
@@ -26,8 +26,8 @@ export const updateFieldVisibility = (fields, evaluateCondition) => {
       // Clear value if field becomes invisible
       value: (isVisible || field.type === "staticText" || field.type === "dynamicViewer") ? field.value : "",
       // Recursively update nested elements
-      elements: field.elements 
-        ? updateFieldVisibility(field.elements, evaluateCondition) 
+      elements: field.elements
+        ? updateFieldVisibility(field.elements, evaluateCondition)
         : undefined
     };
   });
@@ -38,7 +38,7 @@ export const updateFieldValue = (fields, fieldName, newValue) => {
     if (field.name === fieldName) {
       return { ...field, value: newValue };
     }
-    
+
     // Recursively update nested elements
     if (field.elements) {
       return {
@@ -46,7 +46,7 @@ export const updateFieldValue = (fields, fieldName, newValue) => {
         elements: updateFieldValue(field.elements, fieldName, newValue)
       };
     }
-    
+
     return field;
   });
 };
@@ -76,7 +76,7 @@ export const getAllFields = (fields) => {
     if (!field) return;
 
 
-	if (field.isVisible === false) return; 
+    if (field.isVisible === false) return;
 
     allFields.push(field);
 
@@ -95,7 +95,7 @@ export const validateRequiredFields = (fields) => {
   const allFields = getAllFields(fields);
 
   const missingFields = allFields.filter(field => {
-    
+
     if (!field.required) return false;
     if (field.isVisible === false) return false;
 

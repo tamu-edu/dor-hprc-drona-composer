@@ -57,6 +57,9 @@ export default function JobNameLocation({
     label,
     pickerLabel = "Change",
 
+    // standard Composer value (composite {name, location}) — used for setValues/rerun support
+    value,
+
     // pass-through from Composer/FieldRenderer
     sync_job_name,          // e.g., props.sync_job_name
     runLocation,       // e.g., props.runLocation
@@ -69,8 +72,8 @@ export default function JobNameLocation({
     ...rest
 }) {
 
-    const [jobName, setJobName] = useState(customJobName ?? "");
-
+    // Prefer composite value from Composer (setValues/rerun), fall back to schema default
+    const [jobName, setJobName] = useState(value?.name ?? customJobName ?? "");
 
     //protect against marking "picked" due to any initialization calls
     const didInit = useRef(false);
@@ -83,16 +86,20 @@ export default function JobNameLocation({
         return a0;
     };
 
-    // useEffect(() => {
-    //     console.log("environment changed ->", environment);
-    // }, [environment]);
+    // Sync jobName when Composer pushes a new composite value (e.g. setValues() for reruns).
+    // Mirrors the standard useEffect([props.value]) pattern used by all other elements.
+    useEffect(() => {
+        if (value?.name !== undefined) {
+            setJobName(value.name);
+        }
+    }, [value?.name]);
 
-    // useEffect(() => {
-    //     // console.log("environment changed ->", environment);
-    //     console.log("customJobLocation changed ->", customJobLocation);
-    //     console.log("customJobName changed ->", customJobName);
-
-    // }, [customJobLocation, customJobName]);
+    // Sync location from external composite value (setValues/rerun support).
+    useEffect(() => {
+        if (value?.location !== undefined && value.location !== runLocation) {
+            setRunLocation?.(value.location);
+        }
+    }, [value?.location]);
 
     useEffect(() => {
         // wait until env is set
@@ -116,6 +123,9 @@ export default function JobNameLocation({
             sync_job_name?.(newName, customJobLocation, { force: true });
         }
 
+        // Keep the composite field value in Composer consistent (standard onChange pattern).
+        onChange?.(undefined, { name: newName, location: customJobLocation ?? runLocation ?? "" });
+
         didInit.current = true;
     }, [environment?.env, environment?.src, customJobLocation, customJobName]);
 
@@ -127,19 +137,23 @@ export default function JobNameLocation({
             setLocationPickedByUser?.(true);
         }
 
-        // Keep existing behavior (update form state via FieldRenderer)
+        // Update form state and app-level location
         if (val !== undefined) setFieldValue?.("location", val);
-
-        // keep external runLocation in sync
         if (val !== undefined) setRunLocation?.(val);
+
+        // Update the composite field value in Composer (standard onChange pattern)
+        if (val !== undefined) onChange?.(undefined, { name: jobName, location: val });
     };
 
     const handleNameChange = (...args) => {
         const val = extractValue(args) ?? "";
         setJobName(val);
-        setFieldValue?.("name", val);          //  update real field
+        setFieldValue?.("name", val);
         sync_job_name?.(val, runLocation);
+        // Update the composite field value in Composer (standard onChange pattern)
+        onChange?.(undefined, { name: val, location: runLocation ?? "" });
     };
+
 
 
     return (

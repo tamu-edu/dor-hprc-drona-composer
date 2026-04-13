@@ -188,6 +188,15 @@ def update_record(drona_id: str, db_path=None, status=None, runtime_meta=None, s
     finally:
         conn.close()
 
+def delete_record(drona_id: str, db_path=None) -> bool:
+    conn = _connect(db_path)
+    try:
+        cur = conn.execute("DELETE FROM job_history WHERE drona_id = ?", (drona_id,))
+        conn.commit()
+        return cur.rowcount > 0
+    finally:
+        conn.close()
+
 # --------------------------
 # CLI helpers
 # --------------------------
@@ -195,7 +204,7 @@ def update_record(drona_id: str, db_path=None, status=None, runtime_meta=None, s
 def _print_compact_usage(prog: str) -> None:
     line = (f"Usage: {prog} [-h] [--db PATH] [-j|--with-json] "
             "(-a|--all | -i ID | -e ENV [--after ISO] [--before ISO] [--limit N]) "
-            "[--edit -i ID [--status STATUS] [--runtime-meta META] [--start-time ISO]]")
+            "[--edit -i ID [--status STATUS] [--runtime-meta META] [--start-time ISO] [--delete -i ID]]")
     sys.stderr.write(line + "\n")
 
 def _print_json(obj: Any) -> None:
@@ -259,9 +268,24 @@ def main():
     parser.add_argument("--runtime-meta", help="Update runtime_meta when --edit is used.")
     parser.add_argument("--start-time", help="Update start_time when --edit is used.")
 
+    parser.add_argument("--delete", action="store_true", help="Delete a record (requires -i).")
+
     args = parser.parse_args()
     dbp = args.db
     include_json = args.with_json
+    
+
+    # DELETE
+    if args.delete:
+        if not args.drona_id:
+            parser.error("--delete requires -i/--id")
+        deleted = delete_record(args.drona_id, db_path=dbp)
+        if deleted:
+            _print_json({"deleted": args.drona_id})
+        else:
+            _print_json({"error": "not found"})
+        return
+
 
     # EDIT
     if args.edit:

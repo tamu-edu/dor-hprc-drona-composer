@@ -8,12 +8,19 @@ from .error_handler import APIError, handle_api_error
 from copy import deepcopy
 from .utils import get_envs_dir, get_runtime_dir
 
+CONTAINER_TYPES = {
+    "rowContainer", "container", "collapsibleRowContainer",
+    "collapsibleColContainer", "dragDropContainer", "jobNameLocation"
+}
+
 def iterate_schema(schema_dict):
     """Generator that yields all elements in the schema including nested ones"""
     for key, value in schema_dict.items():
+        if not isinstance(value, dict):
+            continue
         yield key, value
 
-        if "Container" in value.get("type", "") and "elements" in value:
+        if value.get("type") in CONTAINER_TYPES and "elements" in value:
             yield from iterate_schema(value["elements"])
 
 def execute_script(

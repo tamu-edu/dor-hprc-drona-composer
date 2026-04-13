@@ -89,12 +89,17 @@ For details on each file, see the [Environment Development](../environments/over
 
 ## Environment Discovery
 
-Drona loads environments from two locations:
+Drona loads environments from the **Drona root** directory configured during first-time setup. 
+See [First-Time Initialization](../user-guide/using-drona#first-time-initialization) for details.
 
-1. **`environments/`** in the application directory — system-wide workflows available to all users
-2. **`$SCRATCH/drona_composer/environments/`** — per-user workflows
+Drona scans the `environments/` subdirectory within that configured `drona_dir` for available Drona environments such as Generic, Python, AlphaFold, LAMMPS, and more:
+```
+<drona_dir>/
+└── environments/ 
+```
 
-The backend scans both directories on startup and when the environment list is refreshed. System environments appear in black in the dropdown, user environments in blue.
+The backend scans this directory on startup and when the environment list is refreshed. To change the root directory, update `drona_dir` in `~/.drona/config.json` and restart Drona.
+
 
 ## Workflow Execution Process
 

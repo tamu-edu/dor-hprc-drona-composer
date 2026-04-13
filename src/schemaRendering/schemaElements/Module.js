@@ -26,6 +26,7 @@
  * @property {Array} toolchains - Array of toolchain options, each with value and label properties
  * @property {string} [toolchainName="toolchain"] - Name for the toolchain select input
  * @property {string} [help] - Help text displayed below the input
+ * @property {string} [module_db_root] - Base directory where module database is located
  */
 
 import React, { useState, useRef, useEffect } from "react";
@@ -42,6 +43,7 @@ function Module(props) {
   const [toolchain, setToolchain] = useState("modules");
   const moduleSearchRef = useRef(null);
   const suggestionsRef = useRef(null);
+  const moduleDbRoot = props.module_db_root || document.module_db_root || "";
 
   useEffect(() => {
     const newModules = props.value ? props.value.trim().split(' ').filter(m => m !== '') : [];
@@ -76,7 +78,10 @@ function Module(props) {
     }
 
     try {
-      const suggestURL = `${document.dashboard_url}/jobs/composer/modules?query=${query}&toolchain=${toolchain}`;
+      let suggestURL = `${document.dashboard_url}/jobs/composer/modules?query=${query}&toolchain=${toolchain}`;
+      if (moduleDbRoot) {
+	    suggestURL += `&module_db_root=${encodeURIComponent(moduleDbRoot)}`;
+      }
       const response = await fetch(suggestURL);
       const data = await response.json();
       setSuggestions(data.data || []);
@@ -133,7 +138,7 @@ function Module(props) {
       labelOnTop={props.labelOnTop}
       name={props.name}
       label={props.label}
-      help={props.help}
+      help={props.help}  
     >
       <div className="module-widget">
         <div className="input-group" style={{ position: 'relative' }}>

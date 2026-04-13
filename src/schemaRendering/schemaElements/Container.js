@@ -43,11 +43,12 @@ function Container({
   startingIndex,
   onSizeChange,
   currentValues,
-  setError
+  setError,
+  locationProps = {}
 }) {
 
   return (
-    <div className="form-group col">
+    <div className="form-group">
       <FieldRenderer
         fields={elements}
         handleValueChange={onChange}
@@ -55,6 +56,7 @@ function Container({
         startingIndex={startingIndex}
         currentValues={currentValues}
         setError={setError}
+        locationProps={locationProps}
       />
     </div>
   );
