@@ -56,20 +56,21 @@ const ResizeHandle = ({ isResizing, onMouseDown, styles }) => {
   );
 };
 
-const ModalFooter = ({ onClose, styles }) => {
+const ModalFooter = ({ onClose, styles, disabled }) => {
   return (
     <div style={styles.footer}>
       <div style={styles.footerTip}>
-        <strong>Tip:</strong> Configure your job on the left, then submit to see live output on the right. 
+        <strong>Tip:</strong> Configure your job on the left, then submit to see live output on the right.
         Drag the center divider to resize panes.
       </div>
       <div>
         <button
           type="submit"
           form="slurm-config-form"
-          style={styles.button.primary}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#500000'}
-          onMouseOut={(e) => e.target.style.backgroundColor = 'maroon'}
+          disabled={disabled}
+          style={{...styles.button.primary, ...(disabled ? { opacity: 0.5, cursor: 'not-allowed' } : {})}}
+          onMouseOver={!disabled ? (e) => e.target.style.backgroundColor = '#500000' : undefined}
+          onMouseOut={!disabled ? (e) => e.target.style.backgroundColor = 'maroon' : undefined}
         >
           Submit Job
         </button>
@@ -196,7 +197,7 @@ const SplitScreenModal = ({
           />
         </div>
 
-        <ModalFooter onClose={onClose} styles={styles} />
+        <ModalFooter onClose={onClose} styles={styles} disabled={status !== null} />
       </div>
     </div>
   );
