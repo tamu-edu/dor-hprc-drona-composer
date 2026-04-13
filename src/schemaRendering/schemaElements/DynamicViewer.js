@@ -38,15 +38,17 @@
  * @property {string} [value.title] - Title displayed in card header
  * @property {string} [value.description] - Description shown under title
  * @property {string|string[]} [value.cdnLibraries] - CDN URLs to load (must be from approved sources)
- * @property {string} [value.initCode] - JavaScript code to execute in iframe
+ * @property {string} [value.initCode] - JavaScript code to execute in iframe, or a path to a .js file (e.g. "viewers/myViewer.js") whose content will be fetched and used
  * @property {Object} [value.data] - Static data passed to initCode (overridden by retriever)
  * @property {string} [value.height="600px"] - Iframe height
  * @property {string} [value.footer] - Footer text
  */
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, useContext } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { useRetriever } from "../hooks";
+import { fetchFileContent } from "../utils/utils";
+import { FormValuesContext } from "../FormValuesContext";
 
 const SECURITY_CONFIG = {
   MAX_MEMORY_MB: 150,
@@ -104,13 +106,20 @@ function validateCDNs(cdnLibraries) {
   return { valid: validLibs, blocked: blockedLibs };
 }
 
+function isInitCodeFilePath(str) {
+  return typeof str === 'string' && !str.includes('\n') && str.trim().endsWith('.js');
+}
+
 function DynamicViewer(props) {
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState(null);
   const [securityBlock, setSecurityBlock] = useState(null);
+  const [resolvedInitCode, setResolvedInitCode] = useState(null);
   const iframeRef = useRef(null);
   const initializedRef = useRef(false);
   const prevDataRef = useRef(null);
+
+  const { environment } = useContext(FormValuesContext);
 
   // Parse static config from props.value
   const staticConfig = useMemo(() => {
@@ -161,8 +170,44 @@ function DynamicViewer(props) {
     };
   }, [staticConfig, retrieverPath, dynamicData, isRetrieverEvaluated, isRetrieverLoading]);
 
+  // Fetch initCode from file if initCode is a .js file path
+  const rawInitCode = config.initCode;
+  const initCodeIsFilePath = isInitCodeFilePath(rawInitCode);
+
+  useEffect(() => {
+    if (!initCodeIsFilePath) {
+      setResolvedInitCode(rawInitCode || null);
+      return;
+    }
+
+    let cancelled = false;
+
+    fetchFileContent({ filePath: rawInitCode, environment })
+      .then(content => {
+        if (!cancelled) setResolvedInitCode(content);
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setError(`Failed to load init code from "${rawInitCode}": ${err.message}`);
+          setStatus('error');
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [rawInitCode, initCodeIsFilePath, environment]);
+
+  // While a file path is being resolved, treat initCode as pending
+  const initCodeReady = !initCodeIsFilePath || resolvedInitCode !== null;
+  const effectiveInitCode = initCodeIsFilePath ? resolvedInitCode : rawInitCode;
+
+  // Build the effective config with the resolved initCode
+  const effectiveConfig = useMemo(() => {
+    if (effectiveInitCode === rawInitCode) return config;
+    return { ...config, initCode: effectiveInitCode };
+  }, [config, effectiveInitCode, rawInitCode]);
+
   // Validate CDNs immediately
-  const cdnValidation = validateCDNs(config.cdnLibraries);
+  const cdnValidation = validateCDNs(effectiveConfig.cdnLibraries);
   const hasBlockedCDNs = cdnValidation.blocked.length > 0;
 
   useEffect(() => {
@@ -196,16 +241,16 @@ function DynamicViewer(props) {
   }, [hasBlockedCDNs, cdnValidation.blocked]);
 
   // Determine if we should show loading state (either retriever loading or iframe loading)
-  const showRetrieverLoading = retrieverPath && isRetrieverLoading;
+  const showRetrieverLoading = (retrieverPath && isRetrieverLoading) || (initCodeIsFilePath && !initCodeReady);
 
   // Use ref to store current config for use in callbacks without causing re-renders
-  const configRef = useRef(config);
+  const configRef = useRef(effectiveConfig);
   const cdnValidationRef = useRef(cdnValidation);
 
   useEffect(() => {
-    configRef.current = config;
+    configRef.current = effectiveConfig;
     cdnValidationRef.current = cdnValidation;
-  }, [config, cdnValidation]);
+  }, [effectiveConfig, cdnValidation]);
 
   // Stable initViewer function that reads from refs
   const initViewer = useCallback(() => {
@@ -228,30 +273,30 @@ function DynamicViewer(props) {
     }
   }, [hasBlockedCDNs]);
 
-  // Initialize iframe when ready (no retriever, or retriever finished)
+  // Initialize iframe when ready (no retriever, or retriever finished; and initCode resolved)
   useEffect(() => {
     if (!iframeRef.current || hasBlockedCDNs || initializedRef.current) return;
 
-    const shouldInit = !retrieverPath || isRetrieverEvaluated;
+    const shouldInit = (!retrieverPath || isRetrieverEvaluated) && initCodeReady;
     if (shouldInit) {
       initializedRef.current = true;
       setTimeout(() => initViewer(), 50);
     }
-  }, [retrieverPath, isRetrieverEvaluated, hasBlockedCDNs, initViewer]);
+  }, [retrieverPath, isRetrieverEvaluated, hasBlockedCDNs, initCodeReady, initViewer]);
 
   // Re-initialize iframe when dynamic data changes
   useEffect(() => {
     if (!retrieverPath || !iframeRef.current || hasBlockedCDNs) return;
 
     // Only re-initialize if data has actually changed
-    const currentDataString = JSON.stringify(config.data);
+    const currentDataString = JSON.stringify(effectiveConfig.data);
     if (prevDataRef.current !== null && prevDataRef.current !== currentDataString) {
       // Data changed - re-initialize the viewer
       setStatus('loading');
       initViewer();
     }
     prevDataRef.current = currentDataString;
-  }, [config.data, retrieverPath, hasBlockedCDNs, initViewer]);
+  }, [effectiveConfig.data, retrieverPath, hasBlockedCDNs, initViewer]);
 
   const generateHTML = (cfg, validLibs) => {
     const origins = [...new Set(validLibs.map(u => new URL(u).origin))].join(' ');
@@ -262,7 +307,7 @@ function DynamicViewer(props) {
       "default-src 'none'",
       validLibs.length > 0 ? `script-src ${origins} 'unsafe-inline' 'unsafe-eval'` : "script-src 'unsafe-inline'",
       "style-src 'unsafe-inline'",
-      `connect-src ${dataOrigins}`,
+      `connect-src data: blob: ${dataOrigins}`,
       `img-src data: blob: ${dataOrigins}`,
     ].join('; ');
 
@@ -369,10 +414,10 @@ function DynamicViewer(props) {
   return (
     <FormElementWrapper {...props}>
       <div className="card">
-        {config.title && (
+        {effectiveConfig.title && (
           <div className="card-header bg-light">
-            <h5 className="mb-0">{config.title}</h5>
-            {config.description && <small className="text-muted d-block mt-1">{config.description}</small>}
+            <h5 className="mb-0">{effectiveConfig.title}</h5>
+            {effectiveConfig.description && <small className="text-muted d-block mt-1">{effectiveConfig.description}</small>}
           </div>
         )}
 
@@ -412,23 +457,23 @@ function DynamicViewer(props) {
             </div>
           )}
 
-          {!hasBlockedCDNs && (!retrieverPath || isRetrieverEvaluated) && (
+          {!hasBlockedCDNs && (!retrieverPath || isRetrieverEvaluated) && initCodeReady && (
             <iframe
               ref={setIframeRef}
               sandbox="allow-scripts"
               style={{
                 width: "100%",
-                height: config.height || "600px",
+                height: effectiveConfig.height || "600px",
                 border: "none",
                 display: "block",
               }}
-              title={config.title || "Dynamic Viewer"}
+              title={effectiveConfig.title || "Dynamic Viewer"}
             />
           )}
         </div>
 
-        {config.footer && (
-          <div className="card-footer text-muted small">{config.footer}</div>
+        {effectiveConfig.footer && (
+          <div className="card-footer text-muted small">{effectiveConfig.footer}</div>
         )}
 
         <div className="card-footer bg-light border-top">

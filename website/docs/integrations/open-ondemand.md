@@ -78,9 +78,9 @@ OOD uses `manifest.yml` to register the app in the dashboard:
 
 ```yaml
 ---
-name: Drona Composer
+name: Drona Workflow Engine
 category: Jobs
-description: Drona Composer
+description: Drona Workflow Engine
 icon: ''
 ```
 
