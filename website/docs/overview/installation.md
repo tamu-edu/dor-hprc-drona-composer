@@ -85,10 +85,6 @@ Drona uses `/tmp` for temporary files during job processing. If your cluster use
 - `machine_driver_scripts/utils.py` — `drona_add_additional_file()`, `drona_add_warning()`, `drona_add_mapping()`
 - `machine_driver_scripts/engine.py` — `set_dynamic_additional_files()`, `get_dynamic_map()`, `get_warnings()`
 
-#### Older Python Versions
 
-For clusters running Python 3.6, an alternate requirements file is provided. Copy `requirements.txt.Python2.6.8` to `requirements.txt` and follow the normal setup process. You may also need to remove `package-lock.json`.
-
----
 
 **Texas A&M University High Performance Research Computing**
