@@ -1,13 +1,8 @@
-// StreamingPanel.jsx
 import React from 'react';
 
 const StatusBadge = ({ status, styles }) => {
   if (!status || status === 'idle') {
-    return (
-      <span style={styles.statusBadge.ready}>
-        Ready
-      </span>
-    );
+    return <span style={styles.statusBadge.ready}>Ready</span>;
   }
 
   const statusConfig = {
@@ -20,11 +15,7 @@ const StatusBadge = ({ status, styles }) => {
   const config = statusConfig[status] || { bg: '#6c757d', color: '#fff' };
 
   return (
-    <span style={{
-      ...styles.statusBadge.base,
-      backgroundColor: config.bg,
-      color: config.color
-    }}>
+    <span style={{ ...styles.statusBadge.base, backgroundColor: config.bg, color: config.color }}>
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
@@ -33,25 +24,17 @@ const StatusBadge = ({ status, styles }) => {
 const StreamingContent = ({ status, htmlOutput, outputLines, styles }) => {
   if (status === 'running' || status === 'completed' || status === 'failed') {
     return htmlOutput ? (
-      <div
-        style={styles.streamingPre}
-        dangerouslySetInnerHTML={{ __html: htmlOutput }}
-      />
+      <div style={styles.streamingPre} dangerouslySetInnerHTML={{ __html: htmlOutput }} />
     ) : (
       <pre style={styles.streamingPre}>
-        {outputLines && outputLines.length > 0 ?
-          outputLines.join('') :
-          'Starting job execution...'
-        }
+        {outputLines && outputLines.length > 0 ? outputLines.join('') : 'Starting job execution...'}
       </pre>
     );
   }
 
   return (
     <div style={styles.placeholder}>
-      <div style={styles.placeholder.title}>
-        Live Output Stream
-      </div>
+      <div style={styles.placeholder.title}>Live Output Stream</div>
       <div style={styles.placeholder.subtitle}>
         Job execution output will appear here in real-time once you submit your configuration.
       </div>
@@ -65,15 +48,24 @@ const StreamingPanel = ({
   htmlOutput,
   outputLines,
   contentRef,
-  styles
+  styles,
+  isFullscreen = false,
 }) => {
+  const titleStyle = isFullscreen
+    ? { ...styles.rightPaneTitle, padding: '0 12px', height: '32px', minHeight: '32px' }
+    : styles.rightPaneTitle;
+
+  const contentStyle = isFullscreen
+    ? { ...styles.streamingContent, padding: '0.5rem 0.75rem', fontSize: '13px' }
+    : styles.streamingContent;
+
   return (
-    <div style={{...styles.rightPane, width: `${100 - leftWidth}%`}}>
-      <div style={styles.rightPaneTitle}>
+    <div style={{ ...styles.rightPane, width: `${100 - leftWidth}%` }}>
+      <div style={titleStyle}>
         <span>Live Output</span>
-        <StatusBadge status={status} styles={styles} />
+        {!isFullscreen && <StatusBadge status={status} styles={styles} />}
       </div>
-      <div style={styles.streamingContent} ref={contentRef}>
+      <div style={contentStyle} ref={contentRef}>
         <StreamingContent
           status={status}
           htmlOutput={htmlOutput}

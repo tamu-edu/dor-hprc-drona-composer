@@ -84,11 +84,58 @@ def get_modules_route():
 def get_subdirectories_route():
     """Get subdirectories and files in a directory"""
     fullpath = request.args.get('path')
-    subdirectories = fetch_subdirectories(fullpath)
-    return subdirectories
+    if not fullpath:
+        return jsonify({'error': 'No path provided'}), 400
+    if not os.path.exists(fullpath):
+        return jsonify({'error': f'Path does not exist: {fullpath}'}), 404
+    if not os.path.isdir(fullpath):
+        return jsonify({'error': 'Path is not a directory'}), 400
+    try:
+        return jsonify(fetch_subdirectories(fullpath))
+    except PermissionError:
+        return jsonify({'error': 'Permission denied'}), 403
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def read_file_content_route():
+    """Read a text file and return its content"""
+    path = request.args.get('path')
+    if not path:
+        return jsonify({'error': 'No path provided'}), 400
+    if not os.path.exists(path):
+        return jsonify({'error': f'File not found: {path}'}), 404
+    if not os.path.isfile(path):
+        return jsonify({'error': 'Path is not a file'}), 400
+    if not os.access(path, os.R_OK):
+        return jsonify({'error': 'No read permission'}), 403
+    try:
+        with open(path, 'r', encoding='utf-8', errors='replace') as f:
+            content = f.read()
+        return jsonify({'content': content, 'filename': os.path.basename(path)})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def read_file_content_route():
+    """Read a text file and return its content"""
+    path = request.args.get('path')
+    if not path:
+        return jsonify({'error': 'No path provided'}), 400
+    if not os.path.exists(path):
+        return jsonify({'error': f'File not found: {path}'}), 404
+    if not os.path.isfile(path):
+        return jsonify({'error': 'Path is not a file'}), 400
+    if not os.access(path, os.R_OK):
+        return jsonify({'error': 'No read permission'}), 403
+    try:
+        with open(path, 'r', encoding='utf-8', errors='replace') as f:
+            content = f.read()
+        return jsonify({'content': content, 'filename': os.path.basename(path)})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def register_file_routes(blueprint):
     """Register all file-related routes to the blueprint"""
     blueprint.route('/download_file', methods=['POST'])(download_file_route)
     blueprint.route('/modules', methods=['GET'])(get_modules_route)
     blueprint.route('/subdirectories', methods=['GET'])(get_subdirectories_route)
+    blueprint.route('/file_content', methods=['GET'])(read_file_content_route)

@@ -304,17 +304,13 @@ const styles = {
 
   footer: {
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    padding: '1rem 1.5rem',
+    padding: '0 1rem',
     backgroundColor: '#f8f9fa',
     borderTop: '1px solid #dee2e6',
-    minHeight: '70px',
-  },
-
-  footerTip: {
-    fontSize: '13px',
-    color: '#6c757d',
+    height: '48px',
+    flexShrink: 0,
   },
 
   button: {
