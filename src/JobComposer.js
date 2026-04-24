@@ -205,13 +205,8 @@ function JobComposer({
       return;
     }
 
-    if (hasSubmittedCurrentPreview) {
-      return;
-    }
-
-    // Block submission if job is already running
-    if (isJobRunning) {
-      alert("A job is already running. Please wait for it to complete before submitting another job.");
+    // Block submission if job has already been submitted from this preview
+    if (status !== null) {
       return;
     }
 
