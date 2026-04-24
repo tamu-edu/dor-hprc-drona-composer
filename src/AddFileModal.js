@@ -23,36 +23,39 @@ const S = {
     cursor: 'pointer', padding: '0 4px', lineHeight: 1, opacity: 0.8,
   },
   tabBar: {
-    display: 'flex', borderBottom: '1px solid #dee2e6',
-    backgroundColor: '#f8f9fa', flexShrink: 0,
+    display: 'flex', alignItems: 'center', gap: '4px',
+    backgroundColor: '#f0f0f0', borderBottom: '1px solid #dee2e6',
+    padding: '0 8px', height: '36px', flexShrink: 0,
   },
   tab: (active) => ({
-    padding: '8px 20px', fontSize: '13px', fontWeight: active ? '600' : '400',
-    color: active ? '#500000' : '#6c757d', background: 'none',
-    border: 'none', borderBottom: active ? '2px solid #500000' : '2px solid transparent',
-    cursor: 'pointer', transition: 'all 0.15s',
+    padding: '3px 12px', fontSize: '12px', fontWeight: active ? '600' : '400',
+    color: active ? '#500000' : '#6c757d',
+    backgroundColor: active ? 'white' : 'transparent',
+    border: `1px solid ${active ? '#dee2e6' : 'transparent'}`,
+    borderRadius: '3px', cursor: 'pointer', lineHeight: '1.2',
   }),
   body: {
-    padding: '1rem', flexGrow: 1, display: 'flex', flexDirection: 'column',
+    padding: '12px', flexGrow: 1, display: 'flex', flexDirection: 'column',
     minHeight: 0,
   },
-  label: { fontSize: '12px', fontWeight: '600', color: '#495057', marginBottom: '6px', display: 'block' },
-  hint: { fontSize: '12px', color: '#6c757d', marginBottom: '12px' },
+  label: { fontSize: '12px', fontWeight: '600', color: '#495057', marginBottom: '5px', display: 'block' },
+  hint: { fontSize: '12px', color: '#6c757d', marginBottom: '10px' },
   input: {
-    width: '100%', padding: '7px 10px', fontSize: '13px',
+    width: '100%', padding: '6px 10px', fontSize: '13px',
     border: '1px solid #ced4da', borderRadius: '4px',
-    outline: 'none', boxSizing: 'border-box', marginBottom: '12px',
+    outline: 'none', boxSizing: 'border-box', marginBottom: '10px',
     fontFamily: 'monospace',
   },
   primaryBtn: (disabled) => ({
-    padding: '6px 16px', fontSize: '13px', fontWeight: '500',
+    padding: '5px 14px', fontSize: '12px', fontWeight: '500',
     backgroundColor: disabled ? '#ccc' : '#500000',
-    border: 'none', borderRadius: '4px', color: 'white',
+    border: `1px solid ${disabled ? '#ccc' : '#500000'}`,
+    borderRadius: '3px', color: 'white',
     cursor: disabled ? 'default' : 'pointer',
   }),
   breadcrumb: {
     display: 'flex', alignItems: 'center', flexWrap: 'wrap',
-    gap: '2px', padding: '6px 8px', backgroundColor: '#f8f9fa',
+    gap: '2px', padding: '5px 8px', backgroundColor: '#f8f9fa',
     border: '1px solid #dee2e6', borderRadius: '4px', marginBottom: '8px',
     fontSize: '12px', flexShrink: 0,
   },
@@ -69,17 +72,23 @@ const S = {
   },
   entry: (selected, isDir) => ({
     display: 'flex', alignItems: 'center', gap: '8px',
-    padding: '6px 10px', fontSize: '13px', cursor: 'pointer',
+    padding: '5px 10px', fontSize: '12px', cursor: 'pointer',
     backgroundColor: selected ? '#fff0f0' : 'transparent',
     borderBottom: '1px solid #f0f0f0',
-    color: isDir ? '#0066cc' : '#212529',
+    color: isDir ? '#500000' : '#343a40',
     userSelect: 'none',
   }),
+  entryIcon: (isDir) => ({
+    fontSize: '11px', opacity: 0.7, flexShrink: 0,
+    color: isDir ? '#500000' : '#6c757d',
+    fontWeight: isDir ? '700' : '400',
+    fontFamily: 'monospace',
+  }),
   empty: {
-    padding: '16px', textAlign: 'center', fontSize: '13px', color: '#6c757d',
+    padding: '16px', textAlign: 'center', fontSize: '12px', color: '#6c757d',
   },
   selectedBar: {
-    marginTop: '8px', padding: '8px 10px',
+    marginTop: '8px', padding: '7px 10px',
     backgroundColor: '#f8f9fa', border: '1px solid #dee2e6',
     borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px',
     flexShrink: 0,
@@ -89,7 +98,7 @@ const S = {
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
     fontFamily: 'monospace',
   },
-  errorMsg: { fontSize: '12px', color: '#dc3545', padding: '8px 0' },
+  errorMsg: { fontSize: '12px', color: '#dc3545', padding: '6px 0' },
 };
 
 // ── New File tab ─────────────────────────────────────────────────────────────
@@ -135,7 +144,7 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
   const [entries, setEntries] = useState({ subdirectories: [], subfiles: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selected, setSelected] = useState(null); // { path, name }
+  const [selected, setSelected] = useState(null);
   const [adding, setAdding] = useState(false);
 
   const fetchEntries = useCallback(async (path) => {
@@ -182,7 +191,6 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
     }
   };
 
-  // Build breadcrumb segments
   const breadcrumbs = (() => {
     const parts = currentPath.split('/').filter(Boolean);
     const crumbs = [{ label: '/', path: '/' }];
@@ -196,7 +204,6 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
 
   return (
     <div style={{ ...S.body, gap: 0 }}>
-      {/* Breadcrumb */}
       <div style={S.breadcrumb}>
         {breadcrumbs.map((crumb, i) => (
           <React.Fragment key={crumb.path}>
@@ -211,7 +218,6 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
         ))}
       </div>
 
-      {/* File list */}
       <div style={S.fileList}>
         {loading && <div style={S.empty}>Loading…</div>}
         {!loading && error && <div style={{ ...S.empty, color: '#dc3545' }}>{error}</div>}
@@ -225,10 +231,10 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
                 key={dir}
                 style={S.entry(false, true)}
                 onClick={() => navigate(joinPath(currentPath, dir))}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f0f4ff'}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fff0f0'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <span>📁</span>
+                <span style={S.entryIcon(true)}>▸</span>
                 <span>{dir}</span>
               </div>
             ))}
@@ -241,10 +247,10 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
                   style={S.entry(isSelected, false)}
                   onClick={() => setSelected({ path: filePath, name: file })}
                   onDoubleClick={() => addFile(filePath, file)}
-                  onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#f8f8f8'; }}
+                  onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
                   onMouseOut={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <span>📄</span>
+                  <span style={S.entryIcon(false)}>—</span>
                   <span>{file}</span>
                 </div>
               );
@@ -253,7 +259,6 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
         )}
       </div>
 
-      {/* Selected file bar */}
       {selected && (
         <div style={S.selectedBar}>
           <span style={S.selectedPath}>{selected.path}</span>
@@ -268,7 +273,7 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
       )}
       {!selected && (
         <div style={{ ...S.hint, marginTop: '6px', flexShrink: 0 }}>
-          Click a file to select, double-click to add directly.
+          Click to select · double-click to add directly
         </div>
       )}
     </div>

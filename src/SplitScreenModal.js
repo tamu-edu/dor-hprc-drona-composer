@@ -174,6 +174,7 @@ const SplitScreenModal = ({
   const modalRef = useRef(null);
   const [isMinimized, setIsMinimized] = React.useState(false);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [outputCollapsed, setOutputCollapsed] = React.useState(false);
 
   useEffect(() => {
     if (forceMinimized !== null) setIsMinimized(forceMinimized);
@@ -226,7 +227,7 @@ const SplitScreenModal = ({
 
         <div style={styles.contentContainer}>
           <PreviewPanel
-            leftWidth={leftWidth}
+            leftWidth={outputCollapsed ? 100 : leftWidth}
             messages={messages}
             multiPaneRef={multiPaneRef}
             panes={panes}
@@ -234,7 +235,7 @@ const SplitScreenModal = ({
             styles={styles}
             isFullscreen={isFullscreen}
           />
-          <ResizeHandle isResizing={isResizing} onMouseDown={handleMouseDown} styles={styles} />
+          {!outputCollapsed && <ResizeHandle isResizing={isResizing} onMouseDown={handleMouseDown} styles={styles} />}
           <StreamingPanel
             leftWidth={leftWidth}
             status={status}
@@ -243,6 +244,8 @@ const SplitScreenModal = ({
             contentRef={contentRef}
             styles={styles}
             isFullscreen={isFullscreen}
+            isCollapsed={outputCollapsed}
+            onToggleCollapse={() => setOutputCollapsed(c => !c)}
           />
         </div>
 

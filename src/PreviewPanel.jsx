@@ -217,14 +217,6 @@ const PreviewPanel = ({
 
   return (
     <div style={outerStyle}>
-      {hasMessages && (
-        <>
-          <AlertBlock messages={messages} type="error" styles={styles} isFullscreen={isFullscreen} />
-          <AlertBlock messages={messages} type="warning" styles={styles} isFullscreen={isFullscreen} />
-          <AlertBlock messages={messages} type="note" styles={styles} isFullscreen={isFullscreen} />
-        </>
-      )}
-
       <div ref={containerRef} style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
         {splits.map((split, splitIndex) => (
           <React.Fragment key={split.id}>
@@ -241,6 +233,13 @@ const PreviewPanel = ({
                 splitIndex={splitIndex}
                 isFullscreen={isFullscreen}
               />
+              {splitIndex === 0 && hasMessages && (
+                <div style={{ flexShrink: 0, overflowY: 'auto', maxHeight: '400px', borderBottom: '1px solid #dee2e6' }}>
+                  <AlertBlock messages={messages} type="error" styles={styles} isFullscreen={isFullscreen} />
+                  <AlertBlock messages={messages} type="warning" styles={styles} isFullscreen={isFullscreen} />
+                  <AlertBlock messages={messages} type="note" styles={styles} isFullscreen={isFullscreen} />
+                </div>
+              )}
               <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <MultiPaneTextArea
                   ref={splitIndex === 0 ? multiPaneRef : undefined}

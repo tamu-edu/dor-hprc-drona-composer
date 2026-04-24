@@ -50,7 +50,29 @@ const StreamingPanel = ({
   contentRef,
   styles,
   isFullscreen = false,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
+  if (isCollapsed) {
+    return (
+      <div
+        style={{
+          ...styles.rightPane,
+          width: '28px',
+          minWidth: '28px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          borderLeft: '1px solid rgba(255,255,255,0.1)',
+        }}
+        onClick={onToggleCollapse}
+        title="Show output"
+      >
+        <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '18px', userSelect: 'none', fontWeight: '300', letterSpacing: '-2px' }}>«</span>
+      </div>
+    );
+  }
+
   const titleStyle = isFullscreen
     ? { ...styles.rightPaneTitle, padding: '0 12px', height: '32px', minHeight: '32px' }
     : styles.rightPaneTitle;
@@ -63,7 +85,16 @@ const StreamingPanel = ({
     <div style={{ ...styles.rightPane, width: `${100 - leftWidth}%` }}>
       <div style={titleStyle}>
         <span>Live Output</span>
-        {!isFullscreen && <StatusBadge status={status} styles={styles} />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {!isFullscreen && <StatusBadge status={status} styles={styles} />}
+          <button
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '14px', padding: '0 2px', lineHeight: 1 }}
+            onClick={onToggleCollapse}
+            title="Hide output"
+            onMouseOver={(e) => e.currentTarget.style.color = 'white'}
+            onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+          >»</button>
+        </div>
       </div>
       <div style={contentStyle} ref={contentRef}>
         <StreamingContent
