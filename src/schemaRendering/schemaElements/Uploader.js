@@ -72,7 +72,6 @@ function Uploader(props) {
   const { globalFiles, setGlobalFiles } = useContext(GlobalFilesContext);
   const fileInput = useRef(null);
   const folderInput = useRef(null);
-  const selectRef = useRef(null);
 
   // Effect to recreate files from filepath
   useEffect(() => {
@@ -125,7 +124,6 @@ function Uploader(props) {
         }
       }));
 
-      // Update state if any files were recreated
       const hasChanges = newFiles.some(
         (file, index) => 
           file.originalFile !== uploadedFiles[index].originalFile ||
@@ -194,15 +192,34 @@ function Uploader(props) {
     }
   }, [props.value]);
 
-  function handleAdd() {
-    const option = selectRef.current.value;
-    if (option === "file") {
-      fileInput.current.click();
-    } else if (option === "folder") {
-      folderInput.current.click();
-    } else {
-      alert("Please select a file or folder");
+  // "file" or "folder" — tracks which mode the button currently triggers
+  const [uploadMode, setUploadMode] = useState("file");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
     }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const modeLabel = uploadMode === "file" ? "Add File" : "Add Directory";
+
+  function handleMainButtonClick() {
+    if (uploadMode === "file") {
+      fileInput.current.click();
+    } else {
+      folderInput.current.click();
+    }
+  }
+
+  function handleSelectMode(mode) {
+    setUploadMode(mode);
+    setDropdownOpen(false);
   }
 
   function handleFileChange(files) {
@@ -212,8 +229,19 @@ function Uploader(props) {
       originalFile: file
     }));
 
-    setUploadedFiles(prevFiles => [...prevFiles, ...filesArray]);
+    const newUploadedFiles = [...uploadedFiles, ...filesArray];
+    setUploadedFiles(newUploadedFiles);
     setGlobalFiles(prevFiles => [...prevFiles, ...filesArray.map(f => f.originalFile)]);
+    
+    if (props.onChange) {
+      const jsonValue = newUploadedFiles.length > 0 
+        ? JSON.stringify(newUploadedFiles.map(file => ({
+            filename: file.filename,
+            filepath: file.filepath
+          })))
+        : "";
+      props.onChange(props.index, jsonValue);
+    }
   }
 
   function removeFile(index) {
@@ -231,11 +259,20 @@ function Uploader(props) {
       });
     }
 
-    setUploadedFiles((prevFiles) => {
-      const newFiles = [...prevFiles];
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
+    const newUploadedFiles = [...uploadedFiles];
+    newUploadedFiles.splice(index, 1);
+    setUploadedFiles(newUploadedFiles);
+    
+    // Update form state for conditional evaluation
+    if (props.onChange) {
+      const jsonValue = newUploadedFiles.length > 0 
+        ? JSON.stringify(newUploadedFiles.map(file => ({
+            filename: file.filename,
+            filepath: file.filepath
+          })))
+        : "";
+      props.onChange(props.index, jsonValue);
+    }
   }
 
   return (
@@ -245,16 +282,67 @@ function Uploader(props) {
       label={props.label}
       help={props.help}
     >
-      <select defaultValue={"default"} ref={selectRef}>
-        <option value="default" disabled>
-          Select an option
-        </option>
-        <option value="file">File</option>
-        <option value="folder">Directory</option>
-      </select>
-      <button type="button" className="maroon-button" onClick={handleAdd}>
-        Add
-      </button>
+      {/* Split dropdown: main button triggers selected mode, arrow lets you switch */}
+      <div style={{ position: "relative", display: "inline-block" }} ref={dropdownRef}>
+        <div className="btn-group">
+          <button
+            type="button"
+            className="btn btn-primary maroon-button"
+            onClick={handleMainButtonClick}
+          >
+            {modeLabel}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary maroon-button dropdown-toggle dropdown-toggle-split"
+            onClick={() => setDropdownOpen((o) => !o)}
+          >
+            <span className="sr-only">Toggle Dropdown</span>
+          </button>
+        </div>
+
+        {/* Dropdown menu — clean list style matching image 2 */}
+        {dropdownOpen && (
+          <div style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            zIndex: 1000,
+            background: "#fff",
+            minWidth: "180px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+            borderRadius: "4px",
+            padding: "4px 0",
+            marginTop: "2px",
+          }}>
+            <button
+              type="button"
+              onClick={() => handleSelectMode("file")}
+              style={{
+                display: "block", width: "100%", textAlign: "left",
+                padding: "10px 16px", fontSize: "14px",
+                background: uploadMode === "file" ? "#f5f5f5" : "none",
+                border: "none", cursor: "pointer", color: "#333",
+              }}
+            >
+              Add File
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSelectMode("folder")}
+              style={{
+                display: "block", width: "100%", textAlign: "left",
+                padding: "10px 16px", fontSize: "14px",
+                background: uploadMode === "folder" ? "#f5f5f5" : "none",
+                border: "none", cursor: "pointer", color: "#333",
+              }}
+            >
+              Add Directory
+            </button>
+          </div>
+        )}
+      </div>
+
       <input
         type="file"
         style={{ display: "none" }}

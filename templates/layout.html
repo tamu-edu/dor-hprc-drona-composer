@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>DRONA COMPOSER ({{ config.cluster_name }})</title>
+    <title>DRONA WORKFLOW ENGINE ({{ config.cluster_name }})</title>
     <meta charset="UTF-8" />
     <link
       rel="icon"
@@ -50,8 +50,14 @@
       crossorigin="anonymous"
     ></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/eclipse.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/eclipse.min.css"
+    />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/shell/shell.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
@@ -61,6 +67,12 @@
         $("#datepicker").datepicker();
       });
     </script>
+    <style>
+      /* Disable manual typing in the Drona working directory picker and hides the text typing area */
+      .drona-dir-picker input[type="text"] {
+        display: none !important;
+      }
+    </style>
   </head>
 
   <body style="background-color: #d6d3c4">
@@ -83,16 +95,22 @@
         </a>
         <a class="navbar-brand mx-auto" href="">
           <span class="text-uppercase"
-            >DRONA COMPOSER ({{ config.cluster_name }})</span
+            >DRONA WORKFLOW ENGINE ({{ config.cluster_name }})</span
           >
         </a>
       </nav>
 
       <script>
-        document.dashboard_url = "{{ config.dashboard_url }}";
-        document.file_app_url = "{{ config.file_app_url }}";
-        document.file_editor_url = "{{ config.file_editor_url }}";
-        document.user = "{{ config.user }}";
+           window.APP_ROOT = {{ request.script_root|tojson }};
+           document.dashboard_url = window.APP_ROOT;
+
+           document.file_app_url = "{{ config.file_app_url }}";
+           document.file_editor_url = "{{ config.file_editor_url }}";
+           document.user = "{{ config.user }}";
+           document.drona_dir = {{ config.drona_dir|tojson }}
+
+        window.CONFIG_STATUS_URL = "{{ url_for('job_composer.config_status') }}";
+        window.CONFIG_SAVE_URL = "{{ url_for('job_composer.config_save') }}";
       </script>
 
       <div id="main-container" class="container" role="main">

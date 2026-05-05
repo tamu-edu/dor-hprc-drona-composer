@@ -22,6 +22,13 @@ const Composer = forwardRef((props, ref) => {
   useEffect(() => {
     if (!props.fields) return;
 
+    // console.log("FIELDS: ");
+    // console.log(props.fields);
+
+    //Initial setup of the environment so user did not choose any location, reset the flag
+    props.setLocationPickedByUser?.(false);
+    // console.log("INITIAL STATE: " + props.locationPickedByUser)
+
     const normalizedFields = normalizeFields(props.fields);
 
     // If we have a pending dictionary update
@@ -78,8 +85,19 @@ const Composer = forwardRef((props, ref) => {
     }
   }, [props.fields, props.setError]);
 
+
+
+
   // Handle value changes
-  const handleValueChange = (fieldName, value) => {
+  const handleValueChange = (fieldName, value, { silent } = {}) => {
+
+    // If user choose the location themselves, mark as user-picked
+    console.log("Change " + fieldName + ": values: " + value);
+    if (fieldName === "location" && !silent) {
+      props.setLocationPickedByUser?.(true);
+    }
+
+
     setFields(prevFields => {
       try {
         const updatedFields = updateFieldValue(prevFields, fieldName, value);
@@ -95,56 +113,56 @@ const Composer = forwardRef((props, ref) => {
   };
 
   // Helper to update visibility and clear hidden field values
-// Helper to update visibility and clear hidden field values
-	//
-const updateVisibilityAndClearHidden = (fields) => {
-  let hasChanged;
-  let newFields = [...fields];
-  
-  do {
-    const result = _updateVisibilityAndClearHidden(newFields, newFields);
-    hasChanged = result.hasChanged;
-    newFields = result.fields;
-  } while(hasChanged);
-  
-  return newFields;
-};
+  // Helper to update visibility and clear hidden field values
+  //
+  const updateVisibilityAndClearHidden = (fields) => {
+    let hasChanged;
+    let newFields = [...fields];
 
-const _updateVisibilityAndClearHidden = (fields, fullFields) => {
-  let hasChanged = false;
-  const newFields = fields.map(field => {
-    const wasVisible = field.isVisible;
-    const isVisible = field.condition
-      ? evaluateCondition(field.condition, fullFields)
-      : true;
+    do {
+      const result = _updateVisibilityAndClearHidden(newFields, newFields);
+      hasChanged = result.hasChanged;
+      newFields = result.fields;
+    } while (hasChanged);
 
-    // Only consider it a change if visibility switches from true to false
-    const wouldChange = wasVisible !== isVisible;
-    
-    const processed = {
-      ...field,
-      isVisible,
-      value: ((isVisible || field.type === "staticText") ? field.value : "")
-    };
+    return newFields;
+  };
 
-    if (Containers.includes(field.type) && field.elements) {
-      const result = _updateVisibilityAndClearHidden(field.elements, fullFields);
-      processed.elements = result.fields;
-      if (result.hasChanged) hasChanged = true;
-    }
+  const _updateVisibilityAndClearHidden = (fields, fullFields) => {
+    let hasChanged = false;
+    const newFields = fields.map(field => {
+      const wasVisible = field.isVisible;
+      const isVisible = field.condition
+        ? evaluateCondition(field.condition, fullFields)
+        : true;
 
-    if (wouldChange) {
-      hasChanged = true;
-    }
+      // Only consider it a change if visibility switches from true to false
+      const wouldChange = wasVisible !== isVisible;
 
-    return processed;
-  });
+      const processed = {
+        ...field,
+        isVisible,
+        value: ((isVisible || field.type === "staticText" || field.type === "dynamicViewer") ? field.value : "")
+      };
 
-  return { fields: newFields, hasChanged };
-};
-	//
-	//
-  // Expose setValues method
+      if (Containers.includes(field.type) && field.elements) {
+        const result = _updateVisibilityAndClearHidden(field.elements, fullFields);
+        processed.elements = result.fields;
+        if (result.hasChanged) hasChanged = true;
+      }
+
+      if (wouldChange) {
+        hasChanged = true;
+      }
+
+      return processed;
+    });
+
+    return { fields: newFields, hasChanged };
+  };
+  //
+  //
+  // Expose setValues method and getFields method
   useImperativeHandle(ref, () => ({
     setValues: (dictionary) => {
       if (!dictionary || typeof dictionary !== 'object') {
@@ -189,22 +207,36 @@ const _updateVisibilityAndClearHidden = (fields, fullFields) => {
           return prevFields;
         }
       });
+    },
+    getFields: () => {
+      return fields;
     }
   }));
   const contextValue = {
     values: fields,
-    updateValue: handleValueChange
+    updateValue: handleValueChange,
+    environment: props.environment
   };
 
   return (
-  <FormValuesContext.Provider value={contextValue}>
-    <FieldRenderer
-      fields={fields}
-      handleValueChange={handleValueChange}
-      onFileChange={props.onFileChange}
-      setError={props.setError}
-    />
-  </FormValuesContext.Provider>
+    <FormValuesContext.Provider value={contextValue}>
+      <FieldRenderer
+        fields={fields}
+        handleValueChange={handleValueChange}
+        onFileChange={props.onFileChange}
+        setError={props.setError}
+        locationProps={{
+          sync_job_name: props.sync_job_name,
+          runLocation: props.runLocation,
+          setRunLocation: props.setRunLocation,
+          customRunLocation: props.customRunLocation,
+          setBaseRunLocation: props.setBaseRunLocation,
+          setLocationPickedByUser: props.setLocationPickedByUser,
+          environment: props.environment,
+          setFieldValue: handleValueChange,
+        }}
+      />
+    </FormValuesContext.Provider>
   );
 });
 

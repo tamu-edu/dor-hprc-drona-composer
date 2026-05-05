@@ -56,6 +56,12 @@ function TextArea(props) {
         className="form-control"
         rows={props.rows || 4} // Default to 4 rows if not specified
         onChange={handleValueChange}
+	onKeyDown={(e) => {
+    	// Allow \n through enter in the textarea
+    	if (e.key === 'Enter') {
+      		e.stopPropagation();
+    	}
+ 	}}
       />
     </FormElementWrapper>
   );

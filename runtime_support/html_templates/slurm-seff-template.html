@@ -1,0 +1,42 @@
+<div id="slurm-seff-container" style="width: 100%; font-family: 'Inter', system-ui, sans-serif; color: #333;">
+    <style>
+        #slurm-seff-container .seff-card { 
+            width: 100%; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 1px solid #edf2f7;
+            box-sizing: border-box;
+        }
+        #slurm-seff-container .seff-table { width: 100%; border-collapse: collapse; }
+        #slurm-seff-container th { text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; padding: 8px; }
+        #slurm-seff-container td { padding: 12px 8px; border-top: 1px solid #f7fafc; }
+        
+        /* Efficiency Bar Styling */
+        #slurm-seff-container .bar-bg { background: #edf2f7; border-radius: 10px; height: 12px; width: 100%; position: relative; margin-top: 4px; }
+        #slurm-seff-container .bar-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease-in-out; }
+        
+        /* Color coding based on efficiency */
+        .eff-good { background: #48bb78; } /* High efficiency */
+        .eff-warn { background: #ed8936; } /* Over-requested resources */
+        .eff-poor { background: #f56565; } /* Extremely wasteful */
+
+        .label-text { font-size: 12px; font-weight: 600; color: #4a5568; }
+        .val-text { font-size: 11px; color: #718096; font-family: monospace; }
+    </style>
+
+    <div class="seff-card">
+        <table class="seff-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Job ID</th>
+                    <th style="width: 40%;">CPU Efficiency</th>
+                    <th style="width: 40%;">Memory Efficiency</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{TABLE_ROWS}}
+            </tbody>
+        </table>
+    </div>
+</div>

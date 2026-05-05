@@ -58,6 +58,7 @@ import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } 
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { FormValuesContext } from "../FormValuesContext";
 import { getFieldValue } from "../utils/fieldUtils";
+import { executeScript } from "../utils/utils";
 
 import config from '@config';
 
@@ -65,21 +66,24 @@ function StaticText(props) {
   const [content, setContent] = useState(props.value || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [taskId, setTaskId] = useState(null);
-  const [taskStatus, setTaskStatus] = useState(null);
   const refreshTimerRef = useRef(null);
 
-  const { values: formValues } = useContext(FormValuesContext);
-  
+  const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
+
   const formValuesRef = useRef(formValues);
-  
-  const devUrl = config.development.dashboard_url;
-  const prodUrl = config.production.dashboard_url;
-  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
   
   useEffect(() => {
     formValuesRef.current = formValues;
   }, [formValues]);
+
+  // Update form context whenever content changes (for conditional logic)
+  useEffect(() => {
+    const currentContextValue = getFieldValue(formValues, props.name);
+
+    if (updateValue && props.name && currentContextValue != content) {
+      updateValue(props.name, content);
+    }
+  }, [content, updateValue, props.name, formValues]);
 
   const relevantFieldNames = useMemo(() => {
     if (!props.retrieverParams) return [];
@@ -93,131 +97,30 @@ function StaticText(props) {
     return { __html: html };
   };
 
-  const pollTaskStatus = useCallback(async (taskId) => {
-    try {
-      const response = await fetch(`${curUrl}/jobs/composer/task_status?task_id=${encodeURIComponent(taskId)}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to get task status: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setTaskStatus(data.state);
-
-      if (data.state === 'SUCCESS') {
-        if (data.result && data.result.result !== undefined) {
-          const taskResult = data.result.result;
-          setContent(typeof taskResult === 'string' ? taskResult : JSON.stringify(taskResult));
-        } else {
-          setContent('');
-        }
-        setTaskId(null);
-        setIsLoading(false);
-      } else if (data.state === 'FAILURE') {
-        setError(data.error || 'Content generation failed');
-        if (props.setError) {
-          props.setError({
-            message: data.error || 'Content generation failed',
-            status_code: 500,
-            details: data
-          });
-        }
-        setTaskId(null);
-        setIsLoading(false);
-      } else if (data.state === 'PROGRESS') {
-        setTimeout(() => pollTaskStatus(taskId), 1000);
-      } else {
-        setTimeout(() => pollTaskStatus(taskId), 1000);
-      }
-    } catch (error) {
-      setError('Failed to check task status');
-      if (props.setError) {
-        props.setError({
-          message: 'Failed to check task status',
-          status_code: 500,
-          details: error.message
-        });
-      }
-      setTaskId(null);
-      setIsLoading(false);
-    }
-  }, [curUrl, props.setError]);
-
   const fetchContent = useCallback(async () => {
     if (!props.isDynamic || !props.retrieverPath) return;
 
     setIsLoading(true);
     setError(null);
-    
-    const currentFormValues = formValuesRef.current;
 
     try {
-      const params = new URLSearchParams();
-      if (props.retrieverParams && typeof props.retrieverParams === 'object') {
-        Object.entries(props.retrieverParams).forEach(([key, value]) => {
-          if (typeof value === 'string' && value.startsWith('$')) {
-            const fieldName = value.substring(1);
-            const fieldValue = getFieldValue(currentFormValues, fieldName);
+      const data = await executeScript({
+        retrieverPath: props.retrieverPath,
+        retrieverParams: props.retrieverParams,
+        formValues: formValuesRef.current,
+	environment: environment,
+        parseJSON: false,
+        onError: props.setError
+      });
 
-            if (fieldValue !== undefined) {
-              params.append(key, JSON.stringify(fieldValue));
-            }
-          } else {
-            params.append(key, JSON.stringify(value));
-          }
-        });
-      }
-
-      // Add async parameter - default to true unless explicitly disabled
-      const useAsync = props.useAsync !== false;
-      if (useAsync) {
-        params.append('async', 'true');
-      }
-
-      const queryString = params.toString();
-      const requestUrl = `${curUrl}/jobs/composer/evaluate_dynamic_text?retriever_path=${encodeURIComponent(props.retrieverPath)}${queryString ? `&${queryString}` : ''}`;
-
-      const response = await fetch(requestUrl);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        props.setError?.({
-          message: errorData.message || 'Failed to retrieve content',
-          status_code: response.status,
-          details: errorData.details || errorData
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (useAsync) {
-        const data = await response.json();
-        if (data.task_id) {
-          // Async mode - start polling for results
-          setTaskId(data.task_id);
-          setTaskStatus('PENDING');
-          setTimeout(() => pollTaskStatus(data.task_id), 1000);
-        } else {
-          // Fallback to sync if no task_id returned
-          const textData = typeof data === 'string' ? data : JSON.stringify(data);
-          setContent(textData);
-          setIsLoading(false);
-        }
-      } else {
-        // Synchronous mode
-        const data = await response.text();
-        setContent(data);
-        setIsLoading(false);
-      }
+      setContent(data);
     } catch (err) {
       console.error("Error fetching content:", err);
       setError(err.message || "Failed to load content");
+    } finally {
       setIsLoading(false);
-      if (props.setError) {
-        props.setError(err);
-      }
     }
-  }, [props.isDynamic, props.retrieverPath, props.retrieverParams, props.setError, props.useAsync, curUrl, pollTaskStatus]);
+  }, [props.isDynamic, props.retrieverPath, props.retrieverParams, props.setError, environment]);
 
   const debouncedFetchContent = useCallback(
     (() => {
@@ -235,6 +138,14 @@ function StaticText(props) {
     [fetchContent] 
   );
 
+  // Handle static content value changes
+  useEffect(() => {
+    if (!props.isDynamic) {
+      setContent(props.value || "");
+    }
+  }, [props.isDynamic, props.value]);
+
+  // Handle dynamic content fetching
   useEffect(() => {
     if (refreshTimerRef.current) {
       clearInterval(refreshTimerRef.current);
@@ -242,7 +153,6 @@ function StaticText(props) {
     }
 
     if (!props.isDynamic) {
-      setContent(props.value || "");
       return;
     }
 
@@ -259,7 +169,7 @@ function StaticText(props) {
         clearInterval(refreshTimerRef.current);
       }
     };
-  }, [props.isDynamic, props.value, props.retrieverPath, props.refreshInterval, debouncedFetchContent, fetchContent]);
+  }, [props.isDynamic, props.retrieverPath, props.refreshInterval, debouncedFetchContent, fetchContent]);
 
   const prevRelevantValuesRef = useRef({});
   
@@ -296,6 +206,7 @@ function StaticText(props) {
       name={props.name}
       label={props.label}
       help={props.help}
+      useLabel={props.useLabel}
     >
       <div className="py-2 position-relative">
         {isLoading && (
@@ -315,7 +226,7 @@ function StaticText(props) {
             }}
             aria-label="Refresh content"
           >
-		<span>Refresh</span>
+            <span>Refresh</span>
           </button>
         )}
 
@@ -325,7 +236,7 @@ function StaticText(props) {
             dangerouslySetInnerHTML={createMarkup(content)}
           />
         ) : (
-          <span className={`${props.isHeading ? 'text-xl font-bold' : ''}`}     style={{ whiteSpace: 'pre-line' }}>
+          <span className={`${props.isHeading ? 'text-xl font-bold' : ''}`} style={{ whiteSpace: 'pre-line' }}>
             {content}
           </span>
         )}

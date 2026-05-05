@@ -1,0 +1,99 @@
+
+<div id="slurm-terminal-wrapper" style="width: 100%; box-sizing: border-box; font-family: 'JetBrains Mono', 'Fira Code', monospace;">
+    <style>
+        #slurm-terminal-wrapper .terminal-container {
+            width: 100%;
+            background-color: #0d0f14;
+            border-radius: 10px;
+            border: 1px solid #282c34;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+
+        #slurm-terminal-wrapper input[type="radio"] { display: none; }
+
+        #slurm-terminal-wrapper .tab-bar {
+            display: flex;
+            background-color: #1a1c23;
+            padding: 10px 10px 0 10px;
+            border-bottom: 2px solid #282c34;
+        }
+
+        #slurm-terminal-wrapper .tab-label {
+            padding: 12px 28px; /* Larger Padding */
+            font-size: 13px;
+            font-weight: 600;
+            color: #5c6370;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            margin-right: 6px;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #slurm-terminal-wrapper .tab-label:hover {
+            color: #abb2bf;
+            background-color: #21252b;
+        }
+
+        /* Distinctive Active States */
+        #slurm-terminal-wrapper #tab-out:checked ~ .tab-bar label[for="tab-out"] {
+            color: #61afef; /* Bright Blue */
+            background-color: #0d0f14;
+            border: 1px solid #282c34;
+            border-bottom: 3px solid #61afef; /* Thick Accent Bar */
+            margin-bottom: -2px;
+        }
+
+        #slurm-terminal-wrapper #tab-err:checked ~ .tab-bar label[for="tab-err"] {
+            color: #e06c75; /* Bright Red */
+            background-color: #0d0f14;
+            border: 1px solid #282c34;
+            border-bottom: 3px solid #e06c75; /* Thick Accent Bar */
+            margin-bottom: -2px;
+        }
+
+        #slurm-terminal-wrapper .pane {
+            height: 400px;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background-color: #0d0f14;
+        }
+
+        #slurm-terminal-wrapper #tab-out:checked ~ #stdout-pane { display: block; color: #abb2bf; }
+        #slurm-terminal-wrapper #tab-err:checked ~ #stderr-pane { display: block; color: #e06c75; }
+
+        #slurm-terminal-wrapper .prompt { color: #c678dd; margin-right: 10px; font-weight: bold; }
+
+        /* Custom Scrollbar for the dark theme */
+        #slurm-terminal-wrapper .pane::-webkit-scrollbar { width: 8px; }
+        #slurm-terminal-wrapper .pane::-webkit-scrollbar-track { background: #0d0f14; }
+        #slurm-terminal-wrapper .pane::-webkit-scrollbar-thumb { background: #3e4451; border-radius: 4px; }
+    </style>
+
+    <div class="terminal-container">
+        <input type="radio" id="tab-out" name="terminal-toggle" checked>
+        <input type="radio" id="tab-err" name="terminal-toggle">
+
+        <div class="tab-bar">
+            <label for="tab-out" class="tab-label">Standard Output</label>
+            <label for="tab-err" class="tab-label">Error Log</label>
+            <div style="flex-grow:1; text-align:right; padding: 12px 15px 0 0; font-size:11px; color:#4b5263; font-weight: bold;">
+                JOB: {{JOBID}}
+            </div>
+        </div>
+
+        <div id="stdout-pane" class="pane">
+{{OUTPUT}}
+        </div>
+        <div id="stderr-pane" class="pane">
+{{ERROR}}
+        </div>
+    </div>
+</div>

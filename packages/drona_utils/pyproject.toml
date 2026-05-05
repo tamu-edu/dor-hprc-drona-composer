@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drona_utils"
+version = "0.1.0"
+description = "Utility functions for Drona composer system"
+requires-python = ">=3.6"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "flake8"]

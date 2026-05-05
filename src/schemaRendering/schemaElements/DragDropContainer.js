@@ -1,3 +1,44 @@
+/**
+ * @name DragDropContainer
+ * @description A visual drag-and-drop form builder component that allows users to construct forms
+ * by dragging elements from a palette and dropping them into a workspace. Supports reordering elements,
+ * editing properties, and removing elements. Built with @dnd-kit for smooth drag-and-drop interactions.
+ *
+ * @example
+ * // Basic drag-drop builder with text and number elements
+ * {
+ *   "type": "dragDropContainer",
+ *   "name": "formBuilder",
+ *   "label": "Form Builder",
+ *   "title": "Drag & Drop Form Builder",
+ *   "availableElements": ["text", "number", "select", "checkbox"],
+ *   "elementTemplates": {
+ *     "text": {
+ *       "label": "Text Input",
+ *       "description": "Single line text field",
+ *       "config": { "type": "text", "placeholder": "Enter text" }
+ *     },
+ *     "number": {
+ *       "label": "Number Input",
+ *       "description": "Numeric input field",
+ *       "config": { "type": "number", "min": 0 }
+ *     }
+ *   },
+ *   "allowEdit": true,
+ *   "help": "Drag elements from the palette to build your form"
+ * }
+ *
+ * @property {string} name - Input field name, used for form submission
+ * @property {string} [label] - Display label for the field
+ * @property {string} [title="Drag & Drop Builder"] - Title displayed in the builder header
+ * @property {Array} [availableElements=[]] - Array of element type names available in the palette
+ * @property {Object} [elementTemplates={}] - Configuration templates for each element type, with label, description, and config
+ * @property {boolean} [allowEdit=true] - Whether users can edit element properties after dropping
+ * @property {Object|Array} [elements={}] - Initial elements to display in the drop zone
+ * @property {string} [value] - JSON string of initial elements (alternative to elements prop)
+ * @property {string} [help] - Help text displayed below the builder
+ */
+
 import React, { useState, useEffect, useCallback } from "react";
 import {
   DndContext,

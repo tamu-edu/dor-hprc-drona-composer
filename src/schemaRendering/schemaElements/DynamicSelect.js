@@ -42,8 +42,7 @@ import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
 import { FormValuesContext } from "../FormValuesContext";
 import { getFieldValue } from "../utils/fieldUtils";
-
-import config from '@config';
+import { executeScript } from "../utils/utils";
 
 function DynamicSelect(props) {
   const [value, setValue] = useState(props.value || "");
@@ -51,10 +50,7 @@ function DynamicSelect(props) {
   const [options, setOptions] = useState(props.options || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isValueInvalid, setIsValueInvalid] = useState(false);
-  const [taskId, setTaskId] = useState(null);
-  const [taskStatus, setTaskStatus] = useState(null);
-
-  const { values: formValues } = useContext(FormValuesContext);
+  const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
   const formValuesRef = useRef(formValues);
 
   useEffect(() => {
@@ -73,10 +69,6 @@ function DynamicSelect(props) {
       .filter(value => typeof value === 'string' && value.startsWith('$'))
       .map(value => value.substring(1));
   }, [props.retrieverParams]);
-
-  const devUrl = config.development.dashboard_url;
-  const prodUrl = config.production.dashboard_url;
-  const curUrl = (process.env.NODE_ENV == 'development') ? devUrl : prodUrl;
 
   useEffect(() => {
     setValue(props.value);
@@ -106,75 +98,6 @@ function DynamicSelect(props) {
     }
   }, [options, value, isEvaluated]);
 
-  const pollTaskStatus = useCallback(async (taskId) => {
-    try {
-      const response = await fetch(`${curUrl}/jobs/composer/task_status?task_id=${encodeURIComponent(taskId)}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to get task status: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setTaskStatus(data.state);
-      
-      // Debug logging
-      console.log('Task status response:', data);
-
-      if (data.state === 'SUCCESS') {
-        if (data.result && data.result.result !== undefined) {
-          // Parse the result from Celery task
-          let options;
-          const taskResult = data.result.result;
-          
-          if (typeof taskResult === 'string') {
-            try {
-              // Try to parse as JSON first
-              options = JSON.parse(taskResult);
-            } catch (e) {
-              // If not JSON, treat as plain text and create single option
-              options = [{ value: taskResult.trim(), label: taskResult.trim() }];
-            }
-          } else {
-            options = taskResult;
-          }
-          
-          const finalOptions = Array.isArray(options) ? options : [];
-          console.log('Setting options:', finalOptions);
-          setOptions(finalOptions);
-          setIsEvaluated(true);
-        } else {
-          // Handle case where result structure is different
-          setOptions([]);
-          setIsEvaluated(true);
-        }
-        setTaskId(null);
-        setIsLoading(false);
-      } else if (data.state === 'FAILURE') {
-        props.setError({
-          message: data.error || 'Task failed',
-          status_code: 500,
-          details: data
-        });
-        setTaskId(null);
-        setIsLoading(false);
-      } else if (data.state === 'PROGRESS') {
-        // Continue polling
-        setTimeout(() => pollTaskStatus(taskId), 1000);
-      } else {
-        // PENDING or other states - continue polling
-        setTimeout(() => pollTaskStatus(taskId), 1000);
-      }
-    } catch (error) {
-      props.setError({
-        message: 'Failed to check task status',
-        status_code: 500,
-        details: error.message
-      });
-      setTaskId(null);
-      setIsLoading(false);
-    }
-  }, [curUrl, props.setError]);
-
   const fetchOptions = useCallback(async () => {
     const retrieverPath = props.retrieverPath || props.retriever;
 
@@ -188,66 +111,25 @@ function DynamicSelect(props) {
     }
 
     setIsLoading(true);
-    
-    const currentFormValues = formValuesRef.current;
 
     try {
-      const params = new URLSearchParams();
-      if (props.retrieverParams && typeof props.retrieverParams === 'object') {
-        Object.entries(props.retrieverParams).forEach(([key, value]) => {
-          if (typeof value === 'string' && value.startsWith('$')) {
-            const fieldName = value.substring(1);
-            const fieldValue = getFieldValue(currentFormValues, fieldName);
+      const data = await executeScript({
+        retrieverPath: retrieverPath,
+        retrieverParams: props.retrieverParams,
+        formValues: formValuesRef.current,
+        parseJSON: true,
+	environment: environment,
+        onError: props.setError
+      });
 
-            if (fieldValue !== undefined) {
-              params.append(key, JSON.stringify(fieldValue));
-            }
-          } else {
-            params.append(key, JSON.stringify(value));
-          }
-        });
-      }
-
-      // Add async parameter - default to true unless explicitly disabled
-      const useAsync = props.useAsync !== false;
-      if (useAsync) {
-        params.append('async', 'true');
-      }
-
-      const queryString = params.toString();
-      const requestUrl = `${curUrl}/jobs/composer/evaluate_dynamic_text?retriever_path=${encodeURIComponent(retrieverPath)}${queryString ? `&${queryString}` : ''}`;
-
-      const response = await fetch(requestUrl);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        props.setError({
-          message: errorData.message || 'Failed to retrieve select options',
-          status_code: response.status,
-          details: errorData.details || errorData
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      const data = await response.json();
-      
-      if (useAsync && data.task_id) {
-        // Async mode - start polling for results
-        setTaskId(data.task_id);
-        setTaskStatus('PENDING');
-        setTimeout(() => pollTaskStatus(data.task_id), 1000);
-      } else {
-        // Synchronous mode - process results immediately
-        setOptions(data);
-        setIsEvaluated(true);
-        setIsLoading(false);
-      }
+      setOptions(data);
+      setIsEvaluated(true);
     } catch (error) {
-      props.setError(error);
+      // Error already handled by executeScript
+    } finally {
       setIsLoading(false);
     }
-  }, [props.retrieverPath, props.retriever, props.retrieverParams, props.setError, props.useAsync, curUrl, pollTaskStatus]);
+  }, [props.retrieverPath, props.retriever, props.retrieverParams, props.setError]);
 
   const debouncedFetchOptions = useCallback(
     (() => {
@@ -309,21 +191,13 @@ function DynamicSelect(props) {
   };
 
   const getNoOptionsMessage = () => {
-    if (isLoading) {
-      if (taskStatus === 'PROGRESS') return "Processing options...";
-      if (taskStatus === 'PENDING') return "Task queued...";
-      return "Loading options...";
-    }
+    if (isLoading) return "Loading options...";
     if (isEvaluated && options.length === 0) return "No options available";
     return "No options found";
   };
 
   const getPlaceholderText = () => {
-    if (isLoading) {
-      if (taskStatus === 'PROGRESS') return "Processing options...";
-      if (taskStatus === 'PENDING') return "Task queued...";
-      return "Loading options...";
-    }
+    if (isLoading) return "Loading options...";
     return "-- Choose an option --";
   };
 

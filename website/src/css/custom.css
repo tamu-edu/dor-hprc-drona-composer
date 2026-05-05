@@ -1,0 +1,392 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* TAMU HPRC Theme Variables */
+:root {
+  /* Official Texas A&M Colors */
+  --ifm-color-primary: #500000;
+  --ifm-color-primary-dark: #470000;
+  --ifm-color-primary-darker: #420000;
+  --ifm-color-primary-darkest: #370000;
+  --ifm-color-primary-light: #5e0000;
+  --ifm-color-primary-lighter: #630000;
+  --ifm-color-primary-lightest: #6e0000;
+
+  /* Official TAMU Brand Colors */
+  --tamu-maroon: #500000;
+  --tamu-white: #ffffff;
+  --tamu-black: #000000;
+  --tamu-navy: #2F3E51;
+  --tamu-gray: #707070;
+  --tamu-tan: #D6D2C4;
+  --tamu-light-gray: #F6F6F6;
+  --tamu-yellow: #FCE300;
+  --tamu-light-blue: #AEB7CF;
+
+  /* Enhanced Typography */
+  --ifm-font-family-base: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ifm-font-family-monospace: 'Source Code Pro', 'Monaco', 'Consolas', 'Courier New', monospace;
+  --ifm-code-font-size: 90%;
+  --ifm-h1-font-size: 2.5rem;
+  --ifm-h2-font-size: 2rem;
+  --ifm-h3-font-size: 1.5rem;
+
+  /* Professional Spacing */
+  --ifm-spacing-horizontal: 2rem;
+  --ifm-navbar-padding-horizontal: 2rem;
+  --ifm-navbar-height: 4rem;
+
+  /* Enhanced Borders */
+  --ifm-global-border-width: 1px;
+  --ifm-border-radius: 4px;
+
+  /* Shadows */
+  --ifm-global-shadow-lw: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --ifm-global-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --ifm-global-shadow-tl: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* =============================================================================
+   DARK MODE THEME
+   ============================================================================= */
+[data-theme='dark'] {
+  /* Lighter maroon accent for dark mode - more vibrant */
+  --ifm-color-primary: #c14242;
+  --ifm-color-primary-dark: #b33939;
+  --ifm-color-primary-darker: #a83636;
+  --ifm-color-primary-darkest: #8a2d2d;
+  --ifm-color-primary-light: #cf4b4b;
+  --ifm-color-primary-lighter: #d84f4f;
+  --ifm-color-primary-lightest: #e55c5c;
+
+  --tamu-maroon-light: #c14242;
+  --tamu-maroon-lighter: #d84f4f;
+
+  /* Dark mode color palette */
+  --tamu-dark-bg: #1b1b1d;
+  --tamu-dark-bg-secondary: #242526;
+  --tamu-dark-border: #3a3a3c;
+  
+  /* Docusaurus dark mode overrides */
+  --ifm-background-color: #1b1b1d;
+  --ifm-background-surface-color: #242526;
+  --ifm-navbar-background-color: #1b1b1d;
+  --ifm-footer-background-color: #242526;
+  --ifm-color-content: #e3e3e3;
+  --ifm-heading-color: #ffffff;
+  --ifm-link-color: #a83232;
+  --ifm-link-hover-color: #c94545;
+  --ifm-menu-color: #e3e3e3;
+  --ifm-toc-border-color: #3a3a3c;
+  
+  /* Code blocks */
+  --ifm-code-background: #2a2a2c;
+  
+  /* Shadows for dark mode */
+  --ifm-global-shadow-lw: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --ifm-global-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --ifm-global-shadow-tl: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] .docusaurus-highlight-code-line {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* =============================================================================
+   TAMU HPRC ENHANCED STYLING
+   ============================================================================= */
+
+/* Import Google Fonts for TAMU styling */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&family=Source+Code+Pro:wght@400;500&display=swap');
+
+/* Navigation Bar - TAMU Style */
+.navbar {
+  background: var(--tamu-maroon) !important;
+  box-shadow: var(--ifm-global-shadow-md);
+}
+
+[data-theme='dark'] .navbar {
+  background: var(--tamu-dark-bg) !important;
+  border-bottom: 1px solid var(--tamu-dark-border);
+}
+
+.navbar__brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.navbar__logo {
+  height: 32px;
+  width: 32px;
+}
+
+.navbar__title {
+  color: var(--tamu-white) !important;
+  font-weight: 600;
+}
+
+.navbar__item .navbar__link {
+  color: var(--tamu-white) !important;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.navbar__item .navbar__link:hover {
+  color: var(--tamu-light-gray) !important;
+  text-decoration: none;
+}
+
+[data-theme='dark'] .navbar__item .navbar__link:hover {
+  color: var(--tamu-maroon-lighter) !important;
+}
+
+.navbar__item .navbar__link--active {
+  color: var(--tamu-light-gray) !important;
+}
+
+[data-theme='dark'] .navbar__item .navbar__link--active {
+  color: var(--tamu-maroon-lighter) !important;
+}
+
+.navbar__link {
+  color: var(--tamu-white) !important;
+}
+
+.dropdown .navbar__link:after {
+  border-top-color: var(--tamu-white) !important;
+}
+
+.dropdown__menu {
+  background-color: var(--tamu-maroon) !important;
+  border: 1px solid var(--tamu-light-gray);
+}
+
+[data-theme='dark'] .dropdown__menu {
+  background-color: var(--tamu-dark-bg-secondary) !important;
+  border: 1px solid var(--tamu-dark-border);
+}
+
+.dropdown__link {
+  color: var(--tamu-white) !important;
+}
+
+.dropdown__link:hover {
+  background-color: rgba(0, 102, 204, 0.1) !important;
+  color: var(--tamu-light-gray) !important;
+}
+
+[data-theme='dark'] .dropdown__link:hover {
+  background-color: rgba(168, 50, 50, 0.2) !important;
+  color: var(--tamu-maroon-lighter) !important;
+}
+
+/* Hero Section - Professional TAMU Styling */
+.hero {
+  background: linear-gradient(135deg, var(--tamu-maroon) 0%, var(--tamu-navy) 150%);
+  color: var(--tamu-white);
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .hero {
+  background: linear-gradient(135deg, var(--tamu-dark-bg) 0%, #2F3E51 150%);
+  border-bottom: 2px solid var(--tamu-maroon-light);
+}
+
+.hero__title {
+  color: var(--tamu-white);
+  font-weight: 700;
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 1;
+}
+
+.hero__subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.3rem;
+  font-weight: 400;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sidebar - HPRC Professional Styling */
+.menu {
+  font-family: var(--ifm-font-family-base);
+}
+
+.menu__list-item-collapsible .menu__link {
+  font-weight: 600;
+  color: var(--tamu-gray);
+  border-left: 3px solid transparent;
+  padding-left: 1.5rem;
+}
+
+[data-theme='dark'] .menu__list-item-collapsible .menu__link {
+  color: #e3e3e3;
+}
+
+.menu__link {
+  border-radius: 0;
+  transition: all 0.2s ease;
+}
+
+.menu__link:hover {
+  background-color: rgba(80, 0, 0, 0.05);
+  border-left: 3px solid var(--tamu-maroon);
+}
+
+[data-theme='dark'] .menu__link:hover {
+  background-color: rgba(168, 50, 50, 0.1);
+  border-left: 3px solid var(--tamu-maroon-light);
+}
+
+.menu__link--active {
+  background-color: rgba(80, 0, 0, 0.08);
+  border-left: 3px solid var(--tamu-maroon);
+  color: var(--tamu-maroon);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .menu__link--active {
+  background-color: rgba(168, 50, 50, 0.15);
+  border-left: 3px solid var(--tamu-maroon-light);
+  color: var(--tamu-maroon-lighter);
+}
+
+/* Code blocks - better contrast in dark mode */
+[data-theme='dark'] code {
+  background-color: var(--ifm-code-background);
+  color: #e3e3e3;
+}
+
+/* Admonitions (callouts) */
+[data-theme='dark'] .alert {
+  background-color: var(--tamu-dark-bg-secondary);
+  border-color: var(--tamu-dark-border);
+}
+
+/* Cards and containers */
+[data-theme='dark'] .card {
+  background-color: var(--tamu-dark-bg-secondary);
+  border-color: var(--tamu-dark-border);
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+
+
+/* Footer - Maroon in light mode, dark in dark mode */
+.footer {
+  background-color: var(--tamu-maroon) !important;
+}
+
+[data-theme='dark'] .footer {
+  background-color: var(--tamu-dark-bg-secondary) !important;
+}
+
+.footer__title {
+  color: var(--tamu-white) !important;
+}
+
+.footer__item {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.footer__link-item {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.footer__link-item:hover {
+  color: var(--tamu-white) !important;
+}
+
+[data-theme='dark'] .footer__link-item:hover {
+  color: var(--tamu-maroon-lighter) !important;
+}
+
+.footer__copyright {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Tables - Maroon headers in light mode */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table thead tr {
+  background-color: var(--tamu-maroon) !important;
+}
+
+table thead th {
+  color: var(--tamu-white) !important;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tamu-maroon);
+}
+
+table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+table tbody tr:hover {
+  background-color: rgba(80, 0, 0, 0.05);
+}
+
+table tbody td {
+  padding: 0.75rem 1rem;
+}
+
+/* Dark mode tables */
+[data-theme='dark'] table thead tr {
+  background-color: var(--tamu-maroon-light) !important;
+}
+
+[data-theme='dark'] table thead th {
+  border: 1px solid var(--tamu-maroon-light);
+}
+
+[data-theme='dark'] table tbody tr {
+  border-bottom: 1px solid var(--tamu-dark-border);
+}
+
+[data-theme='dark'] table tbody tr:hover {
+  background-color: rgba(168, 50, 50, 0.1);
+}
+
+[data-theme='dark'] table tbody td {
+  color: #e3e3e3;
+
+}
+
+
+
+html[data-theme='light'] button[class*='toggleButton']:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Force the icon to be white in light mode */
+html[data-theme='light'] button[class*='toggleButton'] svg {
+  color: white !important;
+  fill: white !important;
+}
+
+
+html[data-theme='dark'] button[class*='toggleButton']:hover {
+  background-color: rgba(168, 50, 50, 0.35) !important;
+  border-color: var(--tamu-maroon-lighter) !important;
+}

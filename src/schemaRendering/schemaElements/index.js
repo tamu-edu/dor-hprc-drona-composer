@@ -14,10 +14,16 @@ import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
 import TextArea from "./TextArea";
 import StaticText from "./StaticText";
+import Hidden from "./Hidden";
 import AutocompleteSelect from "./AutocompleteSelect";
 import DragDropContainer from "./DragDropContainer";
 import JsonEditor from "./JsonEditor";
-
+import JobNameLocation from "./JobNameLocation";
+import DynamicRadioGroup from "./DynamicRadioGroup";
+import CheckboxGroup from "./CheckboxGroup";
+import DynamicCheckboxGroup from "./DynamicCheckboxGroup";
+import DynamicViewer from "./DynamicViewer";
+import Container from "./Container";
 
 export {
 	Text,
@@ -35,34 +41,48 @@ export {
 	DynamicSelect,
 	TextArea,
 	StaticText,
+	Hidden,
 	AutocompleteSelect,
 	CollapsibleRowContainer,
 	CollapsibleColContainer,
 	DragDropContainer,
-	JsonEditor
+	JsonEditor,
+	JobNameLocation,
+	DynamicRadioGroup,
+	CheckboxGroup,
+	DynamicCheckboxGroup,
+	Container,
+	DynamicViewer
 }
 
 export const componentsMap = {
-  text: Text,
-  select: Select,
-  number: Number,
-  checkbox: Checkbox,
-  rowContainer: RowContainer,
-  radioGroup: RadioGroup,
-  picker: Picker,
-  uploader: Uploader,
-  time: Time,
-  module: Module,
-  unit: Unit,
-  dynamicSelect: DynamicSelect,
-  textarea: TextArea,
-  staticText: StaticText,
-  autocompleteSelect: AutocompleteSelect,
-  collapsibleRowContainer: CollapsibleRowContainer,
-  collapsibleColContainer: CollapsibleColContainer,
-  dragDropContainer: DragDropContainer,
-  jsonEditor: JsonEditor
+	text: Text,
+	select: Select,
+	number: Number,
+	checkbox: Checkbox,
+	rowContainer: RowContainer,
+	radioGroup: RadioGroup,
+	picker: Picker,
+	uploader: Uploader,
+	time: Time,
+	module: Module,
+	unit: Unit,
+	dynamicSelect: DynamicSelect,
+	textarea: TextArea,
+	staticText: StaticText,
+	autocompleteSelect: AutocompleteSelect,
+	collapsibleRowContainer: CollapsibleRowContainer,
+	collapsibleColContainer: CollapsibleColContainer,
+	dragDropContainer: DragDropContainer,
+	jsonEditor: JsonEditor,
+	jobNameLocation: JobNameLocation,
+	dynamicRadioGroup: DynamicRadioGroup,
+	checkboxGroup: CheckboxGroup,
+	dynamicCheckboxGroup: DynamicCheckboxGroup,
+	dynamicViewer: DynamicViewer,
+	container: Container,
+	hidden: Hidden
 };
 
-export const Containers = ["rowContainer", "colContainer", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer"];
+export const Containers = ["rowContainer", "container", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer", "jobNameLocation"];
 

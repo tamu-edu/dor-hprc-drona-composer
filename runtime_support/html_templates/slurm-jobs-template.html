@@ -1,0 +1,48 @@
+<div id="slurm-monitor-container" style="width: 100%; font-family: 'Inter', system-ui, sans-serif; color: #333;">
+    <style>
+        #slurm-monitor-container .monitor-card {
+            width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #edf2f7;
+            box-sizing: border-box;
+        }
+        #slurm-monitor-container h2 { margin-top: 0; font-size: 1.25rem; color: #1a202c; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        #slurm-monitor-container table { width: 100%; border-collapse: collapse; table-layout: auto; }
+        #slurm-monitor-container th { text-align: left; background: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 12px; border-bottom: 2px solid #edf2f7; }
+        #slurm-monitor-container td { padding: 12px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
+
+        #slurm-monitor-container .job-id { font-family: monospace; color: #718096; font-size: 0.9em; }
+        #slurm-monitor-container .job-name { font-weight: 600; color: #2d3748; }
+
+        /* Walltime Progress Bar */
+        #slurm-monitor-container .progress-wrapper { width: 100%; min-width: 150px; }
+        #slurm-monitor-container .progress-container { background: #e2e8f0; border-radius: 10px; height: 10px; width: 100%; position: relative; overflow: hidden; }
+        #slurm-monitor-container .progress-bar { background: #3182ce; height: 100%; border-radius: 10px; transition: width 0.4s ease; }
+        #slurm-monitor-container .time-labels { font-size: 10px; color: #718096; margin-top: 4px; display: block; font-family: monospace; }
+
+        /* Status Badges */
+        #slurm-monitor-container .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+        #slurm-monitor-container .status-running { background: #c6f6d5; color: #22543d; }
+        #slurm-monitor-container .status-pending { background: #feebc8; color: #744210; }
+        #slurm-monitor-container .status-failed { background: #fed7d7; color: #822727; }
+        #slurm-monitor-container .status-completed { background: #edf2f7; color: #2d3748; }
+    </style>
+
+    <div class="monitor-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Name</th>
+                    <th style="width: 40%;">Walltime Usage</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{TABLE_ROWS}}
+            </tbody>
+        </table>
+    </div>
+</div>
