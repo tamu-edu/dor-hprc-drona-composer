@@ -38,6 +38,7 @@ import FieldRenderer from "../FieldRenderer";
 
 function Container({
   elements,
+  layout,
   index,
   onChange,
   startingIndex,
@@ -46,13 +47,15 @@ function Container({
   setError,
   locationProps = {}
 }) {
+  const isRow = layout === "row";
 
   return (
-    <div className="form-group">
+    <div className={isRow ? "form-group row" : "form-group"}>
       <FieldRenderer
         fields={elements}
         handleValueChange={onChange}
         labelOnTop
+        fieldStyles={isRow ? "col" : undefined}
         startingIndex={startingIndex}
         currentValues={currentValues}
         setError={setError}

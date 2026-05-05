@@ -1,5 +1,4 @@
 import { getFieldValue, getAllFields } from './fieldUtils';
-import config from '@config';
 
 /**
  * Execute a retriever script with dynamic parameters from form values
@@ -55,10 +54,8 @@ export async function executeScript({
     }
 
     const queryString = params.toString();
-    const devUrl = config.development.dashboard_url;
-    const prodUrl = config.production.dashboard_url;
-    const curUrl = process.env.NODE_ENV === "development" ? devUrl : prodUrl;
-    
+    const curUrl = document.dashboard_url;
+
     const requestUrl = `${curUrl}/jobs/composer/evaluate_script?retriever_path=${encodeURIComponent(
         retrieverPath
     )}${queryString ? `&${queryString}` : ""}`;
@@ -108,9 +105,7 @@ export async function fetchFileContent({ filePath, environment }) {
         params.append('DRONA_ENV_DIR', envPath);
     }
 
-    const devUrl = config.development.dashboard_url;
-    const prodUrl = config.production.dashboard_url;
-    const curUrl = process.env.NODE_ENV === "development" ? devUrl : prodUrl;
+    const curUrl = document.dashboard_url;
 
     const requestUrl = `${curUrl}/jobs/composer/read_file?${params.toString()}`;
     const response = await fetch(requestUrl);
