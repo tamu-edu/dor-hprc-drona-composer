@@ -17,6 +17,7 @@ import StaticText from "./StaticText";
 import Hidden from "./Hidden";
 import AutocompleteSelect from "./AutocompleteSelect";
 import DragDropContainer from "./DragDropContainer";
+import JsonEditor from "./JsonEditor";
 import JobNameLocation from "./JobNameLocation";
 import DynamicRadioGroup from "./DynamicRadioGroup";
 import CheckboxGroup from "./CheckboxGroup";
@@ -45,6 +46,7 @@ export {
 	CollapsibleRowContainer,
 	CollapsibleColContainer,
 	DragDropContainer,
+	JsonEditor,
 	JobNameLocation,
 	DynamicRadioGroup,
 	CheckboxGroup,
@@ -72,6 +74,7 @@ export const componentsMap = {
 	collapsibleRowContainer: CollapsibleRowContainer,
 	collapsibleColContainer: CollapsibleColContainer,
 	dragDropContainer: DragDropContainer,
+	jsonEditor: JsonEditor,
 	jobNameLocation: JobNameLocation,
 	dynamicRadioGroup: DynamicRadioGroup,
 	checkboxGroup: CheckboxGroup,
@@ -79,7 +82,6 @@ export const componentsMap = {
 	dynamicViewer: DynamicViewer,
 	container: Container,
 	hidden: Hidden
-
 };
 
 export const Containers = ["rowContainer", "container", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer", "jobNameLocation"];

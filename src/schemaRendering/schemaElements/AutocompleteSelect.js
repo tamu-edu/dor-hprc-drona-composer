@@ -21,14 +21,17 @@
  * @property {object} [value] - Default/initial selected option (object with value and label)
  * @property {string} [help] - Help text displayed below the input
  * @property {boolean} [showAddMore=false] - Whether to show an add more button
+ * @property {boolean} [useAsync=true] - Whether to use async Celery execution for long-running scripts
  */
 
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef, useCallback, useContext } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { FormValuesContext } from "../FormValuesContext";
 import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
 import { executeScript } from "../utils/utils";
+
+import config from '@config';
 
 function AutocompleteSelect(props) {
   const [inputValue, setInputValue] = useState("");
@@ -38,11 +41,11 @@ function AutocompleteSelect(props) {
   const [error, setError] = useState(null);
   const [isValueInvalid, setIsValueInvalid] = useState(false);
 
-  const { values: formValues, updateValue, environment } = useContext(FormValuesContext);  
+  const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
   
   const debounceTimerRef = useRef(null);
   const minCharsToSearch = 2;
-
+  
   useEffect(() => {
     setValue(props.value);
   }, [props.value]);
@@ -89,7 +92,7 @@ function AutocompleteSelect(props) {
         retrieverPath: retrieverPath,
         retrieverParams: { SEARCH_QUERY: query },
         formValues: {},
-	environment: environment,
+        environment: environment,
         parseJSON: true,
         onError: props.setError
       });
@@ -133,9 +136,14 @@ function AutocompleteSelect(props) {
 
   const getNoOptionsMessage = ({ inputValue }) => {
     if (inputValue.length < minCharsToSearch) return `Type at least ${minCharsToSearch} characters to search`;
-    if (isLoading) return "Loading...";
+    if (isLoading) return "Searching...";
     if (error) return "Error loading results";
     return "No options found";
+  };
+
+  const getPlaceholderText = () => {
+    if (isLoading) return "Searching...";
+    return props.placeholder || "Type to search...";
   };
 
   return (
@@ -169,7 +177,7 @@ function AutocompleteSelect(props) {
             }),
             container: (base) => ({ ...base, flexGrow: 1 }),
           }}
-          placeholder={props.placeholder || "Type to search..."}
+          placeholder={getPlaceholderText()}
           noOptionsMessage={getNoOptionsMessage}
           loadingMessage={() => "Loading results..."}
           isClearable

@@ -1,5 +1,4 @@
 import { getFieldValue, getAllFields } from './fieldUtils';
-import config from '@config';
 
 /**
  * Execute a retriever script with dynamic parameters from form values
@@ -55,22 +54,20 @@ export async function executeScript({
     }
 
     const queryString = params.toString();
-    const devUrl = config.development.dashboard_url;
-    const prodUrl = config.production.dashboard_url;
-    const curUrl = process.env.NODE_ENV === "development" ? devUrl : prodUrl;
-    
+    const curUrl = document.dashboard_url;
+
     const requestUrl = `${curUrl}/jobs/composer/evaluate_script?retriever_path=${encodeURIComponent(
         retrieverPath
     )}${queryString ? `&${queryString}` : ""}`;
 
     const response = await fetch(requestUrl);
-    
+
     if (!response.ok) {
         let errorData = {};
         try {
             errorData = await response.json();
         } catch {}
-        
+
         const error = {
             message: errorData.message || "Failed to execute script",
             status_code: response.status,
@@ -80,15 +77,43 @@ export async function executeScript({
         throw error;
     }
 
-    if (parseJSON) {
-        return await response.json();
-    } else {
-        const text = await response.text();
-        try {
-            return JSON.parse(text);
-        } catch {
-            return text;
+    const data = await response.json();
+
+    if (data.task_id) {
+        return await _pollTaskResult(data.task_id, curUrl, parseJSON, onError);
+    }
+
+    return parseJSON ? data : data;
+}
+
+async function _pollTaskResult(taskId, curUrl, parseJSON, onError) {
+    while (true) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const res = await fetch(`${curUrl}/jobs/composer/task_status?task_id=${encodeURIComponent(taskId)}`);
+
+        if (!res.ok) {
+            const error = { message: "Failed to poll task status", status_code: res.status };
+            onError?.(error);
+            throw error;
         }
+
+        const status = await res.json();
+
+        if (status.state === 'SUCCESS') {
+            const raw = status.result?.result ?? status.result;
+            if (parseJSON) {
+                return typeof raw === 'string' ? JSON.parse(raw) : raw;
+            }
+            return raw;
+        }
+
+        if (status.state === 'FAILURE') {
+            const error = { message: status.error || 'Task failed', status_code: 500, details: status };
+            onError?.(error);
+            throw error;
+        }
+        // PENDING / PROGRESS — keep polling
     }
 }
 
@@ -108,9 +133,7 @@ export async function fetchFileContent({ filePath, environment }) {
         params.append('DRONA_ENV_DIR', envPath);
     }
 
-    const devUrl = config.development.dashboard_url;
-    const prodUrl = config.production.dashboard_url;
-    const curUrl = process.env.NODE_ENV === "development" ? devUrl : prodUrl;
+    const curUrl = document.dashboard_url;
 
     const requestUrl = `${curUrl}/jobs/composer/read_file?${params.toString()}`;
     const response = await fetch(requestUrl);

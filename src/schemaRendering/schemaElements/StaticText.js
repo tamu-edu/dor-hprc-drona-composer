@@ -50,6 +50,7 @@
  * @property {boolean} [showRefreshButton=false] - Whether to show a manual refresh button for dynamic content
  * @property {number} [refreshInterval] - Auto-refresh interval in seconds
  * @property {boolean} [isHeading=false] - Whether to style the text as a heading with larger, bold font
+ * @property {boolean} [useAsync=true] - Whether to use async Celery execution for long-running scripts
  * @property {function} [setError] - Function to handle errors during content fetching
  */
 
@@ -59,6 +60,8 @@ import { FormValuesContext } from "../FormValuesContext";
 import { getFieldValue } from "../utils/fieldUtils";
 import { executeScript } from "../utils/utils";
 
+import config from '@config';
+
 function StaticText(props) {
   const [content, setContent] = useState(props.value || "");
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +69,7 @@ function StaticText(props) {
   const refreshTimerRef = useRef(null);
 
   const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
-  
+
   const formValuesRef = useRef(formValues);
   
   useEffect(() => {
@@ -117,7 +120,7 @@ function StaticText(props) {
     } finally {
       setIsLoading(false);
     }
-  }, [props.isDynamic, props.retrieverPath, props.retrieverParams, props.setError]);
+  }, [props.isDynamic, props.retrieverPath, props.retrieverParams, props.setError, environment]);
 
   const debouncedFetchContent = useCallback(
     (() => {

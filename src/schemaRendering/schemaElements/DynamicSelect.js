@@ -33,6 +33,7 @@
  * @property {Array} [options] - Initial options array, may be overridden by retriever
  * @property {string} [help] - Help text displayed below the input
  * @property {boolean} [showAddMore=false] - Whether to show an add more button
+ * @property {boolean} [useAsync=true] - Whether to use async Celery execution for long-running scripts
  */
 
 import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from "react";
@@ -49,13 +50,17 @@ function DynamicSelect(props) {
   const [options, setOptions] = useState(props.options || []);
   const [isLoading, setIsLoading] = useState(false);
   const [isValueInvalid, setIsValueInvalid] = useState(false);
-
   const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
   const formValuesRef = useRef(formValues);
 
   useEffect(() => {
     formValuesRef.current = formValues;
   }, [formValues]);
+
+  // Debug options state changes
+  useEffect(() => {
+    console.log('Options state changed:', options, 'Length:', options.length, 'isLoading:', isLoading, 'isEvaluated:', isEvaluated);
+  }, [options, isLoading, isEvaluated]);
 
   const relevantFieldNames = useMemo(() => {
     if (!props.retrieverParams) return [];
@@ -191,6 +196,11 @@ function DynamicSelect(props) {
     return "No options found";
   };
 
+  const getPlaceholderText = () => {
+    if (isLoading) return "Loading options...";
+    return "-- Choose an option --";
+  };
+
   return (
     <FormElementWrapper
       labelOnTop={props.labelOnTop}
@@ -200,6 +210,7 @@ function DynamicSelect(props) {
     >
       <div style={{ display: "flex" }}>
         <Select
+          key={`select-${options.length}-${isEvaluated}`}
           menuPortalTarget={document.body}
           menuPosition="fixed"
           value={value}
@@ -221,7 +232,7 @@ function DynamicSelect(props) {
             container: (base) => ({ ...base, flexGrow: 1 }),
           }}
           noOptionsMessage={getNoOptionsMessage}
-          placeholder={isLoading ? "Loading options..." : "-- Choose an option --"}
+          placeholder={getPlaceholderText()}
         />
         <input
           type="hidden"
