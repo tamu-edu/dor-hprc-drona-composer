@@ -34,3 +34,7 @@ pip install -r requirements.txt
 
 npm install -D babel-loader @babel/core @babel/preset-react
 npm run build:prod:compress
+
+# Start Celery worker in the background
+mkdir -p logs
+celery -A celery_app.celery_app worker --loglevel=info --logfile=logs/celery.log --detach

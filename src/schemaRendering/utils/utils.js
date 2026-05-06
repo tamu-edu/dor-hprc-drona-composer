@@ -61,13 +61,13 @@ export async function executeScript({
     )}${queryString ? `&${queryString}` : ""}`;
 
     const response = await fetch(requestUrl);
-    
+
     if (!response.ok) {
         let errorData = {};
         try {
             errorData = await response.json();
         } catch {}
-        
+
         const error = {
             message: errorData.message || "Failed to execute script",
             status_code: response.status,
@@ -77,15 +77,43 @@ export async function executeScript({
         throw error;
     }
 
-    if (parseJSON) {
-        return await response.json();
-    } else {
-        const text = await response.text();
-        try {
-            return JSON.parse(text);
-        } catch {
-            return text;
+    const data = await response.json();
+
+    if (data.task_id) {
+        return await _pollTaskResult(data.task_id, curUrl, parseJSON, onError);
+    }
+
+    return parseJSON ? data : data;
+}
+
+async function _pollTaskResult(taskId, curUrl, parseJSON, onError) {
+    while (true) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const res = await fetch(`${curUrl}/jobs/composer/task_status?task_id=${encodeURIComponent(taskId)}`);
+
+        if (!res.ok) {
+            const error = { message: "Failed to poll task status", status_code: res.status };
+            onError?.(error);
+            throw error;
         }
+
+        const status = await res.json();
+
+        if (status.state === 'SUCCESS') {
+            const raw = status.result?.result ?? status.result;
+            if (parseJSON) {
+                return typeof raw === 'string' ? JSON.parse(raw) : raw;
+            }
+            return raw;
+        }
+
+        if (status.state === 'FAILURE') {
+            const error = { message: status.error || 'Task failed', status_code: 500, details: status };
+            onError?.(error);
+            throw error;
+        }
+        // PENDING / PROGRESS — keep polling
     }
 }
 

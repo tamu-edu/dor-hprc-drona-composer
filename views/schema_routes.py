@@ -89,7 +89,16 @@ def execute_script(
             except:
                 pass
         execution_env.update(env_vars)
-    
+
+    # Prepend per-user venv bin to PATH if one exists for this environment
+    env_name = execution_env.get('DRONA_ENV_NAME')
+    if env_name:
+        from pathlib import Path
+        venv_bin = Path.home() / '.drona' / 'envs' / env_name / 'bin'
+        if venv_bin.exists():
+            execution_env['PATH'] = str(venv_bin) + ':' + execution_env.get('PATH', '')
+            execution_env['VIRTUAL_ENV'] = str(venv_bin.parent)
+
     try:
         result = subprocess.run(
             cmd,
@@ -386,21 +395,40 @@ def evaluate_script_route():
     if not retriever_path:
         raise APIError("retriever_path is required", status_code=400)
 
-    # All other query params become environment variables
     env_vars = {
         k: v
         for k, v in request.args.items()
         if k not in ["retriever_path"]
     }
 
-    result = execute_script(
+    # Resolve to absolute path before handing off to the worker
+    if not os.path.isabs(retriever_path):
+        env_dir = env_vars.get("DRONA_ENV_DIR")
+        if env_dir:
+            resolved = os.path.join(env_dir, retriever_path)
+        else:
+            resolved = retriever_path
+
+        if not os.path.exists(resolved):
+            fallback = os.path.join(get_runtime_dir(), "retriever_scripts", retriever_path)
+            if os.path.exists(fallback):
+                resolved = fallback
+            else:
+                raise APIError(
+                    "Script not found",
+                    status_code=404,
+                    details={"path 1": resolved, "path 2": fallback}
+                )
+        retriever_path = os.path.abspath(resolved)
+
+    task = execute_script_async.delay(
         retriever_path=retriever_path,
         env_vars=env_vars if env_vars else None,
         script_type="Dynamic Script",
         parse_json=False
     )
 
-    return result
+    return jsonify({"task_id": task.id, "status": "PENDING"})
 
 
 
