@@ -34,6 +34,7 @@ function JobComposer({
   const [showRequiredFieldsModal, setShowRequiredFieldsModal] = useState(false);
   const [missingRequiredFields, setMissingRequiredFields] = useState([]);
   const [configBlocked, setConfigBlocked] = useState(false);
+  const [hasSubmittedCurrentPreview, setHasSubmittedCurrentPreview] = useState(false);
 
   const [workflowMode, setWorkflowmode] = useState(null)
 
@@ -49,6 +50,11 @@ function JobComposer({
   } = useJobSocket();
 
   const isJobRunning = status === 'submitting' || status === 'running';
+  const isSubmitDisabled = hasSubmittedCurrentPreview || isJobRunning;
+
+  useEffect(() => {
+    console.log("hasSubmittedCurrentPreview changed ->", hasSubmittedCurrentPreview);
+  }, [hasSubmittedCurrentPreview]);
 
   const getFormData = () => {
     const paneRefs = multiPaneRef.current?.getPaneRefs();
@@ -174,6 +180,7 @@ function JobComposer({
     setShowConfirmationModal(false);
     setIsSplitScreenMinimized(false);
     reset();
+    setHasSubmittedCurrentPreview(false);
     if (setDronaJobId && dronaJobId) {
       setDronaJobId(dronaJobId + "*");
       setPendingNewPreview(true);
@@ -198,9 +205,8 @@ function JobComposer({
       return;
     }
 
-    // Block submission if job is already running
-    if (isJobRunning) {
-      alert("A job is already running. Please wait for it to complete before submitting another job.");
+    // Block submission if job has already been submitted from this preview
+    if (status !== null) {
       return;
     }
 
@@ -228,6 +234,7 @@ function JobComposer({
 
     // Start the job submission - modal stays open to show streaming
     const action = formRef.current.getAttribute("action");
+    setHasSubmittedCurrentPreview(true);
     submitJob(action, formData);
   };
 
@@ -235,6 +242,7 @@ function JobComposer({
     setShowSplitScreenModal(false);
     setIsSplitScreenMinimized(false);
     reset();
+    setHasSubmittedCurrentPreview(false);
     if (setDronaJobId && dronaJobId) {
       setDronaJobId(dronaJobId + "*");
     }
@@ -362,6 +370,7 @@ function JobComposer({
         onSubmit={handleSubmit}
         // Job control
         isJobRunning={isJobRunning}
+        isSubmitDisabled={isSubmitDisabled}
       />
 
       <EnvironmentModal envModalRef={envModalRef} />
