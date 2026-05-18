@@ -38,77 +38,9 @@ To set up/install Drona Workflow Engine, see the instructions below. If you have
 
 ## Setup
 
-### OOD Passenger App
-
-Drona Workflow Engine is wrapped as a Passenger Phusion app using React/Flask. Before you can use Drona Workflow Engine, you need to run setup to install the dependencies. After cloning the repo inside OOD (either sys or dev directory), enter the Drona Workflow Engine directory and run the following command:
-
-```
-./setup
-```
-This will install all the Python dependencies in requirements.txt. It will also create the **environments** directory. After running the setup script, the app should be ready to use. The first time you run the app, it will show the typical "Initialize App" screen.
-
-On TAMU clusters, all installations went smoothly so far, without any issues. If you face any issues when trying to install the app, please contact help@hprc.tamu.edu for help.
-
-### Potential Installation Issues
-
-#### User Directories
-
-Drona Workflow Engine will check a specific user directory for environments. On HPRC clusters, this location is /scratch/users/$USER. If the cluster you are installing on uses a different location, you will need to update functions **def add_environment()** and **def _get_environments()** in file: **views/job_composer.py** and replace:
-
-```
-user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-```
-
-with the correct location on your cluster.
-
-#### TMP directory
-
-Drona Workflow Engine will use the /tmp dir to store temporary information. On HPRC clusters, this is just **/tmp**, hard coded in functions:
-
-```
-machine_driver_scripts/utils.py: drona_add_additional_file(additional_file, preview_name = "", preview_order = 0)
-machine_driver_scripts/utils.py: drona_add_warning(warning)
-machine_driver_scripts/utils.py: drona_add_mapping(key, evaluation_str)
-
-machine_driver_scripts/engine.py: set_dynamic_additional_files(self, env_path, params)
-machine_driver_scripts/engine.py: get_dynamic_map(self)
-machine_driver_scripts/engine.py: get_warnings(self, params)
-```
-If you use a different location for tmp, you need to update these functions with the correct tmp location.
-
-#### Config.yml file
-
-The config.yml file contains the entry **modules_db_path: "/sw/hprc/sw/dor-hprc-tools-dashboard-utils/bin/"** This variable is used by the module form element. This is the only element that depends on an external script that retrieves available modules. The script will be available through another git repository.
-
-#### Retrieving Clustername
-
-The setup script retrieves the cluster name by calling a custom script named **clustername**. On non-HPRC clusters, you might need to update setup.sh to set the cluster name. The clustername is mainly used internally and in the form title. The name doesn't really matter.
-
-### Setting up Environments
-
-Drona Workflow Engine will check for system environments (an environment is the building block to create/generate jobs) in the **environments** directory. When you first install Drona Workflow Engine, this directory will be empty. We recommend adding at least the Generic environment. You can find example Generic envs in directory **environments-repo/clustername/** You can copy this Generic env, update the various declaration files to match your particular situation, and then copy the update env to the **environments** directory.
-
-### Setting up Import Feature
-
-Researchers can "import" new environments to their local storage. Right now, all environments available to import are stored locally inside the repo in directory **environments-repo/clustername/** (where clustername was discussed above). You are welcome to provide more environments in this directory for researchers to "import".
-
-## Configuration
-
-The `config.yml` file contains site-specific settings. Key configuration options:
-
-| Setting | Description | Default (HPRC) |
-| :--- | :--- | :--- |
-| `cluster_name` | The unique identifier for the HPC cluster. | `[cluster-name]` |
-| `dashboard_url` | The web path for the application dashboard. | `/pun/sys/[app-name]` |
-| `file_app_url` | URL for the OOD File Explorer integration. | `/pun/sys/files/fs` |
-| `file_editor_url` | URL for the OOD File Editor integration. | `/pun/sys/file-editor/edit` |
-| `modules_db_path` | Path to the utility scripts for retrieving available software modules. | `/sw/hprc/sw/dor-hprc-tools-dashboard-utils/bin/` |
-| `driver_scripts_path` | System path where backend machine driver scripts are stored. | `/var/www/ood/apps/sys/[app-name]/machine_driver_scripts` |
-| `default_python_venv` | Path to the default Python virtual environment used by the app. | `/sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/` |
-| `env_repo_github` | The Git repository for environment configuration files. | `https://github.com/tamu-edu/dor-hprc-drona-environments.git` |
+For setup instructions, see the [Installation](https://tamu-edu.github.io/dor-hprc-drona-composer/docs/overview/installation) section on the Drona Workflow Engine site.
 
 ## Troubleshooting
-
 
 
 ## Testing
@@ -127,7 +59,7 @@ For bugs or feature requests, [open an issue](https://github.com/tamu-edu/dor-hp
 
 ## References
 
-- [Drona Workflow Engine User Guide](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html) -- HPRC documentation
+- [Drona Workflow Engine User Guide](https://tamu-edu.github.io/dor-hprc-drona-composer) -- Official documentation
 - [Open OnDemand](https://openondemand.org/) -- the HPC portal framework
 - [GitHub Wiki](https://github.com/tamu-edu/dor-hprc-drona-composer/wiki) -- additional documentation
 
