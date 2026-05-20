@@ -25,9 +25,28 @@ def save_file(file, location):
 
 def fetch_subdirectories(path):
     """Get subdirectories and files in a directory"""
-    subdirectories = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))])
-    subfiles = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isfile(os.path.join(path, entry))])  
-    return {"subdirectories": subdirectories, "subfiles": subfiles}
+    total_seen = 0
+    max_items = 500
+    subdirectories = []
+    subfiles = []
+    truncated = False
+    show_files = True
+
+    with os.scandir(path) as entries:
+        for entry in entries:
+            total_seen += 1
+            if total_seen > max_items:
+                truncated = True
+                break
+
+            if entry.is_dir(follow_symlinks=False):
+                subdirectories.append(entry.name)
+            elif show_files and entry.is_file(follow_symlinks=False):
+                subfiles.append(entry.name)
+
+    #subdirectories = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))])
+    #subfiles = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isfile(os.path.join(path, entry))])  
+    return {"subdirectories": subdirectories, "subfiles": subfiles, "truncated": truncated, "total_seen": total_seen}
 
 def download_file_route():
     """Download a file from the server"""
