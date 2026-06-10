@@ -1,6 +1,8 @@
 from flask import request, jsonify, current_app as app
 import os
 import json
+import shutil
+import yaml
 from .error_handler import APIError, handle_api_error
 from .utils import create_folder_if_not_exist, get_drona_dir, get_envs_dir
 from .env_repo_manager import EnvironmentRepoManager
@@ -13,22 +15,25 @@ def get_directories(path):
 def _get_environments():
     """Get list of all available environments (system and user)"""
     system_environments = []
+    ICON_MAP = {
+        "AlphaFold": "🧬",
+        "Parabricks": "🧬",
+        "Python": "🐍",
+        "Generic": "🧩",
+        "Jupyter": "📓",
+        "RStudio": "📊",
+    }
     try:
         system_environments = get_directories("./environments")
         system_env_path = os.path.abspath("./environments")
-        system_environments = [{"env": env, "src": system_env_path, "is_user_env": False} for env in system_environments]
+        system_environments = [{"env": env, "src": system_env_path, "is_user_env": False, "icon": ICON_MAP.get(env, "🧩")} for env in system_environments]
     except (PermissionError, FileNotFoundError, OSError):
         system_environments = []
     
     dd = get_drona_dir()
     if not dd["ok"]:
         return system_environments
-        #return jsonify({"message": dd["reason"]}), 400
     drona_dir = dd["drona_dir"]
-
-    #if not drona_dir or not os.path.isdir(drona_dir):
-        # Config missing or invalid — prevent crash
-     #   return system_environments  # or [] if you prefer no envs at all
 
     user_envs_path = request.args.get("user_envs_path")
     if user_envs_path is None:
@@ -44,12 +49,26 @@ def _get_environments():
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env, "src": user_envs_path, "is_user_env": True} for env in user_environments]
+        user_environments = [{"env": env,"src": user_envs_path,"is_user_env": True,"icon": get_env_icon_from_metadata(user_envs_path, env)} for env in user_environments]
     except (PermissionError, FileNotFoundError, OSError):
         user_environments = []
 
     environments = system_environments + user_environments
     return environments
+    
+def get_env_icon_from_metadata(env_root_path, env_name):
+    DEFAULT_ICON = "🧩"
+    metadata_path = os.path.join(env_root_path, env_name, "metadata.yml")
+
+    if not os.path.exists(metadata_path):
+        return DEFAULT_ICON
+    try:
+        with open(metadata_path, "r") as f:
+            metadata = yaml.safe_load(f) or {}
+
+        return metadata.get("icon") or DEFAULT_ICON
+    except (PermissionError, OSError, yaml.YAMLError):
+        return DEFAULT_ICON
 
 def get_environment_route(environment):
     """Get template file for a specific environment"""
@@ -129,6 +148,62 @@ def get_environments_route():
     environments = _get_environments()
     return jsonify(environments)
 
+@handle_api_error
+def delete_environment_route():
+    """Delete a user environment."""
+    data = request.get_json(silent=True) or {}
+    env = data.get("env")
+
+    if not env:
+        raise APIError(
+            "Missing environment name parameter",
+            status_code=400,
+            details={"error": 'The "env" parameter is required'}
+        )
+
+    eres = get_envs_dir()
+    if not eres["ok"]:
+        return jsonify({"message": eres["reason"]}), 400
+
+    user_envs_dir = os.path.abspath(eres["path"])
+    env_path = os.path.abspath(os.path.join(user_envs_dir, env))
+
+    # Prevent path traversal like "../../../something"
+    if not env_path.startswith(user_envs_dir + os.sep):
+        raise APIError(
+            "Invalid environment path",
+            status_code=400,
+            details={"error": "Invalid environment path"}
+        )
+
+    if not os.path.isdir(env_path):
+        raise APIError(
+            "Environment not found",
+            status_code=404,
+            details={"error": f'Environment "{env}" was not found'}
+        )
+
+    try:
+        shutil.rmtree(env_path)
+    except PermissionError as e:
+        raise APIError(
+            "Permission denied",
+            status_code=403,
+            details={"error": str(e)}
+        )
+    except OSError as e:
+        raise APIError(
+            "Failed to delete environment",
+            status_code=500,
+            details={"error": str(e)}
+        )
+
+    return jsonify({
+        "status": "Success",
+        "message": f'Deleted environment "{env}"',
+        "env": env
+    })
+
 def get_more_envs_info_route():
     """Get additional information about available environments from the repository"""
     cluster_name = app.config['cluster_name']
@@ -146,3 +221,4 @@ def register_environment_routes(blueprint):
     blueprint.route('/environments', methods=['GET'])(get_environments_route)
     blueprint.route('/add_environment', methods=['POST'])(add_environment_route)
     blueprint.route('/get_more_envs_info', methods=['GET'])(get_more_envs_info_route)
+    blueprint.route('/environment', methods=['DELETE'])(delete_environment_route)

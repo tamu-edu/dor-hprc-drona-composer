@@ -297,6 +297,8 @@ function JobComposer({
                               selectedEnvironment={props.environment}
                               onSelectEnvironment={props.handleEnvChange}
                               onAddEnvironment={props.handleAddEnv}
+                              onRemoveEnvironment={props.handleRemoveEnv}
+                              onExportEnvironment={props.handleExportEnv}
                             />
                           </aside>
                         

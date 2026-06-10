@@ -24,8 +24,8 @@ const styles = `
 .composer-filmstrip-pane {
   position: sticky;
   top: 0;
-  width: 240px !important;
-  min-width: 240px !important;
+  width: 280px !important;
+  min-width: 280px !important;
   height: calc(100vh - 180px);
   max-height: calc(100vh - 180px);
   margin-top: 0;
@@ -111,19 +111,24 @@ const styles = `
 }
 
 .env-icon {
-  font-size: 2.25rem;
   line-height: 1;
+  font-size: 2rem;
+  width: 42px;
   flex-shrink: 0;
 }
 
 .env-name {
   margin-top: 0;
+  flex: 1;
+  min-width:0;
   font-size: 0.95rem;
   font-weight: 600;
   color: #111827;
   overflow: hidden;
+  overflow-wrap: anywhere;
   text-overflow: ellipsis;
-  word-break: break-word;
+  word-break: normal;
+  line-height: 1.2;
 }
 
 .env-tile.user-env .env-name::after {
@@ -240,6 +245,59 @@ const styles = `
 
 .footer-divider {
   color: #cbd5e1;
+}
+
+.env-menu-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 24px;
+  margin-left: 0.25rem;
+}
+
+.env-menu-button {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 1.3rem;
+  padding: 0.25rem 0.4rem;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.env-menu-button:hover {
+  background: #f1f5f9;
+  color: #111827;
+}
+
+.env-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
+
+  min-width: 120px;
+  padding: 0.35rem;
+
+  background: white;
+  border: 1px solid #d7dbe0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+
+.env-menu button {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.65rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.env-menu button:hover {
+  background: #f6f7f9;
 }
 `;
 

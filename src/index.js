@@ -312,13 +312,8 @@ export function App() {
     };
 
     request.send(formData);
-    // console.log("FormData2: ")
-
-    // for (const [key, value] of formData.entries()) {
-    //   console.log(key, value);
-    // }
-
   }
+  
 
     const handleAddEnvironment = (newEnv) => {
       const newName = newEnv.env || newEnv.value || newEnv.label;
@@ -453,6 +448,55 @@ export function App() {
     const modal = new bootstrap.Modal(envModalRef.current);
     modal.toggle();
   }
+  async function handleRemoveEnv(env) {
+      const name = env.env || env.value || env.label;
+    
+      if (!env.is_user_env) {
+        alert("System environments cannot be removed.");
+        return;
+      }
+    
+      if (!window.confirm(`Remove environment "${name}"? This cannot be undone.`)) {
+        return;
+      }
+    
+      try {
+        const response = await fetch(
+          `${document.dashboard_url}/jobs/composer/environment`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              env: name,
+              src: env.src,
+            }),
+          }
+        );
+    
+        const data = await response.json();
+    
+        if (!response.ok) {
+          throw new Error(data.message || data.details?.error || "Failed to remove environment.");
+        }
+    
+        setEnvironments((prev) =>
+          prev.filter((item) => {
+            const itemName = item.env || item.value || item.label;
+            return !(itemName === name && item.src === env.src);
+          })
+        );
+    
+        if (environment.env === name && environment.src === env.src) {
+          setEnvironment({ env: "", src: "" });
+          setFields({});
+        }
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Failed to remove environment.");
+      }
+    }
 
   function add_submission_loading_indicator() {
     var submission_section = document.getElementById(
@@ -520,6 +564,7 @@ export function App() {
           locationPickedByUser={locationPickedByUser}
           pendingNewPreview={pendingNewPreview}
           setPendingNewPreview={setPendingNewPreview}
+          handleRemoveEnv={handleRemoveEnv}
         />
         {showRerunModal && (
           <RerunPromptModal
@@ -540,14 +585,6 @@ export function App() {
   );
 }
 
-// Render the parent component into the root DOM node
-//if (document.getElementById("root")) {
-  //ReactDOM.render(<App />, document.getElementById("root"));
-//}
 if (document.getElementById("root")) {
-  const params = new URLSearchParams(window.location.search);
-  ReactDOM.render(
-    <App />,
-    document.getElementById("root")
-  );
+  ReactDOM.render(<App />, document.getElementById("root"));
 }

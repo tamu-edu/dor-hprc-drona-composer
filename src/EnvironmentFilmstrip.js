@@ -7,9 +7,11 @@ function EnvironmentFilmstrip({
   selectedEnvironment,
   onSelectEnvironment,
   onAddEnvironment,
+  onRemoveEnvironment,
+  onExportEnvironment,
 }) {
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [openMenuEnv, setOpenMenuEnv] = useState(null);
   const filteredEnvironments = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
 
@@ -25,40 +27,71 @@ function EnvironmentFilmstrip({
   const userEnvs = filteredEnvironments.filter((env) => env.is_user_env);
 
   const renderEnvTile = (env) => {
-    const name = env.env || env.value || env.label;
-    const isSelected =
-      selectedEnvironment?.env === name ||
-      selectedEnvironment?.value === name;
+  const name = env.env || env.value || env.label;
+  const isSelected =
+  (selectedEnvironment?.env || selectedEnvironment?.value) === name &&
+  selectedEnvironment?.src === env.src;
 
-    const isUserEnv = env.is_user_env;
+  const isUserEnv = env.is_user_env;
 
-    return (
-      <button
-        key={`${isUserEnv ? "user" : "system"}-${name}`}
-        type="button"
-        className={[
-          "env-tile",
-          isSelected ? "selected" : "",
-          isUserEnv ? "user-env" : "system-env",
-        ].join(" ")}
-        onClick={() => {
-          const option = {
-            value: name,
-            label: name,
-            env: name,
-            src: env.src,
-            icon: env.icon,
-            is_user_env: env.is_user_env,
-          };
+  return (
+    <div
+      key={`${isUserEnv ? "user" : "system"}-${name}`}
+      className={[
+        "env-tile",
+        isSelected ? "selected" : "",
+        isUserEnv ? "user-env" : "system-env",
+      ].join(" ")}
+      onClick={() => {
+        const option = {
+          value: name,
+          label: name,
+          env: name,
+          src: env.src,
+          icon: env.icon,
+          is_user_env: env.is_user_env,
+        };
 
-          onSelectEnvironment("runtime", option);
-        }}
-      >
-        <div className="env-icon">{env.icon || DEFAULT_ICON}</div>
-        <div className="env-name">{name}</div>
-      </button>
-    );
-  };
+        onSelectEnvironment("runtime", option);
+      }}
+    >
+      <div className="env-icon">{env.icon || DEFAULT_ICON}</div>
+      <div className="env-name">{name}</div>
+        
+      {isUserEnv && (
+          <div className="env-menu-wrapper">
+            <button
+              type="button"
+              className="env-menu-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenMenuEnv(openMenuEnv === name ? null : name);
+              }}
+            >
+              ⋮
+            </button>
+        
+            {openMenuEnv === name && (
+              <div className="env-menu">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenuEnv(null);
+                    onRemoveEnvironment(env);
+                  }}
+                >
+                  Remove
+                </button>
+        
+              </div>
+            )}
+          </div>
+        )}
+      
+    </div>
+  );
+};
 
   return (
     <div className="env-filmstrip-shell">
