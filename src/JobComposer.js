@@ -9,8 +9,11 @@ import SplitScreenModal from "./SplitScreenModal";
 import ConfirmationModal from "./ConfirmationModal";
 import RequiredFieldsModal from "./RequiredFieldsModal";
 import { useJobSocket } from "./hooks/useJobSocket";
+import EnvironmentFilmstrip from "./EnvironmentFilmstrip";
 import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import ConfigGate from "./ConfigGate";
+import Footer from "./Footer";
+import "./styles/JobComposerEnvSplitStyles.js";
 
 
 function JobComposer({
@@ -235,6 +238,10 @@ function JobComposer({
     // Start the job submission - modal stays open to show streaming
     const action = formRef.current.getAttribute("action");
     setHasSubmittedCurrentPreview(true);
+    console.log("Submitting form data:");
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
     submitJob(action, formData);
   };
 
@@ -283,70 +290,85 @@ function JobComposer({
                 <div className="row">
                   <div className="col-lg-12">
                     <div id="job-content" style={{ maxWidth: '100%' }}>
-                      <Select
-                        key="env_select"
-                        name="runtime"
-                        label="Environments"
-                        options={props.environments}
-                        onChange={props.handleEnvChange}
-                        value={props.environment && props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
-                        showAddMore={true}
-                        onAddMore={props.handleAddEnv}
-                      />
-                      <Composer
-                        environment={props.environment || {}}
-                        fields={props.fields}
-                        onFileChange={props.handleUploadedFiles}
-                        setError={setError}
-                        ref={props.composerRef}
-                        sync_job_name={props.sync_job_name}
-                        runLocation={props.runLocation}
-                        setRunLocation={props.setRunLocation}
-                        customRunLocation={props.customRunLocation}
-                        setLocationPickedByUser={props.setLocationPickedByUser}
-                        locationPickedByUser={props.locationPickedByUser}
-                      />
+                      <div className="composer-multipane-layout">
+                          <aside className="composer-filmstrip-pane">
+                            <EnvironmentFilmstrip
+                              environments={props.environments}
+                              selectedEnvironment={props.environment}
+                              onSelectEnvironment={props.handleEnvChange}
+                              onAddEnvironment={props.handleAddEnv}
+                            />
+                          </aside>
+                        
+                          <main className="composer-form-pane">
+                            {!props.environment || !props.environment.env ? (
+                              <div className="empty-form-pane">
+                                Select an environment to configure a job.
+                              </div>
+                            ) : (
+                              <>
+                                <input
+                                  type="hidden"
+                                  name="runtime_label"
+                                  value={props.environment.env}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="runtime"
+                                  value={props.environment.env}
+                                />
+                        
+                                <Composer
+                                  environment={props.environment || {}}
+                                  fields={props.fields}
+                                  onFileChange={props.handleUploadedFiles}
+                                  setError={setError}
+                                  ref={props.composerRef}
+                                  sync_job_name={props.sync_job_name}
+                                  runLocation={props.runLocation}
+                                  setRunLocation={props.setRunLocation}
+                                  customRunLocation={props.customRunLocation}
+                                  setLocationPickedByUser={props.setLocationPickedByUser}
+                                  locationPickedByUser={props.locationPickedByUser}
+                                />
+                                <div className="composer-actions" >
+                                  <div className="invisible">
+                                    <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
+                                  </div>
+                                  {props.environment && props.environment.env !== "" && (
+                                    <div>
+                                      <input
+                                        type="button"
+                                        id="job-preview-button"
+                                        className="btn btn-primary maroon-button"
+                                        value={props.previewButtonText || "Preview"}
+                                        onClick={handlePreview}
+                                      />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <button className="btn btn-primary maroon-button" onClick={(e) => {
+                                      e.preventDefault();
+                                      setShowHistory(!showHistory);
+                                    }}>
+                                      {showHistory ? 'Hide History' : 'Show History'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </main>
+                        </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
-                  <div className="invisible">
-                    <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
-                  </div>
-                  {props.environment && props.environment.env !== "" && (
-                    <div>
-                      <input
-                        type="button"
-                        id="job-preview-button"
-                        className="btn btn-primary maroon-button"
-                        value={props.previewButtonText || "Preview"}
-                        onClick={handlePreview}
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <button className="btn btn-primary maroon-button" onClick={(e) => {
-                      e.preventDefault();
-                      setShowHistory(!showHistory);
-                    }}>
-                      {showHistory ? 'Hide History' : 'Show History'}
-                    </button>
                   </div>
                 </div>
 
               </form>          <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
                 <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
+                <Footer/>
               </div>
             </>
           )}
-        </div>
-
-        <div className="card-footer">
-          <small className="text-muted">
-            Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
-
-          </small>
         </div>
       </div>
 
@@ -391,7 +413,9 @@ function JobComposer({
         onClose={() => setShowRequiredFieldsModal(false)}
         missingFields={missingRequiredFields}
       />
+      
     </div>
+    
   );
 }
 

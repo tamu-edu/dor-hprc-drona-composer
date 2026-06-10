@@ -4,7 +4,6 @@ import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
 import EnvironmentModal from "./EnvironmentModal";
-
 import { GlobalFilesContext } from './GlobalFilesContext';
 
 export function App() {
@@ -87,8 +86,10 @@ export function App() {
             value: env.env,
             label: env.env,
             src: env.src,
+            is_user_env: env.is_user_env,
             styles: { color: env.is_user_env ? "#3B71CA" : "" },
-          }))
+            icon: env.icon,
+	  }))
         );
       })
       .catch((error) => {
@@ -172,9 +173,34 @@ export function App() {
     fetchSchema();
   }, [environment, fieldsLoadedResolver]);
 
+
   function handleEnvChange(key, option) {
-    setEnvironment({ env: option.value, src: option.src });
+    setEnvironment({
+      env: option.value,
+      src: option.src,
+      icon: option.icon || "🧩",
+      is_user_env: option.is_user_env,
+   });
+
+  const params = new URLSearchParams(window.location.search);
+  params.set("environment", option.value);
+
+  const newUrl = `${window.location.pathname}?${params.toString()}`;
+  window.history.pushState({}, "", newUrl);
+}
+    
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const envName = params.get("environment");
+
+  if (!envName || environments.length === 0) return;
+
+  const match = environments.find((env) => env.value === envName);
+
+  if (match) {
+    handleEnvChange("runtime", match);
   }
+  }, [environments]);
 
   function handleRerunCancel() {
     setShowRerunModal(false);
@@ -294,9 +320,33 @@ export function App() {
 
   }
 
-  const handleAddEnvironment = (newEnv) => {
-    setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
-  };
+    const handleAddEnvironment = (newEnv) => {
+      const newName = newEnv.env || newEnv.value || newEnv.label;
+    
+      setEnvironments((prevEnvironments) => {
+        const alreadyExists = prevEnvironments.some((env) => {
+          const existingName = env.env || env.value || env.label;
+          return existingName === newName && env.src === newEnv.src;
+        });
+    
+        if (alreadyExists) {
+          return prevEnvironments;
+        }
+    
+        return [
+          ...prevEnvironments,
+          {
+            value: newName,
+            label: newName,
+            src: newEnv.src,
+            is_user_env: true,
+            styles: { color: "#3B71CA" },
+            icon: newEnv.icon || "🧩",
+          },
+        ];
+      });
+    };
+  
   function handlePreview() {
     setJobStatus("new");
     const formData = new FormData(formRef.current);
@@ -491,6 +541,13 @@ export function App() {
 }
 
 // Render the parent component into the root DOM node
+//if (document.getElementById("root")) {
+  //ReactDOM.render(<App />, document.getElementById("root"));
+//}
 if (document.getElementById("root")) {
-  ReactDOM.render(<App />, document.getElementById("root"));
+  const params = new URLSearchParams(window.location.search);
+  ReactDOM.render(
+    <App />,
+    document.getElementById("root")
+  );
 }
