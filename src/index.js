@@ -4,7 +4,6 @@ import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
 import EnvironmentModal from "./EnvironmentModal";
-
 import { GlobalFilesContext } from './GlobalFilesContext';
 
 export function App() {
@@ -87,8 +86,10 @@ export function App() {
             value: env.env,
             label: env.env,
             src: env.src,
+            is_user_env: env.is_user_env,
             styles: { color: env.is_user_env ? "#3B71CA" : "" },
-          }))
+            icon: env.icon,
+	  }))
         );
       })
       .catch((error) => {
@@ -172,9 +173,34 @@ export function App() {
     fetchSchema();
   }, [environment, fieldsLoadedResolver]);
 
+
   function handleEnvChange(key, option) {
-    setEnvironment({ env: option.value, src: option.src });
+    setEnvironment({
+      env: option.value,
+      src: option.src,
+      icon: option.icon || "🧩",
+      is_user_env: option.is_user_env,
+   });
+
+  const params = new URLSearchParams(window.location.search);
+  params.set("environment", option.value);
+
+  const newUrl = `${window.location.pathname}?${params.toString()}`;
+  window.history.pushState({}, "", newUrl);
+}
+    
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const envName = params.get("environment");
+
+  if (!envName || environments.length === 0) return;
+
+  const match = environments.find((env) => env.value === envName);
+
+  if (match) {
+    handleEnvChange("runtime", match);
   }
+  }, [environments]);
 
   function handleRerunCancel() {
     setShowRerunModal(false);
@@ -286,17 +312,36 @@ export function App() {
     };
 
     request.send(formData);
-    // console.log("FormData2: ")
-
-    // for (const [key, value] of formData.entries()) {
-    //   console.log(key, value);
-    // }
-
   }
+  
 
-  const handleAddEnvironment = (newEnv) => {
-    setEnvironments((prevEnvironments) => [...prevEnvironments, newEnv]);
-  };
+    const handleAddEnvironment = (newEnv) => {
+      const newName = newEnv.env || newEnv.value || newEnv.label;
+    
+      setEnvironments((prevEnvironments) => {
+        const alreadyExists = prevEnvironments.some((env) => {
+          const existingName = env.env || env.value || env.label;
+          return existingName === newName && env.src === newEnv.src;
+        });
+    
+        if (alreadyExists) {
+          return prevEnvironments;
+        }
+    
+        return [
+          ...prevEnvironments,
+          {
+            value: newName,
+            label: newName,
+            src: newEnv.src,
+            is_user_env: true,
+            styles: { color: "#3B71CA" },
+            icon: newEnv.icon || "🧩",
+          },
+        ];
+      });
+    };
+  
   function handlePreview() {
     setJobStatus("new");
     const formData = new FormData(formRef.current);
@@ -403,6 +448,55 @@ export function App() {
     const modal = new bootstrap.Modal(envModalRef.current);
     modal.toggle();
   }
+  async function handleRemoveEnv(env) {
+      const name = env.env || env.value || env.label;
+    
+      if (!env.is_user_env) {
+        alert("System environments cannot be removed.");
+        return;
+      }
+    
+      if (!window.confirm(`Remove environment "${name}"? This cannot be undone.`)) {
+        return;
+      }
+    
+      try {
+        const response = await fetch(
+          `${document.dashboard_url}/jobs/composer/environment`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              env: name,
+              src: env.src,
+            }),
+          }
+        );
+    
+        const data = await response.json();
+    
+        if (!response.ok) {
+          throw new Error(data.message || data.details?.error || "Failed to remove environment.");
+        }
+    
+        setEnvironments((prev) =>
+          prev.filter((item) => {
+            const itemName = item.env || item.value || item.label;
+            return !(itemName === name && item.src === env.src);
+          })
+        );
+    
+        if (environment.env === name && environment.src === env.src) {
+          setEnvironment({ env: "", src: "" });
+          setFields({});
+        }
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Failed to remove environment.");
+      }
+    }
 
   function add_submission_loading_indicator() {
     var submission_section = document.getElementById(
@@ -470,6 +564,7 @@ export function App() {
           locationPickedByUser={locationPickedByUser}
           pendingNewPreview={pendingNewPreview}
           setPendingNewPreview={setPendingNewPreview}
+          handleRemoveEnv={handleRemoveEnv}
         />
         {showRerunModal && (
           <RerunPromptModal
@@ -490,7 +585,6 @@ export function App() {
   );
 }
 
-// Render the parent component into the root DOM node
 if (document.getElementById("root")) {
   ReactDOM.render(<App />, document.getElementById("root"));
 }
