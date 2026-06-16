@@ -250,3 +250,12 @@ footer {
 .job-composer-sidebar {
   align-self: flex-start;
 }
+
+.job-composer-sidebar .btn {
+  display: flex;
+  align-items: center;
+}
+
+.job-composer-user-guides-body {
+  padding: 0 !important;
+}

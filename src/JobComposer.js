@@ -4,7 +4,7 @@ import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
-import DocumentsPage from "./UserGuidePage";
+import UserGuidePage from "./UserGuidePage";
 import EnvironmentModal from "./EnvironmentModal";
 import SplitScreenModal from "./SplitScreenModal";
 import ConfirmationModal from "./ConfirmationModal";
@@ -12,6 +12,39 @@ import RequiredFieldsModal from "./RequiredFieldsModal";
 import { useJobSocket } from "./hooks/useJobSocket";
 import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import ConfigGate from "./ConfigGate";
+
+function SidebarIcon({ name }) {
+  const iconProps = {
+    width: 18,
+    height: 18,
+    viewBox: "0 0 24 24",
+    fill: "currentColor",
+    "aria-hidden": true,
+    style: { flexShrink: 0 },
+  };
+
+  if (name === "gear") {
+    return (
+      <svg {...iconProps}>
+        <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66Z" />
+      </svg>
+    );
+  }
+
+  if (name === "clock") {
+    return (
+      <svg {...iconProps}>
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...iconProps}>
+      <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2M6 4h5v8l-2.5-1.5L6 12V4Z" />
+    </svg>
+  );
+}
 
 
 function JobComposer({
@@ -263,9 +296,9 @@ function JobComposer({
   };
 
   const sidebarItems = [
-    { id: "workflow", label: "Workflow Engine" },
-    { id: "history", label: "Jobs History" },
-    { id: "documents", label: "User Guides" },
+    { id: "workflow", label: "Workflow Engine", icon: "gear" },
+    { id: "history", label: "Jobs History", icon: "clock" },
+    { id: "documents", label: "User Guides", icon: "book" },
   ];
 
   return (
@@ -283,15 +316,16 @@ function JobComposer({
             padding: '1rem',
           }}
         >
-          {sidebarItems.map(({ id, label }) => (
+          {sidebarItems.map(({ id, label, icon }) => (
             <button
               key={id}
               type="button"
               className={`btn btn-primary ${activeSection === id ? "maroon-button-filled" : "maroon-button"}`}
-              style={{ width: '100%', textAlign: 'left' }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', textAlign: 'left' }}
               onClick={() => setActiveSection(id)}
             >
-              {label}
+              <SidebarIcon name={icon} />
+              <span>{label}</span>
             </button>
           ))}
         </aside>
@@ -418,8 +452,8 @@ function JobComposer({
                 minHeight: 0,
               }}
             >
-              <div className="card-body" style={{ overflow: 'hidden', flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <DocumentsPage />
+              <div className="card-body job-composer-user-guides-body" style={{ overflow: 'hidden', flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column', padding: 0 }}>
+                <UserGuidePage />
               </div>
             </div>
           </div>
