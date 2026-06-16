@@ -259,3 +259,194 @@ footer {
 .job-composer-user-guides-body {
   padding: 0 !important;
 }
+
+/* Workflow step tracker */
+.workflow-step-tracker {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(80, 0, 0, 0.15);
+}
+
+.workflow-step-tracker__list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.workflow-step-tracker__item {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.workflow-step-tracker__connector {
+  width: 3rem;
+  height: 2px;
+  background-color: #dee2e6;
+  margin: 0 0.5rem;
+  flex-shrink: 0;
+}
+
+.workflow-step-tracker__connector--completed {
+  background-color: maroon;
+}
+
+.workflow-step-tracker__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: default;
+  min-width: 5.5rem;
+}
+
+.workflow-step-tracker__item--completed .workflow-step-tracker__step {
+  cursor: pointer;
+}
+
+.workflow-step-tracker__step:disabled {
+  cursor: default;
+}
+
+.workflow-step-tracker__circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 2px solid #dee2e6;
+  color: #6c757d;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.workflow-step-tracker__item--active .workflow-step-tracker__circle {
+  border-color: maroon;
+  background-color: maroon;
+  color: white;
+}
+
+.workflow-step-tracker__item--completed .workflow-step-tracker__circle {
+  border-color: maroon;
+  background-color: maroon;
+  color: white;
+}
+
+.workflow-step-tracker__check {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.workflow-step-tracker__label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.workflow-step-tracker__item--active .workflow-step-tracker__label {
+  color: maroon;
+  font-weight: 600;
+}
+
+.workflow-step-tracker__item--completed .workflow-step-tracker__label {
+  color: maroon;
+}
+
+/* Environment step */
+.environment-step__section {
+  margin-bottom: 2rem;
+}
+
+.environment-step__section:last-child {
+  margin-bottom: 0;
+}
+
+.environment-step__heading {
+  color: maroon;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.env-ready-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.env-ready-tick {
+  font-weight: 700;
+}
+
+.env-table__sortable-th {
+  cursor: pointer;
+  user-select: none;
+  color: maroon;
+}
+
+.env-table__sortable-th:hover {
+  background-color: rgba(128, 0, 0, 0.06);
+}
+
+.env-table__sort-indicator {
+  font-size: 0.7rem;
+  margin-left: 0.15rem;
+}
+
+/* Inline job preview step */
+.job-preview-step {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+  height: calc(100vh - 320px);
+  max-height: 800px;
+}
+
+.job-preview-step__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+.job-preview-step__title {
+  margin: 0;
+  color: maroon;
+  font-weight: 600;
+}
+
+.job-preview-step__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.job-preview-step__panels {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.workflow-step-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(80, 0, 0, 0.1);
+}

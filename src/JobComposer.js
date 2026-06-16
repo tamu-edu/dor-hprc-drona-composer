@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Text, Select, Picker } from "./schemaRendering/schemaElements/index";
+import React, { useState, useEffect } from "react";
 import Composer from "./schemaRendering/Composer";
-import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
 import UserGuidePage from "./UserGuidePage";
-import EnvironmentModal from "./EnvironmentModal";
-import SplitScreenModal from "./SplitScreenModal";
-import ConfirmationModal from "./ConfirmationModal";
 import RequiredFieldsModal from "./RequiredFieldsModal";
+import WorkflowStepTracker from "./WorkflowStepTracker";
+import EnvironmentStep from "./EnvironmentStep";
+import JobPreviewStep from "./JobPreviewStep";
 import { useJobSocket } from "./hooks/useJobSocket";
 import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import ConfigGate from "./ConfigGate";
@@ -46,49 +44,41 @@ function SidebarIcon({ name }) {
   );
 }
 
-
 function JobComposer({
   error,
   setError,
   formRef,
-  previewRef,
-  envModalRef,
   multiPaneRef,
-  showSplitScreenModal,
-  setShowSplitScreenModal,
-  setDronaJobId,
+  workflowStep,
+  setWorkflowStep,
   dronaJobId,
-  pendingNewPreview,
-  setPendingNewPreview,
+  onAddEnvironment,
   ...props
 }) {
   const [activeSection, setActiveSection] = useState("workflow");
-  const [isSplitScreenMinimized, setIsSplitScreenMinimized] = useState(false);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRequiredFieldsModal, setShowRequiredFieldsModal] = useState(false);
   const [missingRequiredFields, setMissingRequiredFields] = useState([]);
   const [configBlocked, setConfigBlocked] = useState(false);
   const [hasSubmittedCurrentPreview, setHasSubmittedCurrentPreview] = useState(false);
-
-  const [workflowMode, setWorkflowmode] = useState(null)
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
   const {
     lines,
     rawOutput,
     htmlOutput,
-    isConnected,
     status,
     submitJob,
     reset,
-    sendInput
   } = useJobSocket();
 
-  const isJobRunning = status === 'submitting' || status === 'running';
+  const isJobRunning = status === "submitting" || status === "running";
   const isSubmitDisabled = hasSubmittedCurrentPreview || isJobRunning;
 
   useEffect(() => {
-    console.log("hasSubmittedCurrentPreview changed ->", hasSubmittedCurrentPreview);
-  }, [hasSubmittedCurrentPreview]);
+    if (workflowStep > 1) {
+      setActiveSection("workflow");
+    }
+  }, [workflowStep]);
 
   const getFormData = () => {
     const paneRefs = multiPaneRef.current?.getPaneRefs();
@@ -117,17 +107,16 @@ function JobComposer({
         data["files"] = props.globalFiles;
       }
 
-      // Ensure drona_job_id is present for reruns (use existing job_id from history)
       if (data["job_id"]) {
         data["drona_job_id"] = data["job_id"];
       }
 
-      const formData = new FormData;
+      const formData = new FormData();
       for (const [key, value] of Object.entries(data)) {
         if (value instanceof File) {
           formData.append(key, value);
         } else if (Array.isArray(value)) {
-          value.forEach((item, index) => {
+          value.forEach((item) => {
             formData.append(`${key}[]`, item);
           });
         } else if (value !== null && value !== undefined) {
@@ -137,54 +126,59 @@ function JobComposer({
 
       return formData;
     }
-    else {
-      const formData = new FormData(formRef.current)
-      const additional_files = {};
 
-      paneRefs.forEach((ref) => {
-        if (ref.current) {
-          const current = ref.current;
-          const name = current.getAttribute("name");
+    const formData = new FormData(formRef.current);
+    const additional_files = {};
 
-          if (name === "driver" || name === "run_command") {
-            formData.append(name, current.value);
-          } else {
-            additional_files[name] = current.value;
-          }
+    paneRefs.forEach((ref) => {
+      if (ref.current) {
+        const current = ref.current;
+        const name = current.getAttribute("name");
+
+        if (name === "driver" || name === "run_command") {
+          formData.append(name, current.value);
+        } else {
+          additional_files[name] = current.value;
         }
-      });
-
-      formData.append("additional_files", JSON.stringify(additional_files));
-
-      if (props.environment && props.environment.src) {
-        formData.append("env_dir", props.environment.src);
-        formData.append("env_name", props.environment.env);
       }
+    });
 
-      if (props.globalFiles && props.globalFiles.length > 0) {
-        props.globalFiles.forEach((file) => {
-          formData.append("files[]", file);
-        });
-      }
+    formData.append("additional_files", JSON.stringify(additional_files));
 
-      // For new jobs, include drona_job_id from preview if available
-      formData.set("drona_job_id", dronaJobId);
-      const location = formData.get("location");
-      console.log("HERE IS THE Location: ", location);
-
-      if (location == null) {
-        if (props.runLocation) formData.set("location", props.runLocation);
-        console.log("HERE IS THE NEW Location: ", formData.get("location"));
-
-      }
-
-      return formData;
+    if (props.environment && props.environment.src) {
+      formData.append("env_dir", props.environment.src);
+      formData.append("env_name", props.environment.env);
     }
-  }
 
+    if (props.globalFiles && props.globalFiles.length > 0) {
+      props.globalFiles.forEach((file) => {
+        formData.append("files[]", file);
+      });
+    }
 
-  const handlePreview = () => {
-    // Validate required fields before showing preview
+    formData.set("drona_job_id", dronaJobId);
+    const location = formData.get("location");
+
+    if (location == null) {
+      if (props.runLocation) formData.set("location", props.runLocation);
+    }
+
+    return formData;
+  };
+
+  const runPreview = async () => {
+    setIsPreviewLoading(true);
+    try {
+      await props.handlePreview();
+      setWorkflowStep(3);
+    } catch (previewError) {
+      console.error("Preview failed:", previewError);
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  };
+
+  const handlePreview = async () => {
     if (!props.environment || !props.environment.env) {
       setError("Please choose an environment before preview.");
       return;
@@ -199,37 +193,7 @@ function JobComposer({
       }
     }
 
-    if (isSplitScreenMinimized) {
-      setShowConfirmationModal(true);
-      return;
-    }
-
-    if (props.handlePreview) {
-      props.handlePreview();
-    }
-    setShowSplitScreenModal(true);
-  };
-
-  const handleConfirmOverwrite = () => {
-    setShowConfirmationModal(false);
-    setIsSplitScreenMinimized(false);
-    reset();
-    setHasSubmittedCurrentPreview(false);
-    if (setDronaJobId && dronaJobId) {
-      setDronaJobId(dronaJobId + "*");
-      setPendingNewPreview(true);
-    }
-
-    if (!pendingNewPreview && props.handlePreview) {
-      props.handlePreview();
-    }
-    setShowSplitScreenModal(true);
-  };
-
-  const handleConfirmRestore = () => {
-    setShowConfirmationModal(false);
-    setIsSplitScreenMinimized(false);
-    setShowSplitScreenModal(true);
+    await runPreview();
   };
 
   const handleSubmit = (e) => {
@@ -239,12 +203,10 @@ function JobComposer({
       return;
     }
 
-    // Block submission if job has already been submitted from this preview
     if (status !== null) {
       return;
     }
 
-    // Validate required fields before submission
     if (props.composerRef?.current) {
       const currentFields = props.composerRef.current.getFields();
       const validation = validateRequiredFields(currentFields);
@@ -261,33 +223,24 @@ function JobComposer({
       return;
     }
 
-    if (isSplitScreenMinimized) {
-      setIsSplitScreenMinimized(false);
-      setShowSplitScreenModal(true);
-    }
-
-    // Start the job submission - modal stays open to show streaming
     const action = formRef.current.getAttribute("action");
     setHasSubmittedCurrentPreview(true);
     submitJob(action, formData);
   };
 
-  const handleCloseSplitScreenModal = () => {
-    setShowSplitScreenModal(false);
-    setIsSplitScreenMinimized(false);
-    reset();
-    setHasSubmittedCurrentPreview(false);
-    if (setDronaJobId && dronaJobId) {
-      setDronaJobId(dronaJobId + "*");
+  const handleStepClick = (step) => {
+    if (step < workflowStep) {
+      if (step === 1) {
+        reset();
+        setHasSubmittedCurrentPreview(false);
+      }
+      setWorkflowStep(step);
     }
   };
 
-  const handleMinimizeSplitScreenModal = () => {
-    setIsSplitScreenMinimized(true);
-  };
-
-  const handleExpandSplitScreenModal = () => {
-    setIsSplitScreenMinimized(false);
+  const handleSelectEnvironment = (option) => {
+    props.handleEnvChange("runtime", option);
+    setWorkflowStep(2);
   };
 
   const handleFormFromHistory = (row) => {
@@ -302,18 +255,36 @@ function JobComposer({
   ];
 
   return (
-    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div
+      className="job-composer-container"
+      style={{
+        width: "100%",
+        maxWidth: "100%",
+        overflow: "hidden",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
-      <div style={{ display: 'flex', flex: '1 1 auto', minHeight: 0, gap: '1rem', height: '100%' }}>
+      <div
+        style={{
+          display: "flex",
+          flex: "1 1 auto",
+          minHeight: 0,
+          gap: "1rem",
+          height: "100%",
+        }}
+      >
         <aside
           className="card shadow job-composer-sidebar"
           style={{
-            width: '220px',
+            width: "220px",
             flexShrink: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.75rem',
-            padding: '1rem',
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.75rem",
+            padding: "1rem",
           }}
         >
           {sidebarItems.map(({ id, label, icon }) => (
@@ -321,7 +292,13 @@ function JobComposer({
               key={id}
               type="button"
               className={`btn btn-primary ${activeSection === id ? "maroon-button-filled" : "maroon-button"}`}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', textAlign: 'left' }}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                textAlign: "left",
+              }}
               onClick={() => setActiveSection(id)}
             >
               <SidebarIcon name={icon} />
@@ -335,8 +312,8 @@ function JobComposer({
             flex: 1,
             minWidth: 0,
             minHeight: 0,
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <div
@@ -344,20 +321,20 @@ function JobComposer({
             style={{
               flex: 1,
               minHeight: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
             }}
           >
             <div
               style={{
-                display: activeSection === "workflow" ? 'flex' : 'none',
-                flexDirection: 'column',
+                display: activeSection === "workflow" ? "flex" : "none",
+                flexDirection: "column",
                 flex: 1,
                 minHeight: 0,
               }}
             >
-              <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
+              <div className="card-body" style={{ overflowY: "auto", flex: "1 1 auto" }}>
                 <ConfigGate onStatusChange={setConfigBlocked} />
 
                 {!configBlocked && (
@@ -372,23 +349,35 @@ function JobComposer({
                     onSubmit={handleSubmit}
                     onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
                     action={document.dashboard_url + "/jobs/composer/submit"}
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                   >
-                    <div className="row">
-                      <div className="col-lg-12">
-                        <div id="job-content" style={{ maxWidth: '100%' }}>
-                          <Select
-                            key="env_select"
-                            name="runtime"
-                            label="Environments"
-                            options={props.environments}
-                            onChange={props.handleEnvChange}
-                            value={props.environment && props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
-                            showAddMore={true}
-                            onAddMore={props.handleAddEnv}
-                          />
+                    <WorkflowStepTracker
+                      currentStep={workflowStep}
+                      onStepClick={handleStepClick}
+                    />
+
+                    {workflowStep === 1 && (
+                      <EnvironmentStep
+                        environments={props.environments}
+                        onSelectEnvironment={handleSelectEnvironment}
+                        onImportEnvironment={onAddEnvironment}
+                      />
+                    )}
+
+                    {(workflowStep === 2 || workflowStep === 3) && props.environment?.env && (
+                      <>
+                        <input type="hidden" name="location" value={props.runLocation || ""} />
+                        <input type="hidden" name="drona_job_id" value={dronaJobId || ""} />
+                        <div
+                          style={{ display: workflowStep === 2 ? "block" : "none" }}
+                          aria-hidden={workflowStep === 3}
+                        >
+                          <input type="hidden" name="runtime" value={props.environment.env} />
+                          <h5 className="mb-3" style={{ color: "maroon", fontWeight: 600 }}>
+                            {props.environment.env}
+                          </h5>
                           <Composer
-                            environment={props.environment || {}}
+                            environment={props.environment}
                             fields={props.fields}
                             onFileChange={props.handleUploadedFiles}
                             setError={setError}
@@ -400,43 +389,75 @@ function JobComposer({
                             setLocationPickedByUser={props.setLocationPickedByUser}
                             locationPickedByUser={props.locationPickedByUser}
                           />
+                          {workflowStep === 2 && (
+                            <div className="workflow-step-actions">
+                              <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => setWorkflowStep(1)}
+                              >
+                                Back
+                              </button>
+                              <button
+                                type="button"
+                                id="job-preview-button"
+                                className="btn btn-primary maroon-button-filled"
+                                onClick={handlePreview}
+                                disabled={isPreviewLoading}
+                              >
+                                {isPreviewLoading ? (
+                                  <>
+                                    <span
+                                      className="spinner-border spinner-border-sm mr-1"
+                                      role="status"
+                                      aria-hidden="true"
+                                    />
+                                    Loading Preview...
+                                  </>
+                                ) : (
+                                  "Preview and Submit"
+                                )}
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </div>
+                      </>
+                    )}
 
-                    <div className="d-flex align-items-center justify-content-center" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
-                      {props.environment && props.environment.env !== "" && (
-                        <div>
-                          <input
-                            type="button"
-                            id="job-preview-button"
-                            className="btn btn-primary maroon-button"
-                            value={props.previewButtonText || "Preview"}
-                            onClick={handlePreview}
-                          />
-                        </div>
-                      )}
-                    </div>
+                    {workflowStep === 3 && (
+                      <JobPreviewStep
+                        messages={props.messages}
+                        multiPaneRef={multiPaneRef}
+                        panes={props.panes}
+                        setPanes={props.setPanes}
+                        outputLines={lines}
+                        htmlOutput={htmlOutput}
+                        status={status}
+                        isSubmitDisabled={isSubmitDisabled}
+                        onBack={() => setWorkflowStep(2)}
+                      />
+                    )}
                   </form>
                 )}
               </div>
 
               <div className="card-footer">
                 <small className="text-muted">
-                  Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
+                  Cautions: Job files will overwrite existing files with the same name. The same
+                  principle applies for your executable scripts.
                 </small>
               </div>
             </div>
 
             <div
               style={{
-                display: activeSection === "history" ? 'flex' : 'none',
-                flexDirection: 'column',
+                display: activeSection === "history" ? "flex" : "none",
+                flexDirection: "column",
                 flex: 1,
                 minHeight: 0,
               }}
             >
-              <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
+              <div className="card-body" style={{ overflowY: "auto", flex: "1 1 auto" }}>
                 <SubmissionHistory
                   handleRerun={props.handleRerun}
                   handleForm={handleFormFromHistory}
@@ -446,55 +467,29 @@ function JobComposer({
 
             <div
               style={{
-                display: activeSection === "documents" ? 'flex' : 'none',
-                flexDirection: 'column',
+                display: activeSection === "documents" ? "flex" : "none",
+                flexDirection: "column",
                 flex: 1,
                 minHeight: 0,
               }}
             >
-              <div className="card-body job-composer-user-guides-body" style={{ overflow: 'hidden', flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column', padding: 0 }}>
+              <div
+                className="card-body job-composer-user-guides-body"
+                style={{
+                  overflow: "hidden",
+                  flex: "1 1 auto",
+                  minHeight: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: 0,
+                }}
+              >
                 <UserGuidePage />
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <SplitScreenModal
-        isOpen={showSplitScreenModal}
-        onClose={handleCloseSplitScreenModal}
-        onMinimize={handleMinimizeSplitScreenModal}
-        onExpand={handleExpandSplitScreenModal}
-        forceMinimized={isSplitScreenMinimized}
-        // Preview props
-        messages={props.messages}
-        multiPaneRef={multiPaneRef}
-        panes={props.panes}
-        setPanes={props.setPanes}
-        // Streaming props
-        outputLines={lines}
-        rawOutput={rawOutput}
-        htmlOutput={htmlOutput}
-        status={status}
-        // Workflow
-        onSubmit={handleSubmit}
-        // Job control
-        isJobRunning={isJobRunning}
-        isSubmitDisabled={isSubmitDisabled}
-      />
-
-      <EnvironmentModal envModalRef={envModalRef} />
-
-      <ConfirmationModal
-        isOpen={showConfirmationModal}
-        onClose={() => setShowConfirmationModal(false)}
-        onConfirm={handleConfirmRestore}
-        onCancel={handleConfirmOverwrite}
-        title="Existing Preview Found"
-        message="An existing was preview found. Would you like to restore it?"
-        confirmText="Restore"
-        cancelText="Create New"
-      />
 
       <RequiredFieldsModal
         isOpen={showRequiredFieldsModal}
