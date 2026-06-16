@@ -28,7 +28,7 @@ function JobComposer({
   setPendingNewPreview,
   ...props
 }) {
-  const [showHistory, setShowHistory] = useState(true);
+  const [activeSection, setActiveSection] = useState("workflow");
   const [isSplitScreenMinimized, setIsSplitScreenMinimized] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRequiredFieldsModal, setShowRequiredFieldsModal] = useState(false);
@@ -256,97 +256,159 @@ function JobComposer({
     setIsSplitScreenMinimized(false);
   };
 
+  const handleFormFromHistory = (row) => {
+    setActiveSection("workflow");
+    props.handleForm(row);
+  };
+
+  const sidebarItems = [
+    { id: "workflow", label: "Workflow Engine" },
+    { id: "history", label: "Jobs History" },
+  ];
+
   return (
-    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
-      <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ display: 'flex', flex: '1 1 auto', minHeight: 0, gap: '1rem', height: '100%' }}>
+        <aside
+          className="card shadow"
+          style={{
+            width: '220px',
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+            padding: '1rem',
+            alignSelf: 'stretch',
+          }}
+        >
+          {sidebarItems.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              className={`btn btn-primary ${activeSection === id ? "maroon-button-filled" : "maroon-button"}`}
+              style={{ width: '100%', textAlign: 'left' }}
+              onClick={() => setActiveSection(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </aside>
 
-        <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            className="card shadow"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                display: activeSection === "workflow" ? 'flex' : 'none',
+                flexDirection: 'column',
+                flex: 1,
+                minHeight: 0,
+              }}
+            >
+              <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
+                <ConfigGate onStatusChange={setConfigBlocked} />
 
-          <ConfigGate onStatusChange={setConfigBlocked} />
-
-          {!configBlocked && (
-            <>
-              <form
-                ref={formRef}
-                className="form"
-                role="form"
-                id="slurm-config-form"
-                autoComplete="off"
-                method="POST"
-                encType="multipart/form-data"
-                onSubmit={handleSubmit}
-                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-                action={document.dashboard_url + "/jobs/composer/submit"}
-                style={{ width: '100%' }}
-              >
-                <div className="row">
-                  <div className="col-lg-12">
-                    <div id="job-content" style={{ maxWidth: '100%' }}>
-                      <Select
-                        key="env_select"
-                        name="runtime"
-                        label="Environments"
-                        options={props.environments}
-                        onChange={props.handleEnvChange}
-                        value={props.environment && props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
-                        showAddMore={true}
-                        onAddMore={props.handleAddEnv}
-                      />
-                      <Composer
-                        environment={props.environment || {}}
-                        fields={props.fields}
-                        onFileChange={props.handleUploadedFiles}
-                        setError={setError}
-                        ref={props.composerRef}
-                        sync_job_name={props.sync_job_name}
-                        runLocation={props.runLocation}
-                        setRunLocation={props.setRunLocation}
-                        customRunLocation={props.customRunLocation}
-                        setLocationPickedByUser={props.setLocationPickedByUser}
-                        locationPickedByUser={props.locationPickedByUser}
-                      />
+                {!configBlocked && (
+                  <form
+                    ref={formRef}
+                    className="form"
+                    role="form"
+                    id="slurm-config-form"
+                    autoComplete="off"
+                    method="POST"
+                    encType="multipart/form-data"
+                    onSubmit={handleSubmit}
+                    onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                    action={document.dashboard_url + "/jobs/composer/submit"}
+                    style={{ width: '100%' }}
+                  >
+                    <div className="row">
+                      <div className="col-lg-12">
+                        <div id="job-content" style={{ maxWidth: '100%' }}>
+                          <Select
+                            key="env_select"
+                            name="runtime"
+                            label="Environments"
+                            options={props.environments}
+                            onChange={props.handleEnvChange}
+                            value={props.environment && props.environment.env ? { value: props.environment.env, label: props.environment.env, src: props.environment.src } : null}
+                            showAddMore={true}
+                            onAddMore={props.handleAddEnv}
+                          />
+                          <Composer
+                            environment={props.environment || {}}
+                            fields={props.fields}
+                            onFileChange={props.handleUploadedFiles}
+                            setError={setError}
+                            ref={props.composerRef}
+                            sync_job_name={props.sync_job_name}
+                            runLocation={props.runLocation}
+                            setRunLocation={props.setRunLocation}
+                            customRunLocation={props.customRunLocation}
+                            setLocationPickedByUser={props.setLocationPickedByUser}
+                            locationPickedByUser={props.locationPickedByUser}
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="d-flex align-items-center justify-content-between" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
-                  <div className="invisible">
-                    <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
-                  </div>
-                  {props.environment && props.environment.env !== "" && (
-                    <div>
-                      <input
-                        type="button"
-                        id="job-preview-button"
-                        className="btn btn-primary maroon-button"
-                        value={props.previewButtonText || "Preview"}
-                        onClick={handlePreview}
-                      />
+                    <div className="d-flex align-items-center justify-content-center" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
+                      {props.environment && props.environment.env !== "" && (
+                        <div>
+                          <input
+                            type="button"
+                            id="job-preview-button"
+                            className="btn btn-primary maroon-button"
+                            value={props.previewButtonText || "Preview"}
+                            onClick={handlePreview}
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div>
-                    <button className="btn btn-primary maroon-button" onClick={(e) => {
-                      e.preventDefault();
-                      setShowHistory(!showHistory);
-                    }}>
-                      {showHistory ? 'Hide History' : 'Show History'}
-                    </button>
-                  </div>
-                </div>
-
-              </form>          <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
-                <SubmissionHistory isExpanded={showHistory} handleRerun={props.handleRerun} handleForm={props.handleForm} />
+                  </form>
+                )}
               </div>
-            </>
-          )}
-        </div>
 
-        <div className="card-footer">
-          <small className="text-muted">
-            Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
+              <div className="card-footer">
+                <small className="text-muted">
+                  Cautions: Job files will overwrite existing files with the same name. The same principle applies for your executable scripts.
+                </small>
+              </div>
+            </div>
 
-          </small>
+            <div
+              style={{
+                display: activeSection === "history" ? 'flex' : 'none',
+                flexDirection: 'column',
+                flex: 1,
+                minHeight: 0,
+              }}
+            >
+              <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
+                <SubmissionHistory
+                  handleRerun={props.handleRerun}
+                  handleForm={handleFormFromHistory}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

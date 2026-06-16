@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { tableCustomStyles } from './tablestyle.jsx';
 
-const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
+const SubmissionHistory = ({ handleRerun, handleForm }) => {
   const [jobHistory, setJobHistory] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -21,18 +21,16 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
   }, []);
 
   useEffect(() => {
-    if (isExpanded) {
-      const currentDate = new Date();
-      const defaultEndDate = currentDate.toISOString().split('T')[0];
-      currentDate.setDate(currentDate.getDate() - 30);
-      const defaultStartDate = currentDate.toISOString().split('T')[0];
+    const currentDate = new Date();
+    const defaultEndDate = currentDate.toISOString().split('T')[0];
+    currentDate.setDate(currentDate.getDate() - 30);
+    const defaultStartDate = currentDate.toISOString().split('T')[0];
 
-      setStartDate(defaultStartDate);
-      setEndDate(defaultEndDate);
+    setStartDate(defaultStartDate);
+    setEndDate(defaultEndDate);
 
-      fetchJobHistory();
-    }
-  }, [isExpanded]);
+    fetchJobHistory();
+  }, []);
 
   const fetchJobHistory = async () => {
     try {
@@ -210,8 +208,6 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
   };
 
 
-
-  if (!isExpanded) return null;
 
   return (
     <div

@@ -223,3 +223,22 @@ footer {
   position: relative;
   z-index: 1;
 }
+
+#main-container.container {
+  max-width: 100%;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.job-composer-page {
+  width: 100%;
+  height: calc(100vh - 56px);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.job-composer-container {
+  height: 100%;
+  max-height: 100%;
+}
