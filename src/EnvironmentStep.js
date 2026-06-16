@@ -1,4 +1,29 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { getEnvironmentIconUrl, getEnvironmentInitial } from "./EnvironmentIcons";
+
+function EnvironmentNameCell({ name, envKey, iconUrl, textStyle }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const resolvedIconUrl = getEnvironmentIconUrl(envKey, iconUrl);
+  const showImage = resolvedIconUrl && !imageFailed;
+
+  return (
+    <span className="env-table__env-cell" style={textStyle}>
+      {showImage ? (
+        <img
+          className="env-table__env-icon"
+          src={resolvedIconUrl}
+          alt=""
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <span className="env-table__env-fallback" aria-hidden="true">
+          {getEnvironmentInitial(name)}
+        </span>
+      )}
+      <span className="env-table__env-name">{name}</span>
+    </span>
+  );
+}
 
 function ReadyButton({ onClick }) {
   return (
@@ -48,17 +73,23 @@ function ImportEnvironmentButton({ env, isImported, onImport, onReady }) {
   );
 }
 
-function SortableTh({ column, label, sortColumn, sortDirection, onSort }) {
+function SortableTh({ column, label, sortColumn, sortDirection, onSort, className = "" }) {
   const isActive = sortColumn === column;
-  const indicator = isActive ? (sortDirection === "asc" ? " ▲" : " ▼") : "";
+  const indicator = isActive ? (sortDirection === "asc" ? "▲" : "▼") : null;
   return (
     <th
-      className="env-table__sortable-th"
+      className={`env-table__sortable-th ${className}`.trim()}
       onClick={() => onSort(column)}
       aria-sort={isActive ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
     >
-      {label}
-      {indicator && <span className="env-table__sort-indicator" aria-hidden="true">{indicator}</span>}
+      <span className="env-table__sortable-content">
+        <span className="env-table__sortable-label">{label}</span>
+        {indicator && (
+          <span className="env-table__sort-indicator" aria-hidden="true">
+            {indicator}
+          </span>
+        )}
+      </span>
     </th>
   );
 }
@@ -84,10 +115,31 @@ function EnvironmentTable({ rows, sortColumn, sortDirection, onSort, renderActio
       <table className="table table-striped table-bordered">
         <thead>
           <tr>
-            <th>Environment</th>
+            <SortableTh
+              column="env"
+              label="Environment"
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={onSort}
+              className="env-table__col-env"
+            />
             <th>Description</th>
-            <SortableTh column="category" label="Category" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
-            <SortableTh column="organization" label="Organization" sortColumn={sortColumn} sortDirection={sortDirection} onSort={onSort} />
+            <SortableTh
+              column="category"
+              label="Category"
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={onSort}
+              className="env-table__col-category"
+            />
+            <SortableTh
+              column="organization"
+              label="Organization"
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={onSort}
+              className="env-table__col-organization"
+            />
             <th>Version</th>
             <th>Action</th>
           </tr>
@@ -95,7 +147,14 @@ function EnvironmentTable({ rows, sortColumn, sortDirection, onSort, renderActio
         <tbody>
           {sortedRows.map((row) => (
             <tr key={getRowKey(row)}>
-              <td style={getEnvStyle ? getEnvStyle(row) : undefined}>{getEnvName(row)}</td>
+              <td>
+                <EnvironmentNameCell
+                  name={getEnvName(row)}
+                  envKey={row.env}
+                  iconUrl={row.icon_url}
+                  textStyle={getEnvStyle ? getEnvStyle(row) : undefined}
+                />
+              </td>
               <td>{row.description || "N/A"}</td>
               <td>{row.category || "N/A"}</td>
               <td>{row.organization || "N/A"}</td>
@@ -137,6 +196,7 @@ function EnvironmentStep({ environments, onSelectEnvironment, onImportEnvironmen
         category: metadataByName[env.value]?.category ?? "N/A",
         organization: metadataByName[env.value]?.organization ?? "N/A",
         version: metadataByName[env.value]?.version ?? "N/A",
+        icon_url: metadataByName[env.value]?.icon_url,
       })),
     [environments, metadataByName]
   );
@@ -234,7 +294,9 @@ function EnvironmentStep({ environments, onSelectEnvironment, onImportEnvironmen
     <div className="environment-step">
       <section className="environment-step__section">
         <h5 className="environment-step__heading">Available</h5>
-        <p className="text-muted small mb-3">System and imported environments ready to use.</p>
+        <p className="text-muted small mb-3">
+          System and imported environments ready to use. Click &quot;Ready&quot; to use the environment
+        </p>
         {environments.length === 0 ? (
           <div className="alert alert-info mb-0">No environments available yet. Import one from the repository below.</div>
         ) : (

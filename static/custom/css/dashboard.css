@@ -392,15 +392,73 @@ footer {
   cursor: pointer;
   user-select: none;
   color: maroon;
+  white-space: nowrap;
 }
 
 .env-table__sortable-th:hover {
   background-color: rgba(128, 0, 0, 0.06);
 }
 
+.env-table__sortable-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.env-table__sortable-label {
+  display: inline-block;
+}
+
 .env-table__sort-indicator {
   font-size: 0.7rem;
-  margin-left: 0.15rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.env-table__col-env {
+  min-width: 12rem;
+}
+
+.env-table__env-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.env-table__env-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.env-table__env-fallback {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background-color: maroon;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.env-table__env-name {
+  line-height: 1.3;
+}
+
+.env-table__col-category {
+  min-width: 9rem;
+}
+
+.env-table__col-organization {
+  min-width: 10rem;
 }
 
 /* Inline job preview step */

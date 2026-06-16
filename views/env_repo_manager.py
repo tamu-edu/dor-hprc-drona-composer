@@ -64,7 +64,8 @@ class EnvironmentRepoManager:
                 "cluster": env_data.get("cluster", "Unknown"),
                 "organization": env_data.get("organization", "Unknown"),
                 "author": env_data.get("author", "Unknown"),
-                "last_updated": env_data.get("last_updated", "Unknown")
+                "last_updated": env_data.get("last_updated", "Unknown"),
+                "icon_url": env_data.get("icon_url"),
             }
             transformed.append(env_info)
         return transformed
