@@ -4,6 +4,7 @@ import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
+import DocumentsPage from "./DocumentsPage";
 import EnvironmentModal from "./EnvironmentModal";
 import SplitScreenModal from "./SplitScreenModal";
 import ConfirmationModal from "./ConfirmationModal";
@@ -264,6 +265,7 @@ function JobComposer({
   const sidebarItems = [
     { id: "workflow", label: "Workflow Engine" },
     { id: "history", label: "Jobs History" },
+    { id: "documents", label: "Documents" },
   ];
 
   return (
@@ -406,6 +408,19 @@ function JobComposer({
                   handleRerun={props.handleRerun}
                   handleForm={handleFormFromHistory}
                 />
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: activeSection === "documents" ? 'flex' : 'none',
+                flexDirection: 'column',
+                flex: 1,
+                minHeight: 0,
+              }}
+            >
+              <div className="card-body" style={{ overflow: 'hidden', flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <DocumentsPage />
               </div>
             </div>
           </div>

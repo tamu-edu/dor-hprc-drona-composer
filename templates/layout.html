@@ -111,6 +111,7 @@
 
         window.CONFIG_STATUS_URL = "{{ url_for('job_composer.config_status') }}";
         window.CONFIG_SAVE_URL = "{{ url_for('job_composer.config_save') }}";
+        document.docs_url = "{{ config.docs_url or 'https://tamu-edu.github.io/dor-hprc-drona-composer/docs/overview/intro' }}";
       </script>
 
       <div id="main-container" class="container" role="main">
