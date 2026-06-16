@@ -1,20 +1,21 @@
 import React from "react";
 
-const DEFAULT_DOCS_URL =
-  "https://tamu-edu.github.io/dor-hprc-drona-composer/docs/overview/intro";
+const DEFAULT_USER_GUIDES_URL =
+  "https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_wfe/";
 
 function DocumentsPage() {
-  const docsUrl =
-    (typeof document !== "undefined" && document.docs_url) || DEFAULT_DOCS_URL;
+  const userGuidesUrl =
+    (typeof document !== "undefined" && document.user_guides_url) ||
+    DEFAULT_USER_GUIDES_URL;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <h5 className="mb-3" style={{ fontWeight: "600" }}>
-        Documentation
+        User Guides
       </h5>
       <iframe
-        title="Drona Workflow Engine Documentation"
-        src={docsUrl}
+        title="Drona Workflow Engine User Guides"
+        src={userGuidesUrl}
         style={{
           flex: 1,
           width: "100%",

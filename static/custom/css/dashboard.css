@@ -233,12 +233,20 @@ footer {
 
 .job-composer-page {
   width: 100%;
-  height: calc(100vh - 56px);
+  height: calc(100vh - 20px);
   padding: 20px;
   box-sizing: border-box;
+}
+
+.job-composer-page--with-header {
+  height: calc(100vh - 72px - 20px);
 }
 
 .job-composer-container {
   height: 100%;
   max-height: 100%;
+}
+
+.job-composer-sidebar {
+  align-self: flex-start;
 }

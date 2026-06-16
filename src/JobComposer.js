@@ -4,7 +4,7 @@ import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
 import SubmissionHistory from "./SubmissionHistory";
-import DocumentsPage from "./DocumentsPage";
+import DocumentsPage from "./UserGuidePage";
 import EnvironmentModal from "./EnvironmentModal";
 import SplitScreenModal from "./SplitScreenModal";
 import ConfirmationModal from "./ConfirmationModal";
@@ -265,7 +265,7 @@ function JobComposer({
   const sidebarItems = [
     { id: "workflow", label: "Workflow Engine" },
     { id: "history", label: "Jobs History" },
-    { id: "documents", label: "Documents" },
+    { id: "documents", label: "User Guides" },
   ];
 
   return (
@@ -273,7 +273,7 @@ function JobComposer({
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       <div style={{ display: 'flex', flex: '1 1 auto', minHeight: 0, gap: '1rem', height: '100%' }}>
         <aside
-          className="card shadow"
+          className="card shadow job-composer-sidebar"
           style={{
             width: '220px',
             flexShrink: 0,
@@ -281,7 +281,6 @@ function JobComposer({
             flexDirection: 'column',
             gap: '0.75rem',
             padding: '1rem',
-            alignSelf: 'stretch',
           }}
         >
           {sidebarItems.map(({ id, label }) => (
