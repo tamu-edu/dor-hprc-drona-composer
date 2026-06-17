@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { getEnvironmentIconUrl, getEnvironmentInitial } from "./EnvironmentIcons";
 
+const COMPACT_MODE_STORAGE_KEY = "drona_composer_environment_compact_mode";
+
+function readCompactModePreference() {
+  try {
+    return localStorage.getItem(COMPACT_MODE_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 function EnvironmentNameCell({ name, envKey, iconUrl, textStyle }) {
   const [imageFailed, setImageFailed] = useState(false);
   const resolvedIconUrl = getEnvironmentIconUrl(envKey, iconUrl);
@@ -104,6 +114,28 @@ function sortRows(rows, sortColumn, sortDirection) {
   });
 }
 
+function DetailModeIcon() {
+  return (
+    <svg className="environment-step__mode-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M2 4h12v1.5H2V4zm0 3.25h12v1.5H2V7.25zm0 3.25h12V12H2v-1.5z"
+      />
+    </svg>
+  );
+}
+
+function CompactModeIcon() {
+  return (
+    <svg className="environment-step__mode-icon" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z"
+      />
+    </svg>
+  );
+}
+
 function EnvironmentTable({ rows, sortColumn, sortDirection, onSort, renderAction, getRowKey, getEnvName, getEnvStyle }) {
   const sortedRows = useMemo(
     () => sortRows(rows, sortColumn, sortDirection),
@@ -168,6 +200,46 @@ function EnvironmentTable({ rows, sortColumn, sortDirection, onSort, renderActio
   );
 }
 
+function EnvironmentCompactGrid({
+  rows,
+  sortColumn,
+  sortDirection,
+  renderAction,
+  getRowKey,
+  getEnvName,
+  getEnvStyle,
+}) {
+  const sortedRows = useMemo(
+    () => sortRows(rows, sortColumn, sortDirection),
+    [rows, sortColumn, sortDirection]
+  );
+
+  return (
+    <div className="env-compact-grid">
+      {sortedRows.map((row) => (
+        <article key={getRowKey(row)} className="env-compact-card">
+          <div className="env-compact-card__title-row">
+            <div className="env-compact-card__name">
+              <EnvironmentNameCell
+                name={getEnvName(row)}
+                envKey={row.env}
+                iconUrl={row.icon_url}
+                textStyle={getEnvStyle ? getEnvStyle(row) : undefined}
+              />
+            </div>
+            <span className="env-compact-card__version">{row.version || "N/A"}</span>
+          </div>
+          <div className="env-compact-card__meta-row">
+            <span className="env-compact-card__category">{row.category || "N/A"}</span>
+            <span className="env-compact-card__organization">{row.organization || "N/A"}</span>
+          </div>
+          <div className="env-compact-card__action">{renderAction(row)}</div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 function EnvironmentStep({ environments, onSelectEnvironment, onImportEnvironment }) {
   const [repoEnvironments, setRepoEnvironments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -178,6 +250,19 @@ function EnvironmentStep({ environments, onSelectEnvironment, onImportEnvironmen
   const [isLoading, setIsLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
+  const [isCompactMode, setIsCompactMode] = useState(readCompactModePreference);
+
+  const toggleCompactMode = () => {
+    setIsCompactMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(COMPACT_MODE_STORAGE_KEY, String(next));
+      } catch {
+        /* ignore quota/private mode */
+      }
+      return next;
+    });
+  };
 
   const importedNames = new Set(environments.map((e) => e.value));
   const isImported = (envName) => importedNames.has(envName);
@@ -290,78 +375,166 @@ function EnvironmentStep({ environments, onSelectEnvironment, onImportEnvironmen
     setOrganizationFilter("");
   };
 
+  const isFilterActive =
+    searchTerm.trim() !== "" || categoryFilter !== "" || organizationFilter !== "";
+
+  const EnvironmentList = isCompactMode ? EnvironmentCompactGrid : EnvironmentTable;
+
+  const importListProps = {
+    sortColumn,
+    sortDirection,
+    onSort: handleSort,
+    getRowKey: (row) => row.env,
+    getEnvName: (row) => row.env,
+    renderAction: (row) => (
+      <ImportEnvironmentButton
+        env={row}
+        isImported={isImported(row.env)}
+        onImport={handleImport}
+        onReady={handleReady}
+      />
+    ),
+  };
+
+  const renderImportCatalog = (rows, showCount) => {
+    if (isLoading) {
+      return (
+        <div className="text-center py-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+          <p className="mt-2">Loading environments...</p>
+        </div>
+      );
+    }
+
+    if (rows.length === 0) {
+      return (
+        <div className="alert alert-info mb-0">
+          {isFilterActive ? (
+            <>
+              No environments found matching your filters.
+              <button type="button" className="btn btn-link" onClick={resetFilters}>
+                Reset filters
+              </button>
+            </>
+          ) : (
+            "No environments found in the repository."
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <EnvironmentList rows={rows} {...importListProps} />
+        {showCount && (
+          <div className="mt-2 text-muted small">
+            Showing {rows.length} of {repoEnvironments.length} environments
+          </div>
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="environment-step">
-      <section className="environment-step__section">
-        <h5 className="environment-step__heading">Available</h5>
-        <p className="text-muted small mb-3">
-          System and imported environments ready to use. Click &quot;Ready&quot; to use the environment
-        </p>
-        {environments.length === 0 ? (
-          <div className="alert alert-info mb-0">No environments available yet. Import one from the repository below.</div>
-        ) : (
-          <EnvironmentTable
-            rows={availableRows}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            getRowKey={(row) => `${row.value}-${row.src}`}
-            getEnvName={(row) => row.label}
-            getEnvStyle={(row) => row.styles}
-            renderAction={(row) => <ReadyButton onClick={() => handleAvailableReady(row)} />}
+      <div className="environment-step__filters row align-items-center">
+        <div className="col-md-3 col-12 mb-2 mb-md-0">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search environments..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-        )}
-      </section>
-
-      <section className="environment-step__section">
-        <h5 className="environment-step__heading">Import from Repository</h5>
-        <div className="row mb-3">
-          <div className="col-md-6">
-            <input type="text" className="form-control" placeholder="Search environments..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          </div>
-          <div className="col-md-3">
-            <select className="form-control" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-              <option value="">All Categories</option>
-              {categories.map((category) => <option key={category} value={category}>{category}</option>)}
-            </select>
-          </div>
-          <div className="col-md-3">
-            <select className="form-control" value={organizationFilter} onChange={(e) => setOrganizationFilter(e.target.value)}>
-              <option value="">All Organizations</option>
-              {organizations.map((org) => <option key={org} value={org}>{org}</option>)}
-            </select>
-          </div>
         </div>
+        <div className="col-md-2 col-6 mb-2 mb-md-0">
+          <select
+            className="form-control"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-md-2 col-6 mb-2 mb-md-0">
+          <select
+            className="form-control"
+            value={organizationFilter}
+            onChange={(e) => setOrganizationFilter(e.target.value)}
+          >
+            <option value="">All Organizations</option>
+            {organizations.map((org) => (
+              <option key={org} value={org}>
+                {org}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-md-auto col-12 mb-2 mb-md-0">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={resetFilters}
+            disabled={!isFilterActive}
+          >
+            Clear search
+          </button>
+        </div>
+        <div className="col-md-auto col-12 ml-md-auto">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm environment-step__mode-toggle"
+            onClick={toggleCompactMode}
+            aria-pressed={isCompactMode}
+          >
+            {isCompactMode ? <CompactModeIcon /> : <DetailModeIcon />}
+            {isCompactMode ? "Compact Mode" : "Detail Mode"}
+          </button>
+        </div>
+      </div>
 
-        {isLoading ? (
-          <div className="text-center py-4">
-            <div className="spinner-border text-primary" role="status"><span className="sr-only">Loading...</span></div>
-            <p className="mt-2">Loading environments...</p>
-          </div>
-        ) : filteredImportRows.length === 0 ? (
-          <div className="alert alert-info">
-            No environments found matching your filters.
-            <button type="button" className="btn btn-link" onClick={resetFilters}>Reset filters</button>
-          </div>
-        ) : (
-          <>
-            <EnvironmentTable
-              rows={filteredImportRows}
+      {!isFilterActive && (
+        <section className="environment-step__section">
+          <h5 className="environment-step__heading">Available</h5>
+          <p className="text-muted small mb-3">
+            System and imported environments ready to use. Click &quot;Ready&quot; to use the environment
+          </p>
+          {environments.length === 0 ? (
+            <div className="alert alert-info mb-0">
+              No environments available yet. Import one from the repository below.
+            </div>
+          ) : (
+            <EnvironmentList
+              rows={availableRows}
               sortColumn={sortColumn}
               sortDirection={sortDirection}
               onSort={handleSort}
-              getRowKey={(row) => row.env}
-              getEnvName={(row) => row.env}
-              renderAction={(row) => (
-                <ImportEnvironmentButton env={row} isImported={isImported(row.env)} onImport={handleImport} onReady={handleReady} />
-              )}
+              getRowKey={(row) => `${row.value}-${row.src}`}
+              getEnvName={(row) => row.label}
+              getEnvStyle={(row) => row.styles}
+              renderAction={(row) => <ReadyButton onClick={() => handleAvailableReady(row)} />}
             />
-            <div className="mt-2 text-muted small">
-              Showing {filteredImportRows.length} of {repoEnvironments.length} environments
-            </div>
-          </>
-        )}
-      </section>
+          )}
+        </section>
+      )}
+
+      {!isFilterActive ? (
+        <section className="environment-step__section">
+          <h5 className="environment-step__heading">Import from Repository</h5>
+          {renderImportCatalog(repoEnvironments, true)}
+        </section>
+      ) : (
+        <section className="environment-step__section environment-step__section--filter-mode">
+          {renderImportCatalog(filteredImportRows, false)}
+        </section>
+      )}
     </div>
   );
 }

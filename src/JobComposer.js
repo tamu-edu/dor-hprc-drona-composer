@@ -235,7 +235,17 @@ function JobComposer({
         setHasSubmittedCurrentPreview(false);
       }
       setWorkflowStep(step);
+      return;
     }
+    if (step === 3 && workflowStep === 2) {
+      handlePreview();
+    }
+  };
+
+  const isStepClickable = (step, current) => {
+    if (step < current) return true;
+    if (step === 3 && current === 2) return true;
+    return false;
   };
 
   const handleSelectEnvironment = (option) => {
@@ -354,6 +364,8 @@ function JobComposer({
                     <WorkflowStepTracker
                       currentStep={workflowStep}
                       onStepClick={handleStepClick}
+                      isStepClickable={isStepClickable}
+                      isStepDisabled={(step) => step === 3 && isPreviewLoading}
                     />
 
                     {workflowStep === 1 && (

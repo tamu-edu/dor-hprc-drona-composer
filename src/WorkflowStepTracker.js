@@ -6,14 +6,20 @@ const STEPS = [
   { number: 3, label: "Job Preview" },
 ];
 
-function WorkflowStepTracker({ currentStep, onStepClick }) {
+function WorkflowStepTracker({ currentStep, onStepClick, isStepClickable, isStepDisabled }) {
+  const defaultClickable = (stepNumber) => currentStep > stepNumber;
+  const canClick = (stepNumber) =>
+    onStepClick &&
+    (isStepClickable ? isStepClickable(stepNumber, currentStep) : defaultClickable(stepNumber));
+
   return (
-    <nav className="workflow-step-tracker" aria-label="Workflow progress">
+    <nav className="workflow-step-tracker workflow-step-tracker--compact" aria-label="Workflow progress">
       <ol className="workflow-step-tracker__list">
         {STEPS.map((step, index) => {
           const isActive = currentStep === step.number;
           const isCompleted = currentStep > step.number;
-          const isClickable = isCompleted && onStepClick;
+          const isClickable = canClick(step.number);
+          const isDisabled = !isClickable || (isStepDisabled?.(step.number) ?? false);
 
           return (
             <li
@@ -22,6 +28,7 @@ function WorkflowStepTracker({ currentStep, onStepClick }) {
                 "workflow-step-tracker__item",
                 isActive && "workflow-step-tracker__item--active",
                 isCompleted && "workflow-step-tracker__item--completed",
+                isClickable && "workflow-step-tracker__item--clickable",
               ]
                 .filter(Boolean)
                 .join(" ")}
@@ -41,7 +48,7 @@ function WorkflowStepTracker({ currentStep, onStepClick }) {
                 type="button"
                 className="workflow-step-tracker__step"
                 onClick={isClickable ? () => onStepClick(step.number) : undefined}
-                disabled={!isClickable}
+                disabled={isDisabled}
                 aria-current={isActive ? "step" : undefined}
               >
                 <span className="workflow-step-tracker__circle">
