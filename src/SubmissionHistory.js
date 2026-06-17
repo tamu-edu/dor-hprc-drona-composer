@@ -2,12 +2,39 @@ import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { tableCustomStyles } from './tablestyle.jsx';
 
+const sortByTimestamp = (jobs) =>
+  [...jobs].sort((a, b) => {
+    if (!a.timestamp) return 1;
+    if (!b.timestamp) return -1;
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  });
+
+function RefreshIcon({ spinning = false }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      style={{
+        marginRight: '6px',
+        flexShrink: 0,
+        animation: spinning ? 'rotate 0.8s infinite linear' : undefined,
+      }}
+    >
+      <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+    </svg>
+  );
+}
+
 const SubmissionHistory = ({ handleRerun, handleForm }) => {
   const [jobHistory, setJobHistory] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState('__none__');
   const [filteredData, setFilteredData] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -29,35 +56,65 @@ const SubmissionHistory = ({ handleRerun, handleForm }) => {
     setStartDate(defaultStartDate);
     setEndDate(defaultEndDate);
 
-    fetchJobHistory();
+    fetchJobHistory().catch((error) => {
+      console.error('Failed to fetch job history:', error);
+    });
   }, []);
 
-  const fetchJobHistory = async () => {
-    try {
-      const response = await fetch(`${document.dashboard_url}/jobs/composer/history`);
-      const data = await response.json();
-      
-      const processedData = data.map((job, index) => ({
-        ...job,
-        _rowId: `${index}`
-      }));
-      
-      setJobHistory(processedData);
-    } catch (error) {
-      console.error('Failed to fetch job history:', error);
+  const filterByDateRange = (jobs, fromDate, toDate) => {
+    if (!fromDate || !toDate) {
+      return sortByTimestamp(jobs);
     }
+
+    const filtered = jobs.filter((job) => {
+      if (!job.timestamp) return true;
+      const jobDate = new Date(job.timestamp);
+
+      const startDateObj = new Date(fromDate);
+      startDateObj.setHours(23, 59, 59, 999);
+
+      const endDateObj = new Date(toDate);
+      endDateObj.setDate(endDateObj.getDate() + 1);
+      endDateObj.setHours(23, 59, 59, 999);
+
+      return jobDate >= startDateObj && jobDate <= endDateObj;
+    });
+
+    return sortByTimestamp(filtered);
   };
 
+  const fetchJobHistory = async ({ applyCurrentFilter = false } = {}) => {
+    const response = await fetch(`${document.dashboard_url}/jobs/composer/history`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch job history (${response.status})`);
+    }
 
-  useEffect(() => {
-    const sorted = [...jobHistory].sort((a, b) => {
-      if (!a.timestamp) return 1;
-      if (!b.timestamp) return -1;
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
-    setFilteredData(sorted);
-  }, [jobHistory]);
+    const data = await response.json();
+    const processedData = data.map((job, index) => ({
+      ...job,
+      _rowId: `${index}`,
+    }));
 
+    setJobHistory(processedData);
+    if (applyCurrentFilter) {
+      setFilteredData(filterByDateRange(processedData, startDate, endDate));
+    } else {
+      setFilteredData(sortByTimestamp(processedData));
+    }
+
+    return processedData;
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchJobHistory({ applyCurrentFilter: true });
+    } catch (error) {
+      console.error('Failed to refresh job history:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const columns = [
     {
@@ -185,62 +242,54 @@ const SubmissionHistory = ({ handleRerun, handleForm }) => {
 
 
   const handleFilter = () => {
-    const filtered = jobHistory.filter(job => {
-      if (!job.timestamp || !startDate || !endDate) return true;
-      const jobDate = new Date(job.timestamp);
-
-      const startDateObj = new Date(startDate);
-      startDateObj.setHours(23, 59, 59, 999);
-
-      const endDateObj = new Date(endDate );
-      endDateObj.setDate(endDateObj.getDate() + 1);
-      endDateObj.setHours(23, 59, 59, 999);
-      return jobDate >= startDateObj && jobDate <= endDateObj;
-    });
-    const sortedFiltered = [...filtered].sort((a, b) => {
-      if (!a.timestamp) return 1;
-      if (!b.timestamp) return -1;
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
-
-    setFilteredData(sortedFiltered);
-
+    setFilteredData(filterByDateRange(jobHistory, startDate, endDate));
   };
 
 
 
   return (
     <div
-      className="mt-4 p-4 rounded"
+      className="submission-history-panel rounded"
       style={{
         backgroundColor: '#f8f9fa',
         border: '1px solid #dee2e6',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
     }}
     >
-    <h5 className="mb-3" style={{ fontWeight: '600' }}>Job Submission History</h5>
-      <div className="date-inputs mb-3">
-        <label htmlFor="startDate">From</label>
-        <input
-          type="date"
-          id="startDate"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="mx-2"
-        />
-        <label htmlFor="endDate">To</label>
-        <input
-          type="date"
-          id="endDate"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="mx-2"
-        />
+    <h5 className="submission-history-panel__title">Job Submission History</h5>
+      <div className="date-inputs submission-history-panel__filters d-flex justify-content-between align-items-center flex-wrap">
+        <div className="d-flex align-items-center flex-wrap">
+          <label htmlFor="startDate">From</label>
+          <input
+            type="date"
+            id="startDate"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="mx-2"
+          />
+          <label htmlFor="endDate">To</label>
+          <input
+            type="date"
+            id="endDate"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="mx-2"
+          />
+          <button
+            className="btn btn-primary maroon-button"
+            onClick={handleFilter}
+          >
+            Filter
+          </button>
+        </div>
         <button
-          className="btn btn-primary maroon-button"
-          onClick={handleFilter}
+          className="btn btn-primary maroon-button d-inline-flex align-items-center mt-2 mt-md-0"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          aria-label="Refresh job history"
         >
-         Filter
+          <RefreshIcon spinning={isRefreshing} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 

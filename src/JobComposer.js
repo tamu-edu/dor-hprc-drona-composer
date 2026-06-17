@@ -10,6 +10,7 @@ import JobPreviewStep from "./JobPreviewStep";
 import { useJobSocket } from "./hooks/useJobSocket";
 import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import ConfigGate from "./ConfigGate";
+import SettingsPage from "./SettingsPage";
 
 function SidebarIcon({ name }) {
   const iconProps = {
@@ -33,6 +34,14 @@ function SidebarIcon({ name }) {
     return (
       <svg {...iconProps}>
         <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7Z" />
+      </svg>
+    );
+  }
+
+  if (name === "settings") {
+    return (
+      <svg {...iconProps}>
+        <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.506.506 0 0 0-.5-.42h-3.84c-.25 0-.46.18-.5.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5z" />
       </svg>
     );
   }
@@ -262,6 +271,7 @@ function JobComposer({
     { id: "workflow", label: "Workflow Engine", icon: "gear" },
     { id: "history", label: "Jobs History", icon: "clock" },
     { id: "documents", label: "User Guides", icon: "book" },
+    { id: "settings", label: "Settings", icon: "settings" },
   ];
 
   return (
@@ -469,7 +479,10 @@ function JobComposer({
                 minHeight: 0,
               }}
             >
-              <div className="card-body" style={{ overflowY: "auto", flex: "1 1 auto" }}>
+              <div
+                className="card-body job-composer-history-body"
+                style={{ overflowY: "auto", flex: "1 1 auto" }}
+              >
                 <SubmissionHistory
                   handleRerun={props.handleRerun}
                   handleForm={handleFormFromHistory}
@@ -497,6 +510,19 @@ function JobComposer({
                 }}
               >
                 <UserGuidePage />
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: activeSection === "settings" ? "flex" : "none",
+                flexDirection: "column",
+                flex: 1,
+                minHeight: 0,
+              }}
+            >
+              <div className="card-body" style={{ overflowY: "auto", flex: "1 1 auto" }}>
+                <SettingsPage />
               </div>
             </div>
           </div>
