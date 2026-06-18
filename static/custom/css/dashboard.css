@@ -254,6 +254,15 @@ footer {
 .job-composer-sidebar .btn {
   display: flex;
   align-items: center;
+  box-shadow: none !important;
+}
+
+.job-composer-sidebar .btn:hover,
+.job-composer-sidebar .btn:focus,
+.job-composer-sidebar .btn:active,
+.job-composer-sidebar .btn:focus-visible {
+  box-shadow: none !important;
+  outline: none;
 }
 
 .job-composer-user-guides-body {
