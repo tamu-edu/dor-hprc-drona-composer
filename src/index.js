@@ -178,7 +178,7 @@ export function App() {
     setEnvironment({
       env: option.value,
       src: option.src,
-      icon: option.icon || "🧩",
+      icon: option.icon,
       is_user_env: option.is_user_env,
    });
 
@@ -336,7 +336,7 @@ export function App() {
             src: newEnv.src,
             is_user_env: true,
             styles: { color: "#3B71CA" },
-            icon: newEnv.icon || "🧩",
+            icon: newEnv.icon,
           },
         ];
       });

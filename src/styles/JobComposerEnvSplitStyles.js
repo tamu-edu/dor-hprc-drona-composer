@@ -111,6 +111,13 @@ const styles = `
 }
 
 .env-icon {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.env-add-icon {
   line-height: 1;
   font-size: 2rem;
   width: 42px;

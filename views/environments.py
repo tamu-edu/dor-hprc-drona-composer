@@ -1,11 +1,70 @@
-from flask import request, jsonify, current_app as app
+from flask import (
+    request,
+    jsonify,
+    current_app as app,
+    send_from_directory,
+    url_for,
+)
 import os
-import json
 import shutil
-import yaml
 from .error_handler import APIError, handle_api_error
 from .utils import create_folder_if_not_exist, get_drona_dir, get_envs_dir
 from .env_repo_manager import EnvironmentRepoManager
+
+
+ENV_ICON_DIR = os.path.abspath(os.path.join("static", "env-icons"))
+ENV_ICON_FILENAME = "icon.png"
+DEFAULT_ICON_FILENAME = "generic_puzzle.png"
+
+
+def get_env_root_for_icon_source(source):
+    if source == "system":
+        return os.path.abspath("./environments")
+
+    if source == "user":
+        eres = get_envs_dir()
+        if eres.get("ok"):
+            return os.path.abspath(eres["path"])
+
+    return None
+
+
+def get_env_icon_path(env_root_path, env_name):
+    if os.path.basename(env_name) != env_name:
+        return None
+
+    env_dir = os.path.abspath(os.path.join(env_root_path, env_name))
+    icon_path = os.path.abspath(os.path.join(env_dir, ENV_ICON_FILENAME))
+
+    # Only consider the conventional icon.png inside the environment directory.
+    if not icon_path.startswith(env_dir + os.sep):
+        return None
+
+    if not os.path.isfile(icon_path):
+        return None
+
+    return icon_path
+
+
+def get_env_icon_url(env_root_path, env_name):
+    env_root_path = os.path.abspath(env_root_path)
+    source = None
+    for possible_source in ("system", "user"):
+        source_root = get_env_root_for_icon_source(possible_source)
+        if source_root and source_root == env_root_path:
+            source = possible_source
+            break
+
+    if not source or not get_env_icon_path(env_root_path, env_name):
+        return url_for("static", filename=f"env-icons/{DEFAULT_ICON_FILENAME}")
+
+    # Serve icons through Flask so the browser receives a URL under the
+    # Open OnDemand app prefix, never a filesystem path.
+    return url_for(
+        "job_composer.get_environment_icon_route",
+        environment=env_name,
+        source=source,
+    )
 
 
 def get_directories(path):
@@ -15,31 +74,32 @@ def get_directories(path):
 def _get_environments():
     """Get list of all available environments (system and user)"""
     system_environments = []
-    ICON_MAP = {
-        "AlphaFold": "🧬",
-        "Parabricks": "🧬",
-        "Python": "🐍",
-        "Generic": "🧩",
-        "Jupyter": "📓",
-        "RStudio": "📊",
-    }
     try:
-        system_environments = get_directories("./environments")
         system_env_path = os.path.abspath("./environments")
-        system_environments = [{"env": env, "src": system_env_path, "is_user_env": False, "icon": ICON_MAP.get(env, "🧩")} for env in system_environments]
+        system_environments = [
+            {
+                "env": env,
+                "src": system_env_path,
+                "is_user_env": False,
+                "icon": get_env_icon_url(
+                    system_env_path,
+                    env
+                ),
+            }
+            for env in get_directories(system_env_path)
+        ]
     except (PermissionError, FileNotFoundError, OSError):
         system_environments = []
     
     dd = get_drona_dir()
     if not dd["ok"]:
         return system_environments
-    drona_dir = dd["drona_dir"]
 
     user_envs_path = request.args.get("user_envs_path")
     if user_envs_path is None:
         eres = get_envs_dir()
         if not eres["ok"]:
-            return jsonify({"message": eres["reason"]}), 400
+            return system_environments
         user_envs_path = eres["path"]
         try:
             create_folder_if_not_exist(user_envs_path)
@@ -49,26 +109,40 @@ def _get_environments():
     user_environments = []
     try:
         user_environments = get_directories(user_envs_path)
-        user_environments = [{"env": env,"src": user_envs_path,"is_user_env": True,"icon": get_env_icon_from_metadata(user_envs_path, env)} for env in user_environments]
+        user_environments = [
+            {
+                "env": env,
+                "src": user_envs_path,
+                "is_user_env": True,
+                "icon": get_env_icon_url(user_envs_path, env),
+            }
+            for env in user_environments
+        ]
     except (PermissionError, FileNotFoundError, OSError):
         user_environments = []
 
     environments = system_environments + user_environments
     return environments
-    
-def get_env_icon_from_metadata(env_root_path, env_name):
-    DEFAULT_ICON = "🧩"
-    metadata_path = os.path.join(env_root_path, env_name, "metadata.yml")
 
-    if not os.path.exists(metadata_path):
-        return DEFAULT_ICON
-    try:
-        with open(metadata_path, "r") as f:
-            metadata = yaml.safe_load(f) or {}
 
-        return metadata.get("icon") or DEFAULT_ICON
-    except (PermissionError, OSError, yaml.YAMLError):
-        return DEFAULT_ICON
+def get_environment_icon_route(environment):
+    """Serve icon.png from an allowed environment root, or the default icon."""
+    source = request.args.get("source")
+
+    safe_environment = os.path.basename(environment)
+    if safe_environment != environment:
+        return send_from_directory(ENV_ICON_DIR, DEFAULT_ICON_FILENAME)
+
+    env_root_path = get_env_root_for_icon_source(source)
+    if not env_root_path:
+        return send_from_directory(ENV_ICON_DIR, DEFAULT_ICON_FILENAME)
+
+    icon_path = get_env_icon_path(env_root_path, safe_environment)
+    if not icon_path:
+        return send_from_directory(ENV_ICON_DIR, DEFAULT_ICON_FILENAME)
+
+    env_dir = os.path.dirname(icon_path)
+    return send_from_directory(env_dir, ENV_ICON_FILENAME)
 
 def get_environment_route(environment):
     """Get template file for a specific environment"""
@@ -81,7 +155,7 @@ def get_environment_route(environment):
     if os.path.exists(template_path):
         template_data = open(template_path, 'r').read()
     else:
-        raise FileNotFoundError(f"{os.path.join(env_dir, environment, 'template.txt')} not found")
+        raise FileNotFoundError(f"{template_path} not found")
 
     return template_data
 
@@ -89,7 +163,6 @@ def get_environment_route(environment):
 def add_environment_route():
     """Add a new environment from the repository"""
     env = request.form.get("env")
-    src = request.form.get("src")
 
     if not env:
         raise APIError(
@@ -98,7 +171,6 @@ def add_environment_route():
             details={'error': 'The "env" parameter is required'}
         )
 
-    cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
             repo_url=app.config['env_repo_github'],
             repo_dir="./environments-repo"
@@ -218,6 +290,7 @@ def get_more_envs_info_route():
 def register_environment_routes(blueprint):
     """Register all environment-related routes to the blueprint"""
     blueprint.route('/environment/<environment>', methods=['GET'])(get_environment_route)
+    blueprint.route('/environment_icon/<environment>', methods=['GET'])(get_environment_icon_route)
     blueprint.route('/environments', methods=['GET'])(get_environments_route)
     blueprint.route('/add_environment', methods=['POST'])(add_environment_route)
     blueprint.route('/get_more_envs_info', methods=['GET'])(get_more_envs_info_route)
