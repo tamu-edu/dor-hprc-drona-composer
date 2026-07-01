@@ -1,6 +1,16 @@
 import React, { useMemo, useState } from "react";
 
-const DEFAULT_ICON = "🧩";
+const DEFAULT_ICON = "/static/env-icons/generic_puzzle.png";
+
+function getIconUrl(icon = DEFAULT_ICON) {
+  const appRoot = document.dashboard_url || "";
+
+  if (appRoot && icon.startsWith("/") && !icon.startsWith(appRoot)) {
+    return `${appRoot}${icon}`;
+  }
+
+  return icon;
+}
 
 function EnvironmentFilmstrip({
   environments = [],
@@ -55,7 +65,16 @@ function EnvironmentFilmstrip({
         onSelectEnvironment("runtime", option);
       }}
     >
-      <div className="env-icon">{env.icon || DEFAULT_ICON}</div>
+      <img
+        className="env-icon"
+        src={getIconUrl(env.icon)}
+        alt={`${name} icon`}
+        onError={(event) => {
+          if (event.currentTarget.dataset.fallbackApplied === "true") return;
+          event.currentTarget.dataset.fallbackApplied = "true";
+          event.currentTarget.src = getIconUrl();
+        }}
+      />
       <div className="env-name">{name}</div>
         
       {isUserEnv && (
@@ -128,7 +147,7 @@ function EnvironmentFilmstrip({
             className="env-tile env-add"
             onClick={onAddEnvironment}
           >
-            <div className="env-icon">+</div>
+            <div className="env-add-icon">+</div>
             <div className="env-name">Import</div>
           </button>
         </div>
