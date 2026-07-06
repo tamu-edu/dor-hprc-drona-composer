@@ -58,6 +58,18 @@ const styles = `
   min-width: 0;
 }
 
+.composer-filmstrip-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.composer-filmstrip-toggle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
 .env-filmstrip {
   display: flex !important;
   flex-direction: column !important;

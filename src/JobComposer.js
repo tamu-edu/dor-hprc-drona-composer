@@ -38,6 +38,7 @@ function JobComposer({
   const [missingRequiredFields, setMissingRequiredFields] = useState([]);
   const [configBlocked, setConfigBlocked] = useState(false);
   const [hasSubmittedCurrentPreview, setHasSubmittedCurrentPreview] = useState(false);
+  const [showEnvironmentFilmstrip, setShowEnvironmentFilmstrip] = useState(true);
 
   const [workflowMode, setWorkflowmode] = useState(null)
 
@@ -291,6 +292,7 @@ function JobComposer({
                   <div className="col-lg-12">
                     <div id="job-content" style={{ maxWidth: '100%' }}>
                       <div className="composer-multipane-layout">
+                          {showEnvironmentFilmstrip && (
                           <aside className="composer-filmstrip-pane">
                             <EnvironmentFilmstrip
                               environments={props.environments}
@@ -301,8 +303,26 @@ function JobComposer({
                               onExportEnvironment={props.handleExportEnv}
                             />
                           </aside>
+                          )}
                         
                           <main className="composer-form-pane">
+                            <div className="composer-filmstrip-toggle-row">
+                              <div className="custom-control custom-switch composer-filmstrip-toggle">
+                                <input
+                                  type="checkbox"
+                                  className="custom-control-input"
+                                  id="environment-filmstrip-toggle"
+                                  checked={showEnvironmentFilmstrip}
+                                  onChange={(event) => setShowEnvironmentFilmstrip(event.target.checked)}
+                                />
+                                <label
+                                  className="custom-control-label"
+                                  htmlFor="environment-filmstrip-toggle"
+                                >
+                                  Show environments
+                                </label>
+                              </div>
+                            </div>
                             {!props.environment || !props.environment.env ? (
                               <div className="empty-form-pane">
                                 Select an environment to configure a job.
