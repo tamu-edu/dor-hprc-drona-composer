@@ -319,7 +319,7 @@ function JobComposer({
                                   className="custom-control-label"
                                   htmlFor="environment-filmstrip-toggle"
                                 >
-                                  Show environments
+                                  Show Environment Selection Pane
                                 </label>
                               </div>
                             </div>
