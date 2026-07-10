@@ -69,7 +69,7 @@ def get_env_icon_url(env_root_path, env_name):
 
 def get_directories(path):
     """Get list of directories in a given path"""
-    return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+    return sorted([d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))])
 
 def _get_environments():
     """Get list of all available environments (system and user)"""
