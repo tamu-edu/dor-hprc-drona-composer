@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Drona Workflow Engine](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html), developed by High Performance Research Computing (HPRC) at Texas A&M University, assists researchers in creating and submitting any type of job (including complex multi-stage jobs) using a 100% graphical interface. It guides the researcher in providing job-specific information, generating all necessary job files, and submitting the job on the user's behalf.
+[Drona Workflow Engine](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html), developed by High Performance Research Computing (HPRC) at Texas A&M University, assists researchers in creating, submitting, and monitoring any type of workflow (including complex multi-stage jobs) using a 100% graphical interface. It guides the researcher in providing workflow-specific information, generating all necessary job files, and submitting the job on the user's behalf.
 
 - **App type:** Passenger Phusion app (React/Flask), categorized under "Jobs"
 - **License:** MIT
@@ -32,7 +32,7 @@ Open OnDemand >=3.0
 
 Python 3.8+ (see `requirements.txt` for dependencies)
 
-For detailed information on how to use Drona Workflow Engine and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Workflow Engine](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html) User Guide.
+For detailed information on how to use Drona Workflow Engine and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Workflow Engine](https://tamu-edu.github.io/dor-hprc-drona-composer/) website.
 
 To set up/install Drona Workflow Engine, see the instructions below. If you have any questions, please contact us at help@hprc.tamu.edu. If you find any bugs, you are welcome to create an issue in this repo.
 
