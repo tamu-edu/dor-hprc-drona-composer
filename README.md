@@ -9,7 +9,7 @@
 
 ## Screenshots
 
-![The Drona Dashboard](https://github.com/tamu-edu/dor-hprc-drona-composer/.github/drona.png)
+![The Drona Dashboard](https://github.com/tamu-edu/dor-hprc-drona-composer/blob/master/.github/drona.png)
 
 ## Features
 
