@@ -9,4 +9,4 @@ tmp/
 static/dist/
 logs/
 config.yml
-environments-repo/
+environments-repo/package-lock.json
