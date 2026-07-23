@@ -2,7 +2,7 @@
 
 ## Overview
 
-[Drona Workflow Engine](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html), developed by High Performance Research Computing (HPRC) at Texas A&M University, assists researchers in creating, submitting, and monitoring any type of workflow (including complex multi-stage jobs) using a 100% graphical interface. It guides the researcher in providing workflow-specific information, generating all necessary job files, and submitting the job on the user's behalf.
+[Drona Workflow Engine](https://tamu-edu.github.io/dor-hprc-drona-composer/), developed by High Performance Research Computing (HPRC) at Texas A&M University, assists researchers in creating, submitting, and monitoring any type of workflow (including complex multi-stage jobs) using a 100% graphical interface. It guides the researcher in providing workflow-specific information, generating all necessary job files, and submitting the job on the user's behalf.
 
 - **App type:** Passenger Phusion app (React/Flask), categorized under "Jobs"
 - **License:** MIT
