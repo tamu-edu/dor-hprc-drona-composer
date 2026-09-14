@@ -102,7 +102,7 @@
 
       <script>
            window.APP_ROOT = {{ request.script_root|tojson }};
-           document.dashboard_url = window.APP_ROOT;
+           document.dashboard_url = "{{ config.dashboard_url }}" || window.APP_ROOT;
 
            document.file_app_url = "{{ config.file_app_url }}";
            document.file_editor_url = "{{ config.file_editor_url }}";
