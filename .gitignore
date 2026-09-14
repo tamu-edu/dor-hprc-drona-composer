@@ -10,3 +10,5 @@ static/dist/
 logs/
 config.yml
 environments-repo/
+docs/
+API.md
