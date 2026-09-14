@@ -12,3 +12,4 @@ config.yml
 environments-repo/
 docs/
 API.md
+.env

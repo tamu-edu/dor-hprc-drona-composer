@@ -8,8 +8,20 @@ import os
 
 app = Flask(__name__)
 
+def read_app_env_file():
+    """Read the APP_ENV value written by setup.sh, if present."""
+    env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+    if not os.path.exists(env_file):
+        return None
+    with open(env_file) as file:
+        for line in file:
+            key, _, value = line.strip().partition('=')
+            if key == 'APP_ENV' and value:
+                return value
+    return None
+
 def detect_env():
-    env = os.environ.get('APP_ENV')
+    env = os.environ.get('APP_ENV') or read_app_env_file()
     if env:
         return env
     path = os.getcwd()
