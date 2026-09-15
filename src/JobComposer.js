@@ -13,6 +13,7 @@ import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import ConfigGate from "./ConfigGate";
 import Footer from "./Footer";
 import "./styles/JobComposerEnvSplitStyles.js";
+import SubmissionHistory from "./SubmissionHistory";
 
 
 function JobComposer({
@@ -401,6 +402,11 @@ function JobComposer({
                 </div>
 
               </form>
+		  <SubmissionHistory
+		  	isExpanded={true}
+		  	handleRerun={props.handleRerun}
+		  	handleForm={props.handleForm}
+		  />
               <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
                 <Footer/>
               </div>
