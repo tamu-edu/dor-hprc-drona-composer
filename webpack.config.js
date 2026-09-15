@@ -1,4 +1,5 @@
 const path = require("path");
+const zlib = require("zlib");
 const TerserPlugin = require('terser-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
@@ -15,14 +16,20 @@ module.exports = (env, argv) => {
     },
     optimization: {
       minimize: isProduction,
+      concatenateModules: isProduction,
       minimizer: [
         new TerserPlugin({
           terserOptions: {
             compress: {
               drop_console: isProduction,
-              drop_debugger: isProduction
+              drop_debugger: isProduction,
+              passes: 2
+            },
+            format: {
+              comments: false
             }
-          }
+          },
+          extractComments: false
         })
       ],
       splitChunks: {
@@ -48,9 +55,23 @@ module.exports = (env, argv) => {
         new CompressionPlugin({
           test: /\.js$/,
           algorithm: 'gzip'
+        }),
+        new CompressionPlugin({
+          test: /\.js$/,
+          algorithm: 'brotliCompress',
+          filename: '[path][base].br',
+          compressionOptions: {
+            params: {
+              [zlib.constants.BROTLI_PARAM_QUALITY]: 11
+            }
+          }
         })
       ] : [])
     ],
+    performance: {
+      maxAssetSize: 1572864,
+      maxEntrypointSize: 1572864
+    },
     module: {
       rules: [
         {

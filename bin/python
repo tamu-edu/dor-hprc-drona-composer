@@ -1,6 +1,5 @@
 #!/bin/bash
 #source "$(pwd)/.venv/bin/activate"
 
-"$(pwd)/setup.sh"
 source "$(pwd)/.venv/bin/activate"
 exec python "$@"

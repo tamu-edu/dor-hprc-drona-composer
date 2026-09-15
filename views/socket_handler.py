@@ -12,9 +12,8 @@ from flask import request, jsonify, Blueprint
 from views.utils import get_drona_dir, get_runtime_dir
 
 
-# Directory for job communication
-JOBS_DIR = os.path.join('/var/www/ood/apps/dev/a11155/gateway/dor-hprc-drona-composer/active_jobs')
 
+# Directory for job communication
 def get_jobs_dir():
     drona_root = get_drona_dir()
     if not drona_root["ok"]:
