@@ -200,9 +200,17 @@ def process_function(value, environment, env_dir):
                 # Remove outer quotes if present
                 if (var.startswith('"') and var.endswith('"')) or (var.startswith("'") and var.endswith("'")):
                     var = var[1:-1]
-                # Remove variable tags
+                    processed_variables.append(var)
+                    continue
+                # Remove variable tags (mapped form values)
                 if var.startswith('<var>') and var.endswith('</var>'):
                     var = var[5:-6]
+                    processed_variables.append(var)
+                    continue
+                # Unmapped $param: pass None instead of the literal "$name"
+                if var.startswith('$'):
+                    processed_variables.append(None)
+                    continue
                 processed_variables.append(var)
             
             # Get the function, prioritizing the local module
