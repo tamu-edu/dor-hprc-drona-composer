@@ -24,6 +24,7 @@ import DynamicCheckboxGroup from "./DynamicCheckboxGroup";
 import DynamicViewer from "./DynamicViewer";
 import Container from "./Container";
 import WorkflowActions from "./WorkflowActions";
+import RunningJobSelect from "./RunningJobSelect";
 
 export {
 	Text,
@@ -52,7 +53,8 @@ export {
 	DynamicCheckboxGroup,
 	Container,
 	DynamicViewer,
-	WorkflowActions
+	WorkflowActions,
+	RunningJobSelect
 }
 
 export const componentsMap = {
@@ -82,8 +84,8 @@ export const componentsMap = {
 	container: Container,
 	workflowActions: WorkflowActions,
 	workflowRecreateRerun: WorkflowActions,
-	hidden: Hidden
-
+	hidden: Hidden,
+	runningJobSelect: RunningJobSelect
 };
 
 export const Containers = ["rowContainer", "container", "collapsibleRowContainer", "collapsibleColContainer", "dragDropContainer", "jobNameLocation"];
