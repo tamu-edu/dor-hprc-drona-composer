@@ -4,6 +4,7 @@ import json
 import jsonref
 import subprocess
 import traceback
+from string import Template
 from .error_handler import APIError, handle_api_error
 from copy import deepcopy
 from .utils import get_envs_dir, get_runtime_dir
@@ -180,6 +181,9 @@ def get_schema_route(environment):
     try:
         abs_path = os.path.abspath(base_path)
         base_uri = f'file:///{abs_path.lstrip("/").replace(os.sep, "/")}/'
+        # Allows $ref targets to point at the fixed runtime_support directory via e.g.
+        # "$ref": "$DRONA_RUNTIME_DIR/foo.json#/defs/bar"
+        schema_data = Template(schema_data).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir())
         jsonref_result = jsonref.loads(schema_data, base_uri=base_uri, proxies=True)
         
         schema_dict = convert_jsonref_to_dict(jsonref_result)
