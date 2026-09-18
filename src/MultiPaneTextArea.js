@@ -1,18 +1,99 @@
 // MultiPaneTextArea.jsx - Clean Rewrite with Integration Support
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback, forwardRef, useImperativeHandle } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import { EditorView } from '@codemirror/view';
+import { EditorView, keymap } from '@codemirror/view';
+import { indentWithTab } from '@codemirror/commands';
 
 import { python } from '@codemirror/lang-python';
 import { markdown } from '@codemirror/lang-markdown';
 import { json } from '@codemirror/lang-json';
 import { shell } from '@codemirror/legacy-modes/mode/shell';
-import { StreamLanguage } from '@codemirror/language';
+import { StreamLanguage, indentUnit } from '@codemirror/language';
 
 import { eclipse } from '@uiw/codemirror-theme-eclipse';
 
 import {standaloneStyles, integratedStyles, commonStyles} from "./styles/MultiPaneTextAreaStyles"
-const MultiPaneTextArea = forwardRef(({ 
+
+// Static language extensions - created once at module load, never recreated per render/keystroke.
+const PYTHON_EXTENSION = [python()];
+const MARKDOWN_EXTENSION = [markdown()];
+const JSON_EXTENSION = [json()];
+const SHELL_EXTENSION = [StreamLanguage.define(shell)];
+
+const isPythonFile = (name) => {
+  if (!name) return false;
+  const lowerName = name.toLowerCase();
+  return lowerName.endsWith('.py') || lowerName.includes('python');
+};
+
+const getLanguageExtension = (name) => {
+  if (!name) return SHELL_EXTENSION;
+
+  const lowerName = name.toLowerCase();
+
+  if (isPythonFile(name)) {
+    return PYTHON_EXTENSION;
+  } else if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
+    return MARKDOWN_EXTENSION;
+  } else if (lowerName.endsWith('.json')) {
+    return JSON_EXTENSION;
+  } else {
+    return SHELL_EXTENSION;
+  }
+};
+
+// PEP 8 wants 4-space indent for Python; keep bash/json/markdown at 2 spaces.
+const PYTHON_INDENT_UNIT = indentUnit.of('    ');
+const DEFAULT_INDENT_UNIT = indentUnit.of('  ');
+const getIndentUnitExtension = (name) => isPythonFile(name) ? PYTHON_INDENT_UNIT : DEFAULT_INDENT_UNIT;
+
+// CodeMirror 6 deliberately leaves Tab unbound by default (so it can move focus instead of
+// getting trapped); wire it to indent/dedent explicitly.
+const INDENT_WITH_TAB_KEYMAP = keymap.of([indentWithTab]);
+
+// Static CodeMirror theme/config - must keep a stable identity across renders, otherwise
+// @uiw/react-codemirror reconfigures (and rebuilds autocompletion/history) on every render.
+const EDITOR_THEME_EXTENSION = EditorView.theme({
+  "&": {
+    caretColor: "#500000"
+  },
+  ".cm-cursor": {
+    borderLeftColor: "#500000 !important",
+    borderLeftWidth: "2px"
+  },
+  ".cm-focused": {
+    outline: "2px solid rgba(80, 0, 0, 0.2)"
+  },
+  ".cm-activeLineGutter": {
+    backgroundColor: "rgba(80, 0, 0, 0.08)"
+  },
+  ".cm-activeLine": {
+    backgroundColor: "rgba(80, 0, 0, 0.03)"
+  },
+  ".cm-editor": {
+    fontSize: "13px"
+  },
+  ".cm-gutters": {
+    backgroundColor: "#f8f9fa",
+    borderRight: "1px solid #dee2e6"
+  }
+});
+
+// Note: indent width is set per-language via getIndentUnitExtension() in editorExtensions
+// below, not here - basicSetup's own `tabSize` option would inject a second, conflicting
+// indentUnit extension.
+const BASIC_SETUP_CONFIG = {
+  lineNumbers: true,
+  highlightActiveLine: false,
+  foldGutter: true,
+  indentOnInput: true,
+  searchKeymap: true,
+  autocompletion: true,
+  bracketMatching: true,
+  syntaxHighlighting: true,
+};
+
+const MultiPaneTextArea = forwardRef(({
   panes, 
   setPanes, 
   isDisplayed, 
@@ -22,7 +103,6 @@ const MultiPaneTextArea = forwardRef(({
   const [activePane, setActivePane] = useState(0);
   const editorRefs = useRef({});
   const contentUpdateTimeoutsRef = useRef({});
-  const editorViewsRef = useRef({});
 
   // Process and sort panes
   const getSortedPanes = () => {
@@ -41,6 +121,18 @@ const MultiPaneTextArea = forwardRef(({
   };
 
   const sortedPanes = getSortedPanes();
+
+  // Only the active pane's editor is ever mounted, so a single memoized extensions array
+  // (recomputed only when the active pane's language changes) covers every render.
+  const activePaneData = sortedPanes[activePane];
+  const activePaneName = activePaneData ? activePaneData.preview_name : null;
+  const editorExtensions = useMemo(() => [
+    ...getLanguageExtension(activePaneName),
+    getIndentUnitExtension(activePaneName),
+    EDITOR_THEME_EXTENSION,
+    INDENT_WITH_TAB_KEYMAP,
+    EditorView.lineWrapping
+  ], [activePaneName]);
 
   // Update activePane when controlled by parent (integrated mode)
   useEffect(() => {
@@ -74,55 +166,76 @@ const MultiPaneTextArea = forwardRef(({
     }
   }));
 
-  // Get appropriate language extension for syntax highlighting
-  const getLanguageExtension = (name) => {
-    if (!name) return [StreamLanguage.define(shell)];
+  // Keep the latest sortedPanes accessible to stable callbacks without adding it as a
+  // dependency (it's a brand-new array every render).
+  const sortedPanesRef = useRef(sortedPanes);
+  sortedPanesRef.current = sortedPanes;
 
-    const lowerName = name.toLowerCase();
+  // Tracks the most recent content this component emitted for each pane index, updated
+  // synchronously in onChange (unlike `panes` state, which lags behind by up to 300ms below).
+  const lastEmittedContentRef = useRef({});
 
-    if (lowerName.endsWith('.py') || lowerName.includes('python')) {
-      return [python()];
-    } else if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
-      return [markdown()];
-    } else if (lowerName.endsWith('.json')) {
-      return [json()];
-    } else {
-      return [StreamLanguage.define(shell)];
-    }
-  };
-
-  // Handle content changes with debouncing
-  const handleContentChange = (index, newContent) => {
+  // Handle content changes with debouncing. Stable across renders (deps: [setPanes]) so it
+  // doesn't force CodeMirror to reconfigure on every keystroke.
+  const handleContentChange = useCallback((index, newContent) => {
     if (contentUpdateTimeoutsRef.current[index]) {
       clearTimeout(contentUpdateTimeoutsRef.current[index]);
     }
 
     contentUpdateTimeoutsRef.current[index] = setTimeout(() => {
+      const currentSortedPanes = sortedPanesRef.current;
+
       setPanes(currentPanes => {
         const updatedPanes = [...currentPanes];
         const originalIndex = updatedPanes.findIndex(p =>
-          p.name === sortedPanes[index].name
+          p.name === currentSortedPanes[index].name
         );
-        
+
         if (originalIndex !== -1) {
           updatedPanes[originalIndex] = {
             ...updatedPanes[originalIndex],
             content: newContent
           };
         }
-        
+
         return updatedPanes;
       });
 
       // Trigger onChange callback if present
-      if (sortedPanes[index].onChange) {
-        sortedPanes[index].onChange({
+      if (currentSortedPanes[index] && currentSortedPanes[index].onChange) {
+        currentSortedPanes[index].onChange({
           target: { value: newContent }
         });
       }
 
       delete contentUpdateTimeoutsRef.current[index];
     }, 300);
+  }, [setPanes]);
+
+  // Per-index onChange/ref callbacks, cached so their identity stays stable across renders.
+  // A fresh function identity on every render forces @uiw/react-codemirror to reconfigure
+  // the editor (rebuilding autocompletion/history), which is what made autocomplete fragile.
+  const onChangeCallbacksRef = useRef({});
+  const getOnChangeCallback = (index) => {
+    if (!onChangeCallbacksRef.current[index]) {
+      onChangeCallbacksRef.current[index] = (value) => {
+        lastEmittedContentRef.current[index] = value;
+        handleContentChange(index, value);
+      };
+    }
+    return onChangeCallbacksRef.current[index];
+  };
+
+  const editorRefCallbacksRef = useRef({});
+  const getEditorRefCallback = (index) => {
+    if (!editorRefCallbacksRef.current[index]) {
+      editorRefCallbacksRef.current[index] = (editorRef) => {
+        if (editorRef) {
+          editorRefs.current[`editor-${index}`] = editorRef;
+        }
+      };
+    }
+    return editorRefCallbacksRef.current[index];
   };
 
   const handlePaneChange = (index) => {
@@ -186,65 +299,18 @@ const MultiPaneTextArea = forwardRef(({
               {isActive && (
                 <div style={integrated ? integratedStyles.editorWrapper : standaloneStyles.editorWrapper}>
                   <CodeMirror
-                    ref={editorRef => {
-                      if (editorRef) {
-                        editorRefs.current[`editor-${index}`] = editorRef;
-                        editorViewsRef.current[`editor-${index}`] = {
-                          pane: pane,
-                          index: index,
-                          content: pane.content || ''
-                        };
-                      }
-                    }}
-                    value={pane.content || ''}
+                    ref={getEditorRefCallback(index)}
+                    value={
+                      contentUpdateTimeoutsRef.current[index] !== undefined &&
+                      lastEmittedContentRef.current[index] !== undefined
+                        ? lastEmittedContentRef.current[index]
+                        : (pane.content || '')
+                    }
                     height={integrated ? "100%" : "350px"}
                     theme={eclipse}
-                    extensions={[
-                      ...getLanguageExtension(pane.preview_name),
-                      EditorView.theme({
-                        "&": { 
-                          caretColor: "#500000"
-                        },
-                        ".cm-cursor": { 
-                          borderLeftColor: "#500000 !important", 
-                          borderLeftWidth: "2px" 
-                        },
-                        ".cm-focused": {
-                          outline: "2px solid rgba(80, 0, 0, 0.2)"
-                        },
-                        ".cm-activeLineGutter": {
-                          backgroundColor: "rgba(80, 0, 0, 0.08)"
-                        },
-                        ".cm-activeLine": {
-                          backgroundColor: "rgba(80, 0, 0, 0.03)"
-                        },
-                        ".cm-editor": {
-                          fontSize: "13px"
-                        },
-                        ".cm-gutters": {
-                          backgroundColor: "#f8f9fa",
-                          borderRight: "1px solid #dee2e6"
-                        }
-                      }),
-                      EditorView.lineWrapping
-                    ]}
-                    onChange={(value) => {
-                      handleContentChange(index, value);
-                      if (editorViewsRef.current[`editor-${index}`]) {
-                        editorViewsRef.current[`editor-${index}`].content = value;
-                      }
-                    }}
-                    basicSetup={{
-                      lineNumbers: true,
-                      highlightActiveLine: false,
-                      foldGutter: true,
-                      indentOnInput: true,
-                      tabSize: 2,
-                      searchKeymap: true,
-                      autocompletion: true,
-                      bracketMatching: true,
-                      syntaxHighlighting: true,
-                    }}
+                    extensions={editorExtensions}
+                    onChange={getOnChangeCallback(index)}
+                    basicSetup={BASIC_SETUP_CONFIG}
                     id={pane.name}
                     name={pane.name}
                     data-language={pane.preview_name}
