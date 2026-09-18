@@ -1,0 +1,26 @@
+{
+   "DronaManageCreateContainer" : {
+      "type" : "rowContainer",
+      "condition": "configured.CONFIGURED",
+      "elements" : {
+         "mode" : {
+            "type": "radioGroup",
+            "style": "button",
+            "label": "Mode",
+            "name": "drona_mode_choice",
+            "options": [
+               { "label": "Create", "value": "create" },
+               { "label": "Manage", "value": "manage" }
+            ]
+         },
+
+         "envSelect": {
+            "type": "dynamicSelect",
+               "label": "Select Workflow",
+               "name": "drona_mode_wf",
+               "condition" : "drona_mode_choice.manage",
+               "retriever" : "drona_select_wf.sh"
+         }
+      }
+   }
+}

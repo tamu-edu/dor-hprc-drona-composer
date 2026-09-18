@@ -1,0 +1,23 @@
+{
+  "action_select": {
+    "type": "select",
+    "name": "drona_action",
+    "label": "Action",
+    "labelOnTop": true,
+    "condition": "!allworkflows.",
+    "options": [
+      { "value": "none", "label": "No Action" },
+      { "value": "cancel", "label": "Cancel Job" },
+      { "value": "delete", "label": "Delete Workflow" }
+    ],
+    "value": { "value": "none", "label": "No Action" }
+  },
+
+  "delete_dir_checkbox": {
+    "type": "checkbox",
+    "name": "drona_delete_workdir",
+    "label": "Delete the working directory along with workflow",
+    "condition": "drona_action.delete",
+    "value": "yes"
+  }
+}

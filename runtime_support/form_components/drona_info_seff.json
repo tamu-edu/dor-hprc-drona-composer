@@ -1,0 +1,21 @@
+{
+  "job_summary_section": {
+    "type": "rowContainer",
+    "condition": "!allworkflows. && !drona_status. && drona_status.DONE && !jobs.",
+    "label": "Job Summary",
+    "elements": {
+      "seff_summary": {
+        "type": "staticText",
+        "name": "drona_seffsummary",
+        "label": "Job Summary",
+        "isDynamic": true,
+        "retrieverParams": {
+          "JOBIDS": "$jobs"
+        },
+        "retriever": "drona_slurm_seff.sh",
+        "showRefreshButton": false,
+        "allowHtml": true
+      }
+    }
+  }
+}

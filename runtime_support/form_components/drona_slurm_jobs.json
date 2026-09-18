@@ -1,0 +1,24 @@
+{
+
+    "slurmrow" : {
+    "type": "rowContainer",
+    "condition" : "!jobs.",
+    "elements": {
+      "slurm_summary": {
+        "type": "staticText",
+        "label" : "Slurm Jobs",
+        "name": "slurm",
+        "isDynamic": true,
+        "allowHtml": true,
+        "showRefreshButton": true,
+        "retrieverParams": {
+          "JOBS": "$jobs"
+        },
+        "retriever": "drona_slurm_jobs.sh"
+      }
+    }
+  }
+}
+
+
+

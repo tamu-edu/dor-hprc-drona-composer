@@ -1,0 +1,23 @@
+{
+  "sstat_section": {
+    "type": "rowContainer",
+    "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
+    "title": "Resource Utilization",
+    "elements": {
+      "sstat2_utiliztion": {
+        "type": "staticText",
+        "name": "drona_sstat2",
+        "label": "",
+        "refreshInterval": "20",
+        "isDynamic": true,
+        "retrieverParams": {
+          "JOBID": "$jobs",
+          "NODE": "$drona_node"
+        },
+        "retriever": "drona_slurm_sstat.sh",
+        "showRefreshButton": false,
+        "allowHtml": true
+      }
+    }
+  }
+}
