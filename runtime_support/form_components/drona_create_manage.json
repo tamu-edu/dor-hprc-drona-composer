@@ -26,21 +26,5 @@
       }
 
     }
-  },
-
-   "CreateContainer": {
-    "type": "container",
-    "elements": {
-      "$ref": "schemas/create.schema.json"
-    },
-    "condition": "mode.create"
-  },
-
-  "ManageContainer": {
-    "type": "container",
-    "elements": {
-      "$ref": "schemas/manage.schema.json"
-    },
-    "condition": "mode.manage"
   }
 }

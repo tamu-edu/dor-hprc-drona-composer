@@ -68,14 +68,10 @@ def main():
 
     runtime_dir = os.environ.get("DRONA_RUNTIME_DIR")
     envname = os.environ.get("DRONA_ENV")
-    
-    #runtime_dir = "/var/www/ood/apps/sys/dor-hprc-drona-composer-beta/runtime_support"
+
     db_dir = "db_access"
     script_name = "drona_db_retriever.py"
-    target = os.path.join(runtime_dir, db_dir, script_name)  
-    
-    #envname = user = os.environ.get("DRONA_ENV_NAME")
-    #envname = "Generic"
+    target = os.path.join(runtime_dir, db_dir, script_name)
 
     all_envs = get_job_data(target, "-e", envname)
 

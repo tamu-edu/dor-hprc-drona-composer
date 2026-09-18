@@ -1,48 +1,71 @@
-<div id="utilization-section" style="
-    position: relative; 
-    border: 1px solid #e2e8f0; 
-    border-radius: 10px; 
-    padding: 25px 15px 15px 15px; 
-    margin-top: 15px; 
-    background: rgba(255, 255, 255, 0.4);">
-
-	<div style="
-
-
-        position: absolute;
-        top: -12px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #ffffff; /* Match your dashboard background */
-        padding: 2px 16px;
-        font-size: 11px;
-        font-weight: 900;
-        color: #475569;
-        text-transform: uppercase;
-        letter-spacing: 3px;
-        white-space: nowrap;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border: 1px solid #cbd5e1;
-	border-radius: 20px;">
-        <div class="live-dot"></div> Node Utilization
-    </div>
-<div id="slurm-mini-monitor" style="display: flex; flex-wrap: wrap; gap: 16px; font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 5px; border-radius: 14px;">
+<div id="dc-nodeutil" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
     <style>
-        #slurm-mini-monitor .node-card {
-            background: white; border: 1px solid #e2e8f0; border-radius: 6px;
-            padding: 8px; width: 140px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        #dc-nodeutil {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-radius-sm: 8px;
+            --dc-live: #10b981;
+            color: var(--dc-text);
         }
-        #slurm-mini-monitor .node-name { font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 4px; display: block; border-bottom: 1px solid #f1f5f9; }
-        #slurm-mini-monitor .stat-row { display: flex; justify-content: space-between; font-size: 14px; margin-top: 2px; }
-        #slurm-mini-monitor .bar-wrap { background: #e2e8f0; height: 4px; border-radius: 2px; margin-top: 2px; overflow: hidden; }
-        #slurm-mini-monitor .bar-fill { height: 100%; border-radius: 2px; }
-        .bg-cpu { background: #3b82f6; } .bg-mem { background: #10b981; }
+
+        #dc-nodeutil .dc-card {
+            position: relative;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-card);
+            padding: 24px 15px 15px 15px;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        #dc-nodeutil .dc-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #ffffff;
+            padding: 2px 16px;
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--dc-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-pill);
+        }
+
+        #dc-nodeutil .dc-live-dot {
+            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
+            box-shadow: 0 0 6px var(--dc-live);
+            animation: dc-pulse 2s infinite;
+        }
+        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        #dc-nodeutil .node-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+        #dc-nodeutil .node-card {
+            background: #ffffff; border: 1px solid var(--dc-border); border-radius: var(--dc-radius-sm);
+            padding: 10px 12px; width: 140px;
+        }
+        #dc-nodeutil .node-name { font-size: 13px; font-weight: 700; color: var(--dc-text); margin-bottom: 6px; display: block; border-bottom: 1px solid var(--dc-divider); padding-bottom: 6px; }
+        #dc-nodeutil .stat-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--dc-text-muted); margin-top: 2px; }
+        #dc-nodeutil .bar-wrap { background: var(--dc-divider); height: 4px; border-radius: 2px; margin-top: 3px; overflow: hidden; }
+        #dc-nodeutil .bar-fill { height: 100%; border-radius: 2px; }
+        #dc-nodeutil .bg-cpu { background: #3b82f6; }
+        #dc-nodeutil .bg-mem { background: #10b981; }
     </style>
 
-
-    {{NODE_CARDS}}
-</div>
-
+    <div class="dc-card">
+        <div class="dc-title"><div class="dc-live-dot"></div> Node Utilization</div>
+        <div class="node-grid">
+            {{NODE_CARDS}}
+        </div>
+    </div>
 </div>

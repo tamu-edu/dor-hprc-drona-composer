@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export JSON_INPUT=$(python3 $DRONA_RUNTIME_DIR/db_access/drona_db_retriever.py  -i $WORKFLOW_ID )
+JSON_INPUT=$(python3 "$DRONA_RUNTIME_DIR/db_access/drona_db_retriever.py" -i "$WORKFLOW_ID")
+export JSON_INPUT
 
 read -r LOCATION JOBID <<EOF
 $(python3 <<'PYTHON_CODE'
@@ -16,19 +17,19 @@ if not raw_json:
 
 try:
     data = json.loads(raw_json)
-    
+
     # If 'data' is still a string after loads, it was double-encoded
     if isinstance(data, str):
         data = json.loads(data)
-    
+
     # Ensure it is actually a dictionary before calling .get()
     if isinstance(data, dict):
         loc = data.get("location", "N/A")
-        
+
         # Safe extraction of nested Job ID
         job_info = data.get("runtime_meta", {}).get("jobinfo", [])
         jid = job_info[0].get("id", "N/A") if (job_info and isinstance(job_info, list)) else "N/A"
-        
+
         print(f"{loc} {jid}")
     else:
         print("NOT_A_DICT N/A")
@@ -40,13 +41,10 @@ PYTHON_CODE
 )
 EOF
 
-#: ${HTML_TEMPLATE:="$DRONA_RUNTIME_DIR/html_templates/slurm-logs-template.html"}
 HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm-logs-template.html"
 
-
-outputfile=${LOCATION}/out.${JOBID}
-errorfile=${LOCATION}/error.${JOBID}
-
+outputfile="${LOCATION}/out.${JOBID}"
+errorfile="${LOCATION}/error.${JOBID}"
 
 output=$(
   if [ -f "$outputfile" ]; then
@@ -64,14 +62,30 @@ error=$(
   fi
 )
 
+# HTML-escape the raw job output before injecting it into the page
+# (rendered with dangerouslySetInnerHTML on the frontend) - otherwise a
+# stray <, >, or & in the job's stdout/stderr (Python reprs, shell "&&",
+# XML/HTML output, progress bars, etc.) gets parsed as markup instead of
+# displayed as text.
+escape_html() {
+    local s=$1
+    s="${s//&/&amp;}"
+    s="${s//</&lt;}"
+    s="${s//>/&gt;}"
+    printf '%s' "$s"
+}
 
-# Save to temp files
-printf "%s" "$output" > /tmp/.tmp1
-printf "%s" "$error" > /tmp/.tmp2
-# Perform the replacement
-sed -e '/{{OUTPUT}}/r /tmp/.tmp1' -e '/{{OUTPUT}}/d' \
-    -e '/{{ERROR}}/r /tmp/.tmp2' -e '/{{ERROR}}/d' \
-     $HTML_TEMPLATE
+output=$(escape_html "$output")
+error=$(escape_html "$error")
 
-rm /tmp/.tmp1 /tmp/.tmp2
-
+# Plain bash string substitution instead of sed: JOBID (and in principle
+# output/error) can contain characters like "/" - e.g. JOBID is literally
+# "N/A" when extraction fails above - which would break a sed delimiter
+# and crash the script (this previously happened: `s/{{JOBID}}/N/A/` is
+# parsed by sed as pattern "{{JOBID}}", replacement "N", then "A/" as
+# bogus flags).
+CONTENT=$(cat "$HTML_TEMPLATE")
+CONTENT="${CONTENT//\{\{JOBID\}\}/$JOBID}"
+CONTENT="${CONTENT//\{\{OUTPUT\}\}/$output}"
+CONTENT="${CONTENT//\{\{ERROR\}\}/$error}"
+printf "%s\n" "$CONTENT"
