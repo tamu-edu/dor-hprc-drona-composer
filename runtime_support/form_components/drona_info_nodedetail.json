@@ -1,0 +1,33 @@
+{
+  "utilization_detail_section": {
+    "type": "collapsibleRowContainer",
+    "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
+    "title": "Resource Utilization",
+    "elements": {
+      "nodeSelect": {
+        "type": "dynamicSelect",
+        "label": "pick node to inspect",
+        "name": "drona_node",
+        "retriever": "drona_select_nodes.sh",
+        "retrieverParams": {
+          "JOBID": "$jobs"
+        }
+      },
+      "top_table": {
+        "type": "staticText",
+        "name": "drona_toptable",
+        "condition": "!drona_node.",
+        "label": "",
+        "isDynamic": true,
+        "retrieverParams": {
+          "JOBID": "$jobs",
+          "NODE": "$drona_node"
+        },
+        "retriever": "drona_slurm_cgroups.sh",
+        "refreshInterval": "120",
+        "showRefreshButton": false,
+        "allowHtml": true
+      }
+    }
+  }
+}

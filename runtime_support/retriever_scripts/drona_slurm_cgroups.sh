@@ -4,7 +4,7 @@
 USER_NAME=$(whoami)
 USER_UID=$(id -u)
 
-${HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm_cgroups_template.html"}
+: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-cgroups-template.html}"
 
 # Define Absolute Paths
 CPU_PATH="/sys/fs/cgroup/cpu,cpuacct/slurm/uid_$USER_UID/job_$JOBID"
@@ -22,15 +22,16 @@ RAW_DATA=$(srun -w "$NODE" --overlap --jobid="$JOBID" bash -c "
     find $CPU_PATH -name tasks -exec cat {} + | sort -u | tr '\n' ' '
 " 2>/dev/null)
 
-# 2. Extract Lines
-CUR_B=$(echo "$RAW_DATA" | sed -n '1p')
-MAX_B=$(echo "$RAW_DATA" | sed -n '2p')
-CPU_N=$(echo "$RAW_DATA" | sed -n '3p')
-THROTTLE_NS=$(echo "$RAW_DATA" | sed -n '4p')
-CACHE_B=$(echo "$RAW_DATA" | sed -n '5p')
-RSS_B=$(echo "$RAW_DATA" | sed -n '6p')
-CPU_SET=$(echo "$RAW_DATA" | sed -n '7p')
-PID_LIST=$(echo "$RAW_DATA" | sed -n '8p')
+# 2. Extract lines in one pass (no per-line sed forks)
+mapfile -t _LINES <<< "$RAW_DATA"
+CUR_B=${_LINES[0]}
+MAX_B=${_LINES[1]}
+CPU_N=${_LINES[2]}
+THROTTLE_NS=${_LINES[3]}
+CACHE_B=${_LINES[4]}
+RSS_B=${_LINES[5]}
+CPU_SET=${_LINES[6]}
+PID_LIST=${_LINES[7]}
 
 # 3. Units Helper Function
 to_mb() { awk -v b="$1" 'BEGIN {printf "%.2f MB", (b+0)/1024/1024}'; }
@@ -44,18 +45,17 @@ CPU_TIME=$(awk -v n="$CPU_N" 'BEGIN {printf "%.2f", (n+0)/1000000000}')
 CPU_THROTTLE=$(awk -v n="$THROTTLE_NS" 'BEGIN {printf "%.2f", (n+0)/1000000}')
 PID_COUNT=$(echo "$PID_LIST" | wc -w)
 
-# 5. Inject into HTML
-while IFS= read -r line; do
-    line="${line//\{\{JOB_ID\}\}/$JOBID}"
-    line="${line//\{\{NODE_NAME\}\}/$NODE}"
-    line="${line//\{\{CUR_MEM\}\}/$CUR_MEM}"
-    line="${line//\{\{MAX_MEM\}\}/$MAX_MEM}"
-    line="${line//\{\{MEM_CACHE\}\}/$MEM_CACHE}"
-    line="${line//\{\{MEM_RSS\}\}/$MEM_RSS}"
-    line="${line//\{\{CPU_TIME\}\}/$CPU_TIME}"
-    line="${line//\{\{CPU_THROTTLE\}\}/$CPU_THROTTLE}"
-    line="${line//\{\{CPU_SET\}\}/$CPU_SET}"
-    line="${line//\{\{PID_COUNT\}\}/$PID_COUNT}"
-    line="${line//\{\{PID_LIST\}\}/$PID_LIST}"
-    printf "%s\n" "$line"
-done < $HTML_TEMPLATE
+# 5. Inject into HTML (whole-content substitution instead of a per-line loop)
+CONTENT=$(cat "$HTML_TEMPLATE")
+CONTENT="${CONTENT//\{\{JOB_ID\}\}/$JOBID}"
+CONTENT="${CONTENT//\{\{NODE_NAME\}\}/$NODE}"
+CONTENT="${CONTENT//\{\{CUR_MEM\}\}/$CUR_MEM}"
+CONTENT="${CONTENT//\{\{MAX_MEM\}\}/$MAX_MEM}"
+CONTENT="${CONTENT//\{\{MEM_CACHE\}\}/$MEM_CACHE}"
+CONTENT="${CONTENT//\{\{MEM_RSS\}\}/$MEM_RSS}"
+CONTENT="${CONTENT//\{\{CPU_TIME\}\}/$CPU_TIME}"
+CONTENT="${CONTENT//\{\{CPU_THROTTLE\}\}/$CPU_THROTTLE}"
+CONTENT="${CONTENT//\{\{CPU_SET\}\}/$CPU_SET}"
+CONTENT="${CONTENT//\{\{PID_COUNT\}\}/$PID_COUNT}"
+CONTENT="${CONTENT//\{\{PID_LIST\}\}/$PID_LIST}"
+printf "%s\n" "$CONTENT"

@@ -1,0 +1,14 @@
+{
+  "hidden_status_check": {
+    "type": "hidden",
+    "name": "drona_status",
+    "label": "Status",
+    "isDynamic": true,
+    "condition": "!jobs.",
+    "refreshInterval": "27",
+    "retrieverParams": {
+      "JOBID": "$jobs"
+    },
+    "retriever": "drona_info_slurmstatus.sh"
+  }
+}

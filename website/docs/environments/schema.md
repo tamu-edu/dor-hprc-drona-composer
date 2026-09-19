@@ -114,6 +114,27 @@ A reference element can either reference an entire json file such as `inference.
 
 This modular approach enables component reuse and maintainable schema organization for workflows with multiple execution paths or complex configuration requirements. 
 
+### Referencing a shared/curated component directory
+
+To reference components from a fixed directory shared across environments (rather than duplicating them per environment), use the `$DRONA_RUNTIME_DIR` placeholder inside the `$ref` path. It is expanded to the server's `runtime_support` directory before the schema is parsed, so the reference resolves to an absolute path:
+
+```json
+{
+  "inferenceContainer": {
+    "elements": {
+      "sharedSection": {
+        "$ref": "$DRONA_RUNTIME_DIR/inference.json#/modelContainer"
+      }
+    },
+    "condition": "operationType.inference"
+  }
+}
+```
+
+`$DRONA_RUNTIME_DIR` is set automatically — no additional configuration is required. This works alongside the relative and absolute path conventions above — plain relative paths (e.g. `schema_components/training.json`) still resolve against the environment directory.
+
+In practice, shared fragments live under `runtime_support/form_components/`, alongside a matching set of shared retriever scripts and HTML templates. See [Shared Environment Library](./shared-library) for the full layout and conventions.
+
 
 ---
 

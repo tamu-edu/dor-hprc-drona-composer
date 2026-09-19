@@ -104,7 +104,7 @@ describe('DynamicSelect Component', () => {
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/evaluate_dynamic_select?retriever_path=')
+      expect.stringContaining('/evaluate_script?retriever_path=')
     );
   });
 

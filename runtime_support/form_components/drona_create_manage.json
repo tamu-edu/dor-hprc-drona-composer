@@ -1,0 +1,30 @@
+{
+
+   "configure" : {
+    "type" : "hidden",
+    "label" : "configured",
+    "name" : "configured",
+    "isDynamic": true,
+    "retriever" : "drona_info_configure.sh"
+  },
+
+  "ManageCreateContainer" : {
+    "type" : "rowContainer",
+    "condition": "configured.CONFIGURED",
+    "elements" : {
+
+      "mode" : {
+        "type": "radioGroup",
+        "style": "button",
+        "label": "Mode",
+        "name": "mode",
+        "condition": "configured.CONFIGURED",
+        "options": [
+          { "label": "Create", "value": "create" },
+          { "label": "Manage", "value": "manage" }
+        ]
+      }
+
+    }
+  }
+}

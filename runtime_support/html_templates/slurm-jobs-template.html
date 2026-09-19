@@ -1,36 +1,89 @@
-<div id="slurm-monitor-container" style="width: 100%; font-family: 'Inter', system-ui, sans-serif; color: #333;">
+<div id="dc-jobs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
     <style>
-        #slurm-monitor-container .monitor-card {
-            width: 100%;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #edf2f7;
-            box-sizing: border-box;
+        #dc-jobs {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-radius-sm: 8px;
+            --dc-success-bg: #d1fae5; --dc-success-text: #065f46;
+            --dc-warning-bg: #fef3c7; --dc-warning-text: #92400e;
+            --dc-danger-bg: #fee2e2; --dc-danger-text: #991b1b;
+            --dc-neutral-bg: #f1f5f9; --dc-neutral-text: #334155;
+            --dc-info: #3b82f6;
+            --dc-live: #10b981;
+            color: var(--dc-text);
         }
-        #slurm-monitor-container h2 { margin-top: 0; font-size: 1.25rem; color: #1a202c; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
-        #slurm-monitor-container table { width: 100%; border-collapse: collapse; table-layout: auto; }
-        #slurm-monitor-container th { text-align: left; background: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 12px; border-bottom: 2px solid #edf2f7; }
-        #slurm-monitor-container td { padding: 12px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
 
-        #slurm-monitor-container .job-id { font-family: monospace; color: #718096; font-size: 0.9em; }
-        #slurm-monitor-container .job-name { font-weight: 600; color: #2d3748; }
+        #dc-jobs .dc-card {
+            position: relative;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-card);
+            padding: 24px 20px 20px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        #dc-jobs .dc-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #ffffff;
+            padding: 2px 16px;
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--dc-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-pill);
+        }
+
+        #dc-jobs .dc-live-dot {
+            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
+            box-shadow: 0 0 6px var(--dc-live);
+            animation: dc-pulse 2s infinite;
+        }
+        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        #dc-jobs .dc-updated {
+            text-align: right;
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--dc-text-muted);
+            margin-top: 8px;
+        }
+
+        #dc-jobs table { width: 100%; border-collapse: collapse; table-layout: auto; margin-top: 6px; }
+        #dc-jobs th { text-align: left; background: var(--dc-divider); color: var(--dc-text-muted); text-transform: uppercase; font-size: 11px; padding: 12px; border-bottom: 2px solid var(--dc-divider); }
+        #dc-jobs td { padding: 12px; border-bottom: 1px solid var(--dc-divider); vertical-align: middle; }
+
+        #dc-jobs .job-id { font-family: 'JetBrains Mono', monospace; color: var(--dc-text-muted); font-size: 0.9em; }
+        #dc-jobs .job-name { font-weight: 600; color: var(--dc-text); }
 
         /* Walltime Progress Bar */
-        #slurm-monitor-container .progress-wrapper { width: 100%; min-width: 150px; }
-        #slurm-monitor-container .progress-container { background: #e2e8f0; border-radius: 10px; height: 10px; width: 100%; position: relative; overflow: hidden; }
-        #slurm-monitor-container .progress-bar { background: #3182ce; height: 100%; border-radius: 10px; transition: width 0.4s ease; }
-        #slurm-monitor-container .time-labels { font-size: 10px; color: #718096; margin-top: 4px; display: block; font-family: monospace; }
+        #dc-jobs .progress-container { background: var(--dc-divider); border-radius: var(--dc-radius-pill); height: 8px; width: 100%; position: relative; overflow: hidden; }
+        #dc-jobs .progress-bar { background: var(--dc-info); height: 100%; border-radius: var(--dc-radius-pill); transition: width 0.4s ease; }
+        #dc-jobs .time-labels { font-size: 10px; color: var(--dc-text-muted); margin-top: 4px; display: block; font-family: 'JetBrains Mono', monospace; }
 
         /* Status Badges */
-        #slurm-monitor-container .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
-        #slurm-monitor-container .status-running { background: #c6f6d5; color: #22543d; }
-        #slurm-monitor-container .status-pending { background: #feebc8; color: #744210; }
-        #slurm-monitor-container .status-failed { background: #fed7d7; color: #822727; }
-        #slurm-monitor-container .status-completed { background: #edf2f7; color: #2d3748; }
+        #dc-jobs .badge { padding: 4px 10px; border-radius: var(--dc-radius-sm); font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+        #dc-jobs .status-running { background: var(--dc-success-bg); color: var(--dc-success-text); }
+        #dc-jobs .status-pending { background: var(--dc-warning-bg); color: var(--dc-warning-text); }
+        #dc-jobs .status-failed { background: var(--dc-danger-bg); color: var(--dc-danger-text); }
+        #dc-jobs .status-completed { background: var(--dc-neutral-bg); color: var(--dc-neutral-text); }
     </style>
 
-    <div class="monitor-card">
+    <div class="dc-card">
+        <div class="dc-title"><div class="dc-live-dot"></div> Job Queue</div>
         <table>
             <thead>
                 <tr>
@@ -44,5 +97,6 @@
                 {{TABLE_ROWS}}
             </tbody>
         </table>
+        <div class="dc-updated">Updated {{TIMESTAMP}}</div>
     </div>
 </div>

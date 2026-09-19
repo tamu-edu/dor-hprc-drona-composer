@@ -1,25 +1,29 @@
 #!/bin/bash
 
-${HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm-seff-template.html"}
+: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-seff-template.html}"
 ROWS=""
 
 # Function to pick color based on efficiency percentage
 get_color_class() {
-    local pct=$1
-    if (( $(echo "$pct > 70" | bc -l) )); then echo "eff-good"
-    elif (( $(echo "$pct > 30" | bc -l) )); then echo "eff-warn"
-    else echo "eff-poor"; fi
+    awk -v p="${1:-0}" 'BEGIN {
+        if (p > 70) print "eff-good";
+        else if (p > 30) print "eff-warn";
+        else print "eff-poor";
+    }'
 }
 
 for JID in "${JOBIDS[@]}"; do
     # Capture seff output
     SEFF_OUT=$(seff "$JID" 2>/dev/null)
-    
+
     if [[ -n "$SEFF_OUT" ]]; then
         # Extract percentages (e.g., "CPU Efficiency: 85.2% of 1-00:00:00 core-walltime")
         CPU_EFF=$(echo "$SEFF_OUT" | grep "CPU Efficiency" | awk '{print $3}' | tr -d '%')
         MEM_EFF=$(echo "$SEFF_OUT" | grep "Memory Efficiency" | awk '{print $3}' | tr -d '%')
-        
+        # seff omits these lines for jobs that haven't completed yet
+        CPU_EFF=${CPU_EFF:-0}
+        MEM_EFF=${MEM_EFF:-0}
+
         # Determine colors
         CPU_COLOR=$(get_color_class "$CPU_EFF")
         MEM_COLOR=$(get_color_class "$MEM_EFF")
@@ -41,5 +45,5 @@ for JID in "${JOBIDS[@]}"; do
 done
 
 # Final injection
-CONTENT=$(cat "$HTMLTEMPLATE")
+CONTENT=$(cat "$HTML_TEMPLATE")
 echo "${CONTENT//\{\{TABLE_ROWS\}\}/$ROWS}"

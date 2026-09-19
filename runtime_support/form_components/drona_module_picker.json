@@ -1,0 +1,19 @@
+{
+  "Modules": {
+    "type": "module",
+    "label": "Add modules (optional)",
+    "name": "drona_module_list",
+    "module_db_root": "/var/www/ood/apps/sys/dor-hprc-drona-composer-prod/environments/Generic/modules",
+    "help": "Modules are used to manage all the software packages available. If your job needs a software package, just start typing in the search bar, and it will show all available software modules matching the entered string. Select the software module you want and click the add button. The dropdown on the right shows all available toolchains. If you need multiple software modules, use the same toolchain. All added modules will show up in little blue bubbles. If you want to remove any of the added modules, just click on its name.",
+    "toolchainName": "toolchain",
+    "toolchains": [
+      { "label": "No toolchain (default)", "value": "modules" },
+      { "label": "foss/2023b", "value": "modules-foss/2023b" },
+      { "label": "foss/2024a", "value": "modules-foss/2024a" },
+      { "label": "foss/2025a", "value": "modules-foss/2025a" },
+      { "label": "foss/2025b", "value": "modules-foss/2025b" },
+      { "label": "intel/2023b", "value": "modules-intel/2023b" },
+      { "label": "intel/2024a", "value": "modules-intel/2024a" }
+    ]
+  }
+}

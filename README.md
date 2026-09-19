@@ -32,7 +32,7 @@ Open OnDemand >=3.0
 
 Python 3.8+ (see `requirements.txt` for dependencies)
 
-For detailed information on how to use Drona Workflow Engine and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Workflow Engine](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html) User Guide.
+For detailed information on how to use Drona Workflow Engine and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Workflow Engine](https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_composer/index.html) User Guide. If you're building or debugging an environment, see [`runtime_support/README.md`](runtime_support/README.md) for the shared form components, retriever scripts, and HTML templates every environment can reuse.
 
 To set up/install Drona Workflow Engine, see the instructions below. If you have any questions, please contact us at help@hprc.tamu.edu. If you find any bugs, you are welcome to create an issue in this repo.
 

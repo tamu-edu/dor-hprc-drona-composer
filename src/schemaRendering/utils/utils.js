@@ -61,8 +61,19 @@ export async function executeScript({
         retrieverPath
     )}${queryString ? `&${queryString}` : ""}`;
 
-    const response = await fetch(requestUrl);
-    
+    let response;
+    try {
+        response = await fetch(requestUrl);
+    } catch (fetchError) {
+        const error = {
+            message: fetchError.message || "Network error while executing script",
+            status_code: null,
+            details: ""
+        };
+        onError?.(error);
+        throw error;
+    }
+
     if (!response.ok) {
         let errorData = {};
         try {

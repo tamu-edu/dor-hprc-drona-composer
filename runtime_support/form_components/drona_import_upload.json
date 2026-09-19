@@ -1,0 +1,23 @@
+{
+  "ImportUpload": {
+    "type": "rowContainer",
+    "label": "",
+    "elements": {
+      "Script": {
+        "type": "picker",
+        "label": "Import Script (optional)",
+        "localLabel": "Import",
+        "showFiles": "true",
+        "name": "drona_importscript",
+        "help": "Select the script you want to import.",
+        "useHPCDDefaultPaths": true
+      },
+
+      "fileUploader": {
+        "type": "uploader",
+        "label": "Upload files",
+        "help": "If your job needs any additional files or directories that are stored on your local machine, e.g., data files, to run your job, you can upload them here. In the dropdown, select if you wish to upload files or directories, and click the Add button. The file browser will pop up, where you can select files or directories. You can upload multiple files and directories. If you selected a file to upload by mistake, you can remove it by clicking on that particular file's name."
+      }
+    }
+  }
+}

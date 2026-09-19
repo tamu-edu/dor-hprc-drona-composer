@@ -363,6 +363,7 @@ function JobComposer({
                                 />
                         
                                 <Composer
+                                  key={props.envInstanceId}
                                   environment={props.environment || {}}
                                   fields={props.fields}
                                   onFileChange={props.handleUploadedFiles}

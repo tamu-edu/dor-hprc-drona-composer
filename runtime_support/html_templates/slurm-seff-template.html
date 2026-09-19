@@ -1,31 +1,72 @@
-<div id="slurm-seff-container" style="width: 100%; font-family: 'Inter', system-ui, sans-serif; color: #333;">
+<div id="dc-seff" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
     <style>
-        #slurm-seff-container .seff-card { 
-            width: 100%; 
-            background: white; 
-            padding: 15px; 
-            border-radius: 8px; 
-            border: 1px solid #edf2f7;
-            box-sizing: border-box;
+        #dc-seff {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-live: #10b981;
+            color: var(--dc-text);
         }
-        #slurm-seff-container .seff-table { width: 100%; border-collapse: collapse; }
-        #slurm-seff-container th { text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; padding: 8px; }
-        #slurm-seff-container td { padding: 12px 8px; border-top: 1px solid #f7fafc; }
-        
-        /* Efficiency Bar Styling */
-        #slurm-seff-container .bar-bg { background: #edf2f7; border-radius: 10px; height: 12px; width: 100%; position: relative; margin-top: 4px; }
-        #slurm-seff-container .bar-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease-in-out; }
-        
-        /* Color coding based on efficiency */
-        .eff-good { background: #48bb78; } /* High efficiency */
-        .eff-warn { background: #ed8936; } /* Over-requested resources */
-        .eff-poor { background: #f56565; } /* Extremely wasteful */
 
-        .label-text { font-size: 12px; font-weight: 600; color: #4a5568; }
-        .val-text { font-size: 11px; color: #718096; font-family: monospace; }
+        #dc-seff .dc-card {
+            position: relative;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-card);
+            padding: 24px 15px 15px 15px;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        #dc-seff .dc-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #ffffff;
+            padding: 2px 16px;
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--dc-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-pill);
+        }
+
+        #dc-seff .dc-live-dot {
+            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
+            box-shadow: 0 0 6px var(--dc-live);
+            animation: dc-pulse 2s infinite;
+        }
+        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        #dc-seff .seff-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        #dc-seff th { text-align: left; font-size: 11px; color: var(--dc-text-muted); text-transform: uppercase; padding: 8px; }
+        #dc-seff td { padding: 12px 8px; border-top: 1px solid var(--dc-divider); }
+
+        /* Efficiency Bar Styling */
+        #dc-seff .bar-bg { background: var(--dc-divider); border-radius: var(--dc-radius-pill); height: 10px; width: 100%; position: relative; margin-top: 4px; }
+        #dc-seff .bar-fill { height: 100%; border-radius: var(--dc-radius-pill); transition: width 0.5s ease-in-out; }
+
+        /* Color coding based on efficiency (shared with the other widgets' semantic colors) */
+        #dc-seff .eff-good { background: #10b981; } /* High efficiency */
+        #dc-seff .eff-warn { background: #f59e0b; } /* Over-requested resources */
+        #dc-seff .eff-poor { background: #ef4444; } /* Extremely wasteful */
+
+        #dc-seff .label-text { font-size: 12px; font-weight: 600; color: var(--dc-text); }
+        #dc-seff .val-text { font-size: 11px; color: var(--dc-text-muted); font-family: 'JetBrains Mono', monospace; }
     </style>
 
-    <div class="seff-card">
+    <div class="dc-card">
+        <div class="dc-title"><div class="dc-live-dot"></div> Job Efficiency</div>
         <table class="seff-table">
             <thead>
                 <tr>

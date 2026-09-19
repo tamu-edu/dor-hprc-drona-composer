@@ -1,0 +1,28 @@
+{
+  "logCollapse": {
+    "type": "collapsibleRowContainer",
+    "title": "Output/Error logs",
+    "condition": " !jobs.",
+    "default_state": "collapsed",
+    "elements": {
+      "row_section": {
+        "type": "rowContainer",
+        "elements": {
+          "log_tabs": {
+            "type": "staticText",
+            "name": "drona_logname",
+            "label": "",
+            "isDynamic": true,
+            "retrieverParams": {
+              "WORKFLOW_ID": "$allworkflows"
+            },
+            "retriever": "drona_slurm_logs.sh",
+            "refreshInterval": "70",
+            "showRefreshButton": true,
+            "allowHtml": true
+          }
+        }
+      }
+    }
+  }
+}

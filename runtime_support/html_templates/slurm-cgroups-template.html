@@ -1,0 +1,99 @@
+<div id="dc-cgroups" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
+    <style>
+        #dc-cgroups {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-live: #10b981;
+            color: var(--dc-text);
+        }
+
+        #dc-cgroups .dc-card {
+            position: relative;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-card);
+            padding: 24px 20px 20px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        #dc-cgroups .dc-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #ffffff;
+            padding: 2px 16px;
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--dc-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-pill);
+        }
+
+        #dc-cgroups .dc-live-dot {
+            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
+            box-shadow: 0 0 6px var(--dc-live);
+            animation: dc-pulse 2s infinite;
+        }
+        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        #dc-cgroups .dc-node-label { font-size: 11px; color: var(--dc-text-muted); margin-bottom: 14px; text-align: right; }
+
+        #dc-cgroups .stat-grid { display: flex; flex-wrap: wrap; gap: 24px; }
+        #dc-cgroups .stat-box { flex: 1; min-width: 180px; padding-left: 12px; }
+        #dc-cgroups .stat-box.exec { border-left: 3px solid #3b82f6; }
+        #dc-cgroups .stat-box.mem { border-left: 3px solid #f59e0b; }
+
+        #dc-cgroups .stat-label { color: var(--dc-text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        #dc-cgroups .stat-row { font-size: 13px; margin-bottom: 6px; color: var(--dc-text-muted); }
+        #dc-cgroups .stat-row .val { font-family: 'JetBrains Mono', monospace; color: var(--dc-text); }
+        #dc-cgroups .stat-row .val.warn { color: #ef4444; }
+        #dc-cgroups .stat-sub { font-size: 11px; color: var(--dc-text-muted); margin-top: 6px; }
+
+        #dc-cgroups .dc-footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--dc-divider);
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--dc-text-muted);
+            word-break: break-all;
+        }
+    </style>
+
+    <div class="dc-card">
+        <div class="dc-title"><div class="dc-live-dot"></div> System Monitor · Job {{JOB_ID}}</div>
+        <div class="dc-node-label">Node: {{NODE_NAME}}</div>
+
+        <div class="stat-grid">
+            <div class="stat-box exec">
+                <div class="stat-label">Execution &amp; Scheduling</div>
+                <div class="stat-row">CPU Time: <span class="val">{{CPU_TIME}}s</span></div>
+                <div class="stat-row">Throttled: <span class="val warn">{{CPU_THROTTLE}}ms</span></div>
+                <div class="stat-row">Threads: <span class="val">{{PID_COUNT}}</span></div>
+                <div class="stat-sub">Cores: {{CPU_SET}}</div>
+            </div>
+
+            <div class="stat-box mem">
+                <div class="stat-label">Memory Accounting</div>
+                <div class="stat-row">Current: <span class="val">{{CUR_MEM}}</span></div>
+                <div class="stat-row">Peak: <span class="val">{{MAX_MEM}}</span></div>
+                <div class="stat-row">Cache: <span class="val">{{MEM_CACHE}}</span></div>
+                <div class="stat-row">RSS: <span class="val">{{MEM_RSS}}</span></div>
+            </div>
+        </div>
+
+        <div class="dc-footer">Active tasks: {{PID_LIST}}</div>
+    </div>
+</div>

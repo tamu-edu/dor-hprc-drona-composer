@@ -1,99 +1,125 @@
-
-<div id="slurm-terminal-wrapper" style="width: 100%; box-sizing: border-box; font-family: 'JetBrains Mono', 'Fira Code', monospace;">
+<div id="dc-logs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
     <style>
-        #slurm-terminal-wrapper .terminal-container {
+        #dc-logs {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-live: #10b981;
+            color: var(--dc-text);
+        }
+
+        #dc-logs .dc-card {
+            position: relative;
             width: 100%;
-            background-color: #0d0f14;
-            border-radius: 10px;
-            border: 1px solid #282c34;
+            background: #ffffff;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-card);
+            padding-top: 24px;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        /* Clips the tab bar/panes to the card's bottom corners without
+           clipping the floating title above, which needs to overflow the
+           card's own top edge. */
+        #dc-logs .dc-body {
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            border-radius: 0 0 var(--dc-radius-card) var(--dc-radius-card);
         }
 
-        #slurm-terminal-wrapper input[type="radio"] { display: none; }
-
-        #slurm-terminal-wrapper .tab-bar {
-            display: flex;
-            background-color: #1a1c23;
-            padding: 10px 10px 0 10px;
-            border-bottom: 2px solid #282c34;
-        }
-
-        #slurm-terminal-wrapper .tab-label {
-            padding: 12px 28px; /* Larger Padding */
-            font-size: 13px;
-            font-weight: 600;
-            color: #5c6370;
-            cursor: pointer;
-            border-radius: 8px 8px 0 0;
-            margin-right: 6px;
-            transition: all 0.2s ease-in-out;
-            border: 1px solid transparent;
+        #dc-logs .dc-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #ffffff;
+            padding: 2px 16px;
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--dc-text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-pill);
         }
 
-        #slurm-terminal-wrapper .tab-label:hover {
-            color: #abb2bf;
-            background-color: #21252b;
+        #dc-logs .dc-live-dot {
+            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
+            box-shadow: 0 0 6px var(--dc-live);
+            animation: dc-pulse 2s infinite;
+        }
+        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        #dc-logs input[type="radio"] { display: none; }
+
+        #dc-logs .tab-bar {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid var(--dc-divider);
         }
 
-        /* Distinctive Active States */
-        #slurm-terminal-wrapper #tab-out:checked ~ .tab-bar label[for="tab-out"] {
-            color: #61afef; /* Bright Blue */
-            background-color: #0d0f14;
-            border: 1px solid #282c34;
-            border-bottom: 3px solid #61afef; /* Thick Accent Bar */
-            margin-bottom: -2px;
+        #dc-logs .tab-label {
+            padding: 10px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--dc-text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out;
         }
 
-        #slurm-terminal-wrapper #tab-err:checked ~ .tab-bar label[for="tab-err"] {
-            color: #e06c75; /* Bright Red */
-            background-color: #0d0f14;
-            border: 1px solid #282c34;
-            border-bottom: 3px solid #e06c75; /* Thick Accent Bar */
-            margin-bottom: -2px;
+        #dc-logs .tab-label:hover { color: var(--dc-text); }
+
+        #dc-logs #tab-out:checked ~ .tab-bar label[for="tab-out"] {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
         }
 
-        #slurm-terminal-wrapper .pane {
-            height: 400px;
-            padding: 20px;
+        #dc-logs #tab-err:checked ~ .tab-bar label[for="tab-err"] {
+            color: #ef4444;
+            border-bottom-color: #ef4444;
+        }
+
+        #dc-logs .pane {
+            max-height: 320px;
+            min-height: 48px;
+            padding: 16px 20px;
             overflow-y: auto;
             display: none;
-            font-size: 13px;
+            font-size: 12.5px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
             line-height: 1.6;
             white-space: pre-wrap;
-            background-color: #0d0f14;
+            background: #f8fafc;
+            color: #334155;
         }
 
-        #slurm-terminal-wrapper #tab-out:checked ~ #stdout-pane { display: block; color: #abb2bf; }
-        #slurm-terminal-wrapper #tab-err:checked ~ #stderr-pane { display: block; color: #e06c75; }
-
-        #slurm-terminal-wrapper .prompt { color: #c678dd; margin-right: 10px; font-weight: bold; }
-
-        /* Custom Scrollbar for the dark theme */
-        #slurm-terminal-wrapper .pane::-webkit-scrollbar { width: 8px; }
-        #slurm-terminal-wrapper .pane::-webkit-scrollbar-track { background: #0d0f14; }
-        #slurm-terminal-wrapper .pane::-webkit-scrollbar-thumb { background: #3e4451; border-radius: 4px; }
+        #dc-logs #tab-out:checked ~ #stdout-pane { display: block; }
+        #dc-logs #tab-err:checked ~ #stderr-pane { display: block; color: #b91c1c; }
     </style>
 
-    <div class="terminal-container">
-        <input type="radio" id="tab-out" name="terminal-toggle" checked>
-        <input type="radio" id="tab-err" name="terminal-toggle">
+    <div class="dc-card">
+        <div class="dc-title"><div class="dc-live-dot"></div> Job Logs &middot; Job {{JOBID}}</div>
 
-        <div class="tab-bar">
-            <label for="tab-out" class="tab-label">Standard Output</label>
-            <label for="tab-err" class="tab-label">Error Log</label>
-            <div style="flex-grow:1; text-align:right; padding: 12px 15px 0 0; font-size:11px; color:#4b5263; font-weight: bold;">
-                JOB: {{JOBID}}
+        <div class="dc-body">
+            <input type="radio" id="tab-out" name="dc-logs-toggle" checked>
+            <input type="radio" id="tab-err" name="dc-logs-toggle">
+
+            <div class="tab-bar">
+                <label for="tab-out" class="tab-label">Standard Output</label>
+                <label for="tab-err" class="tab-label">Error Log</label>
             </div>
-        </div>
 
-        <div id="stdout-pane" class="pane">
-{{OUTPUT}}
-        </div>
-        <div id="stderr-pane" class="pane">
-{{ERROR}}
+            <div id="stdout-pane" class="pane">{{OUTPUT}}</div>
+            <div id="stderr-pane" class="pane">{{ERROR}}</div>
         </div>
     </div>
 </div>

@@ -207,7 +207,7 @@ function StaticText(props) {
     >
       <div className="py-2 position-relative">
         {isLoading && (
-          <div className="position-absolute" style={{ top: '0', right: '0' }}>
+          <div className="position-absolute" style={{ top: '0', right: '0', zIndex: 10 }}>
             <div className="spinner-border spinner-border-sm text-primary" role="status">
               <span className="sr-only">Loading...</span>
             </div>
@@ -220,6 +220,12 @@ function StaticText(props) {
             className="btn btn btn-primary maroon-button  btn-sm position-absolute"
             style={{
               right: isLoading ? '30px' : '0',
+              // Retrieved HTML (rendered below via dangerouslySetInnerHTML)
+              // often uses position:relative internally (e.g. for a
+              // floating title badge), which puts it in this same
+              // stacking layer and, being later in the DOM, would
+              // otherwise paint its background over this button.
+              zIndex: 10,
             }}
             aria-label="Refresh content"
           >
