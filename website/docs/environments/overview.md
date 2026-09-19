@@ -22,7 +22,7 @@ Every Drona Workflow consists of core files that work together to define the com
 - **Variable Mapping (`map.json`)** - Maps form fields to job variables, defines resource allocation logic, specifies file handling rules, and controls job scheduler parameters  
 - **Utility Functions (`utils.py`)** - Provides workflow-specific logic, handles complex data processing, implements custom validation, and manages API integrations
 
-Supporting infrastructure includes retriever scripts for dynamic content and API integration, and modular schema components for reusability across workflows.
+Supporting infrastructure includes retriever scripts for dynamic content and API integration, and a [shared library](./shared-library) of modular schema components, retrievers, and HTML templates for reuse across workflows.
 
 ```mermaid
 graph LR

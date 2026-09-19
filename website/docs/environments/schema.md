@@ -133,6 +133,8 @@ To reference components from a fixed directory shared across environments (rathe
 
 `$DRONA_RUNTIME_DIR` is set automatically — no additional configuration is required. This works alongside the relative and absolute path conventions above — plain relative paths (e.g. `schema_components/training.json`) still resolve against the environment directory.
 
+In practice, shared fragments live under `runtime_support/form_components/`, alongside a matching set of shared retriever scripts and HTML templates. See [Shared Environment Library](./shared-library) for the full layout and conventions.
+
 
 ---
 

@@ -10,7 +10,7 @@ Retriever scripts dynamically populate form fields or display real-time informat
 
 Retriever scripts enable workflows to present dynamic content based on user input, available resources, or system conditions. Scripts execute when fields initially render and re-execute automatically when referenced form values change or at scheduled intervals via `refreshInterval`.
 
-While environment creators can implement custom retrievers for any use case, Drona also provides a curated set of [pre-built retriever functions](#pre-built-retriever-functions) for common HPC workflows.
+While environment creators can implement custom retrievers for any use case, Drona also provides a curated set of [pre-built retriever functions](#pre-built-retriever-functions) for common HPC workflows. These live in a shared directory and can be overridden per-environment; see [Shared Environment Library](./shared-library) for the lookup order and conventions.
 
 ## Schema Configuration
 
@@ -143,7 +143,6 @@ Selection retrievers populate dropdown menus, checkboxes, and radio groups with 
 | Retriever Name | Return Value |
 |----------------|--------------|
 | `drona_select_wf.sh` | Workflows with names, drona_ids, and submission dates |
-| `drona_select_slurm_jobs.sh` | Jobs with ID, name, and status from Slurm within a workflow |
 | `drona_select_nodes.sh` | Allocated nodes via `squeue` |
 
 ### Monitoring Retrievers

@@ -5,6 +5,7 @@ import jsonref
 import subprocess
 import traceback
 from string import Template
+from urllib.request import urlopen
 from .error_handler import APIError, handle_api_error
 from copy import deepcopy
 from .utils import get_envs_dir, get_runtime_dir
@@ -137,6 +138,18 @@ def execute_script(
             }
         )
 
+def _runtime_dir_loader(uri, **kwargs):
+    """
+    jsonref's default loader for local/remote files does not know about our
+    $DRONA_RUNTIME_DIR placeholder, so any file it follows a $ref into (e.g.
+    schemas/create.schema.json) would see the literal, unsubstituted string.
+    Substitute it here too, so $DRONA_RUNTIME_DIR refs work at any nesting depth.
+    """
+    with urlopen(uri) as content:
+        raw = content.read().decode("utf-8")
+    raw = Template(raw).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir())
+    return json.loads(raw, **kwargs)
+
 def convert_jsonref_to_dict(obj):
     """
     Convert JsonRef proxy objects to regular Python objects recursively.
@@ -184,7 +197,7 @@ def get_schema_route(environment):
         # Allows $ref targets to point at the fixed runtime_support directory via e.g.
         # "$ref": "$DRONA_RUNTIME_DIR/foo.json#/defs/bar"
         schema_data = Template(schema_data).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir())
-        jsonref_result = jsonref.loads(schema_data, base_uri=base_uri, proxies=True)
+        jsonref_result = jsonref.loads(schema_data, base_uri=base_uri, proxies=True, loader=_runtime_dir_loader)
         
         schema_dict = convert_jsonref_to_dict(jsonref_result)
         

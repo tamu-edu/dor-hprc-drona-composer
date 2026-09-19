@@ -48,6 +48,7 @@ const sidebars = {
         'environments/overview',
         'environments/schema',
         'frontend/form-components',
+        'environments/shared-library',
         'environments/map',
         'environments/driver',
         'environments/utils',

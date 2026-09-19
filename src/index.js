@@ -9,6 +9,13 @@ import { GlobalFilesContext } from './GlobalFilesContext';
 export function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
   const [environment, setEnvironment] = useState({ env: "", src: "" });
+  // Bumped on every environment (re)selection so <Composer> gets a fresh
+  // mount even when the same environment is picked again. Without this,
+  // React reuses the existing component tree (schema shape is identical),
+  // so dynamic hidden fields that only fetch once on mount (e.g. Generic's
+  // "configured" check) never re-run and can end up in a value that
+  // matches none of the schema's conditions, blanking the whole form.
+  const [envInstanceId, setEnvInstanceId] = useState(0);
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
   const [messages, setMessages] = useState([]);
@@ -181,6 +188,7 @@ export function App() {
       icon: option.icon,
       is_user_env: option.is_user_env,
    });
+    setEnvInstanceId((id) => id + 1);
 
   const params = new URLSearchParams(window.location.search);
   params.set("environment", option.value);
@@ -691,6 +699,7 @@ export function App() {
           error={error}
           setError={setError}
           environment={environment}
+          envInstanceId={envInstanceId}
           environments={environments}
           fields={fields}
           runLocation={runLocation}
