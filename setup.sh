@@ -23,17 +23,19 @@ sed -i.bak -e "s/\[cluster-name\]/$CLUSTERNAME/g" -e "s/\[app-name\]/$CURRENTDIR
 # Remove backup file during copy
 rm config.yml.bak
 
-# Ask which environment this app should run as (matches the sections in config.yml)
-echo "Which environment should this app run as?"
-select APP_ENV_CHOICE in "production" "development" "local"; do
-  case "$APP_ENV_CHOICE" in
-    production|development|local)
-      break
-      ;;
-    *)
-      echo "Invalid selection. Please choose 1, 2, or 3."
-      ;;
-  esac
+# Ask which environment this app should run as (matches the sections in config.yml).
+# The menu shows friendlier labels, but the value written to .env/config.yml
+# must stay exactly "production"/"development"/"local" to match those section names.
+echo "Deployment target?"
+APP_ENV_LABELS=("OOD (production)" "OOD (development)" "Local (debug)")
+APP_ENV_VALUES=("production" "development" "local")
+select APP_ENV_LABEL in "${APP_ENV_LABELS[@]}"; do
+  if [ -n "$APP_ENV_LABEL" ]; then
+    APP_ENV_CHOICE="${APP_ENV_VALUES[$((REPLY-1))]}"
+    break
+  else
+    echo "Invalid selection. Please choose 1, 2, or 3."
+  fi
 done
 
 echo "APP_ENV=$APP_ENV_CHOICE" > .env

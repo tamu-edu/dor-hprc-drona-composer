@@ -19,10 +19,10 @@ Clone the repository and run the setup script:
 ```bash
 git clone https://github.com/tamu-edu/dor-hprc-drona-composer.git
 cd dor-hprc-drona-composer
-./setup
+./setup.sh
 ```
 
-The setup script creates a Python virtual environment, installs all dependencies, builds the frontend, and creates the necessary directories (`environments/`, `logs/`). For a detailed breakdown of what the script does and manual installation steps, see the [Installation](./installation) guide.
+The setup script asks for your cluster name and deployment target, then creates a Python virtual environment, installs all dependencies, builds the frontend, and creates the necessary directories (`environments/`, `logs/`). For a detailed breakdown of what the script does and manual installation steps, see the [Installation](./installation) guide.
 
 ## Configuration
 

@@ -16,10 +16,12 @@ This guide covers the full installation process and configuration details for Dr
 
 The setup script automates the following steps:
 
-1. **Configures `config.yml` and `manifest.yml`** by replacing `[app-name]` and `[user-name]` placeholders with actual values
-2. **Creates directories** — `environments/` for workflow definitions and `logs/` for application logging
-3. **Sets up a Python virtual environment** in `.venv` and installs dependencies from `requirements.txt`
-4. **Installs frontend dependencies** (`babel-loader`, `@babel/core`, `@babel/preset-react`) and builds the React frontend
+1. **Asks for your cluster name** and uses it to fill in `config.yml`
+2. **Configures `config.yml` and `manifest.yml`** by replacing `[app-name]` and `[user-name]` placeholders with actual values
+3. **Asks for a deployment target** — `OOD (production)`, `OOD (development)`, or `Local (debug)` — and writes the corresponding value (`production`, `development`, or `local`) to a `.env` file as `APP_ENV`. This must match one of the top-level sections in `config.yml` (see the Configuration section below); `app.py` reads `APP_ENV` at startup to pick which section to use.
+4. **Creates directories** — `environments/` for workflow definitions and `logs/` for application logging
+5. **Sets up a Python virtual environment** in `.venv` and installs dependencies from `requirements.txt`
+6. **Installs frontend dependencies** (`babel-loader`, `@babel/core`, `@babel/preset-react`) and builds the React frontend
 
 ## Manual Installation
 
@@ -33,6 +35,10 @@ cd dor-hprc-drona-composer
 mkdir -p environments logs
 touch logs/drona_log
 chmod uog+rw logs/drona_log
+
+# Choose a deployment target — must be exactly "production", "development", or "local"
+# to match a top-level section in config.yml
+echo "APP_ENV=production" > .env
 
 # Python setup
 python3 -m venv .venv
@@ -61,7 +67,17 @@ development: &common_settings
 production:
   <<: *common_settings
   dashboard_url: "/pun/sys/drona-composer"
+
+# local doesn't inherit from common_settings — it's meant for running
+# outside Open OnDemand entirely, so paths like modules_db_path are blank
+local:
+  cluster_name: "Local"
+  dashboard_url: "http://localhost:5000"
+  driver_scripts_path: "./machine_driver_scripts"
+  env_repo_github: "https://github.com/..."
 ```
+
+The section chosen at runtime is whichever one matches `APP_ENV` (set in `.env` by `setup.sh`, or exported directly in your shell) — `development`, `production`, or `local`.
 
 - **`cluster_name`** — Display name for the cluster, used internally and in form titles
 - **`modules_db_path`** — Path to the external script that retrieves available modules. Used by the module form element

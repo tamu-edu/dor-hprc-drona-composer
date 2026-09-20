@@ -68,9 +68,17 @@ const FieldRenderer = ({
           (typeof schemaDefault === "string" ? schemaDefault : "") ||
           fallbackFromLocation;
 
-        // Some Picker instances initialize internal display state from
-        // defaultLocation only on mount, so remount when the restored path changes.
-        elementKey = `${name}-${extraProps.defaultLocation || ""}`;
+        const isMultiplePicker = attributes.multiple !== undefined
+          && attributes.multiple.toString().toLowerCase() === "true";
+
+        // Some single-select Picker instances initialize internal display
+        // state from defaultLocation only on mount, so remount when the
+        // restored path changes (needed for Recreate). Multi-select pickers
+        // update `value` on every "Add" click, so forcing a remount here
+        // would wipe their in-progress selection list after each addition.
+        if (!isMultiplePicker) {
+          elementKey = `${name}-${extraProps.defaultLocation || ""}`;
+        }
       }
     
       return (

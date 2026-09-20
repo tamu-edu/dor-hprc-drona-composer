@@ -528,6 +528,9 @@ A file and directory picker component that allows users to browse and select fil
 - `localLabel - Label for the local file browser button` (string) - 
 - `remoteLabel` (string, optional) - Label for remote file upload button (if omitted, remote upload option isn't shown)
 - `showFiles="false"` (string|boolean, optional) - Whether to show files in directory listings ("true" or "false")
+- `allowedFileTypes` (string, optional) - Comma-separated list of file extensions to allow (e.g. "csv,txt,json"); non-matching files are hidden from the browser. Leading dots are optional, matching is case-insensitive, and directories are always shown regardless of this filter.
+- `showHidden=true` (string|boolean, optional) - Whether to include dot-prefixed hidden files and directories (e.g. ".git", ".config") in the browser listing ("true" or "false")
+- `multiple=false` (string|boolean, optional) - When true, each browse adds one more file/directory to a list instead of replacing a single value. The submitted value becomes a colon-joined string of the chosen full paths (e.g. "/scratch/a:/scratch/b"), matching shell $PATH-style lists. Single-select behavior (a plain path string) is unchanged when this is left unset.
 - `defaultLocation` (string, optional) - Default path to show in the input field
 - `defaultPaths` (Object, optional) - Custom paths to show as quick access buttons (key:label, value:path)
 - `useHPCDefaultPaths=true` (boolean, optional) - Whether to use system default paths
@@ -543,6 +546,7 @@ A file and directory picker component that allows users to browse and select fil
 "localLabel": "Browse Directories",
 "remoteLabel": "Upload File",
 "showFiles": "true",
+"allowedFileTypes": "csv,txt,json",
 "defaultLocation": "$HOME",
 "defaultPaths": {
 "HomeCustom": "$HOME"

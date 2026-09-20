@@ -23,17 +23,41 @@ def save_file(file, location):
 
     return file_path
 
-def fetch_subdirectories(path):
-    """Get subdirectories and files in a directory"""
+def fetch_subdirectories(path, show_files=True, allowed_extensions=None, show_hidden=True):
+    """Get subdirectories and files in a directory, sorted alphabetically (case-insensitive).
+
+    allowed_extensions, when given, is a set of lowercase extensions without the
+    leading dot (e.g. {"csv", "txt"}); non-matching files are excluded before the
+    500-item cap is applied, so the cap and truncation flag stay meaningful when
+    a filter narrows the results (directories are never filtered by extension).
+    show_hidden=False excludes dot-prefixed entries (both files and directories)
+    the same way, before the cap.
+    """
     total_seen = 0
     max_items = 500
     subdirectories = []
     subfiles = []
     truncated = False
-    show_files = True
 
     with os.scandir(path) as entries:
         for entry in entries:
+            if not show_hidden and entry.name.startswith("."):
+                continue
+
+            if entry.is_dir(follow_symlinks=False):
+                is_match = True
+            elif show_files and entry.is_file(follow_symlinks=False):
+                if allowed_extensions:
+                    ext = os.path.splitext(entry.name)[1].lstrip(".").lower()
+                    is_match = ext in allowed_extensions
+                else:
+                    is_match = True
+            else:
+                is_match = False
+
+            if not is_match:
+                continue
+
             total_seen += 1
             if total_seen > max_items:
                 truncated = True
@@ -41,11 +65,12 @@ def fetch_subdirectories(path):
 
             if entry.is_dir(follow_symlinks=False):
                 subdirectories.append(entry.name)
-            elif show_files and entry.is_file(follow_symlinks=False):
+            else:
                 subfiles.append(entry.name)
 
-    #subdirectories = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isdir(os.path.join(path, entry))])
-    #subfiles = sorted([os.path.basename(entry) for entry in os.listdir(path) if os.path.isfile(os.path.join(path, entry))])  
+    subdirectories.sort(key=str.lower)
+    subfiles.sort(key=str.lower)
+
     return {"subdirectories": subdirectories, "subfiles": subfiles, "truncated": truncated, "total_seen": total_seen}
 
 def download_file_route():
@@ -103,6 +128,18 @@ def get_modules_route():
 def get_subdirectories_route():
     """Get subdirectories and files in a directory"""
     fullpath = request.args.get('path')
+    show_files_param = request.args.get('showFiles')
+    show_files = show_files_param is None or show_files_param.lower() != 'false'
+    show_hidden_param = request.args.get('showHidden')
+    show_hidden = show_hidden_param is None or show_hidden_param.lower() != 'false'
+    file_types_param = request.args.get('fileTypes')
+    allowed_extensions = None
+    if file_types_param:
+        allowed_extensions = {
+            ext.strip().lstrip(".").lower()
+            for ext in file_types_param.split(",")
+            if ext.strip()
+        }
     if not fullpath:
         return jsonify({'error': 'No path provided'}), 400
     if not os.path.exists(fullpath):
@@ -110,27 +147,11 @@ def get_subdirectories_route():
     if not os.path.isdir(fullpath):
         return jsonify({'error': 'Path is not a directory'}), 400
     try:
-        return jsonify(fetch_subdirectories(fullpath))
+        return jsonify(fetch_subdirectories(
+            fullpath, show_files=show_files, allowed_extensions=allowed_extensions, show_hidden=show_hidden
+        ))
     except PermissionError:
         return jsonify({'error': 'Permission denied'}), 403
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-def read_file_content_route():
-    """Read a text file and return its content"""
-    path = request.args.get('path')
-    if not path:
-        return jsonify({'error': 'No path provided'}), 400
-    if not os.path.exists(path):
-        return jsonify({'error': f'File not found: {path}'}), 404
-    if not os.path.isfile(path):
-        return jsonify({'error': 'Path is not a file'}), 400
-    if not os.access(path, os.R_OK):
-        return jsonify({'error': 'No read permission'}), 403
-    try:
-        with open(path, 'r', encoding='utf-8', errors='replace') as f:
-            content = f.read()
-        return jsonify({'content': content, 'filename': os.path.basename(path)})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

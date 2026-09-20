@@ -1,7 +1,7 @@
 name: Build and Deploy Drona Documentation
 on:
   push:
-    branches: [ master, hprc-dev ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 permissions:
@@ -30,13 +30,20 @@ jobs:
         run: |
           cd website
           npm run build
+      # Only package a Pages artifact for a real push to master. A
+      # pull_request run (including from a fork) doesn't have Pages write
+      # permission and shouldn't publish to the live site anyway — it stops
+      # here, after having verified the docs build cleanly.
       - name: Setup GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: actions/configure-pages@v4
       - name: Upload Docusaurus build artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: actions/upload-pages-artifact@v3
         with:
           path: './website/build'
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

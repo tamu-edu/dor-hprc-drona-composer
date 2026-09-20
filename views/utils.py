@@ -1,5 +1,7 @@
 from flask import request, jsonify, current_app as app
 import os
+import grp
+import pwd
 import json
 from .error_handler import APIError, handle_api_error
 from pathlib import Path
@@ -284,8 +286,14 @@ def get_main_paths_route():
 
     if use_hpc_default_paths != "False" and use_hpc_default_paths != "false":
         current_user = os.getenv("USER")
-        group_names = os.popen(f'groups {current_user}').read().split(":")[1].split()
-        group_names = [s.strip() for s in group_names]
+        try:
+            user_gid = pwd.getpwnam(current_user).pw_gid
+            group_names = [
+                grp.getgrgid(gid).gr_name
+                for gid in os.getgrouplist(current_user, user_gid)
+            ]
+        except KeyError:
+            group_names = []
 
         paths["Home"] = f"/home/{current_user}"
         paths["Scratch"] = f"/scratch/user/{current_user}"

@@ -1,5 +1,10 @@
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+// prism-react-renderer v2's API (Docusaurus 3.x bundles v2 internally via
+// @docusaurus/theme-classic) — the old `require('prism-react-renderer/themes/x')`
+// subpath only existed in v1, which is why v1 was still pinned as a direct
+// dependency; that's no longer needed with this import style.
+const { themes: prismThemes } = require('prism-react-renderer');
+const lightCodeTheme = prismThemes.github;
+const darkCodeTheme = prismThemes.dracula;
 
 // With JSDoc @type annotations, IDEs can provide config autocompletion
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
