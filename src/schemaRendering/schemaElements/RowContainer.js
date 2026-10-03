@@ -30,11 +30,16 @@
  *   }
  * }
  *
+ * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Job Resources" }; a CSS object applies to the content area. Unset renders no frame.
  * @property {Array} elements - Array of field configuration objects to be rendered in the row
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import FieldRenderer from "../FieldRenderer";
+import LayoutFrame from "../utils/LayoutFrame";
+import { resolveLayout } from "../utils/choiceStyles";
+
+const FRAME_PRESETS = ["boxed", "card"];
 
 function RowContainer({
   elements,
@@ -44,22 +49,26 @@ function RowContainer({
   onSizeChange,
   currentValues,
   setError,
+  layout,
   locationProps = {}
 }) {
+  const resolved = useMemo(() => resolveLayout(layout, { only: FRAME_PRESETS }), [layout]);
 
   return (
-    <div className="form-group row">
-      <FieldRenderer
-        fields={elements}
-        handleValueChange={onChange}
-        labelOnTop
-        fieldStyles="col"
-        startingIndex={startingIndex}
-        currentValues={currentValues}
-        setError={setError}
-        locationProps={locationProps}
-      />
-    </div>
+    <LayoutFrame resolved={resolved}>
+      <div className="form-group row">
+        <FieldRenderer
+          fields={elements}
+          handleValueChange={onChange}
+          labelOnTop
+          fieldStyles="col"
+          startingIndex={startingIndex}
+          currentValues={currentValues}
+          setError={setError}
+          locationProps={locationProps}
+        />
+      </div>
+    </LayoutFrame>
   );
 }
 

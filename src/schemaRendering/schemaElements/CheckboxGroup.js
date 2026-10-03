@@ -22,11 +22,14 @@
  * @property {string} [label] - Display label for the field
  * @property {Array} options - Array of option objects, each with value and label properties
  * @property {Array} [value] - Default/initial selected values
+ * @property {string} [style] - Option appearance: "default" or "button"
+ * @property {string|Object|Array} [layout] - Group layout: "inline" | "list" | "grid" | "boxed", a preset with params, a CSS object, or an array of these
  * @property {string} [help] - Help text displayed below the input
  */
 
 import React, { useState, useEffect } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
+import ChoiceOptions from "../utils/ChoiceOptions";
 
 function CheckboxGroup(props) {
     const [selectedValues, setSelectedValues] = useState([]);
@@ -56,26 +59,6 @@ function CheckboxGroup(props) {
         if (props.onChange) props.onChange(props.index, newValues);
     }
 
-    const optionList = props.options.map((option) => (
-        <div className="form-check form-check-inline" key={option.value}>
-            <input
-                type="checkbox"
-                className="form-check-input"
-                id={`${props.name}-${option.value}`}
-                value={option.value}
-                name={props.name}
-                checked={selectedValues.includes(option.value)}
-                onChange={handleCheckboxChange}
-            />
-            <label
-                className="form-check-label"
-                htmlFor={`${props.name}-${option.value}`}
-            >
-                {option.label}
-            </label>
-        </div>
-    ));
-
     return (
         <FormElementWrapper
             labelOnTop={props.labelOnTop}
@@ -83,7 +66,15 @@ function CheckboxGroup(props) {
             label={props.label}
             help={props.help}
         >
-            {optionList}
+            <ChoiceOptions
+                type="checkbox"
+                name={props.name}
+                options={props.options}
+                selected={selectedValues}
+                onChange={handleCheckboxChange}
+                style={props.style}
+                layout={props.layout}
+            />
         </FormElementWrapper>
     );
 }

@@ -48,30 +48,48 @@
  * @property {Object} [retrieverParams] - Parameters passed to the script as environment variables, values with $ prefix will be replaced with form values
  * @property {boolean} [allowHtml=false] - Whether to render content as HTML using dangerouslySetInnerHTML
  * @property {boolean} [showRefreshButton=false] - Whether to show a manual refresh button for dynamic content
- * @property {number} [refreshInterval] - Auto-refresh interval in seconds
+ * @property {number} [refreshInterval] - Auto-refresh interval in seconds. Paused while the browser
+ * tab is hidden; a poll is skipped if the previous one is still running. A failed poll keeps the
+ * previous content with an inline "Refresh failed" note, and only raises the global error after
+ * several failures in a row.
+ * @property {string} [refreshWhile] - Condition (same syntax as `condition`); auto-refresh only runs
+ * while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
  * @property {boolean} [isHeading=false] - Whether to style the text as a heading with larger, bold font
+ * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Job Efficiency" }; a CSS object applies to the content area. The title may reference form fields as `$fieldName`, e.g. "Resource Usage · Job $jobs". Unset renders no frame.
  * @property {function} [setError] - Function to handle errors during content fetching
  */
 
-import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
+import LayoutFrame from "../utils/LayoutFrame";
+import { resolveLayout } from "../utils/choiceStyles";
 import { FormValuesContext } from "../FormValuesContext";
 import { getFieldValue } from "../utils/fieldUtils";
-import { executeScript } from "../utils/utils";
+import { useRetriever, usePolling } from "../hooks";
+import { RefreshFailedNotice } from "../utils/retrieverFailures";
+
+const FRAME_PRESETS = ["boxed", "card"];
 
 function StaticText(props) {
-  const [content, setContent] = useState(props.value || "");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const refreshTimerRef = useRef(null);
+  const resolved = useMemo(() => resolveLayout(props.layout, { only: FRAME_PRESETS }), [props.layout]);
+  const [staticContent, setStaticContent] = useState(props.value || "");
 
-  const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
-  
-  const formValuesRef = useRef(formValues);
-  
-  useEffect(() => {
-    formValuesRef.current = formValues;
-  }, [formValues]);
+  const { values: formValues, updateValue } = useContext(FormValuesContext);
+
+  const retrieverPath = props.isDynamic ? props.retrieverPath : undefined;
+
+  const { data, isLoading, isRefreshing, error, refreshError, lastSuccessAt, refetch } = useRetriever({
+    retrieverPath,
+    retrieverParams: props.retrieverParams,
+    initialData: props.value || "",
+    parseJSON: false,
+    onError: props.setError,
+  });
+
+  const content = props.isDynamic ? data : staticContent;
+
+  // Background polls update the content quietly; only other fetches show the spinner
+  const showLoading = isLoading && !isRefreshing;
 
   // Update form context whenever content changes (for conditional logic)
   useEffect(() => {
@@ -82,119 +100,25 @@ function StaticText(props) {
     }
   }, [content, updateValue, props.name, formValues]);
 
-  const relevantFieldNames = useMemo(() => {
-    if (!props.retrieverParams) return [];
-
-    return Object.values(props.retrieverParams)
-      .filter(value => typeof value === 'string' && value.startsWith('$'))
-      .map(value => value.substring(1));
-  }, [props.retrieverParams]);
-
   const createMarkup = (html) => {
     return { __html: html };
   };
 
-  const fetchContent = useCallback(async () => {
-    if (!props.isDynamic || !props.retrieverPath) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await executeScript({
-        retrieverPath: props.retrieverPath,
-        retrieverParams: props.retrieverParams,
-        formValues: formValuesRef.current,
-	environment: environment,
-        parseJSON: false,
-        onError: props.setError
-      });
-
-      setContent(data);
-    } catch (err) {
-      console.error("Error fetching content:", err);
-      setError(err.message || "Failed to load content");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [props.isDynamic, props.retrieverPath, props.retrieverParams, props.setError]);
-
-  const debouncedFetchContent = useCallback(
-    (() => {
-      let timeout = null;
-
-      return () => {
-        if (timeout) clearTimeout(timeout);
-
-        timeout = setTimeout(() => {
-          fetchContent();
-          timeout = null;
-        }, 300); 
-      };
-    })(),
-    [fetchContent] 
-  );
-
   // Handle static content value changes
   useEffect(() => {
     if (!props.isDynamic) {
-      setContent(props.value || "");
+      setStaticContent(props.value || "");
     }
   }, [props.isDynamic, props.value]);
 
-  // Handle dynamic content fetching
-  useEffect(() => {
-    if (refreshTimerRef.current) {
-      clearInterval(refreshTimerRef.current);
-      refreshTimerRef.current = null;
-    }
-
-    if (!props.isDynamic) {
-      return;
-    }
-
-    fetchContent();
-
-    if (props.refreshInterval && props.refreshInterval > 0) {
-      refreshTimerRef.current = setInterval(() => {
-        debouncedFetchContent();
-      }, props.refreshInterval * 1000);
-    }
-
-    return () => {
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
-    };
-  }, [props.isDynamic, props.retrieverPath, props.refreshInterval, debouncedFetchContent, fetchContent]);
-
-  const prevRelevantValuesRef = useRef({});
-  
-  useEffect(() => {
-    if (!props.isDynamic || !props.retrieverParams || relevantFieldNames.length === 0) {
-      return;
-    }
-    
-    let hasRelevantValueChanged = false;
-    
-    for (const fieldName of relevantFieldNames) {
-      const currentValue = getFieldValue(formValues, fieldName);
-      const previousValue = prevRelevantValuesRef.current[fieldName];
-      
-      if (currentValue !== previousValue) {
-        hasRelevantValueChanged = true;
-        prevRelevantValuesRef.current[fieldName] = currentValue;
-      }
-    }
-    
-    if (hasRelevantValueChanged) {
-      debouncedFetchContent();
-    }
-  }, [formValues, props.isDynamic, props.retrieverParams, relevantFieldNames, debouncedFetchContent]);
+  usePolling(() => refetch({ background: true }), props.refreshInterval, {
+    enabled: !!retrieverPath,
+    refreshWhile: props.refreshWhile,
+  });
 
   const handleRefresh = (e) => {
     e.preventDefault();
-    debouncedFetchContent();
+    refetch();
   };
 
   return (
@@ -205,8 +129,9 @@ function StaticText(props) {
       help={props.help}
       useLabel={props.useLabel}
     >
+      <LayoutFrame resolved={resolved}>
       <div className="py-2 position-relative">
-        {isLoading && (
+        {showLoading && (
           <div className="position-absolute" style={{ top: '0', right: '0', zIndex: 10 }}>
             <div className="spinner-border spinner-border-sm text-primary" role="status">
               <span className="sr-only">Loading...</span>
@@ -219,7 +144,7 @@ function StaticText(props) {
             onClick={handleRefresh}
             className="btn btn btn-primary maroon-button  btn-sm position-absolute"
             style={{
-              right: isLoading ? '30px' : '0',
+              right: showLoading ? '30px' : '0',
               // Retrieved HTML (rendered below via dangerouslySetInnerHTML)
               // often uses position:relative internally (e.g. for a
               // floating title badge), which puts it in this same
@@ -229,7 +154,21 @@ function StaticText(props) {
             }}
             aria-label="Refresh content"
           >
-            <span>Refresh</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
           </button>
         )}
 
@@ -246,10 +185,13 @@ function StaticText(props) {
 
         {error && (
           <div className="text-danger mt-2" style={{ fontSize: '0.875em' }}>
-            Error: {error}
+            Error: {error.message || "Failed to load content"}
           </div>
         )}
+
+        <RefreshFailedNotice error={refreshError} lastSuccessAt={lastSuccessAt} />
       </div>
+      </LayoutFrame>
     </FormElementWrapper>
   );
 }

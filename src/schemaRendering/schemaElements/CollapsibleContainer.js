@@ -34,10 +34,15 @@
  * @property {Object} elements - Object of field configuration objects to be rendered in the container
  * @property {string} [title="Collapsible Row Container"] - Title displayed in the container header
  * @property {('collapsed'|'expanded')} [default_state="expanded"] - Initial visibility state
+ * @property {string|Object} [layout] - "card" (or { "preset": "card" }) draws a rounded card whose title pill is the toggle (chevron, no separate button). Unset keeps the default header and button.
  */
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import FieldRenderer from "../FieldRenderer";
+import LayoutFrame from "../utils/LayoutFrame";
+import { resolveLayout } from "../utils/choiceStyles";
+
+const CARD_ONLY = ["card"];
 
 function CollapsibleHeader({ title, isCollapsed, onToggle }) {
   return (
@@ -83,6 +88,7 @@ function CollapsibleRowContainer({
   currentValues,
   setError,
   title = "Collapsible Row Container",
+  layout,
   default_state = "expanded",
   locationProps = {},
   ...props
@@ -95,6 +101,26 @@ function CollapsibleRowContainer({
     setIsCollapsed(prev => !prev);
   }
   
+  const resolved = useMemo(() => resolveLayout(layout, { only: CARD_ONLY }), [layout]);
+
+  if (resolved.frame) {
+    return (
+      <LayoutFrame resolved={resolved} title={title} collapse={{ isCollapsed, onToggle: toggleCollapse }}>
+        <FieldRenderer
+          fields={elements}
+          handleValueChange={onChange}
+          onFileChange={onFileChange}
+          labelOnTop
+          fieldStyles="width: 100%"
+          startingIndex={startingIndex}
+          currentValues={currentValues}
+          setError={setError}
+          locationProps={locationProps}
+        />
+      </LayoutFrame>
+    );
+  }
+
   return (
     <div style={{
       border: "1px solid #dee2e6",
@@ -137,6 +163,7 @@ function CollapsibleColContainer({
   currentValues,
   setError,
   title = "Collapsible Column Container",
+  layout,
   default_state = "expanded",
   locationProps = {},
 }) {
@@ -148,6 +175,28 @@ function CollapsibleColContainer({
     setIsCollapsed(prev => !prev);
   }
   
+  const resolved = useMemo(() => resolveLayout(layout, { only: CARD_ONLY }), [layout]);
+
+  if (resolved.frame) {
+    return (
+      <LayoutFrame resolved={resolved} title={title} collapse={{ isCollapsed, onToggle: toggleCollapse }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <FieldRenderer
+          fields={elements}
+          handleValueChange={onChange}
+          onFileChange={onFileChange}
+          labelOnTop
+          fieldStyles="width: 100%"
+          startingIndex={startingIndex}
+          currentValues={currentValues}
+          setError={setError}
+          locationProps={locationProps}
+        />
+        </div>
+      </LayoutFrame>
+    );
+  }
+
   return (
     <div style={{
       border: "1px solid #dee2e6",
