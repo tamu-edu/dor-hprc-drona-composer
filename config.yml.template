@@ -8,6 +8,7 @@ development: &common_settings
   driver_scripts_path: "/var/www/ood/apps/dev/[user-name]/gateway/[app-name]/machine_driver_scripts"
   default_python_venv: "/sw/hprc/sw/Python/virtualenvs/Python/3.8.6/default_dashboard_python-env/"
   env_repo_github: "https://github.com/tamu-edu/dor-hprc-drona-environments.git"
+  retriever_timeout: 30  # seconds before a retriever script is killed (HTTP 504)
 
 production:
   <<: *common_settings
@@ -26,3 +27,4 @@ local:
   driver_scripts_path: "./machine_driver_scripts"
   default_python_venv: ""
   env_repo_github: "https://github.com/tamu-edu/dor-hprc-drona-environments.git"
+  retriever_timeout: 30
