@@ -40,9 +40,26 @@ def load_config(config_file='config.yml'):
         config_data = yaml.safe_load(file)
     return config_data
 
+def resolve_retriever_timeout(config):
+    """Seconds a retriever script may run before it is killed: `retriever_timeout`
+    in config.yml, else the DRONA_RETRIEVER_TIMEOUT environment variable, else 30.
+    Resolved once at startup; an invalid value stops the app with a clear error
+    instead of being silently replaced."""
+    value = config.get('retriever_timeout', os.getenv('DRONA_RETRIEVER_TIMEOUT', 30))
+    try:
+        timeout = int(value)
+    except (TypeError, ValueError):
+        timeout = 0
+    if timeout <= 0:
+        raise ValueError(
+            f"retriever_timeout must be a positive whole number of seconds, got {value!r}"
+        )
+    return timeout
+
 config_data = load_config()
 config = config_data.get(env, config_data.get('local', config_data['production']))
 app.config.update(config)
+app.config['retriever_timeout'] = resolve_retriever_timeout(app.config)
 app.config['user'] = os.environ['USER']
 app.config['drona_root'] = get_drona_root()
 

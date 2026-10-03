@@ -10,6 +10,6 @@ static/dist/
 logs/
 config.yml
 environments-repo/
-docs/
+/docs/
 API.md
 .env

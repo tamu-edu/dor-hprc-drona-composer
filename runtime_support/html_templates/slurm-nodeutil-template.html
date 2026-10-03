@@ -1,4 +1,4 @@
-<div id="dc-nodeutil" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
+<div id="dc-nodeutil" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
     <style>
         #dc-nodeutil {
             --dc-text: #1e293b;
@@ -11,43 +11,6 @@
             --dc-live: #10b981;
             color: var(--dc-text);
         }
-
-        #dc-nodeutil .dc-card {
-            position: relative;
-            width: 100%;
-            background: #ffffff;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-card);
-            padding: 24px 15px 15px 15px;
-            box-sizing: border-box;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-        }
-
-        #dc-nodeutil .dc-title {
-            position: absolute;
-            top: -12px;
-            left: 20px;
-            background: #ffffff;
-            padding: 2px 16px;
-            font-size: 11px;
-            font-weight: 900;
-            color: var(--dc-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-pill);
-        }
-
-        #dc-nodeutil .dc-live-dot {
-            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
-            box-shadow: 0 0 6px var(--dc-live);
-            animation: dc-pulse 2s infinite;
-        }
-        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         #dc-nodeutil .node-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
         #dc-nodeutil .node-card {
@@ -62,10 +25,7 @@
         #dc-nodeutil .bg-mem { background: #10b981; }
     </style>
 
-    <div class="dc-card">
-        <div class="dc-title"><div class="dc-live-dot"></div> Node Utilization</div>
         <div class="node-grid">
             {{NODE_CARDS}}
         </div>
-    </div>
 </div>

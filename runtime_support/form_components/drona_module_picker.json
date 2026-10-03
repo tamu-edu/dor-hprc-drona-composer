@@ -1,5 +1,5 @@
 {
-  "Modules": {
+  "drona_Modules": {
     "type": "module",
     "label": "Add modules (optional)",
     "name": "drona_module_list",

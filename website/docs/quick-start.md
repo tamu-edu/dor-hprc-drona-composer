@@ -22,7 +22,7 @@ cd dor-hprc-drona-composer
 ./setup.sh
 ```
 
-The setup script asks for your cluster name and deployment target, then creates a Python virtual environment, installs all dependencies, builds the frontend, and creates the necessary directories (`environments/`, `logs/`). For a detailed breakdown of what the script does and manual installation steps, see the [Installation](./installation) guide.
+The setup script asks for your cluster name, the retriever script timeout (press Enter for the default of 30 seconds), and the deployment target, then creates a Python virtual environment, installs all dependencies, builds the frontend, and creates the necessary directories (`environments/`, `logs/`). For a detailed breakdown of what the script does and manual installation steps, see the [Installation](./installation) guide.
 
 ## Configuration
 

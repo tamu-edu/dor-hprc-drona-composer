@@ -1,13 +1,16 @@
 {
-  "hidden_jobs_check": {
+  "drona_hidden_jobs_check": {
     "type": "hidden",
     "label": "JOB_IDS",
     "name": "jobs",
     "refreshInterval": "60",
     "isDynamic": true,
     "retrieverParams": {
-      "WORKFLOW_ID": "$allworkflows"
+      "id": "$allworkflows",
+      "field": "runtime_meta",
+      "key": "jobinfo.*.id",
+      "join": " "
     },
-    "retriever": "drona_info_jobs.sh"
+    "retriever": "builtin:db_lookup"
   }
 }

@@ -1,20 +1,20 @@
 {
-  "job_summary_section": {
+  "drona_job_summary_section": {
     "type": "rowContainer",
     "condition": "!allworkflows. && !drona_status. && drona_status.DONE && !jobs.",
-    "label": "Job Summary",
     "elements": {
-      "seff_summary": {
+      "drona_seff_summary": {
         "type": "staticText",
         "name": "drona_seffsummary",
-        "label": "Job Summary",
+        "useLabel": false,
         "isDynamic": true,
         "retrieverParams": {
           "JOBIDS": "$jobs"
         },
         "retriever": "drona_slurm_seff.sh",
         "showRefreshButton": false,
-        "allowHtml": true
+        "allowHtml": true,
+        "layout": { "preset": "card", "title": "Job Efficiency (seff)" }
       }
     }
   }

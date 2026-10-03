@@ -1,14 +1,36 @@
-from flask import request, jsonify, current_app as app
+from flask import request, jsonify, make_response, current_app as app
 import os
 import json
 import jsonref
+import signal
 import subprocess
+import time
 import traceback
 from string import Template
 from urllib.request import urlopen
 from .error_handler import APIError, handle_api_error
 from copy import deepcopy
 from .utils import get_envs_dir, get_runtime_dir
+from .logger import Logger
+from runtime_support.db_access.builtin_retrievers import BUILTIN_REGISTRY, BuiltinRetrieverError
+
+# Every retriever failure/timeout is appended here (one JSON object per line),
+# so intermittent problems such as a slow Slurm controller can be diagnosed
+# from data rather than from occasional UI alerts.
+retriever_error_logger = Logger(os.path.join(
+    os.path.dirname(os.getenv('LOG_DIRECTORY', 'logs/drona_log')), 'retriever_errors'))
+
+def _log_retriever_failure(kind, script, duration, env_vars, message):
+    params = {k: v for k, v in (env_vars or {}).items() if k not in ('DRONA_ENV_DIR', 'DRONA_ENV_NAME')}
+    retriever_error_logger.log(json.dumps({
+        'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'user': os.getenv('USER', 'unknown'),
+        'kind': kind,
+        'script': script,
+        'duration_s': round(duration, 2),
+        'params': params,
+        'message': (message or '')[:500],
+    }))
 
 CONTAINER_TYPES = {
     "rowContainer", "container", "collapsibleRowContainer",
@@ -25,8 +47,25 @@ def iterate_schema(schema_dict):
         if value.get("type") in CONTAINER_TYPES and "elements" in value:
             yield from iterate_schema(value["elements"])
 
+def _unwrap_json_params(params):
+    """
+    The frontend JSON.stringify's every resolved retrieverParams value before
+    sending it as a query param, so it can carry non-string values through a
+    query string. Undo that in place: a JSON object becomes its 'value' key
+    (or itself if there is none), anything else becomes its parsed value
+    coerced to str, and anything that fails to parse (e.g. DRONA_ENV_DIR, a
+    plain path) passes through unchanged. Returns the same dict for chaining.
+    """
+    for key, value in params.items():
+        try:
+            parsed = json.loads(value)
+            params[key] = parsed.get('value', parsed) if isinstance(parsed, dict) else str(parsed)
+        except Exception:
+            pass
+    return params
+
 def execute_script(
-    retriever_path, 
+    retriever_path,
     env_vars=None, 
     script_type="Generic", 
     parse_json=False, 
@@ -79,64 +118,115 @@ def execute_script(
     execution_env["DRONA_RUNTIME_DIR"] = get_runtime_dir() 
 
     if env_vars:
-        for key, value in env_vars.items():
-            try:
-                parsed = json.loads(value)
-                env_vars[key] = parsed.get('value', parsed) if isinstance(parsed, dict) else str(parsed)
-            except:
-                pass
-        execution_env.update(env_vars)
+        execution_env.update(_unwrap_json_params(env_vars))
     
+    # Retrievers are polled by the UI (e.g. every 10-30s on the Manage page), so
+    # a hung squeue/sstat must not hold a worker indefinitely: other polls queue
+    # behind it and the proxy starts returning 502/504s. Kill it after
+    # retriever_timeout (resolved once at startup in app.py) and report which
+    # script was slow instead.
+    # start_new_session puts the script and anything it spawns (squeue, sstat,
+    # ...) in their own process group, so a timeout can kill all of them;
+    # killing only the shell would leave children holding the output pipes.
+    timeout = app.config['retriever_timeout']
+    start = time.monotonic()
     try:
-        result = subprocess.run(
+        proc = subprocess.Popen(
             cmd,
             shell=True,
-            check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
             cwd=retriever_dir,
-            env=execution_env
+            env=execution_env,
+            start_new_session=True
         )
-        
-        if result.returncode != 0:
-            raise APIError(
-                f"The {script_type.lower()} script failed with non-zero exit code: {result.returncode}",
-                status_code=400,
-                details={
-                    'script': retriever_path,
-                    'error': result.stderr,
-                    'output': result.stdout[:500] + ('...' if len(result.stdout) > 500 else '')
-                }
-            )
-        
-        if parse_json:
-            try:
-                return json.loads(result.stdout)
-            except json.JSONDecodeError as e:
-                raise APIError(
-                    f"The {script_type.lower()} script did not return valid JSON",
-                    status_code=400,
-                    details={
-                        'error': str(e),
-                        'output': result.stdout[:500] + ('...' if len(result.stdout) > 500 else ''),
-                        'script': retriever_path
-                    }
-                )
-        else:
-            return result.stdout
-            
-    except subprocess.CalledProcessError as e:
+    except OSError as e:
+        raise APIError(
+            f"Failed to execute {script_type.lower()} script",
+            status_code=500,
+            details={'error': str(e), 'script': retriever_path, 'cmd': cmd}
+        )
+
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.communicate()
+        _log_retriever_failure('timeout', retriever_path, time.monotonic() - start, env_vars,
+                               f"exceeded {timeout}s")
+        raise APIError(
+            f"The {script_type.lower()} script timed out after {timeout}s",
+            status_code=504,
+            details={'script': retriever_path, 'timeout': timeout}
+        )
+
+    duration = time.monotonic() - start
+
+    if proc.returncode != 0:
+        _log_retriever_failure('exit', retriever_path, duration, env_vars,
+                               f"exit code {proc.returncode}: {stderr}")
         raise APIError(
             f"Failed to execute {script_type.lower()} script",
             status_code=500,
             details={
-                'error': str(e),
-                'stderr': e.stderr,
+                'error': f"Command '{cmd}' returned non-zero exit status {proc.returncode}.",
+                'stderr': stderr,
                 'script': retriever_path,
                 'cmd': cmd
             }
         )
+
+    if parse_json:
+        try:
+            return json.loads(stdout)
+        except json.JSONDecodeError as e:
+            _log_retriever_failure('invalid_json', retriever_path, duration, env_vars, str(e))
+            raise APIError(
+                f"The {script_type.lower()} script did not return valid JSON",
+                status_code=400,
+                details={
+                    'error': str(e),
+                    'output': stdout[:500] + ('...' if len(stdout) > 500 else ''),
+                    'script': retriever_path
+                }
+            )
+    return stdout
+
+# Tier 0 declarative built-ins (runtime_support/db_access/builtin_retrievers.py)
+# run in-process with no subprocess spawn: a schema element opts in by setting
+# its retriever to "builtin:<name>" instead of a script path, e.g.
+# "retriever": "builtin:db_lookup". Everything else about how params reach the
+# retriever (query args -> env_vars dict) stays identical to the script path.
+BUILTIN_PREFIX = "builtin:"
+
+def is_builtin_retriever(retriever_path):
+    return bool(retriever_path) and retriever_path.startswith(BUILTIN_PREFIX)
+
+def execute_builtin(retriever_path, params):
+    """
+    Run a Tier 0 built-in in-process and return its (already-JSON-serializable)
+    result. Unlike execute_script, there is no subprocess, no timeout, and no
+    stdout/JSON parsing step - the built-in returns a Python value directly.
+    """
+    name = retriever_path[len(BUILTIN_PREFIX):]
+    fn = BUILTIN_REGISTRY.get(name)
+    if fn is None:
+        raise APIError(
+            f"Unknown built-in retriever: {name}",
+            status_code=400,
+            details={'available': sorted(BUILTIN_REGISTRY)}
+        )
+    start = time.monotonic()
+    try:
+        return fn(params)
+    except BuiltinRetrieverError as e:
+        _log_retriever_failure('builtin_invalid_params', retriever_path,
+                               time.monotonic() - start, params, str(e))
+        raise APIError(str(e), status_code=400, details={'builtin': name, 'params': params})
 
 def _runtime_dir_loader(uri, **kwargs):
     """
@@ -312,14 +402,28 @@ def evaluate_script_route():
         if k not in ["retriever_path"]
     }
 
-    result = execute_script(
-        retriever_path=retriever_path,
-        env_vars=env_vars if env_vars else None,
-        script_type="Dynamic Script",
-        parse_json=False
-    )
+    # TEMP (timing investigation): report time spent in this handler as a
+    # Server-Timing header, visible in the browser's Network > Timing tab, to
+    # tell server work apart from browser/queue wait. Remove with the
+    # t_start / Server-Timing lines below once done.
+    t_start = time.monotonic()
 
-    return result
+    if is_builtin_retriever(retriever_path):
+        result = execute_builtin(retriever_path, _unwrap_json_params(env_vars))
+        response = jsonify(result)
+    else:
+        result = execute_script(
+            retriever_path=retriever_path,
+            env_vars=env_vars if env_vars else None,
+            script_type="Dynamic Script",
+            parse_json=False
+        )
+        response = make_response(result)
+
+    label = "".join(c for c in retriever_path if c.isalnum() or c in ":._-/")[-60:]
+    response.headers["Server-Timing"] = 'handler;dur=%.1f;desc="%s"' % (
+        (time.monotonic() - t_start) * 1000, label)
+    return response
 
 
 

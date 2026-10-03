@@ -60,6 +60,7 @@ const sidebars = {
           items: [
             'environments/retriever-scripts',
             'environments/conditionals',
+            'environments/live-charts',
           ],
         },
       ],

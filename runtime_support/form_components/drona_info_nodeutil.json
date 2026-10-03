@@ -1,10 +1,10 @@
 {
-  "utilization_section": {
+  "drona_utilization_section": {
     "type": "rowContainer",
     "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
     "title": "Resource Utilization",
     "elements": {
-      "node_utiliztion": {
+      "drona_node_utiliztion": {
         "type": "staticText",
         "name": "drona_nodeutil",
         "label": "",
@@ -15,7 +15,8 @@
         },
         "retriever": "drona_slurm_nodeutil.sh",
         "showRefreshButton": true,
-        "allowHtml": true
+        "allowHtml": true,
+        "layout": { "preset": "card", "title": "Node Utilization" }
       }
     }
   }

@@ -1,6 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import DynamicSelect from '../DynamicSelect';
+import DynamicSelectBase from '../DynamicSelect';
+import { FormValuesContext } from '../../FormValuesContext';
+
+// useRetriever waits for an environment before its first fetch
+const DynamicSelect = (props) => (
+  <FormValuesContext.Provider
+    value={{ values: [], updateValue: () => {}, environment: { env: 'Test', src: '/envs' } }}
+  >
+    <DynamicSelectBase {...props} />
+  </FormValuesContext.Provider>
+);
 
 // Mock FormElementWrapper
 jest.mock('../../utils/FormElementWrapper', () => {
@@ -221,5 +231,40 @@ test('handles deprecated values', async () => {
     });
 
     expect(mockOnAddMore).toHaveBeenCalled();
+  });
+
+  describe('refreshInterval / refreshWhile', () => {
+    const ok = (payload) => ({ ok: true, json: () => Promise.resolve(payload), text: () => Promise.resolve(JSON.stringify(payload)) });
+
+    afterEach(() => jest.useRealTimers());
+
+    test('re-fetches on the interval and keeps the options when a poll fails', async () => {
+      jest.useFakeTimers();
+      global.fetch
+        .mockResolvedValueOnce(ok(mockOptions))
+        .mockResolvedValueOnce(ok([...mockOptions, { value: 'option3', label: 'Option 3' }]))
+        .mockRejectedValue(new Error('boom'));
+      jest.spyOn(console, 'warn').mockImplementation(() => {});
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      await act(async () => { render(<DynamicSelect {...defaultProps} refreshInterval={10} />); });
+      expect(screen.getAllByRole('option')).toHaveLength(3);
+
+      await act(async () => { jest.advanceTimersByTime(10000); });
+      expect(screen.getAllByRole('option')).toHaveLength(4);
+
+      await act(async () => { jest.advanceTimersByTime(10000); });
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+      expect(screen.getAllByRole('option')).toHaveLength(4);
+    });
+
+    test('does not poll without refreshInterval', async () => {
+      jest.useFakeTimers();
+      global.fetch.mockResolvedValue(ok(mockOptions));
+
+      await act(async () => { render(<DynamicSelect {...defaultProps} />); });
+      await act(async () => { jest.advanceTimersByTime(60000); });
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
   });
 });

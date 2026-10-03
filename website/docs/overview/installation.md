@@ -18,10 +18,11 @@ The setup script automates the following steps:
 
 1. **Asks for your cluster name** and uses it to fill in `config.yml`
 2. **Configures `config.yml` and `manifest.yml`** by replacing `[app-name]` and `[user-name]` placeholders with actual values
-3. **Asks for a deployment target** — `OOD (production)`, `OOD (development)`, or `Local (debug)` — and writes the corresponding value (`production`, `development`, or `local`) to a `.env` file as `APP_ENV`. This must match one of the top-level sections in `config.yml` (see the Configuration section below); `app.py` reads `APP_ENV` at startup to pick which section to use.
-4. **Creates directories** — `environments/` for workflow definitions and `logs/` for application logging
-5. **Sets up a Python virtual environment** in `.venv` and installs dependencies from `requirements.txt`
-6. **Installs frontend dependencies** (`babel-loader`, `@babel/core`, `@babel/preset-react`) and builds the React frontend
+3. **Asks for the retriever script timeout** in seconds (press Enter for the default, `30`) and writes it to `config.yml` as `retriever_timeout` (see the Configuration section below)
+4. **Asks for a deployment target** — `OOD (production)`, `OOD (development)`, or `Local (debug)` — and writes the corresponding value (`production`, `development`, or `local`) to a `.env` file as `APP_ENV`. This must match one of the top-level sections in `config.yml` (see the Configuration section below); `app.py` reads `APP_ENV` at startup to pick which section to use.
+5. **Creates directories** — `environments/` for workflow definitions and `logs/` for application logging, including the shared `logs/drona_log` and `logs/retriever_errors` files
+6. **Sets up a Python virtual environment** in `.venv` and installs dependencies from `requirements.txt`
+7. **Installs frontend dependencies** (`babel-loader`, `@babel/core`, `@babel/preset-react`) and builds the React frontend
 
 ## Manual Installation
 
@@ -63,6 +64,7 @@ development: &common_settings
   modules_db_path: "/path/to/modules/bin/" # Path to modules database script
   driver_scripts_path: "/path/to/machine_driver_scripts"
   env_repo_github: "https://github.com/..."  # Environment repository URL
+  retriever_timeout: 30                    # Optional: seconds before a retriever script is killed
 
 production:
   <<: *common_settings
@@ -83,6 +85,9 @@ The section chosen at runtime is whichever one matches `APP_ENV` (set in `.env` 
 - **`modules_db_path`** — Path to the external script that retrieves available modules. Used by the module form element
 - **`driver_scripts_path`** — Absolute path to the `machine_driver_scripts/` directory
 - **`env_repo_github`** — GitHub repository URL from which users can import environments
+- **`retriever_timeout`** *(optional, default `30`)* — Maximum run time in seconds for a [retriever script](../environments/retriever-scripts). A script still running after this is killed along with any processes it started (e.g. a stuck `squeue`), and the element gets a "timed out" error (HTTP 504) naming the script. This stops a slow Slurm controller from tying up the app while periodic refreshes queue up behind it. `setup.sh` asks for this value. If the key is missing (e.g. a `config.yml` created before this setting existed), the `DRONA_RETRIEVER_TIMEOUT` environment variable is used, then `30`. The value is read once when the app starts, so restart the app after changing it; a value that isn't a positive whole number (e.g. `30s`) stops the app at startup with an error naming the setting. The `local` section doesn't inherit from `common_settings`, so set it there separately if needed.
+
+Every retriever failure (timeout, non-zero exit, or invalid JSON) is appended to `logs/retriever_errors` as one JSON object per line, with the script, its parameters, run time, and error message. Use it to see which retrievers fail and how often; for example, repeated `drona_slurm_sstat.sh` timeouts at the same time of day point to Slurm controller load rather than a bug in the page.
 
 ### Cluster-Specific Adjustments
 

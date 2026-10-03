@@ -32,41 +32,62 @@
  * @property {Object} [retrieverParams] - Parameters passed to the retriever script, values with $ prefix are replaced with form values
  * @property {string} [value] - Default/initial selected value
  * @property {Array} [options] - Initial options array, overridden by retriever results
+ * @property {string} [style] - Option appearance: "default" or "button"
+ * @property {string|Object|Array} [layout] - Group layout: "inline" | "list" | "grid" | "boxed", a preset with params, a CSS object, or an array of these
+ * @property {number} [refreshInterval] - Re-fetch the options every this many seconds. Omit/0 to
+ * fetch only when shown and when a `$field` in `retrieverParams` changes. Paused while the browser
+ * tab is hidden; a poll is skipped if the previous one is still running, and a failed poll keeps
+ * the current options.
+ * @property {string} [refreshWhile] - Condition (same syntax as `condition`); polling only runs while
+ * it is true, with one final fetch when it turns false, e.g. "!drona_status.DONE"
  * @property {string} [help] - Help text displayed below the radio buttons
  */
 
-import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
-import { FormValuesContext } from "../FormValuesContext";
-import { getFieldValue } from "../utils/fieldUtils";
-import { executeScript } from "../utils/utils";
+import ChoiceOptions from "../utils/ChoiceOptions";
+import { useRetriever, usePolling } from "../hooks";
 
 function DynamicRadioGroup(props) {
-    const [options, setOptions] = useState(props.options || []);
     const [value, setValue] = useState(props.value || "");
-    const [isLoading, setIsLoading] = useState(false);
-    const [isEvaluated, setIsEvaluated] = useState(false);
     const [isValueInvalid, setIsValueInvalid] = useState(false); // current value no longer present
 
-    const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
-    const formValuesRef = useRef(formValues);
     const isShown = props.isShown ?? true;
+    const retrieverPath = props.retrieverPath || props.retriever;
 
-    useEffect(() => {
-        formValuesRef.current = formValues;
-    }, [formValues]);
+    const { data, isLoading, isRefreshing, isEvaluated, refetch } = useRetriever({
+        retrieverPath,
+        retrieverParams: props.retrieverParams,
+        initialData: props.options || [],
+        parseJSON: true,
+        isShown,
+        onError: props.setError,
+    });
+
+    // Background polls update the options quietly; only other fetches show the busy state
+    const showLoading = isLoading && !isRefreshing;
+
+    const options = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
     useEffect(() => {
         setValue(props.value || "");
     }, [props.value]);
 
-    // fields that affect retriever params
-    const relevantFieldNames = useMemo(() => {
-        if (!props.retrieverParams) return [];
-        return Object.values(props.retrieverParams)
-            .filter((v) => typeof v === "string" && v.startsWith("$"))
-            .map((v) => v.substring(1));
-    }, [props.retrieverParams]);
+    useEffect(() => {
+        if (isShown && retrieverPath == null) {
+            props.setError?.({
+                message: "Retriever path is not set",
+                status_code: 400,
+                details: ""
+            });
+        }
+    }, [isShown, retrieverPath]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Periodic refresh. A failed poll keeps the previous options.
+    usePolling(() => refetch({ background: true }), props.refreshInterval, {
+        enabled: !!retrieverPath,
+        refreshWhile: props.refreshWhile,
+    });
 
     // After options change, mark prior selection as invalid if missing (do NOT append it)
     useEffect(() => {
@@ -74,68 +95,6 @@ function DynamicRadioGroup(props) {
         const optionValues = new Set(options.map((o) => o.value));
         setIsValueInvalid(!!value && !optionValues.has(value));
     }, [options, value, isEvaluated]);
-
-    const fetchOptions = useCallback(async () => {
-        const retrieverPath = props.retrieverPath || props.retriever;
-        if (retrieverPath == null) {
-            props.setError?.({
-                message: "Retriever path is not set",
-                status_code: 400,
-                details: ""
-            });
-            return;
-        }
-
-        setIsLoading(true);
-
-        try {
-            const data = await executeScript({
-                retrieverPath: retrieverPath,
-                retrieverParams: props.retrieverParams,
-                formValues: formValuesRef.current,
-                parseJSON: true,
-		environment: environment,
-                onError: props.setError
-            });
-
-            setOptions(Array.isArray(data) ? data : []);
-            setIsEvaluated(true);
-        } catch (error) {
-            setIsEvaluated(true); // show empty state if any
-        } finally {
-            setIsLoading(false);
-        }
-    }, [props.retrieverPath, props.retriever, props.retrieverParams, props.setError]);
-
-    // Initial fetch when shown
-    useEffect(() => {
-        if (isShown && !isEvaluated) {
-            fetchOptions();
-        }
-    }, [isShown, isEvaluated, fetchOptions]);
-
-    // Refetch when relevant params change (clear, debounce, then fetch)
-    const prevRelevantValuesRef = useRef({});
-    useEffect(() => {
-        if (!isShown || !props.retrieverParams || relevantFieldNames.length === 0) return;
-
-        let changed = false;
-        for (const fieldName of relevantFieldNames) {
-            const currentValue = getFieldValue(formValues, fieldName);
-            const previousValue = prevRelevantValuesRef.current[fieldName];
-            if (currentValue !== previousValue) {
-                changed = true;
-                prevRelevantValuesRef.current[fieldName] = currentValue;
-            }
-        }
-
-        if (changed && isEvaluated) {
-            setIsEvaluated(false);
-            setOptions([]);
-            const t = setTimeout(() => fetchOptions(), 300); // debounce to avoid flicker thrash
-            return () => clearTimeout(t);
-        }
-    }, [formValues, isShown, props.retrieverParams, relevantFieldNames, isEvaluated, fetchOptions]);
 
     // User selects a new option -> clear invalid flag, emit value
     const handleValueChange = (event) => {
@@ -152,31 +111,31 @@ function DynamicRadioGroup(props) {
             label={props.label}
             help={props.help}
         >
-            {isLoading ? (
+            {showLoading && !isEvaluated ? (
                 <div>Loading options...</div>
             ) : options.length === 0 && isEvaluated ? (
                 <div>No options available</div>
             ) : (
-                options.map((option) => {
-                    if (!option || typeof option.value === "undefined") return null;
-                    const id = `${props.name}-${option.value}`;
-                    return (
-                        <div className="form-check form-check-inline" key={option.value}>
-                            <input
-                                id={id}
-                                type="radio"
-                                className="form-check-input"
-                                value={option.value}
-                                name={props.name}
-                                checked={value === option.value}
-                                onChange={handleValueChange}
-                            />
-                            <label className="form-check-label" htmlFor={id}>
-                                {option.label ?? String(option.value)}
-                            </label>
-                        </div>
-                    );
-                })
+                <>
+                    <span className="sr-only" role="status">
+                        {showLoading ? "Updating options..." : ""}
+                    </span>
+                    <div
+                        aria-busy={showLoading}
+                        inert={showLoading ? "" : undefined}
+                        style={showLoading ? { opacity: 0.5 } : undefined}
+                    >
+                        <ChoiceOptions
+                            type="radio"
+                            name={props.name}
+                            options={options}
+                            selected={value}
+                            onChange={handleValueChange}
+                            style={props.style}
+                            layout={props.layout}
+                        />
+                    </div>
+                </>
             )}
             {isValueInvalid && (
                 <div className="text-danger" style={{ fontSize: "0.875em", marginTop: "0.25rem" }}>
