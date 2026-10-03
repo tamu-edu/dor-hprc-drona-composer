@@ -1,13 +1,14 @@
 {
-  "hidden_jobdir_path": {
+  "drona_hidden_jobdir_path": {
     "type": "hidden",
     "name": "drona_job_dir",
     "label": "Job Directory Path",
     "isDynamic": true,
     "condition": "!jobs.",
     "retrieverParams": {
-      "WORKFLOW_ID": "$allworkflows"
+      "id": "$allworkflows",
+      "field": "location"
     },
-    "retriever": "drona_info_jobdir.sh"
+    "retriever": "builtin:db_lookup"
   }
 }

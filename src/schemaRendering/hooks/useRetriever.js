@@ -30,6 +30,11 @@ import { useState, useEffect, useRef, useContext, useCallback, useMemo } from 'r
 import { FormValuesContext } from '../FormValuesContext';
 import { getFieldValue } from '../utils/fieldUtils';
 import { executeScript } from '../utils/utils';
+import {
+  FAILURE_ESCALATION_THRESHOLD,
+  toRetrieverError,
+  logRetrieverFailure,
+} from '../utils/retrieverFailures';
 
 /**
  * Custom hook for fetching data from retriever scripts with form value dependencies
@@ -41,9 +46,17 @@ import { executeScript } from '../utils/utils';
  * @param {boolean} [options.isShown=true] - Component visibility
  * @param {boolean} [options.fetchOnMount=true] - Auto-fetch when shown
  * @param {number} [options.debounceMs=300] - Debounce delay in milliseconds
- * @param {Function} [options.onError] - Error callback
+ * @param {Function} [options.onError] - Error callback (the global error alert). For
+ *   background refreshes after a successful fetch it only fires once
+ *   FAILURE_ESCALATION_THRESHOLD refreshes in a row have failed.
  * @param {Function} [options.onSuccess] - Success callback
- * @returns {Object} Hook state and methods
+ * @returns {Object} Hook state and methods. `refetch({ background: true })` is
+ *   for periodic polls: it is skipped while a request is still in flight, and a
+ *   failure keeps the last data and sets `refreshError` instead of `error`.
+ *   `lastSuccessAt` is the time of the last successful fetch. `isLoading` is true
+ *   for any fetch; `isRefreshing` is true only while the fetches in flight are all
+ *   background polls, so an element can show a busy state for a user-triggered
+ *   refetch without flashing it on every poll.
  */
 export function useRetriever({
   retrieverPath,
@@ -58,8 +71,11 @@ export function useRetriever({
 }) {
   const [data, setData] = useState(initialData);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isEvaluated, setIsEvaluated] = useState(false);
   const [error, setError] = useState(null);
+  const [refreshError, setRefreshError] = useState(null);
+  const [lastSuccessAt, setLastSuccessAt] = useState(null);
 
   const { values: formValues, environment } = useContext(FormValuesContext);
 
@@ -73,6 +89,11 @@ export function useRetriever({
   const debounceTimeoutRef = useRef(null);
   const isMountedRef = useRef(true);
   const initialFetchDoneRef = useRef(false);
+  const inFlightRef = useRef(0);
+  const foregroundInFlightRef = useRef(0);
+  const requestSeqRef = useRef(0);
+  const hasSucceededRef = useRef(false);
+  const consecutiveFailuresRef = useRef(0);
 
   // Serialize retrieverParams for stable dependency comparison
   const retrieverParamsKey = useMemo(() => {
@@ -121,15 +142,21 @@ export function useRetriever({
   }, [retrieverParamsKey]); // Use the serialized key for stability
 
   // Core fetch function - uses refs to avoid dependency issues
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async ({ background = false } = {}) => {
     if (!retrieverPath) {
       return;
     }
 
     if (!isMountedRef.current) return;
 
+    // A slow retriever must not pile up overlapping polls behind it
+    if (background && inFlightRef.current > 0) return;
+
+    const requestId = ++requestSeqRef.current;
+    inFlightRef.current += 1;
+    if (!background) foregroundInFlightRef.current += 1;
     setIsLoading(true);
-    setError(null);
+    setIsRefreshing(foregroundInFlightRef.current === 0);
 
     try {
       const result = await executeScript({
@@ -138,27 +165,45 @@ export function useRetriever({
         formValues: formValuesRef.current,
         parseJSON,
         environment: environmentRef.current,
-        onError: (err) => {
-          if (isMountedRef.current) {
-            setError(err);
-            onErrorRef.current?.(err);
-          }
-        },
       });
 
-      if (isMountedRef.current) {
+      // Ignore a response that was overtaken by a newer request
+      if (isMountedRef.current && requestId === requestSeqRef.current) {
+        hasSucceededRef.current = true;
+        consecutiveFailuresRef.current = 0;
         setData(result);
+        setError(null);
+        setRefreshError(null);
+        setLastSuccessAt(Date.now());
         setIsEvaluated(true);
         onSuccessRef.current?.(result);
       }
     } catch (err) {
-      // Error already handled by executeScript onError callback
-      if (isMountedRef.current) {
+      if (isMountedRef.current && requestId === requestSeqRef.current) {
+        const failure = toRetrieverError(err);
+        const failures = ++consecutiveFailuresRef.current;
+        logRetrieverFailure(retrieverPath, failure, failures);
+
+        // A failed poll of an element that already has data: keep the data and
+        // flag it inline; only escalate to the global alert if it keeps failing.
+        if (background && hasSucceededRef.current) {
+          setRefreshError(failure);
+        } else {
+          setError(failure);
+        }
+        if (!background || failures === FAILURE_ESCALATION_THRESHOLD) {
+          onErrorRef.current?.(failure);
+        }
         setIsEvaluated(true);
       }
     } finally {
+      inFlightRef.current -= 1;
+      if (!background) foregroundInFlightRef.current -= 1;
       if (isMountedRef.current) {
-        setIsLoading(false);
+        setIsRefreshing(inFlightRef.current > 0 && foregroundInFlightRef.current === 0);
+        if (inFlightRef.current === 0) {
+          setIsLoading(false);
+        }
       }
     }
   }, [retrieverPath, parseJSON]); // Only depend on stable primitives
@@ -212,9 +257,9 @@ export function useRetriever({
     }
   }, [formValues, isShown, relevantFieldNames, debouncedFetch, isEvaluated]);
 
-  // Manual refetch function
-  const refetch = useCallback(() => {
-    fetchData();
+  // Manual refetch function; pass { background: true } for periodic polls
+  const refetch = useCallback((options) => {
+    fetchData(options);
   }, [fetchData]);
 
   // Reset function to clear data and state
@@ -223,6 +268,10 @@ export function useRetriever({
     setIsLoading(false);
     setIsEvaluated(false);
     setError(null);
+    setRefreshError(null);
+    setLastSuccessAt(null);
+    hasSucceededRef.current = false;
+    consecutiveFailuresRef.current = 0;
     prevRelevantValuesRef.current = {};
     initialFetchDoneRef.current = false;
   }, [initialData]);
@@ -230,8 +279,11 @@ export function useRetriever({
   return {
     data,
     isLoading,
+    isRefreshing,
     isEvaluated,
     error,
+    refreshError,
+    lastSuccessAt,
     refetch,
     reset,
   };

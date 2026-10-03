@@ -136,6 +136,11 @@
  * @property {string} retriever - Path to the retriever script
  * @property {Object} [retrieverParams] - Params passed to the script, `$fieldName` values are substituted from form state
  * @property {number} [refreshInterval] - Poll interval in seconds. Omit/0 to fetch once on mount only.
+ * Paused while the browser tab is hidden; a poll is skipped if the previous one is still running. A
+ * failed poll keeps the chart with an inline "Refresh failed" note, and only raises the global error
+ * after several failures in a row.
+ * @property {string} [refreshWhile] - Condition (same syntax as `condition`); polling only runs while
+ * it is true, with one final fetch when it turns false, e.g. "!drona_status.DONE"
  * @property {number} [maxDataPoints=120] - Rolling window cap (client-side safety net, applied regardless of what the retriever returns)
  * @property {string|Array} [series="auto"] - "auto" to derive series from sample keys, or an array of `{key, label, color}` objects for fixed, known metrics
  * @property {Object} [seriesLabelMap] - `{key: label}` overrides for auto-derived series labels
@@ -164,7 +169,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import FormElementWrapper from "../utils/FormElementWrapper";
-import { useRetriever } from "../hooks";
+import { useRetriever, usePolling } from "../hooks";
+import { RefreshFailedNotice } from "../utils/retrieverFailures";
 
 // Fixed, colorblind-validated 8-hue categorical sequence — assigned in this order,
 // never cycled/reassigned by rank. See dataviz skill: references/palette.md.
@@ -289,7 +295,7 @@ function renderChartBody({ seriesList, buffer, xKey, xAxisLabel, xTickFormatter,
   };
 
   return (
-    <ChartComponent data={buffer} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+    <ChartComponent data={buffer} margin={{ top: 8, right: 16, left: 0, bottom: xAxisLabel ? 16 : 0 }}>
       {showGrid && <CartesianGrid stroke={CHROME.gridline} vertical={false} />}
       <XAxis
         dataKey={xKey}
@@ -396,7 +402,7 @@ function Chart(props) {
   const [showDataTable, setShowDataTable] = useState(false);
   const seenOrderRef = useRef(new Map());
 
-  const { data, isLoading, isEvaluated, error, refetch } = useRetriever({
+  const { data, isLoading, isEvaluated, error, refreshError, lastSuccessAt, refetch } = useRetriever({
     retrieverPath,
     retrieverParams: props.retrieverParams,
     initialData: null,
@@ -415,14 +421,12 @@ function Chart(props) {
     });
   }, [data, maxDataPoints]);
 
-  // Interval polling, mirroring StaticText's own refreshInterval handling —
-  // useRetriever only fetches on mount / when retrieverParams change.
-  useEffect(() => {
-    if (!refreshInterval || refreshInterval <= 0) return;
-
-    const timer = setInterval(() => refetch(), refreshInterval * 1000);
-    return () => clearInterval(timer);
-  }, [refreshInterval, refetch]);
+  // Interval polling — useRetriever only fetches on mount / when
+  // retrieverParams change.
+  usePolling(() => refetch({ background: true }), refreshInterval, {
+    enabled: !!retrieverPath,
+    refreshWhile: props.refreshWhile,
+  });
 
   const seriesList = useMemo(
     () => deriveSeries({ seriesProp, buffer, xKey, seriesLabelMap, colors, seenOrderRef }),
@@ -559,6 +563,8 @@ function Chart(props) {
           Error: {error.message || "Failed to load chart data"}
         </div>
       )}
+
+      <RefreshFailedNotice error={refreshError} lastSuccessAt={lastSuccessAt} />
 
       {showTable && hasData && (
         <div className="mt-2">

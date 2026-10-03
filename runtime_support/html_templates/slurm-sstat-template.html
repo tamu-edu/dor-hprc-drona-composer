@@ -1,4 +1,4 @@
-<div id="dc-sstat" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
+<div id="dc-sstat" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
     <style>
         #dc-sstat {
             --dc-text: #1e293b;
@@ -11,46 +11,6 @@
             color: var(--dc-text);
         }
 
-        #dc-sstat .dc-card {
-            position: relative;
-            width: 100%;
-            background: #ffffff;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-card);
-            padding: 24px 20px 20px 20px;
-            box-sizing: border-box;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-        }
-
-        #dc-sstat .dc-title {
-            position: absolute;
-            top: -12px;
-            left: 20px;
-            background: #ffffff;
-            padding: 2px 16px;
-            font-size: 11px;
-            font-weight: 900;
-            color: var(--dc-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-pill);
-        }
-
-        #dc-sstat .dc-live-dot {
-            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
-            box-shadow: 0 0 6px var(--dc-live);
-            animation: dc-pulse 2s infinite;
-        }
-        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
         #dc-sstat .stat-box { flex: 1; min-width: 140px; padding-left: 12px; }
         #dc-sstat .stat-box.mem { border-left: 3px solid #f59e0b; }
         #dc-sstat .stat-box.cpu { border-left: 3px solid #10b981; }
@@ -61,9 +21,6 @@
         #dc-sstat .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 15px; margin-top: 6px; color: var(--dc-text); }
         #dc-sstat .stat-sub { color: var(--dc-text-muted); font-size: 11px; margin-top: 4px; }
     </style>
-
-    <div class="dc-card">
-        <div class="dc-title"><div class="dc-live-dot"></div> Resource Usage · Job {{JOB_ID}}</div>
 
         <div class="stat-box mem">
             <div class="stat-label">Memory (Max / Ave)</div>
@@ -87,5 +44,4 @@
             <div class="stat-value">{{MAX_PAGE}} / {{AVE_PAGE}}</div>
             <div class="stat-sub">CPU Freq: {{CPU_FREQ}}</div>
         </div>
-    </div>
 </div>

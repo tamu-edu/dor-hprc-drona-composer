@@ -1,11 +1,12 @@
 {
-  "hidden_status_check": {
+  "drona_hidden_status_check": {
     "type": "hidden",
     "name": "drona_status",
     "label": "Status",
     "isDynamic": true,
     "condition": "!jobs.",
     "refreshInterval": "27",
+    "refreshWhile": "!drona_status.DONE",
     "retrieverParams": {
       "JOBID": "$jobs"
     },

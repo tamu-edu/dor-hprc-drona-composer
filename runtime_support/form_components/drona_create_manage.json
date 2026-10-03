@@ -1,6 +1,6 @@
 {
 
-   "configure" : {
+  "drona_configure" : {
     "type" : "hidden",
     "label" : "configured",
     "name" : "configured",
@@ -8,12 +8,12 @@
     "retriever" : "drona_info_configure.sh"
   },
 
-  "ManageCreateContainer" : {
+  "drona_ManageCreateContainer" : {
     "type" : "rowContainer",
     "condition": "configured.CONFIGURED",
     "elements" : {
 
-      "mode" : {
+      "drona_mode" : {
         "type": "radioGroup",
         "style": "button",
         "label": "Mode",
@@ -23,6 +23,14 @@
           { "label": "Create", "value": "create" },
           { "label": "Manage", "value": "manage" }
         ]
+      },
+
+      "drona_envSelect": {
+        "type": "dynamicSelect",
+        "label": "Select Workflow",
+        "name": "allworkflows",
+        "condition": "mode.manage",
+        "retriever": "drona_select_wf.sh"
       }
 
     }

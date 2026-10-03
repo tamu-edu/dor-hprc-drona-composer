@@ -1,4 +1,4 @@
-<div id="dc-jobs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
+<div id="dc-jobs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
     <style>
         #dc-jobs {
             --dc-text: #1e293b;
@@ -16,43 +16,6 @@
             --dc-live: #10b981;
             color: var(--dc-text);
         }
-
-        #dc-jobs .dc-card {
-            position: relative;
-            width: 100%;
-            background: #ffffff;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-card);
-            padding: 24px 20px 20px 20px;
-            box-sizing: border-box;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-        }
-
-        #dc-jobs .dc-title {
-            position: absolute;
-            top: -12px;
-            left: 20px;
-            background: #ffffff;
-            padding: 2px 16px;
-            font-size: 11px;
-            font-weight: 900;
-            color: var(--dc-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-pill);
-        }
-
-        #dc-jobs .dc-live-dot {
-            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
-            box-shadow: 0 0 6px var(--dc-live);
-            animation: dc-pulse 2s infinite;
-        }
-        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         #dc-jobs .dc-updated {
             text-align: right;
@@ -82,8 +45,6 @@
         #dc-jobs .status-completed { background: var(--dc-neutral-bg); color: var(--dc-neutral-text); }
     </style>
 
-    <div class="dc-card">
-        <div class="dc-title"><div class="dc-live-dot"></div> Job Queue</div>
         <table>
             <thead>
                 <tr>
@@ -98,5 +59,4 @@
             </tbody>
         </table>
         <div class="dc-updated">Updated {{TIMESTAMP}}</div>
-    </div>
 </div>

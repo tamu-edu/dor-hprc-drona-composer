@@ -1,5 +1,5 @@
 {
-  "action_select": {
+  "drona_action_select": {
     "type": "select",
     "name": "drona_action",
     "label": "Action",
@@ -13,7 +13,7 @@
     "value": { "value": "none", "label": "No Action" }
   },
 
-  "delete_dir_checkbox": {
+  "drona_delete_dir_checkbox": {
     "type": "checkbox",
     "name": "drona_delete_workdir",
     "label": "Delete the working directory along with workflow",

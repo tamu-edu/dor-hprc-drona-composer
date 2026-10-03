@@ -2,6 +2,31 @@
 
 This document describes the pre-built retriever functions available in the Drona Composer system, organized by their type and purpose.
 
+## Declarative Built-ins
+
+Some retrievers don't need a script at all: set `"retriever"` to `"builtin:<name>"` instead of a script path, and it runs in-process (no subprocess spawn, no script file to maintain). Params still go through `retrieverParams` exactly as with a script.
+
+| Built-in    | Purpose |
+|-------------|---------|
+| `db_lookup` | Fixed-shape lookup against the `job_history` table (see `db_access/drona_db_retriever.py`), implemented in `db_access/builtin_retrievers.py` |
+
+`db_lookup` params:
+
+| Param | Required | Description |
+|-------|----------|--------------|
+| `id` | one of `id`/`environment` | `drona_id`, single-record mode |
+| `environment` | one of `id`/`environment` | environment name, list mode |
+| `field` | yes | column to return: `drona_id`, `name`, `environment`, `location`, `runtime_meta`, `start_time`, `status`, `env_params` |
+| `key` | no | dotted path into `runtime_meta`/`env_params` (JSON columns only), e.g. `jobinfo.0.id`; a `*` segment plucks a field across a list, e.g. `jobinfo.*.id` |
+| `join` | no | join a plucked (`*`) list into one string, e.g. `" "`; requires `key` |
+| `limit` | no | max records, `environment` mode only |
+
+Two of the shared `form_components/` components already use this instead of a script:
+- `drona_info_jobdir.json`: `{"id": "$allworkflows", "field": "location"}` — replaces `drona_info_jobdir.sh`/`.py`
+- `drona_info_jobs.json`: `{"id": "$allworkflows", "field": "runtime_meta", "key": "jobinfo.*.id", "join": " "}` — replaces `drona_info_jobs.sh`
+
+Reach for a builtin when a retriever is *only* a fixed-shape `job_history` lookup with no other logic (file reads, HTML templating, Slurm calls). Anything else - including a lookup that also builds HTML, like `drona_slurm_logs.sh` - stays a script; only the pure-lookup piece of it is a builtin candidate.
+
 ## Selection Retriever Functions
 
 Selection retrievers populate dropdown menus, checkboxes, and radio groups with available options. All functions return a JSON array of `{"label": "display_text", "value": "internal_id"}` objects.
@@ -30,7 +55,7 @@ Metadata retrievers return structured JSON data used by hidden form elements to 
 
 | Retriever Name                | Purpose                                                                                           |
 |-------------------------------|---------------------------------------------------------------------------------------------------|
-| drona_info_jobs.sh            | Queries Drona database for workflow metadata, extracts all SLURM job IDs from runtime_meta.jobinfo, returns space-separated list (requires WORKFLOW_ID) |
+| drona_info_jobs.sh            | Queries Drona database for workflow metadata, extracts all SLURM job IDs from runtime_meta.jobinfo, returns space-separated list (requires WORKFLOW_ID). Superseded for the shared `drona_info_jobs.json` component by `builtin:db_lookup` (see above); still usable directly in a custom environment. |
 | drona_info_slurmstatus.sh     | Queries squeue for job state (%T format), returns "DONE" if not PENDING or RUNNING, otherwise returns current state (requires JOBID) |
 
 ---

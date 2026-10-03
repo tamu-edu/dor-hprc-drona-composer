@@ -25,13 +25,16 @@
  * @property {string} [value] - Static value (used when no retriever is specified)
  * @property {string} [retriever] - Path to the script file to execute (for dynamic execution)
  * @property {Object} [retrieverParams] - Parameters passed to the script as environment variables
- * @property {number} [refreshInterval] - Auto-execution interval in seconds
+ * @property {number} [refreshInterval] - Auto-execution interval in seconds. Paused while the
+ * browser tab is hidden; a poll is skipped if the previous one is still running.
+ * @property {string} [refreshWhile] - Condition (same syntax as `condition`); periodic refresh only
+ * runs while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
  * @property {function} [setError] - Function to handle errors during script execution
  */
 
 import React, { useEffect, useRef, useContext, useMemo } from "react";
 import { FormValuesContext } from "../FormValuesContext";
-import { useRetriever } from "../hooks";
+import { useRetriever, usePolling } from "../hooks";
 
 function Hidden(props) {
   const { updateValue } = useContext(FormValuesContext);
@@ -72,16 +75,10 @@ function Hidden(props) {
   // Refs for stable callbacks
   const updateValueRef = useRef(updateValue);
   const prevValueRef = useRef(null);
-  const refreshTimerRef = useRef(null);
-  const refetchRef = useRef(refetch);
 
   useEffect(() => {
     updateValueRef.current = updateValue;
   }, [updateValue]);
-
-  useEffect(() => {
-    refetchRef.current = refetch;
-  }, [refetch]);
 
   // Update form context whenever value changes (for conditional logic)
   useEffect(() => {
@@ -92,27 +89,12 @@ function Hidden(props) {
     }
   }, [value, props.name]);
 
-  // Handle refresh interval for periodic re-fetching
-  useEffect(() => {
-    // Clear any existing timer
-    if (refreshTimerRef.current) {
-      clearInterval(refreshTimerRef.current);
-      refreshTimerRef.current = null;
-    }
-
-    // Only set up refresh interval if we have a retriever and interval is specified
-    if (retrieverPath && props.refreshInterval && props.refreshInterval > 0) {
-      refreshTimerRef.current = setInterval(() => {
-        refetchRef.current();
-      }, props.refreshInterval * 1000);
-    }
-
-    return () => {
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
-    };
-  }, [retrieverPath, props.refreshInterval]);
+  // Periodic re-fetching. A failed poll keeps the previous value, so conditions
+  // based on it don't flip because of a transient error.
+  usePolling(() => refetch({ background: true }), props.refreshInterval, {
+    enabled: !!retrieverPath,
+    refreshWhile: props.refreshWhile,
+  });
 
   // Return input of type hidden so that it can be parse and map in map.json
   return <input type="hidden" name={props.name} value={value} />; 

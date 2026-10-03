@@ -23,6 +23,18 @@ sed -i.bak -e "s/\[cluster-name\]/$CLUSTERNAME/g" -e "s/\[app-name\]/$CURRENTDIR
 # Remove backup file during copy
 rm config.yml.bak
 
+# Ask how long a retriever script may run before it is killed (retriever_timeout
+# in config.yml). Enter keeps the default.
+while true; do
+  read -p "Retriever script timeout in seconds [30]: " RETRIEVER_TIMEOUT
+  RETRIEVER_TIMEOUT="${RETRIEVER_TIMEOUT:-30}"
+  if [[ "$RETRIEVER_TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
+    break
+  fi
+  echo "Timeout must be a positive whole number of seconds."
+done
+sed -i -e "s/^\(  retriever_timeout: \)[0-9]*/\1$RETRIEVER_TIMEOUT/" config.yml
+
 # Ask which environment this app should run as (matches the sections in config.yml).
 # The menu shows friendlier labels, but the value written to .env/config.yml
 # must stay exactly "production"/"development"/"local" to match those section names.
@@ -49,6 +61,9 @@ mkdir -p environments
 mkdir -p logs
 touch logs/drona_log
 chmod uog+rw logs/drona_log
+# retriever failures/timeouts, written by every user's app process
+touch logs/retriever_errors
+chmod uog+rw logs/retriever_errors
 
 python3 -m venv .venv
 source .venv/bin/activate

@@ -327,6 +327,12 @@ echo "{ $FIELDS }"
   reason to redraw more often than that, and it keeps retriever load (and `srun`
   overhead for anything that queries live processes) low. See the general
   [Best Practices](./retriever-scripts#best-practices) for retrievers.
+- Add `"refreshWhile": "!drona_status.DONE"` to job-monitoring charts so they stop polling
+  once the job ends (after one final fetch that picks up the last samples) instead of
+  polling a finished job for as long as the page is open. See
+  [Stopping refreshes with `refreshWhile`](./retriever-scripts#stopping-refreshes-with-refreshwhile).
+- A failed poll keeps the current chart on screen with an inline "Refresh failed" note
+  rather than clearing it; see [When a refresh fails](./retriever-scripts#when-a-refresh-fails).
 - Prefer the tail-based array shape whenever a log file already exists or is cheap to
   maintain — it survives missed polls and page reloads for free.
 - Cap `maxDataPoints` to what's actually useful to see (the component enforces this

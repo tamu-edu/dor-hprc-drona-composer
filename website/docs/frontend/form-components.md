@@ -41,6 +41,52 @@ All form components share a set of standard properties that control basic behavi
 
 ---
 
+## Choice element styling
+
+`radioGroup`, `dynamicRadioGroup`, `checkboxGroup` and `dynamicCheckboxGroup` share two styling props.
+
+- `style` sets the appearance of each option: `"default"` (standard input and label) or `"button"` (toggle buttons; works for checkboxes as well as radios).
+- `layout` sets how the whole group is arranged and framed. It takes a preset name, an object, or an array mixing these:
+  - `"inline"` (default), `"list"` (one option per row), `"grid"` (auto-fitting columns), `"boxed"` (border, radius and padding matching the text inputs), `"card"` (rounded card like the Slurm job queue panel: the title is a pill on the top border, with an optional pulsing green dot).
+  - A preset with params: `{ "preset": "boxed", "title": "Running jobs" }`. `boxed` accepts `title`; `card` accepts `title` and `dot` (default `true`, set `false` to hide the green dot); `grid` accepts `minWidth` (default `"12rem"`). Unsupported params are ignored with a console warning.
+  - A bare CSS object (camelCase keys) applied to the group container: `{ "maxHeight": "220px", "overflowY": "auto" }`. With `card` it applies to the option area inside the card, so the title stays put when the list scrolls.
+
+`container`, `rowContainer` and `staticText` accept the same `layout` prop, limited to `card` and `boxed` (plus a CSS object for the content area); other presets are ignored with a console warning. Without `layout` nothing is drawn around the container. `collapsibleRowContainer` and `collapsibleColContainer` take `layout: "card"` only: the title pill becomes the expand/collapse toggle (a maroon chevron replaces the green dot) and the separate Show/Hide button is dropped. The pill highlights on hover and keyboard focus, and a collapsed card shows a "Click to expand" hint and expands when clicked anywhere on the strip. To hide a whole card, put the `condition` on the container itself, since the card is drawn even if every child is hidden.
+
+Unknown preset names are ignored with a console warning. Titles and labels are rendered as text, never HTML.
+
+A `title` can reference form fields as `$fieldName`, which is replaced by the field's current value (empty when the field has no value), e.g. `{ "preset": "card", "title": "Resource Usage · Job $jobs" }`. This is the same `$` convention as `retrieverParams`. A `$` not followed by a letter or underscore (such as `$5`) is left as written. This works in every element that takes `layout`.
+
+For `staticText` the frame wraps the whole element, including its loading spinner and refresh button. Use it instead of drawing a card and title pill in the retriever's HTML, so the look stays consistent with other elements:
+
+```json
+{
+  "type": "staticText",
+  "name": "drona_sstat2",
+  "useLabel": false,
+  "isDynamic": true,
+  "allowHtml": true,
+  "retriever": "drona_slurm_sstat.sh",
+  "retrieverParams": { "JOBID": "$jobs" },
+  "layout": { "preset": "card", "title": "Resource Usage · Job $jobs" }
+}
+```
+
+```json
+{
+  "type": "dynamicCheckboxGroup",
+  "name": "drona_cancel_jobs",
+  "label": "Cancel jobs",
+  "style": "button",
+  "layout": [
+    { "preset": "card", "title": "Running jobs" },
+    "list",
+    { "maxHeight": "220px", "overflowY": "auto" }
+  ],
+  "retriever": "drona_cancelable_jobs.sh"
+}
+```
+
 ## Component Reference
 
 Each component below supports all common properties listed above, plus component-specific properties.
@@ -87,7 +133,8 @@ A declarative, self-contained live chart backed by Recharts. Polls a retriever s
 - `chartType="line"` ("line"|"bar"|"area"|"pie", optional) - Chart type. Applies to the single pane, or uniformly to every `seriesPerPanel`-generated panel; ignored for `panels` entries that set their own `chartType`.
 - `retriever - Path to the retriever script` (string) - 
 - `retrieverParams` (Object, optional) - Params passed to the script, `$fieldName` values are substituted from form state
-- `refreshInterval` (number, optional) - Poll interval in seconds. Omit/0 to fetch once on mount only.
+- `refreshInterval` (number, optional) - Poll interval in seconds. Omit/0 to fetch once on mount only. Paused while the browser tab is hidden; a poll is skipped if the previous one is still running. A failed poll keeps the chart with an inline "Refresh failed" note, and only raises the global error after several failures in a row.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); polling only runs while it is true, with one final fetch when it turns false, e.g. "!drona_status.DONE"
 - `maxDataPoints=120` (number, optional) - Rolling window cap (client-side safety net, applied regardless of what the retriever returns)
 - `series="auto"` (string|Array, optional) - "auto" to derive series from sample keys, or an array of `{key, label, color}` objects for fixed, known metrics
 - `seriesLabelMap` (Object, optional) - `{key: label}` overrides for auto-derived series labels
@@ -262,6 +309,8 @@ A checkbox group component that allows users to select multiple options from a l
 - `label` (string, optional) - Display label for the field
 - `options - Array of option objects, each with value and label properties` (Array) - 
 - `value` (Array, optional) - Default/initial selected values
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the input
 
 ### Example
@@ -293,6 +342,7 @@ A collapsible container component that organizes form fields in a horizontal row
 - `elements - Object of field configuration objects to be rendered in the container` (Object) - 
 - `title="Collapsible Row Container"` (string, optional) - Title displayed in the container header
 - `default_state="expanded"` (('collapsed'|'expanded'), optional) - Initial visibility state
+- `layout` (string | Object, optional) - `"card"` draws a rounded card whose title pill is the toggle (chevron, no separate button); the pill text is the layout `title`, else the `title` prop. Unset keeps the default header and Show/Hide button. See [Choice element styling](#choice-element-styling)
 
 ### Example
 ```json
@@ -333,6 +383,7 @@ A layout component that organizes form fields in a vertical row. It wraps multip
 
 ### Properties
 - `elements - Array of field configuration objects to be rendered in the row` (Array) - 
+- `layout` (string | Object | Array, optional) - Optional frame around the container: `"card"` or `"boxed"`, e.g. `{ "preset": "card", "title": "Job Resources" }`. See [Choice element styling](#choice-element-styling). Unset renders no frame
 
 ### Example
 ```json
@@ -422,6 +473,9 @@ A checkbox group that dynamically loads its options from a retriever script. All
 - `retrieverParams` (Object, optional) - Parameters passed to the retriever script, values with $ prefix are replaced with form values
 - `value` (Array, optional) - Default/initial selected values (array of value strings)
 - `options` (Array, optional) - Initial options array, overridden by retriever results
+- `pruneMissing` (boolean, optional, default `false`) - Silently drop selected values that are not in the loaded options, without the "no longer available" warning. Meant for action lists such as cancel-jobs
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the checkboxes
 
 ### Examples
@@ -466,6 +520,8 @@ A radio button group that dynamically loads its options from a retriever script.
 - `retrieverParams` (Object, optional) - Parameters passed to the retriever script, values with $ prefix are replaced with form values
 - `value` (string, optional) - Default/initial selected value
 - `options` (Array, optional) - Initial options array, overridden by retriever results
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the radio buttons
 
 ### Examples
@@ -606,7 +662,8 @@ Executes dynamic scripts without any visual output. Takes no space and displays 
 - `value` (string, optional) - Static value (used when no retriever is specified)
 - `retriever` (string, optional) - Path to the script file to execute (for dynamic execution)
 - `retrieverParams` (Object, optional) - Parameters passed to the script as environment variables
-- `refreshInterval` (number, optional) - Auto-execution interval in seconds
+- `refreshInterval` (number, optional) - Auto-execution interval in seconds. Paused while the browser tab is hidden; a poll is skipped if the previous one is still running.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); periodic refresh only runs while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
 - `setError` (function, optional) - Function to handle errors during script execution
 
 ### Examples
@@ -804,7 +861,8 @@ A radio button group component that allows users to select a single option from 
 - `label` (string, optional) - Display label for the field
 - `options - Array of option objects, each with value and label properties` (Array) - 
 - `value` (string, optional) - Default/initial selected value
-- `style` (string, optional) - Render variant; set to "button" for button-style radio options
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the input
 
 ### Example
@@ -835,6 +893,7 @@ A layout component that organizes form fields in a horizontal row. It wraps mult
 
 ### Properties
 - `elements - Array of field configuration objects to be rendered in the row` (Array) - 
+- `layout` (string | Object | Array, optional) - Optional frame around the container: `"card"` or `"boxed"`, e.g. `{ "preset": "card", "title": "Job Resources" }`. See [Choice element styling](#choice-element-styling). Unset renders no frame
 
 ### Example
 ```json
@@ -916,8 +975,10 @@ Displays static or dynamically fetched text content. Can show plain text or HTML
 - `retrieverParams` (Object, optional) - Parameters passed to the script as environment variables, values with $ prefix will be replaced with form values
 - `allowHtml=false` (boolean, optional) - Whether to render content as HTML using dangerouslySetInnerHTML
 - `showRefreshButton=false` (boolean, optional) - Whether to show a manual refresh button for dynamic content
-- `refreshInterval` (number, optional) - Auto-refresh interval in seconds
+- `refreshInterval` (number, optional) - Auto-refresh interval in seconds. Paused while the browser tab is hidden; a poll is skipped if the previous one is still running. A failed poll keeps the previous content with an inline "Refresh failed" note, and only raises the global error after several failures in a row.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); auto-refresh only runs while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
 - `isHeading=false` (boolean, optional) - Whether to style the text as a heading with larger, bold font
+- `layout` (string | Object | Array, optional) - Optional frame: `"card"` (rounded card with a title pill and green dot) or `"boxed"`, e.g. `{ "preset": "card", "title": "Job Efficiency" }`; a CSS object applies to the content area. The title may reference form fields as `$fieldName`, e.g. `"Resource Usage · Job $jobs"`. See [Choice element styling](#choice-element-styling). Unset renders no frame
 - `setError` (function, optional) - Function to handle errors during content fetching
 
 ### Examples
