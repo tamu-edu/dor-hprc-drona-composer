@@ -1,14 +1,14 @@
 {
-  "slurmCollapse": {
+  "drona_slurmCollapse": {
     "type": "collapsibleRowContainer",
     "title": "Slurm Options",
     "default_state": "collapsed",
     "elements": {
-      "ContainerTasks": {
+      "drona_ContainerTasks": {
         "type": "rowContainer",
         "label": "GPU",
         "elements": {
-          "tasks": {
+          "drona_tasks": {
             "type": "number",
             "label": "Number of tasks",
             "help": "This is the number of tasks your code can utilize. This is mainly for codes that use MPI. If you are not sure, just leave this as 1",
@@ -16,7 +16,7 @@
             "value": "1"
           },
 
-          "nodes": {
+          "drona_nodes": {
             "type": "text",
             "label": "Number of nodes (optional)",
             "help": "Only set this field if you requested multiple tasks above and you want to distribute these tasks over multiple nodes. This is most common for MPI codes.",
@@ -24,7 +24,7 @@
             "value": ""
           },
 
-          "cpus": {
+          "drona_cpus": {
             "type": "number",
             "label": "Number of cpus per tasks",
             "help": "Mostly used for hybrid codes that use multiple threads per task.",
@@ -34,11 +34,11 @@
         }
       },
 
-      "ContainerGPU": {
+      "drona_ContainerGPU": {
         "type": "rowContainer",
         "label": "GPU",
         "elements": {
-          "gpuDropdown": {
+          "drona_gpuDropdown": {
             "type": "dynamicSelect",
             "label": "Use Accelerator",
             "help": "Only select an accelerator if your job will utilize them. You might need to setup the environment for the accelerator you selected in the job script.",
@@ -46,7 +46,7 @@
             "retriever": "retrieve_gpus"
           },
 
-          "numgpus": {
+          "drona_numgpus": {
             "type": "number",
             "label": "#GPUs",
             "help": "Number of accelerators you want to use.",
@@ -57,11 +57,11 @@
         }
       },
 
-      "ContainerAdditional": {
+      "drona_ContainerAdditional": {
         "type": "rowContainer",
         "label": "Additional",
         "elements": {
-          "memory": {
+          "drona_memory": {
             "type": "unit",
             "label": "TOTAL Memory",
             "name": "drona_memory",
@@ -71,7 +71,7 @@
             ]
           },
 
-          "Walltime": {
+          "drona_Walltime": {
             "type": "time",
             "label": "Expected run time",
             "help": "OPTIONAL: Provide the time you estimate the job will need.",
@@ -79,7 +79,7 @@
             "value": ""
           },
 
-          "account": {
+          "drona_account": {
             "type": "dynamicSelect",
             "label": "Project Account",
             "help": "OPTIONAL: Use a different project account than your default.",
@@ -87,7 +87,7 @@
             "retriever": "list_accounts"
           },
 
-          "extraText": {
+          "drona_extraText": {
             "type": "text",
             "label": "Additional Slurm parameters",
             "help": "OPTIONAL: Provide Slurm-specific parameters (advanced).",

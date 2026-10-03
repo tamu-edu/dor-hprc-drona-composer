@@ -1,0 +1,39 @@
+<div id="dc-workdir" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+    <style>
+        #dc-workdir {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-radius-sm: 8px;
+            --dc-live: #10b981;
+            --dc-link: #003c71;
+            color: var(--dc-text);
+        }
+
+        #dc-workdir .dc-path-box {
+            display: flex;
+            align-items: center;
+            background: var(--dc-divider);
+            border: 1px solid var(--dc-border);
+            border-radius: var(--dc-radius-sm);
+            padding: 8px 12px;
+        }
+
+        #dc-workdir .dc-path-box a {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--dc-link);
+            font-weight: 700;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        #dc-workdir .dc-path-box a:hover { text-decoration: underline; }
+    </style>
+
+        <div class="dc-path-box">
+            <a href="/pun/sys/dashboard/files/fs{{JOB_DIR}}" target="_blank" rel="noopener noreferrer">{{JOB_DIR}}</a>
+        </div>
+</div>

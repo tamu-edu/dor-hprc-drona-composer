@@ -1,12 +1,12 @@
 {
 
-    "slurmrow" : {
+    "drona_slurmrow" : {
     "type": "rowContainer",
     "condition" : "!jobs.",
     "elements": {
-      "slurm_summary": {
+      "drona_slurm_summary": {
         "type": "staticText",
-        "label" : "Slurm Jobs",
+        "useLabel": false,
         "name": "slurm",
         "isDynamic": true,
         "allowHtml": true,
@@ -14,11 +14,9 @@
         "retrieverParams": {
           "JOBS": "$jobs"
         },
-        "retriever": "drona_slurm_jobs.sh"
+        "retriever": "drona_slurm_jobs.sh",
+        "layout": { "preset": "card", "title": "Job Queue" }
       }
     }
   }
 }
-
-
-

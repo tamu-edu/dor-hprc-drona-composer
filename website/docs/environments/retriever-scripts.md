@@ -10,7 +10,7 @@ Retriever scripts dynamically populate form fields or display real-time informat
 
 Retriever scripts enable workflows to present dynamic content based on user input, available resources, or system conditions. Scripts execute when fields initially render and re-execute automatically when referenced form values change or at scheduled intervals via `refreshInterval`.
 
-While environment creators can implement custom retrievers for any use case, Drona also provides a curated set of [pre-built retriever functions](#pre-built-retriever-functions) for common HPC workflows. These live in a shared directory and can be overridden per-environment; see [Shared Environment Library](./shared-library) for the lookup order and conventions.
+While environment creators can implement custom retrievers for any use case, Drona also provides a curated set of [pre-built retriever functions](#pre-built-retriever-functions) for common HPC workflows. These live in a shared directory and can be overridden per-environment; see [Shared Environment Library](./shared-library) for the lookup order and conventions. For a retriever that's just a database lookup with no other logic, a [declarative built-in](#declarative-built-ins) can replace a script entirely.
 
 ## Schema Configuration
 
@@ -65,6 +65,39 @@ Dynamic elements can be configured to re-execute their retriever scripts at a fi
 ```
 
 When both `refreshInterval` and `retrieverParams` with field references are configured, the script re-executes whenever a referenced field changes **or** when the interval elapses, whichever occurs first.
+
+To keep periodic refreshes from overloading the scheduler, refreshing (on `staticText`, `hidden`, and `chart` elements):
+
+- **pauses while the browser tab is hidden**, and refreshes once when the user comes back if at least one refresh was missed.
+- **skips a refresh while the previous one is still running**, so a slow script doesn't pile up overlapping requests.
+- **gives up on slow scripts**: a script still running after the server's `retriever_timeout` (default 30 seconds, see [Installation](../overview/installation#configyml)) is killed and counts as a failure.
+
+#### Stopping refreshes with `refreshWhile`
+
+Set `refreshWhile` to a condition (same syntax as [`condition`](./conditionals)) to refresh only while it's true. When it turns false, the element refreshes one last time and then stops, so the final state is still shown. Use it for anything that can't change once a job has finished:
+
+```json
+{
+  "jobLogs": {
+    "type": "staticText",
+    "retriever": "drona_slurm_logs.sh",
+    "retrieverParams": { "WORKFLOW_ID": "$workflow" },
+    "refreshInterval": 70,
+    "refreshWhile": "!drona_status.DONE",
+    "allowHtml": true
+  }
+}
+```
+
+Write the condition so it's true while the state is still unknown. `!drona_status.DONE` keeps refreshing before the status has loaded, whereas `drona_status.RUNNING` would not. If a referenced field changes again (e.g. a new job appears in the workflow), refreshing resumes while the condition is true.
+
+#### When a refresh fails
+
+A failed *periodic* refresh doesn't replace what the element already shows. The element keeps its last good content and shows an inline note, "⚠ Refresh failed, showing data from 40s ago"; hover over it for the error. The page-wide error alert only appears if the first load fails, or after 3 periodic refreshes in a row have failed. The note clears on the next successful refresh.
+
+Every failure is also written to the browser console and to the server's `logs/retriever_errors` file, so intermittent problems can be tracked down afterwards.
+
+For a `hidden` element, a failed refresh keeps the previous value, so conditions based on it don't flip because of one failure. For the same reason, a status retriever should **exit non-zero when it can't tell the state** instead of guessing. `drona_info_slurmstatus.sh`, for example, reports `DONE` only when `squeue` says the job no longer exists, and fails on any other `squeue` error such as a controller timeout.
 
 ### Parameter Syntax
 
@@ -132,6 +165,49 @@ cat << EOF
 EOF
 ```
 
+## Declarative Built-ins
+
+For a retriever that's *only* a fixed-shape lookup against the [workflow history database](./database) - no scripting, no other logic - point `retriever` at `builtin:<name>` instead of a script path. It runs in-process on the server: no subprocess is spawned, so it's cheaper than even the fastest script, but it can only do exactly what the built-in supports (bounded, validated parameters - no arbitrary code).
+
+Currently available:
+
+### `builtin:db_lookup`
+
+A fixed-shape lookup against the `job_history` table.
+
+| Param | Required | Description |
+|-------|----------|--------------|
+| `id` | one of `id`/`environment` | `drona_id` - single-record mode |
+| `environment` | one of `id`/`environment` | environment name - list mode, returns one value per matching record |
+| `field` | yes | column to return: `drona_id`, `name`, `environment`, `location`, `runtime_meta`, `start_time`, `status`, `env_params` |
+| `key` | no | dotted path into `runtime_meta`/`env_params` (the two JSON columns), e.g. `jobinfo.0.id`; a `*` segment plucks a field across a list, e.g. `jobinfo.*.id` for every job in a multi-job workflow |
+| `join` | no | join a plucked (`*`) list into one string with this separator, e.g. `" "`; requires `key` |
+| `limit` | no | max records to return, `environment` mode only |
+
+A record or key path that doesn't exist returns `null` (or `""` when `join` is set) rather than an error - only invalid *parameters* fail the request.
+
+```json
+{
+  "drona_job_dir": {
+    "type": "hidden",
+    "name": "drona_job_dir",
+    "retriever": "builtin:db_lookup",
+    "retrieverParams": { "id": "$workflow", "field": "location" }
+  },
+  "jobIds": {
+    "type": "hidden",
+    "name": "jobs",
+    "retriever": "builtin:db_lookup",
+    "retrieverParams": {
+      "id": "$workflow",
+      "field": "runtime_meta",
+      "key": "jobinfo.*.id",
+      "join": " "
+    }
+  }
+}
+```
+
 ## Pre-Built Retriever Functions
 
 Drona provides a curated set of pre-built retriever functions for common HPC workflows. These are grouped into three categories based on their output type and purpose.
@@ -164,8 +240,8 @@ Metadata retrievers return structured JSON data used by `hidden` form elements t
 
 | Retriever Name | Return Value |
 |----------------|--------------|
-| `drona_info_jobs.sh` | Workflow metadata such as Slurm job IDs |
-| `drona_info_slurmstatus.sh` | Current job state from `squeue` |
+| `drona_info_jobs.sh` | Workflow metadata such as Slurm job IDs. The shared `drona_info_jobs.json` component uses [`builtin:db_lookup`](#builtindb_lookup) instead; this script remains available for custom environments. |
+| `drona_info_slurmstatus.sh` | Current job state from `squeue` (`PENDING`, `RUNNING`, or `DONE`); fails rather than reporting `DONE` if `squeue` itself errors |
 
 ## Code Example
 
@@ -237,7 +313,9 @@ python3 "${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py" -i "$DRONA_WF_ID"
 
 ## Best Practices
 
-- Keep execution under 5 seconds for responsive interfaces
+- Keep execution under 5 seconds for responsive interfaces; scripts are killed after `retriever_timeout` (default 30 seconds)
+- Exit non-zero when a command the output depends on fails (e.g. `squeue` timing out) rather than printing a guess; the element keeps its previous content and reports the failure
+- Use `refreshWhile` to stop refreshing data that can't change any more, e.g. once a job is done
 - Return meaningful errors with appropriate messages
 - Cache expensive operations when possible
 - Retriever functions follow consistent patterns amenable to AI-assisted code generation — existing pre-built scripts can serve as templates when creating custom retrievers

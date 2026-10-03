@@ -150,6 +150,23 @@ python3 "${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py" \
 
 For the full list of environment variables available to retriever scripts, see [Retriever Scripts - Environment Variables](./retriever-scripts#environment-variables).
 
+### Declarative Access Without a Script
+
+If a form field only needs a single column (or a JSON key inside `runtime_meta`/`env_params`) for one `drona_id` or one `environment`, it doesn't need a script at all. Point `retriever` at [`builtin:db_lookup`](./retriever-scripts#builtindb_lookup) instead - it runs the same lookup in-process, with no `drona_db_retriever.py` subprocess:
+
+```json
+{
+  "drona_job_dir": {
+    "type": "hidden",
+    "name": "drona_job_dir",
+    "retriever": "builtin:db_lookup",
+    "retrieverParams": { "id": "$workflow", "field": "location" }
+  }
+}
+```
+
+Reach for a script instead once you need anything the built-in doesn't cover - editing records, combining the lookup with other commands or files, or custom HTML output.
+
 ---
 
 **Texas A&M University High Performance Research Computing**

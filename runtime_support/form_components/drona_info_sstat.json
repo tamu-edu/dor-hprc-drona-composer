@@ -1,10 +1,10 @@
 {
-  "sstat_section": {
+  "drona_sstat_section": {
     "type": "rowContainer",
     "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
     "title": "Resource Utilization",
     "elements": {
-      "sstat2_utiliztion": {
+      "drona_sstat2_utiliztion": {
         "type": "staticText",
         "name": "drona_sstat2",
         "label": "",
@@ -16,7 +16,8 @@
         },
         "retriever": "drona_slurm_sstat.sh",
         "showRefreshButton": false,
-        "allowHtml": true
+        "allowHtml": true,
+        "layout": { "preset": "card", "title": "Resource Usage · Job $jobs" }
       }
     }
   }

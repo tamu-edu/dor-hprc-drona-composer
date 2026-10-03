@@ -1,12 +1,11 @@
 {
-  "workingDirectory": {
+  "drona_workingDirectory": {
     "type": "rowContainer",
-    "label": "Workflow Directory",
     "condition": "!jobs.",
     "elements": {
-      "jobDirLabel": {
+      "drona_jobDirLabel": {
         "type": "staticText",
-        "label": "Workflow Directory",
+        "useLabel": false,
         "name": "drona_job_dir_html",
         "isDynamic": true,
         "allowHtml": true,
@@ -14,7 +13,8 @@
         "retrieverParams": {
           "JOB_DIR": "$drona_job_dir"
         },
-        "retriever": "drona_info_jobdir_html.sh"
+        "retriever": "drona_info_jobdir_html.sh",
+        "layout": { "preset": "card", "title": "Workflow Directory" }
       }
     }
   }
