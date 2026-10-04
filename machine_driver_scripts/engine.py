@@ -207,9 +207,10 @@ def process_function(value, environment, env_dir):
                     var = var[5:-6]
                     processed_variables.append(var)
                     continue
-                # Unmapped $param: pass None instead of the literal "$name"
+                # Unmapped $param (e.g. a field hidden by a condition): pass an empty
+                # string instead of the literal "$name", like an empty form field
                 if var.startswith('$'):
-                    processed_variables.append(None)
+                    processed_variables.append("")
                     continue
                 processed_variables.append(var)
             

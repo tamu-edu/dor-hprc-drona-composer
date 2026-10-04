@@ -50,7 +50,7 @@ This is why an environment can have its own `drona_slurm_seff.sh` that takes pri
 
 - A form_components file is a flat JSON object; each top-level key is one `$ref`-able fragment. An environment's schema pulls in exactly the keys it needs via `#/keyName`.
 - Fields that only make sense together (e.g. a mode selector plus the containers it gates) live in the same file so they can't be referenced separately and get out of sync — see `drona_create_manage.json`.
-- If a field's value flows into `map.json`/`utils.py` as a `$param` (i.e. it's used at job-submission time, not just for schema `condition`s), remember that an **unmapped `$param` is passed as Python `None`**, not the literal string `"$paramname"` (this changed recently in `machine_driver_scripts/engine.py` — see its `process_function`). Any environment `utils.py` function that inspects such a param for a "not yet set" sentinel needs to check `is None`, not `== "$paramname"`.
+- If a field's value flows into `map.json`/`utils.py` as a `$param` (i.e. it's used at job-submission time, not just for schema `condition`s), remember that an **unmapped `$param` in a `!func()` call is passed as an empty string `""`**, not the literal string `"$paramname"` (see `process_function` in `machine_driver_scripts/engine.py`). Older Drona versions passed Python `None`, and before that the literal string, so an environment `utils.py` function that inspects such a param for a "not yet set" sentinel and has to run on older versions should check `is None or == "" or == "$paramname"`.
 
 ## Recipes
 
