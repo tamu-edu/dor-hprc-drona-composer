@@ -3,6 +3,7 @@ import { render, act } from '@testing-library/react';
 import { useRetriever } from '../useRetriever';
 import { usePolling } from '../usePolling';
 import { FormValuesContext } from '../../FormValuesContext';
+import { CollapsedProvider } from '../../CollapsedContext';
 import { FAILURE_ESCALATION_THRESHOLD } from '../../utils/retrieverFailures';
 
 const environment = { env: 'Test', src: '/envs' };
@@ -196,5 +197,58 @@ describe('useRetriever isRefreshing', () => {
     expect(hookState.isRefreshing).toBe(false);
     await act(async () => { resolveFetch(); });
     expect(hookState.isLoading).toBe(false);
+  });
+});
+
+describe('collapsed containers', () => {
+  function PollingProbe({ callback }) {
+    usePolling(callback, 10);
+    return null;
+  }
+
+  it('defers the first fetch until the container is opened', async () => {
+    global.fetch = jest.fn().mockResolvedValue(okResponse([1]));
+
+    const view = (collapsed) => withContext(
+      <CollapsedProvider collapsed={collapsed}><RetrieverProbe /></CollapsedProvider>
+    );
+    const { rerender } = render(view(true));
+    await flush();
+    expect(global.fetch).not.toHaveBeenCalled();
+
+    rerender(view(false));
+    await flush();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(hookState.data).toEqual([1]);
+  });
+
+  it('stays paused when any ancestor is collapsed', async () => {
+    global.fetch = jest.fn().mockResolvedValue(okResponse([1]));
+
+    render(withContext(
+      <CollapsedProvider collapsed={true}>
+        <CollapsedProvider collapsed={false}><RetrieverProbe /></CollapsedProvider>
+      </CollapsedProvider>
+    ));
+    await flush();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('pauses polling while collapsed and catches up once when opened', () => {
+    jest.useFakeTimers();
+    const callback = jest.fn();
+    const view = (collapsed) => withContext(
+      <CollapsedProvider collapsed={collapsed}><PollingProbe callback={callback} /></CollapsedProvider>
+    );
+    const { rerender } = render(view(false));
+    act(() => { jest.advanceTimersByTime(10000); });
+    expect(callback).toHaveBeenCalledTimes(1);
+
+    rerender(view(true));
+    act(() => { jest.advanceTimersByTime(60000); });
+    expect(callback).toHaveBeenCalledTimes(1);
+
+    rerender(view(false));
+    expect(callback).toHaveBeenCalledTimes(2);
   });
 });

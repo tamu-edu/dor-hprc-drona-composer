@@ -4,6 +4,13 @@
  * Features a header with a toggle button to show/hide the content, making complex forms more
  * manageable. Each child element is rendered by the FieldRenderer component in a 100% width layout.
  *
+ * While the container is collapsed, the retrievers of the elements inside it do not run: their
+ * first fetch and any `refreshInterval` polling wait until the container is opened (one refresh
+ * follows on opening). This applies to every dynamic element, including those in nested
+ * containers. The fields themselves stay part of the form: their values are kept, validated and
+ * submitted as usual. So an input that gets its value from its own retriever (for example a
+ * `dynamicSelect` without a default `value`) is submitted empty if the container is never opened.
+ *
  * @example
  * // Collapsible container with multiple form elements
  * {
@@ -38,6 +45,7 @@
  */
 
 import React, { useState, useMemo } from "react";
+import { CollapsedProvider } from "../CollapsedContext";
 import FieldRenderer from "../FieldRenderer";
 import LayoutFrame from "../utils/LayoutFrame";
 import { resolveLayout } from "../utils/choiceStyles";
@@ -106,17 +114,19 @@ function CollapsibleRowContainer({
   if (resolved.frame) {
     return (
       <LayoutFrame resolved={resolved} title={title} collapse={{ isCollapsed, onToggle: toggleCollapse }}>
-        <FieldRenderer
-          fields={elements}
-          handleValueChange={onChange}
-          onFileChange={onFileChange}
-          labelOnTop
-          fieldStyles="width: 100%"
-          startingIndex={startingIndex}
-          currentValues={currentValues}
-          setError={setError}
-          locationProps={locationProps}
-        />
+        <CollapsedProvider collapsed={isCollapsed}>
+          <FieldRenderer
+            fields={elements}
+            handleValueChange={onChange}
+            onFileChange={onFileChange}
+            labelOnTop
+            fieldStyles="width: 100%"
+            startingIndex={startingIndex}
+            currentValues={currentValues}
+            setError={setError}
+            locationProps={locationProps}
+          />
+        </CollapsedProvider>
       </LayoutFrame>
     );
   }
@@ -136,17 +146,19 @@ function CollapsibleRowContainer({
       
       <div style={{ display: isCollapsed ? 'none' : 'block' }}>
         <div style={{ marginTop: "1rem" }}>
-          <FieldRenderer
-            fields={elements}
-            handleValueChange={onChange}
-            onFileChange={onFileChange}
-            labelOnTop
-            fieldStyles="width: 100%"
-            startingIndex={startingIndex}
-            currentValues={currentValues}
-            setError={setError}
-            locationProps={locationProps}
-          />
+          <CollapsedProvider collapsed={isCollapsed}>
+            <FieldRenderer
+              fields={elements}
+              handleValueChange={onChange}
+              onFileChange={onFileChange}
+              labelOnTop
+              fieldStyles="width: 100%"
+              startingIndex={startingIndex}
+              currentValues={currentValues}
+              setError={setError}
+              locationProps={locationProps}
+            />
+          </CollapsedProvider>
         </div>
       </div>
     </div>
@@ -181,17 +193,19 @@ function CollapsibleColContainer({
     return (
       <LayoutFrame resolved={resolved} title={title} collapse={{ isCollapsed, onToggle: toggleCollapse }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <FieldRenderer
-          fields={elements}
-          handleValueChange={onChange}
-          onFileChange={onFileChange}
-          labelOnTop
-          fieldStyles="width: 100%"
-          startingIndex={startingIndex}
-          currentValues={currentValues}
-          setError={setError}
-          locationProps={locationProps}
-        />
+        <CollapsedProvider collapsed={isCollapsed}>
+          <FieldRenderer
+            fields={elements}
+            handleValueChange={onChange}
+            onFileChange={onFileChange}
+            labelOnTop
+            fieldStyles="width: 100%"
+            startingIndex={startingIndex}
+            currentValues={currentValues}
+            setError={setError}
+            locationProps={locationProps}
+          />
+        </CollapsedProvider>
         </div>
       </LayoutFrame>
     );
@@ -217,17 +231,19 @@ function CollapsibleColContainer({
           gap: "1rem",
           marginTop: "1rem"
         }}>
-          <FieldRenderer
-            fields={elements}
-            handleValueChange={onChange}
-            onFileChange={onFileChange}
-            labelOnTop
-            fieldStyles="width: 100%"
-            startingIndex={startingIndex}
-            currentValues={currentValues}
-            setError={setError}
-            locationProps={locationProps}
-          />
+          <CollapsedProvider collapsed={isCollapsed}>
+            <FieldRenderer
+              fields={elements}
+              handleValueChange={onChange}
+              onFileChange={onFileChange}
+              labelOnTop
+              fieldStyles="width: 100%"
+              startingIndex={startingIndex}
+              currentValues={currentValues}
+              setError={setError}
+              locationProps={locationProps}
+            />
+          </CollapsedProvider>
         </div>
       </div>
     </div>

@@ -28,6 +28,7 @@
 
 import { useState, useEffect, useRef, useContext, useCallback, useMemo } from 'react';
 import { FormValuesContext } from '../FormValuesContext';
+import { CollapsedContext } from '../CollapsedContext';
 import { getFieldValue } from '../utils/fieldUtils';
 import { executeScript } from '../utils/utils';
 import {
@@ -43,7 +44,8 @@ import {
  * @param {Object} [options.retrieverParams={}] - Parameters with $fieldName references
  * @param {any} [options.initialData=null] - Initial data value
  * @param {boolean} [options.parseJSON=true] - Parse response as JSON
- * @param {boolean} [options.isShown=true] - Component visibility
+ * @param {boolean} [options.isShown=true] - Component visibility. Inside a collapsed
+ *   container the element counts as not shown, so nothing is fetched until it is opened.
  * @param {boolean} [options.fetchOnMount=true] - Auto-fetch when shown
  * @param {number} [options.debounceMs=300] - Debounce delay in milliseconds
  * @param {Function} [options.onError] - Error callback (the global error alert). For
@@ -78,6 +80,8 @@ export function useRetriever({
   const [lastSuccessAt, setLastSuccessAt] = useState(null);
 
   const { values: formValues, environment } = useContext(FormValuesContext);
+  const isCollapsed = useContext(CollapsedContext);
+  const isActive = isShown && !isCollapsed;
 
   // Use refs for values that shouldn't trigger re-renders when used in callbacks
   const formValuesRef = useRef(formValues);
@@ -222,16 +226,24 @@ export function useRetriever({
 
   // Initial fetch when component is shown and environment is ready
   useEffect(() => {
-    if (isShown && !initialFetchDoneRef.current && fetchOnMount && retrieverPath && environment) {
+    if (isActive && !initialFetchDoneRef.current && fetchOnMount && retrieverPath && environment) {
       initialFetchDoneRef.current = true;
       fetchData();
     }
-  }, [isShown, fetchOnMount, retrieverPath, environment, fetchData]);
+  }, [isActive, fetchOnMount, retrieverPath, environment, fetchData]);
 
   // Track changes to relevant form values and refetch
   useEffect(() => {
+    // A collapsed element drops any pending fetch. Forgetting the previous values
+    // makes the next check after expanding see the dropped change and refetch.
+    if (isCollapsed && debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+      prevRelevantValuesRef.current = {};
+    }
+
     // Skip if no dynamic params to track
-    if (!isShown || relevantFieldNames.length === 0) {
+    if (!isActive || relevantFieldNames.length === 0) {
       return;
     }
 
@@ -255,7 +267,7 @@ export function useRetriever({
       // Trigger refetch when relevant values change
       debouncedFetch();
     }
-  }, [formValues, isShown, relevantFieldNames, debouncedFetch, isEvaluated]);
+  }, [formValues, isActive, isCollapsed, relevantFieldNames, debouncedFetch, isEvaluated]);
 
   // Manual refetch function; pass { background: true } for periodic polls
   const refetch = useCallback((options) => {
