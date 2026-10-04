@@ -4,6 +4,7 @@ Shared library used by every environment. Anything here is available to any envi
 
 ```
 runtime_support/
+├── driver_scripts/     scripts copied into / run from a job's directory (e.g. drona_start_{cpu,gpu}_monitor, which write to <jobdir>/drona_monitoring/)
 ├── form_components/    JSON schema fragments, pulled in with $ref
 ├── retriever_scripts/  scripts that supply dynamic form data / live widget HTML
 └── html_templates/     HTML fragments that retriever scripts fill in and return

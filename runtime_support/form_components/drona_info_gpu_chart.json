@@ -1,0 +1,36 @@
+{
+  "drona_hidden_gpu_chart_check": {
+    "type": "hidden",
+    "name": "drona_gpu_monitor_active",
+    "label": "GPU Monitor Active",
+    "isDynamic": true,
+    "condition": "!jobs. && !drona_job_dir.",
+    "refreshInterval": "15",
+    "refreshWhile": "!drona_gpu_monitor_active.ACTIVE && !drona_status.DONE",
+    "retrieverParams": {
+      "JOB_DIR": "$drona_job_dir"
+    },
+    "retriever": "drona_gpu_chart_active.sh"
+  },
+
+  "drona_gpu_chart": {
+    "type": "chart",
+    "name": "drona_gpu_chart",
+    "label": "GPU Utilization",
+    "condition": "!jobs. && drona_gpu_monitor_active.ACTIVE",
+    "chartType": "line",
+    "retriever": "drona_gpu_chart_data.sh",
+    "retrieverParams": {
+      "JOB_DIR": "$drona_job_dir",
+      "MAX_POINTS": 120
+    },
+    "refreshInterval": 10,
+    "refreshWhile": "!drona_status.DONE",
+    "maxDataPoints": 120,
+    "xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
+    "yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 },
+    "series": "auto",
+    "showTable": true,
+    "emptyMessage": "No GPU utilization data yet"
+  }
+}

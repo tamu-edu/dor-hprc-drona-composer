@@ -1,0 +1,101 @@
+#!/bin/bash
+# Started in the background from jobscripts/generic-job.slurm when the create
+# form's "Monitor CPU utilization" checkbox is enabled. Appends one JSON-lines
+# sample per interval to drona_monitoring/cpu_util.jsonl in the job's working
+# directory,
+# matching the `chart` schema element's tail-based retriever contract (see
+# website/docs/environments/live-charts.md).
+#
+# Reads the job's Slurm cgroup rather than `ps`:
+# `ps %cpu` is a lifetime average per process and misses processes that start
+# and exit between samples (e.g. an nvcc/gcc compile), while the cgroup's
+# cumulative CPU time covers everything that ever ran in the job, so the delta
+# between samples is the real load over that interval.
+# Works on cgroup v1 (cpuacct.usage) and v2 (cpu.stat usage_usec). The job
+# cgroup is located from /proc/self/cgroup (truncated at the job_<id>
+# component) instead of a hardcoded path, so it doesn't depend on Slurm's
+# cgroup.conf naming or mount layout.
+#   cpu        - % of the CPUs allocated to the job on this node (100 = all
+#                busy), clamped to 100
+#   cores_used - average number of CPUs busy over the interval (raw CPU-seconds
+#                per wall-second, so 2.5 = 250% in `top` terms)
+#   memory - job RSS as % of the job's memory limit (--mem), not node RAM
+# Only covers the node the batch script runs on; a multi-node job would need
+# a per-node variant.
+#
+# Killed by the job script via `kill "$DRONA_CPU_MONITOR_PID"` once the
+# user's commands finish.
+
+INTERVAL="${1:-10}"
+LOG_DIR="drona_monitoring"
+LOG="$LOG_DIR/cpu_util.jsonl"
+mkdir -p "$LOG_DIR" || exit 0
+
+# Print the cgroup dir of the first /proc/self/cgroup line matching $1
+# (a controller name, or "" for the v2 unified hierarchy), cut at job_<id>.
+job_cgroup_path() {
+    awk -F: -v ctl="$1" -v job="job_$SLURM_JOB_ID" '
+        $2 == ctl { i = index($3, "/" job)
+                    if (i) { print substr($3, 1, i - 1 + length(job) + 1); exit } }' /proc/self/cgroup
+}
+
+if [ -r /sys/fs/cgroup/cgroup.controllers ]; then
+    # cgroup v2: one unified hierarchy
+    V=2
+    CPU_CG="/sys/fs/cgroup$(job_cgroup_path "")"
+    MEM_CG="$CPU_CG"
+    [ -r "$CPU_CG/cpu.stat" ] || exit 0
+else
+    V=1
+    CPU_CG="/sys/fs/cgroup/cpu,cpuacct$(job_cgroup_path "cpu,cpuacct")"
+    MEM_CG="/sys/fs/cgroup/memory$(job_cgroup_path "memory")"
+    [ -r "$CPU_CG/cpuacct.usage" ] || exit 0
+fi
+
+# CPUs allocated to the job on this node: Slurm's own count, else the affinity mask
+NCPU="${SLURM_CPUS_ON_NODE:-$(nproc 2>/dev/null)}"
+[ "${NCPU:-0}" -ge 1 ] 2>/dev/null || NCPU=1
+
+# Cumulative job CPU time in ns
+read_cpu_ns() {
+    if [ "$V" = 2 ]; then
+        awk '$1 == "usage_usec" {print $2 * 1000}' "$CPU_CG/cpu.stat"
+    else
+        cat "$CPU_CG/cpuacct.usage"
+    fi
+}
+
+# Job RSS and memory limit in bytes, space separated (limit 0 = unknown/unlimited)
+read_mem() {
+    if [ "$V" = 2 ]; then
+        local rss limit
+        rss=$(awk '$1 == "anon" {print $2}' "$MEM_CG/memory.stat" 2>/dev/null)
+        limit=$(cat "$MEM_CG/memory.max" 2>/dev/null)
+        [ "$limit" = "max" ] && limit=0
+        echo "${rss:-0} ${limit:-0}"
+    else
+        echo "$(awk '$1 == "total_rss" {print $2}' "$MEM_CG/memory.stat" 2>/dev/null || echo 0) $(cat "$MEM_CG/memory.limit_in_bytes" 2>/dev/null || echo 0)"
+    fi
+}
+
+prev_cpu=$(read_cpu_ns)
+prev_t=$(date +%s%N)
+
+while true; do
+    sleep "$INTERVAL"
+    cpu_ns=$(read_cpu_ns)
+    now=$(date +%s%N)
+    read -r rss limit <<< "$(read_mem)"
+
+    awk -v ts="$((now / 1000000000))" -v dc="$((cpu_ns - prev_cpu))" -v dt="$((now - prev_t))" \
+        -v rss="${rss:-0}" -v lim="${limit:-0}" -v ncpu="$NCPU" 'BEGIN {
+            cores = (dt > 0 ? dc / dt : 0)
+            pct = 100 * cores / ncpu
+            if (pct > 100) pct = 100
+            printf "{\"timestamp\":%d,\"cpu\":%.1f,\"cores_used\":%.2f,\"memory\":%.1f}\n",
+                ts, pct, cores, (lim > 0 ? 100 * rss / lim : 0)
+        }' >> "$LOG"
+
+    prev_cpu=$cpu_ns
+    prev_t=$now
+done
