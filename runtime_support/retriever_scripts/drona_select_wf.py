@@ -75,7 +75,10 @@ def main():
 
     all_envs = get_job_data(target, "-e", envname)
 
-    if all_envs:
+    # None means the lookup itself failed (already reported by get_job_data). An
+    # environment without any recorded workflows must still print a valid, empty
+    # JSON list, otherwise the select receives an empty response it cannot parse.
+    if all_envs is not None:
         final_json = transform_jobs(all_envs)
         print(json.dumps(final_json, indent=4))
 

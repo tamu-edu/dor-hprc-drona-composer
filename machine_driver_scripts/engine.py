@@ -312,7 +312,7 @@ class Engine():
 
     def set_map(self, map_path):
         with open(map_path) as json_file:
-            self.map = json.load(json_file)
+            self.map = resolve_map_includes(json.load(json_file))
     
     def set_driver(self, driver_path):
         with open(driver_path) as shell_script:
@@ -465,35 +465,56 @@ class Engine():
             
     def custom_replace_with_indentation(self, template, map, params):
         """
-        Replace placeholders while preserving indentation for multi-line values.
-        Could potentially be optimized.
+        Replace [KEY] placeholders with their map values, preserving the
+        indentation of multi-line values.
+
+        The template is scanned once for the known keys, so the result does not
+        depend on the order of the map. A value can itself contain [KEY]
+        placeholders (e.g. a driver that contains [CANCEL]); they are expanded
+        recursively. A key that refers to itself (directly or through other
+        keys) is left as literal text instead of looping. Text in brackets that
+        is not a map key (e.g. shell tests like `[ -f x ]`) is never touched.
         """
-        for key, value in map.items():
-            placeholder = "[" + key + "]"
-            lines = template.split('\n')
-            new_lines = []
+        keys = sorted((str(k) for k in map if str(k)), key=len, reverse=True)
+        if not keys:
+            return template
+        pattern = re.compile(r"\[(" + "|".join(re.escape(k) for k in keys) + r")\]")
+        values = {str(k): v for k, v in map.items()}
 
-            for line in lines:
-                if placeholder in line:
-                    indent_match = re.match(r'^(\s*)', line)
-                    base_indent = indent_match.group(1) if indent_match else ''
-                    
-                    value_lines = str(value).split('\n')
+        def expand(text, active):
+            if "[" not in text:
+                return text
+            out_lines = []
+            for line in text.split("\n"):
+                matches = list(pattern.finditer(line))
+                if not matches:
+                    out_lines.append(line)
+                    continue
 
-                    replaced_line = line.replace(placeholder, value_lines[0])
-                    new_lines.append(replaced_line)
-                    
-                    # Add remaining lines with proper indentation
+                base_indent = re.match(r"^(\s*)", line).group(1)
+                pieces = []
+                extra_lines = []
+                pos = 0
+                for m in matches:
+                    key = m.group(1)
+                    pieces.append(line[pos:m.start()])
+                    pos = m.end()
+                    if key in active:
+                        pieces.append(m.group(0))
+                        continue
+                    value = expand(str(values[key]), active | {key})
+                    value_lines = value.split("\n")
+                    pieces.append(value_lines[0])
+                    # Remaining lines of a multi-line value follow the line, indented like it
                     for value_line in value_lines[1:]:
-                        if value_line.strip(): 
-                            new_lines.append(base_indent + value_line)
-                        else:
-                            new_lines.append(value_line)  # Keep empty lines as-is
-                else:
-                    new_lines.append(line)
-            template = '\n'.join(new_lines)
-        return template
-    
+                        extra_lines.append(base_indent + value_line if value_line.strip() else value_line)
+                pieces.append(line[pos:])
+                out_lines.append("".join(pieces))
+                out_lines.extend(extra_lines)
+            return "\n".join(out_lines)
+
+        return expand(template, frozenset())
+
     def custom_replace(self, template, map, params):
         return self.custom_replace_with_indentation(template, map, params)
 

@@ -30,7 +30,7 @@
         "label": "Select Workflow",
         "name": "allworkflows",
         "condition": "mode.manage",
-        "retriever": "drona_select_wf.sh"
+        "retriever": "builtin:db_options"
       }
 
     }

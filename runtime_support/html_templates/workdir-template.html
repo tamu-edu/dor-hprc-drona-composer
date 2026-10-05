@@ -16,10 +16,29 @@
         #dc-workdir .dc-path-box {
             display: flex;
             align-items: center;
+            gap: 8px;
             background: var(--dc-divider);
             border: 1px solid var(--dc-border);
             border-radius: var(--dc-radius-sm);
             padding: 8px 12px;
+        }
+
+        #dc-workdir .dc-path-label {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        #dc-workdir .dc-path-label::before {
+            content: "";
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--dc-live);
+            box-shadow: 0 0 6px var(--dc-live);
         }
 
         #dc-workdir .dc-path-box a {
@@ -34,6 +53,7 @@
     </style>
 
         <div class="dc-path-box">
+            <span class="dc-path-label">Workflow Directory:</span>
             <a href="/pun/sys/dashboard/files/fs{{JOB_DIR}}" target="_blank" rel="noopener noreferrer">{{JOB_DIR}}</a>
         </div>
 </div>

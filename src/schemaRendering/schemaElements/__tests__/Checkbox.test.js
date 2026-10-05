@@ -108,4 +108,12 @@ describe('Checkbox Component', () => {
       expect(() => fireEvent.click(checkbox)).not.toThrow();
     });
   });
+
+  test('button style shows label and toggles on click', () => {
+    const onChange = jest.fn();
+    render(<Checkbox {...defaultProps} id={undefined} style="button" help="Some help" onChange={onChange} />);
+
+    fireEvent.click(screen.getByText(/Test Checkbox/));
+    expect(onChange).toHaveBeenCalledWith(0, '');
+  });
 });

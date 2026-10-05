@@ -3,7 +3,7 @@
  * checkboxGroup, dynamicCheckboxGroup).
  *
  * Schema props:
- *  - style:  appearance of each option, a string ("default" | "button")
+ *  - style:  appearance of each option, a string ("default" | "button" | "toggle")
  *  - layout: arrangement/frame of the whole group. A preset name, an object, or an array of those.
  *      "inline" | "list" | "grid" | "boxed" | "card"
  *      { "preset": "boxed", "title": "Running jobs" }   preset with params
@@ -28,6 +28,8 @@ export const CHOICE_THEME = {
 export const APPEARANCES = {
   default: { kind: "input" },
   button: { kind: "button" },
+  // Same look as a checkbox with style "button": check mark / empty box in front of the label
+  toggle: { kind: "toggle" },
 };
 
 export const LAYOUTS = {

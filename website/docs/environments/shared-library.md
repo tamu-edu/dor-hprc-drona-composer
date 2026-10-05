@@ -10,10 +10,12 @@ Every environment lives in its own directory, but most environments need the sam
 runtime_support/
 ├── form_components/    JSON schema fragments, pulled in with $ref
 ├── retriever_scripts/  scripts that supply dynamic form data or live widget HTML
-└── html_templates/     HTML fragments that retriever scripts fill in and return
+├── html_templates/     HTML fragments that retriever scripts fill in and return
+├── map_references/     map.json fragments, pulled in with "$include"
+└── drona_runtime_utils/ Python functions called by the map fragments
 ```
 
-This page explains how the three pieces fit together, the conventions worth following when you add to them, and a few mistakes that are easy to make and hard to spot.
+This page explains how the pieces fit together, the conventions worth following when you add to them, and a few mistakes that are easy to make and hard to spot.
 
 ## Shared form components
 
@@ -40,6 +42,21 @@ Any schema element with `isDynamic: true` (`hidden`, `staticText`, `dynamicSelec
 2. `runtime_support/retriever_scripts/<name>` (the shared fallback)
 
 This lookup order is what lets one environment override a shared script — drop a same-named file directly in the environment's directory and it takes priority automatically, no schema change required. The flip side: **if you fix a bug in a shared script and it doesn't seem to take effect for one particular environment, check whether that environment has its own copy of the same name shadowing it.**
+
+## Shared map references
+
+Shared mapping entries live in `runtime_support/map_references/`. A workflow includes them with `"$include": ["drona_cancel_jobs"]` in its `map.json`. See [Map Files](./map#shared-mappings-with-include) for the rules.
+
+The functions these entries call live in `runtime_support/drona_runtime_utils/` and are available to every workflow without being copied into its `utils.py`:
+
+| Fragment | Keys | Function | Form fields it expects |
+|---|---|---|---|
+| `drona_cancel_jobs` | `CANCEL` | `retrieve_cancel_jobs` | `mode`, `drona_cancel_jobs`, `jobs` |
+| `drona_cpu_monitor` | `CPU_MONITOR_START`, `CPU_MONITOR_STOP` | `retrieve_cpu_monitor_start/stop` | `drona_cpu_monitor` |
+| `drona_gpu_monitor` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start/stop` | `drona_gpu`, `drona_gpu_monitor` |
+| `drona_slurm_params` | `DUMMY` | `retrieve_slurm_params` | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
+
+`retrieve_slurm_params` calls `cluster_slurm_checks` from `runtime_support/drona_runtime_utils/clusters/<cluster>.py`, chosen by the cluster name (with `defaultcluster.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the workflow needs no cluster files of its own.
 
 ## Shared HTML templates
 

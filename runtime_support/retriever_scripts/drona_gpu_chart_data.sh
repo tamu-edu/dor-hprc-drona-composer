@@ -3,9 +3,9 @@
 # Reads the per-node CSVs written by drona_start_gpu_monitor
 # (drona_monitoring/gpu_util_node_<host>.csv: timestamp,index,util,mem_used,mem_total) and
 # returns the last MAX_POINTS samples as a JSON array of
-#   {"timestamp": <epoch>, "gpu0": <util>, ...}
+#   {"timestamp": <epoch>, "gpu0": <util %>, "gpu0_mem": <memory used % of total>, ...}
 # — the "chart" element's contract (see website/docs/environments/live-charts.md).
-# Single-node jobs get keys gpu0, gpu1...; multi-node jobs get host:gpuN keys
+# Single-node jobs get keys gpu0, gpu1... (plus gpu0_mem, ...); multi-node jobs get host:gpuN keys
 # (rows from different nodes are merged when they share the same epoch second,
 # otherwise each node's row carries only its own keys). Jobs that never
 # enabled monitoring, or haven't produced a sample yet, get [], which the
@@ -43,7 +43,14 @@ for path in files:
         except ValueError:  # partial last line, "[N/A]", etc.
             continue
         key = f"{host}:gpu{idx}" if multi else f"gpu{idx}"
-        rows.setdefault(ts, {})[key] = util
+        row = rows.setdefault(ts, {})
+        row[key] = util
+        try:
+            used, total = float(rec[3]), float(rec[4])
+            if total > 0:
+                row[key + "_mem"] = round(100 * used / total, 1)
+        except (ValueError, IndexError):  # older CSVs without memory columns, "[N/A]"
+            pass
 
 out = [{"timestamp": ts, **rows[ts]} for ts in sorted(rows)][-window:]
 print(json.dumps(out))

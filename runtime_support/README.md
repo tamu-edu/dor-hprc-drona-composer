@@ -7,7 +7,9 @@ runtime_support/
 ├── driver_scripts/     scripts copied into / run from a job's directory (e.g. drona_start_{cpu,gpu}_monitor, which write to <jobdir>/drona_monitoring/)
 ├── form_components/    JSON schema fragments, pulled in with $ref
 ├── retriever_scripts/  scripts that supply dynamic form data / live widget HTML
-└── html_templates/     HTML fragments that retriever scripts fill in and return
+├── html_templates/     HTML fragments that retriever scripts fill in and return
+├── drona_runtime_utils/ Python functions that map_references fragments call (cancel.py, monitoring.py, slurm.py, clusters/)
+└── map_references/     map.json fragments, pulled in with "$include"
 ```
 
 This file explains how the three fit together and lists the conventions that aren't obvious from reading a single file in isolation. For a per-script reference table, see `retriever_scripts/RETRIEVER_FUNCTIONS.md`. For the app as a whole, see the root `README.md`.
@@ -20,6 +22,8 @@ This file explains how the three fit together and lists the conventions that are
 "Modules": { "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_module_picker.json#/Modules" }
 ```
 
+**Map references.** A `map.json` can list shared mapping files under the reserved `"$include"` key, e.g. `"$include": ["drona_cancel_jobs"]`. A bare name (with or without `.json`) is looked up in `map_references/`; a path containing `/` is used as given (`$DRONA_RUNTIME_DIR` is substituted). The engine (`resolve_map_includes` in `machine_driver_scripts/utils.py`) merges their entries in; entries written directly in the environment's `map.json` override included ones. The fragment relies on the matching form component's field names (`drona_cancel_jobs` needs the cancel element in the schema).
+
 **Live/dynamic data.** Any schema element with `isDynamic: true` (`Hidden`, `StaticText`, `DynamicSelect`, `DynamicRadioGroup`, `DynamicCheckboxGroup`, `AutocompleteSelect`, `DynamicViewer`) calls a **retriever script** by name through `/jobs/composer/evaluate_script`. The backend (`execute_script` in `views/schema_routes.py`) looks the name up in this order:
 
 1. relative to the environment's own directory (an env-local override)
@@ -31,6 +35,27 @@ This is why an environment can have its own `drona_slurm_seff.sh` that takes pri
 - `Hidden` → a form value used by `condition` strings elsewhere in the schema (e.g. `configured.CONFIGURED`). Must be plain text, trimmed and compared as-is.
 - `StaticText` with `allowHtml: true` → rendered with `dangerouslySetInnerHTML`. This is the "live widget" pattern: the script loads a matching file from `html_templates/`, fills in `{{PLACEHOLDER}}` tokens, and prints the result.
 - Selection elements (`DynamicSelect`, etc.) → a JSON array of `{"label": ..., "value": ...}`.
+
+## Map reference conventions
+
+A fragment in `map_references/` is evaluated like any entry in `map.json` (same `$field` replacement, `!func()` calls and `drona_add_mapping`), but it is shared, so a few things differ from writing the entry in the environment's own `map.json`:
+
+- **Placeholders inside values.** The template is scanned once for `[KEY]` and each match is replaced with that key's value, so the order of entries in the merged map does not matter. A value may contain `[OTHER]` placeholders (from a fragment or from the environment's `map.json`); they are expanded recursively. A key that refers to itself is left as literal `[KEY]` text, and bracketed text that is not a map key (e.g. `[ -f x ]`) is never touched. Still prefer `$field` references and function calls in fragments over `[KEY]` references, so a fragment depends less on the environment.
+- **Functions.** A function is looked up in the environment's own `utils.py` first, then the global utils. A fragment must call only global functions (`drona_utils`, `drona_runtime_utils`, `machine_driver_scripts/utils.py`). Otherwise the value becomes `Function X not found...` in environments without it. A local function with the same name silently wins.
+- **Field names.** A fragment refers to form fields by name; a missing field gives `""` with no error. Document the fields a fragment needs in the README next to its form component.
+- **Key clashes.** An entry in the environment's `map.json` silently replaces a fragment entry with the same key. Use distinctive key names, especially in fragments whose functions call `drona_add_mapping` (a static key also wins over a dynamic one).
+- **Dynamic mappings.** A dynamic value (from `drona_add_mapping`) can contain `[KEY]` placeholders from fragments and from `map.json`, and the other way around.
+
+**Shared fragments and their functions.** Every function a fragment calls lives in `drona_runtime_utils/`, one module per topic, re-exported in its `__init__.py`.
+
+| Fragment (`map_references/`) | Keys | Function (`drona_runtime_utils/`) | Form fields it expects |
+|---|---|---|---|
+| `drona_cancel_jobs.json` | `CANCEL` | `retrieve_cancel_jobs` (`cancel.py`) | `mode`, `drona_cancel_jobs`, `jobs` |
+| `drona_cpu_monitor.json` | `CPU_MONITOR_START`, `CPU_MONITOR_STOP` | `retrieve_cpu_monitor_start/stop` (`monitoring.py`) | `drona_cpu_monitor` |
+| `drona_gpu_monitor.json` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start/stop` (`monitoring.py`) | `drona_gpu`, `drona_gpu_monitor` |
+| `drona_slurm_params.json` | `DUMMY` | `retrieve_slurm_params` (`slurm.py`) | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
+
+`retrieve_slurm_params` runs `cluster_slurm_checks` from `drona_runtime_utils/clusters/<cluster>.py` (named after the output of `/sw/local/bin/clustername`, with `defaultcluster.py` as the fallback). That function adds the Slurm mappings (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) with `drona_add_mapping`. To support a new cluster, add one file to `clusters/`. There is no per-environment override: the older environments (Generic, GenericChart, Generic-Vision) still use their own `clusters/` with their own local function.
 
 ## Retriever script conventions
 

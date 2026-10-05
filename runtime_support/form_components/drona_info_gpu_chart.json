@@ -18,7 +18,6 @@
     "name": "drona_gpu_chart",
     "label": "GPU Utilization",
     "condition": "!jobs. && drona_gpu_monitor_active.ACTIVE",
-    "chartType": "line",
     "retriever": "drona_gpu_chart_data.sh",
     "retrieverParams": {
       "JOB_DIR": "$drona_job_dir",
@@ -27,9 +26,26 @@
     "refreshInterval": 10,
     "refreshWhile": "!drona_status.DONE",
     "maxDataPoints": 120,
+    "height": 180,
+    "expandable": true,
+    "expandedHeight": 420,
     "xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
-    "yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 },
-    "series": "auto",
+    "panels": [
+      {
+        "title": "GPU Utilization",
+        "chartType": "line",
+        "series": "auto",
+        "seriesMatch": "^(?!.*_mem$)",
+        "yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 }
+      },
+      {
+        "title": "GPU Memory Used",
+        "chartType": "line",
+        "series": "auto",
+        "seriesMatch": "_mem$",
+        "yAxis": { "label": "Memory used (%)", "min": 0, "max": 100 }
+      }
+    ],
     "showTable": true,
     "emptyMessage": "No GPU utilization data yet"
   }

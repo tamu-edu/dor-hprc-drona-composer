@@ -220,6 +220,7 @@ const Composer = forwardRef((props, ref) => {
 
   return (
     <FormValuesContext.Provider value={contextValue}>
+      <div className="drona-schema-form" style={{ display: "contents" }}>
       <FieldRenderer
         fields={fields}
         handleValueChange={handleValueChange}
@@ -238,6 +239,7 @@ const Composer = forwardRef((props, ref) => {
           handleForm: props.handleForm,
         }}
       />
+      </div>
     </FormValuesContext.Provider>
   );
 });

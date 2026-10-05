@@ -26,19 +26,19 @@
     "refreshInterval": 10,
     "refreshWhile": "!drona_status.DONE",
     "maxDataPoints": 120,
+    "height": 180,
+    "expandable": true,
+    "expandedHeight": 420,
     "xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
     "panels": [
       {
-        "title": "CPU Utilization",
+        "title": "CPU and Memory Utilization",
         "chartType": "line",
-        "series": [{ "key": "cpu", "label": "CPU" }],
-        "yAxis": { "label": "CPU (% of allocated cores)", "min": 0, "max": 100 }
-      },
-      {
-        "title": "Memory Usage",
-        "chartType": "area",
-        "series": [{ "key": "memory", "label": "Memory" }],
-        "yAxis": { "label": "Memory (% of job limit)", "min": 0, "max": 100 }
+        "series": [
+          { "key": "cpu", "label": "CPU (% of allocated cores)" },
+          { "key": "memory", "label": "Memory (% of job limit)" }
+        ],
+        "yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 }
       }
     ],
     "showTable": true,

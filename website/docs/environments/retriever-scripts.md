@@ -167,9 +167,9 @@ EOF
 
 ## Declarative Built-ins
 
-For a retriever that's *only* a fixed-shape lookup against the [workflow history database](./database) - no scripting, no other logic - point `retriever` at `builtin:<name>` instead of a script path. It runs in-process on the server: no subprocess is spawned, so it's cheaper than even the fastest script, but it can only do exactly what the built-in supports (bounded, validated parameters - no arbitrary code).
+For a retriever that's *only* a fixed-shape lookup or option list against the [workflow history database](./database) - no scripting, no other logic - point `retriever` at `builtin:<name>` instead of a script path. It runs in-process on the server: no subprocess is spawned, so it's cheaper than even the fastest script, but it can only do exactly what the built-in supports (bounded, validated parameters - no arbitrary code).
 
-Currently available:
+Currently available: [`db_lookup`](#builtindb_lookup) (one value or a list of one value) and [`db_options`](#builtindb_options) (a list of `{value, label}` options).
 
 ### `builtin:db_lookup`
 
@@ -208,6 +208,44 @@ A record or key path that doesn't exist returns `null` (or `""` when `join` is s
 }
 ```
 
+### `builtin:db_options`
+
+Select options built from the `job_history` records of one environment, newest first. It returns a JSON array of `{"value": ..., "label": ...}` objects (the shape selection elements expect), or `[]` when the environment has no records. With no params it lists the current environment's workflows exactly like `drona_select_wf.sh`, which it replaces in the shared `drona_create_manage.json` component.
+
+| Param | Required | Description |
+|-------|----------|--------------|
+| `environment` | no | environment name; defaults to the current environment (`DRONA_ENV_NAME`, sent with every retriever call) |
+| `value` | no | template for each option's value. Default `{drona_id}` |
+| `label` | no | template for each option's label. Default `{name} (drona_id: {drona_id}) submitted on {start_time:10}` |
+| `limit` | no | keep only the newest N records. There is no "show more"; older records are not listed |
+| `start_time_after`, `start_time_before` | no | only records with `start_time` at or after / before this value, compared as text, e.g. `2026-09-01` |
+
+Templates are literal text with `{placeholders}`:
+- `{field}` is one of the `db_lookup` columns: `drona_id`, `name`, `environment`, `location`, `runtime_meta`, `start_time`, `status`, `env_params`.
+- `{field:N}` keeps the first N characters, so `{start_time:10}` is the date.
+- For the two JSON columns, a dotted key path works too: `{runtime_meta.jobinfo.0.id}`, or `{runtime_meta.jobinfo.*.id}` for a comma-separated list.
+- A value that is missing renders as empty text. Use `{{` and `}}` for literal braces. A record whose rendered `value` is empty is left out.
+- Anything else (unknown column, attribute access, a malformed placeholder, a template over 500 characters) is rejected with a 400, even if there are no records.
+
+Templates are not Python format strings and cannot compute anything. A label that needs logic (conditional text, a duration from two timestamps) needs a script.
+
+A value template that does not start with `$` is sent as is. A `$` at the start of a param is read as a reference to a form field, so don't begin a template with one.
+
+```json
+{
+  "workflowSelect": {
+    "type": "dynamicSelect",
+    "name": "allworkflows",
+    "label": "Select Workflow",
+    "retriever": "builtin:db_options",
+    "retrieverParams": {
+      "label": "{name} ({status}) - {start_time:16}",
+      "limit": 30
+    }
+  }
+}
+```
+
 ## Pre-Built Retriever Functions
 
 Drona provides a curated set of pre-built retriever functions for common HPC workflows. These are grouped into three categories based on their output type and purpose.
@@ -218,7 +256,7 @@ Selection retrievers populate dropdown menus, checkboxes, and radio groups with 
 
 | Retriever Name | Return Value |
 |----------------|--------------|
-| `drona_select_wf.sh` | Workflows with names, drona_ids, and submission dates |
+| `drona_select_wf.sh` | Workflows with names, drona_ids, and submission dates. The shared `drona_create_manage.json` component uses [`builtin:db_options`](#builtindb_options) instead; this script remains available for custom environments. |
 | `drona_select_nodes.sh` | Allocated nodes via `squeue` |
 
 ### Monitoring Retrievers

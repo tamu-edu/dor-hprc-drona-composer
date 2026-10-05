@@ -178,10 +178,15 @@ order, not what a key *means*.
 
 Each panel entry accepts `title`, `series` (required — usually an explicit
 `{key, label, color}` array per panel, since the point is hand-grouping *known* keys),
-`seriesLabelMap`, `colors`, `chartType`, `yAxis`, `stacked`, `showLegend`, `showGrid`,
+`seriesMatch`, `seriesLabelMap`, `colors`, `chartType`, `yAxis`, `stacked`, `showLegend`, `showGrid`,
 and `height`. Anything a panel omits falls back to the matching top-level prop — in the
 example above, both panels inherit the top-level `xAxis`, but the second panel
 overrides `chartType` to `"area"` and both override `yAxis`.
+
+When the keys aren't known ahead of time (e.g. one per GPU), give a panel
+`"series": "auto"` plus `seriesMatch`, a regex tested against each key, so it only picks
+up matching keys. The built-in GPU chart does this to split `gpu0` (utilization) from
+`gpu0_mem` (memory) with `"^(?!.*_mem$)"` and `"_mem$"`.
 
 ### `seriesPerPanel` — capping how many lines land in one panel
 

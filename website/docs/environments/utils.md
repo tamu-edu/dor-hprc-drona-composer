@@ -86,7 +86,7 @@ Drona provides a support library with functions to dynamically add additional fi
 | `drona_add_additional_file(String, String, Integer)` | Dynamically adds a file to the workflow. First parameter (required) is the filename. Second parameter (optional) is the preview tab name. Third parameter (optional) is the position in tabs; -1 excludes from preview. |
 
 :::note
-Drona engine evaluates dynamic mappings (from `drona_add_mapping`) **before** evaluating static mappings from `map.json`. This means the value in a dynamic mapping can contain placeholders that will be replaced using `map.json`.
+Dynamic mappings (from `drona_add_mapping`) are evaluated like the static mappings from `map.json`. A value in either can contain `[KEY]` placeholders for keys from the other, because placeholders are replaced by scanning the template, not in map order (see [Map](./map)).
 :::
 
 ### Adding Warnings

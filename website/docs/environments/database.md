@@ -124,7 +124,7 @@ This is primarily used by the driver script to record Slurm job IDs after submis
 
 ## Integration with Retriever Scripts
 
-The database is commonly accessed from [retriever scripts](./retriever-scripts) to populate dynamic form elements in monitoring interfaces. For example, the pre-built `drona_select_wf.sh` retriever queries the database to populate a workflow selection dropdown:
+The database is commonly accessed from [retriever scripts](./retriever-scripts) to populate dynamic form elements in monitoring interfaces. For example, the workflow selection dropdown is filled by the [`builtin:db_options`](./retriever-scripts#builtindb_options) retriever, which turns the environment's records into the `{value, label}` format expected by dynamic form components:
 
 ```json
 {
@@ -132,12 +132,12 @@ The database is commonly accessed from [retriever scripts](./retriever-scripts) 
     "type": "dynamicSelect",
     "name": "workflow",
     "label": "Select Workflow",
-    "retriever": "drona_select_wf.sh"
+    "retriever": "builtin:db_options"
   }
 }
 ```
 
-The retriever script calls `drona_db_retriever.py` internally and transforms the results into the `{value, label}` format expected by dynamic form components. Similarly, `drona_info_jobs.sh` queries the database to retrieve Slurm job IDs for a selected workflow, enabling downstream monitoring elements to display job-specific metrics.
+The pre-built `drona_select_wf.sh` script does the same by calling `drona_db_retriever.py` as a subprocess, and remains available for custom environments. Similarly, [`builtin:db_lookup`](./retriever-scripts#builtindb_lookup) retrieves the Slurm job IDs for a selected workflow (the older `drona_info_jobs.sh` script does the same), enabling downstream monitoring elements to display job-specific metrics.
 
 The database access script is available to all retriever scripts via the `DRONA_RUNTIME_DIR` environment variable:
 

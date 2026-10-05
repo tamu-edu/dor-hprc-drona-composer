@@ -33,7 +33,8 @@
  * @property {Array} [value] - Default/initial selected values (array of value strings)
  * @property {Array} [options] - Initial options array, overridden by retriever results
  * @property {boolean} [pruneMissing=false] - Silently drop selected values that are not in the loaded options (no warning). For action lists such as cancel-jobs, where a stale selection is meaningless
- * @property {string} [style] - Option appearance: "default" or "button"
+ * @property {string} [style] - Option appearance: "default", "button" or "toggle" (checkbox-style button with a check mark)
+ * @property {boolean} [useLabel] - false hides the label row (default true)
  * @property {string|Object|Array} [layout] - Group layout: "inline" | "list" | "grid" | "boxed", a preset with params, a CSS object, or an array of these
  * @property {number} [refreshInterval] - Re-fetch the options every this many seconds. Omit/0 to
  * fetch only when shown and when a `$field` in `retrieverParams` changes. Paused while the browser
@@ -129,6 +130,7 @@ function DynamicCheckboxGroup(props) {
             name={props.name}
             label={props.label}
             help={props.help}
+            useLabel={props.useLabel}
         >
             {showLoading && !isEvaluated ? (
                 <div>Loading options...</div>
