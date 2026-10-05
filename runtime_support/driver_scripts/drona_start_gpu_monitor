@@ -1,0 +1,41 @@
+#!/bin/bash
+# Started in the background from jobscripts/generic-job.slurm when the create
+# form's "Monitor GPU utilization" checkbox is enabled. Launches one long-lived
+# `nvidia-smi -l` per node of the job (via srun, inside the job's allocation)
+# and appends raw CSV samples to drona_monitoring/gpu_util_node_<hostname>.csv in the
+# job's working directory:
+#   timestamp, index, utilization.gpu, memory.used, memory.total
+#
+# A single long-lived nvidia-smi is used on purpose: repeatedly launching a
+# fresh one-shot nvidia-smi re-initializes NVML each time and can report 0%
+# utilization when persistence mode is off. The chart's retriever
+# (drona_gpu_chart_data.sh) converts this CSV to the JSON the
+# `chart` element expects — see website/docs/environments/live-charts.md.
+#
+# Previous version (one-shot nvidia-smi loop, batch node only, wrote
+# gpu_util.jsonl) is kept as drona_start_gpu_monitor.old.
+#
+# Killed by the job script via `kill "$DRONA_GPU_MONITOR_PID"` once the user's
+# commands finish (that PID is this script, whose srun is its foreground child;
+# see the trap below).
+
+RATE="${1:-10}"
+mkdir -p drona_monitoring || exit 0
+
+# Regular integer only, minimum 10s, so a bad argument can't hammer the GPUs.
+if [[ "$RATE" =~ ^[0-9]+$ ]]; then
+    [ "$RATE" -lt 10 ] && RATE=10
+else
+    RATE=10
+fi
+
+# --gpus-per-task=0 so this step does not consume GPU resources the user's own
+# steps need; --overlap lets it share the allocation with them.
+srun --jobid="$SLURM_JOB_ID" --overlap \
+     --ntasks="$SLURM_NNODES" --ntasks-per-node=1 --gpus-per-task=0 \
+     bash -c "nvidia-smi -i \$CUDA_VISIBLE_DEVICES --query-gpu=timestamp,index,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits -l $RATE >> drona_monitoring/gpu_util_node_\${SLURMD_NODENAME}.csv" &
+SRUN_PID=$!
+
+# When the job script kills this script, take the srun (and its steps) with it.
+trap 'kill "$SRUN_PID" 2>/dev/null' TERM INT EXIT
+wait "$SRUN_PID"

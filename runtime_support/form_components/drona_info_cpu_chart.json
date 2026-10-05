@@ -1,0 +1,48 @@
+{
+  "drona_hidden_cpu_chart_check": {
+    "type": "hidden",
+    "name": "drona_cpu_monitor_active",
+    "label": "CPU Monitor Active",
+    "failureNotice": "CPU monitoring status cannot be updated right now",
+    "isDynamic": true,
+    "condition": "!jobs. && !drona_job_dir.",
+    "refreshInterval": "15",
+    "refreshWhile": "!drona_cpu_monitor_active.ACTIVE && !drona_status.DONE",
+    "retrieverParams": {
+      "JOB_DIR": "$drona_job_dir"
+    },
+    "retriever": "drona_cpu_chart_active.sh"
+  },
+
+  "drona_cpu_chart": {
+    "type": "chart",
+    "name": "drona_cpu_chart",
+    "label": "CPU Utilization",
+    "condition": "!jobs. && drona_cpu_monitor_active.ACTIVE",
+    "retriever": "drona_cpu_chart_data.sh",
+    "retrieverParams": {
+      "JOB_DIR": "$drona_job_dir",
+      "MAX_POINTS": 120
+    },
+    "refreshInterval": 10,
+    "refreshWhile": "!drona_status.DONE",
+    "maxDataPoints": 120,
+    "height": 180,
+    "expandable": true,
+    "expandedHeight": 420,
+    "xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
+    "panels": [
+      {
+        "title": "CPU and Memory Utilization",
+        "chartType": "line",
+        "series": [
+          { "key": "cpu", "label": "CPU (% of allocated cores)" },
+          { "key": "memory", "label": "Memory (% of job limit)" }
+        ],
+        "yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 }
+      }
+    ],
+    "showTable": true,
+    "emptyMessage": "No CPU utilization data yet"
+  }
+}

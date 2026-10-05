@@ -23,7 +23,7 @@ import CheckboxGroup from "./CheckboxGroup";
 import DynamicCheckboxGroup from "./DynamicCheckboxGroup";
 import DynamicViewer from "./DynamicViewer";
 import Container from "./Container";
-import WorkflowActions from "./WorkflowActions";
+import WorkflowRerunRecreate from "./WorkflowRerunRecreate";
 import Chart from "./Chart";
 
 export {
@@ -53,7 +53,7 @@ export {
 	DynamicCheckboxGroup,
 	Container,
 	DynamicViewer,
-	WorkflowActions,
+	WorkflowRerunRecreate,
 	Chart
 }
 
@@ -82,8 +82,7 @@ export const componentsMap = {
 	dynamicCheckboxGroup: DynamicCheckboxGroup,
 	dynamicViewer: DynamicViewer,
 	container: Container,
-	workflowActions: WorkflowActions,
-	workflowRecreateRerun: WorkflowActions,
+	workflowRerunRecreate: WorkflowRerunRecreate,
 	hidden: Hidden,
 	chart: Chart
 

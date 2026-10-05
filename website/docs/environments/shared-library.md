@@ -10,10 +10,12 @@ Every environment lives in its own directory, but most environments need the sam
 runtime_support/
 ├── form_components/    JSON schema fragments, pulled in with $ref
 ├── retriever_scripts/  scripts that supply dynamic form data or live widget HTML
-└── html_templates/     HTML fragments that retriever scripts fill in and return
+├── html_templates/     HTML fragments that retriever scripts fill in and return
+├── map_references/     map.json fragments, pulled in with "$include"
+└── drona_runtime_utils/ Python functions called by the map fragments
 ```
 
-This page explains how the three pieces fit together, the conventions worth following when you add to them, and a few mistakes that are easy to make and hard to spot.
+This page explains how the pieces fit together, the conventions worth following when you add to them, and a few mistakes that are easy to make and hard to spot.
 
 ## Shared form components
 
@@ -41,6 +43,21 @@ Any schema element with `isDynamic: true` (`hidden`, `staticText`, `dynamicSelec
 
 This lookup order is what lets one environment override a shared script — drop a same-named file directly in the environment's directory and it takes priority automatically, no schema change required. The flip side: **if you fix a bug in a shared script and it doesn't seem to take effect for one particular environment, check whether that environment has its own copy of the same name shadowing it.**
 
+## Shared map references
+
+Shared mapping entries live in `runtime_support/map_references/`. A workflow includes them with `"$include": ["drona_cancel_jobs"]` in its `map.json`. See [Map Files](./map#shared-mappings-with-include) for the rules.
+
+The functions these entries call live in `runtime_support/drona_runtime_utils/` and are available to every workflow without being copied into its `utils.py`:
+
+| Fragment | Keys | Function | Form fields it expects |
+|---|---|---|---|
+| `drona_cancel_jobs` | `CANCEL` | `retrieve_cancel_jobs` | `mode`, `drona_cancel_jobs`, `jobs` |
+| `drona_cpu_monitor` | `CPU_MONITOR_START`, `CPU_MONITOR_STOP` | `retrieve_cpu_monitor_start/stop` | `drona_cpu_monitor` |
+| `drona_gpu_monitor` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start/stop` | `drona_gpu`, `drona_gpu_monitor` |
+| `drona_slurm_params` | `DUMMY` | `retrieve_slurm_params` | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
+
+`retrieve_slurm_params` calls `cluster_slurm_checks` from `runtime_support/drona_runtime_utils/clusters/<cluster>.py`, chosen by the cluster name (with `defaultcluster.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the workflow needs no cluster files of its own.
+
 ## Shared HTML templates
 
 Widgets that render live HTML (a `staticText` field with `allowHtml: true`) typically pair a retriever script with a matching file in `html_templates/`. The script reads the template, replaces its `{{PLACEHOLDER}}` tokens, and prints the result — that's what ends up on the page.
@@ -58,7 +75,7 @@ These cost real debugging time when they were first hit, and none of them are ob
 - **`${VAR:=default}` assigns a default; `${VAR=default}` does not.** The version without the colon is a bare parameter expansion — bash treats the result as a command to *execute*, not a value to assign. A script using this to default an `HTML_TEMPLATE` path with the bare form will run with an empty variable and no error, and the widget just renders blank.
 - **HTML-escape anything that isn't hardcoded** before it reaches a template placeholder. Retrieved HTML is rendered with React's `dangerouslySetInnerHTML`, so a job name or line of job output containing `<`, `>`, or `&` gets parsed as markup instead of displayed as text — it just silently disappears rather than erroring.
 - **Don't interpolate a variable into a `sed` substitution command.** `sed -e "s/{{X}}/$VAR/"` breaks the moment `$VAR` contains sed's own delimiter — which happens more often than it sounds, since fallback/error values like the literal string `"N/A"` contain a `/`. Prefer plain bash substitution (`CONTENT="${CONTENT//\{\{X\}\}/$VAR}"`), which treats the replacement as a literal string no matter what it contains.
-- **An unmapped `$param` is passed as `None`, not the literal string `"$paramname"`.** If a `utils.py` function needs to know whether a field simply wasn't part of the submitted form (as opposed to being submitted empty), check `is None` — checking for the literal `"$paramname"` string was the old behavior and will never match.
+- **An unmapped `$param` in a `!func()` call is passed as an empty string `""`, not the literal string `"$paramname"`.** A field that wasn't part of the submitted form (for example, hidden by a `condition`) therefore looks the same as one submitted empty. Older Drona versions passed `None` (and before that the literal `"$paramname"`), so a `utils.py` function that must also run on those versions should accept all three, e.g. `value is None or value == "" or value == "$paramname"`. This applies only to function arguments: an unmapped `$param` elsewhere in a `map.json` value is still left as the literal text.
 
 ## Recipes
 

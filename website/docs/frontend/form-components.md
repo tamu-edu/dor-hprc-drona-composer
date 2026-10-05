@@ -338,6 +338,8 @@ A checkbox group component that allows users to select multiple options from a l
 
 A collapsible container component that organizes form fields in a horizontal row. Features a header with a toggle button to show/hide the content, making complex forms more manageable. Each child element is rendered by the FieldRenderer component in a 100% width layout.
 
+While the container is collapsed, the retrievers of the elements inside it do not run: their first fetch and any `refreshInterval` polling wait until the container is opened, and one refresh follows on opening. This applies to every dynamic element, including those in nested containers. The fields stay part of the form, so their values are kept, validated and submitted as usual. An input that gets its value from its own retriever (for example a `dynamicSelect` without a default `value`) is therefore submitted empty if the container is never opened.
+
 ### Properties
 - `elements - Object of field configuration objects to be rendered in the container` (Object) - 
 - `title="Collapsible Row Container"` (string, optional) - Title displayed in the container header

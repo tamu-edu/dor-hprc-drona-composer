@@ -31,6 +31,7 @@
  * }
  *
  * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Job Resources" }; a CSS object applies to the content area. Unset renders no frame.
+ * @property {string} [alignItems] - Vertical alignment of the columns: "center" (e.g. buttons of different heights), "end", "start"
  * @property {Array} elements - Array of field configuration objects to be rendered in the row
  */
 
@@ -50,13 +51,14 @@ function RowContainer({
   currentValues,
   setError,
   layout,
+  alignItems,
   locationProps = {}
 }) {
   const resolved = useMemo(() => resolveLayout(layout, { only: FRAME_PRESETS }), [layout]);
 
   return (
     <LayoutFrame resolved={resolved}>
-      <div className="form-group row">
+      <div className={`form-group row${alignItems ? ` align-items-${alignItems}` : ""}`}>
         <FieldRenderer
           fields={elements}
           handleValueChange={onChange}

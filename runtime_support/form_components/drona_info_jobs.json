@@ -2,6 +2,7 @@
   "drona_hidden_jobs_check": {
     "type": "hidden",
     "label": "JOB_IDS",
+    "failureNotice": "Job list cannot be updated right now",
     "name": "jobs",
     "refreshInterval": "60",
     "isDynamic": true,

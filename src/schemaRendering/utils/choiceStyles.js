@@ -3,7 +3,7 @@
  * checkboxGroup, dynamicCheckboxGroup).
  *
  * Schema props:
- *  - style:  appearance of each option, a string ("default" | "button")
+ *  - style:  appearance of each option, a string ("default" | "button" | "toggle")
  *  - layout: arrangement/frame of the whole group. A preset name, an object, or an array of those.
  *      "inline" | "list" | "grid" | "boxed" | "card"
  *      { "preset": "boxed", "title": "Running jobs" }   preset with params
@@ -28,6 +28,8 @@ export const CHOICE_THEME = {
 export const APPEARANCES = {
   default: { kind: "input" },
   button: { kind: "button" },
+  // Same look as a checkbox with style "button": check mark / empty box in front of the label
+  toggle: { kind: "toggle" },
 };
 
 export const LAYOUTS = {
@@ -51,6 +53,8 @@ export const LAYOUTS = {
     frame: {
       position: "relative",
       marginTop: "15px",
+      // Adjacent cards' margins collapse (max, not sum), so this is the whole gap between two cards
+      marginBottom: "28px",
       background: "#ffffff",
       border: `1px solid ${CHOICE_THEME.cardBorder}`,
       borderRadius: CHOICE_THEME.cardRadius,
@@ -58,8 +62,19 @@ export const LAYOUTS = {
       boxSizing: "border-box",
       boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
     },
-    params: ["title", "dot"],
+    params: ["title", "dot", "accent", "tint"],
   },
+};
+
+// Optional "accent" on a card: soft maroon tint, maroon left edge and a slightly stronger shadow,
+// for a card that should stand out a bit from the other cards.
+const CARD_ACCENT_FRAME = {
+  background: "linear-gradient(135deg, #fdf8f8 0%, #ffffff 70%)",
+  borderColor: "#d9b8b8",
+  borderLeft: "4px solid #500000",
+  padding: "18px 20px 12px 20px",
+  marginBottom: "28px",
+  boxShadow: "0 3px 10px rgba(80, 0, 0, 0.14)",
 };
 
 const DEFAULT_GRID_MIN_WIDTH = "12rem";
@@ -71,6 +86,7 @@ const EMPTY_LAYOUT = Object.freeze({
   stacked: false,
   title: null,
   dot: false,
+  accent: false,
 });
 
 export function resolveAppearance(style) {
@@ -106,6 +122,12 @@ function applyPreset(acc, name, params, warnedParams, only) {
     acc.title = params.title;
   }
   if (name === "card") acc.dot = params.dot !== false;
+  if (name === "card" && params.accent === true) {
+    // "tint": false keeps the accent border/edge/shadow but leaves the background plain white
+    const { background, ...untinted } = CARD_ACCENT_FRAME;
+    acc.frame = { ...acc.frame, ...(params.tint === false ? untinted : CARD_ACCENT_FRAME) };
+    acc.accent = true;
+  }
   if (name === "grid") {
     const min = typeof params.minWidth === "string" ? params.minWidth : DEFAULT_GRID_MIN_WIDTH;
     acc.inner = { ...acc.inner, gridTemplateColumns: `repeat(auto-fit, minmax(${min}, 1fr))` };
@@ -123,7 +145,7 @@ export function resolveLayout(layout, options = {}) {
   if (layout == null || layout === "") return EMPTY_LAYOUT;
 
   const items = Array.isArray(layout) ? layout : [layout];
-  const acc = { frame: null, box: null, inner: null, stacked: false, title: null, dot: false };
+  const acc = { frame: null, box: null, inner: null, stacked: false, title: null, dot: false, accent: false };
   const warnedParams = [];
 
   for (const item of items) {

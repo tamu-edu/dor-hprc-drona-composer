@@ -1,0 +1,41 @@
+{
+  "drona_slurmUtilizationPanel": {
+    "type": "collapsibleColContainer",
+    "title": "SLURM JOB UTILIZATION",
+    "default_state": "collapsed",
+    "condition": "!allworkflows. && !drona_status. && !jobs. && (drona_status.RUNNING || drona_status.DONE)",
+    "layout": { "preset": "card", "title": "SLURM JOB UTILIZATION" },
+    "elements": {
+      "drona_sstat_usage": {
+        "type": "staticText",
+        "name": "drona_sstat2",
+        "useLabel": false,
+        "condition": "drona_status.RUNNING",
+        "isDynamic": true,
+        "refreshInterval": "60",
+        "showRefreshButton": true,
+        "allowHtml": true,
+        "retrieverParams": {
+          "JOBID": "$jobs",
+          "NODE": "$drona_node"
+        },
+        "retriever": "drona_slurm_sstat.sh",
+        "layout": { "preset": "boxed", "title": "Resource Usage · Job $jobs" }
+      },
+      "drona_seff_usage": {
+        "type": "staticText",
+        "name": "drona_seffsummary",
+        "useLabel": false,
+        "condition": "drona_status.DONE",
+        "isDynamic": true,
+        "showRefreshButton": false,
+        "allowHtml": true,
+        "retrieverParams": {
+          "JOBIDS": "$jobs"
+        },
+        "retriever": "drona_slurm_seff.sh",
+        "layout": { "preset": "boxed", "title": "Job Efficiency (seff)" }
+      }
+    }
+  }
+}

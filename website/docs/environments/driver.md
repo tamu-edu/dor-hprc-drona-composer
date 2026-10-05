@@ -19,6 +19,8 @@ Placeholders in `driver.sh` use square bracket notation:
 
 Every `[KEY]` in the driver template is replaced with the resolved value for that key from `map.json`. The variables available to the driver are the same set used to populate `template.txt` and any additional files — they all share the same evaluated map.
 
+A value can itself contain `[KEY]` placeholders. A common case is `[DRIVER]` in `driver.sh`, whose value is one of several driver files that contain placeholders such as `[MANAGE_DIR]`. These are expanded recursively, and the order of entries in `map.json` does not matter. Text in brackets that is not a map key, such as a shell test `[ -f file ]`, is left unchanged.
+
 ### Built-in Placeholders
 
 Two placeholders are always available regardless of what is defined in `map.json`:

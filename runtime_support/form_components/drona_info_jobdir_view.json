@@ -13,8 +13,7 @@
         "retrieverParams": {
           "JOB_DIR": "$drona_job_dir"
         },
-        "retriever": "drona_info_jobdir_html.sh",
-        "layout": { "preset": "card", "title": "Workflow Directory" }
+        "retriever": "drona_info_jobdir_html.sh"
       }
     }
   }

@@ -9,6 +9,7 @@ Some retrievers don't need a script at all: set `"retriever"` to `"builtin:<name
 | Built-in    | Purpose |
 |-------------|---------|
 | `db_lookup` | Fixed-shape lookup against the `job_history` table (see `db_access/drona_db_retriever.py`), implemented in `db_access/builtin_retrievers.py` |
+| `db_options` | `{value, label}` select options from the `job_history` records of one environment, built from `value`/`label` templates (same file) |
 
 `db_lookup` params:
 
@@ -21,9 +22,12 @@ Some retrievers don't need a script at all: set `"retriever"` to `"builtin:<name
 | `join` | no | join a plucked (`*`) list into one string, e.g. `" "`; requires `key` |
 | `limit` | no | max records, `environment` mode only |
 
-Two of the shared `form_components/` components already use this instead of a script:
+`db_options` params (all optional): `environment` (default: the current environment), `value` (template, default `{drona_id}`), `label` (template, default `{name} (drona_id: {drona_id}) submitted on {start_time:10}`), `limit`, `start_time_after`, `start_time_before`. Templates are literal text with `{field}`, `{field:N}` (first N characters) and, for `runtime_meta`/`env_params`, `{field.dotted.key}` placeholders; see `website/docs/environments/retriever-scripts.md` for the full rules. It returns `[]` when there are no records.
+
+Three of the shared `form_components/` components already use these instead of a script:
 - `drona_info_jobdir.json`: `{"id": "$allworkflows", "field": "location"}` — replaces `drona_info_jobdir.sh`/`.py`
 - `drona_info_jobs.json`: `{"id": "$allworkflows", "field": "runtime_meta", "key": "jobinfo.*.id", "join": " "}` — replaces `drona_info_jobs.sh`
+- `drona_create_manage.json` (the "Select Workflow" dropdown): `builtin:db_options` with no params — replaces `drona_select_wf.sh`/`.py`
 
 Reach for a builtin when a retriever is *only* a fixed-shape `job_history` lookup with no other logic (file reads, HTML templating, Slurm calls). Anything else - including a lookup that also builds HTML, like `drona_slurm_logs.sh` - stays a script; only the pure-lookup piece of it is a builtin candidate.
 
@@ -33,7 +37,7 @@ Selection retrievers populate dropdown menus, checkboxes, and radio groups with 
 
 | Retriever Name                | Purpose                                                                                           |
 |-------------------------------|---------------------------------------------------------------------------------------------------|
-| drona_select_wf.sh            | Queries Drona database for workflows in the current environment, returns JSON with workflow names, drona_ids, and submission dates |
+| drona_select_wf.sh            | Queries Drona database for workflows in the current environment, returns JSON with workflow names, drona_ids, and submission dates. Superseded for the shared `drona_create_manage.json` component by `builtin:db_options` (see above); still usable directly in a custom environment. |
 | drona_select_nodes.sh         | Queries SLURM (squeue/scontrol) for nodes allocated to a job, expands node ranges to individual hostnames (requires JOBID) |
 
 ## Monitoring Retriever Functions

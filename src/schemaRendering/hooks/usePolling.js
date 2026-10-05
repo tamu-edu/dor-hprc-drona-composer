@@ -5,6 +5,8 @@
  *
  * - Pauses while the browser tab is hidden, and catches up with one call when
  *   it becomes visible again (only if it was hidden for at least one interval).
+ * - Pauses while the element sits in a collapsed container, and catches up
+ *   with one call when the container is opened (same rule as for a hidden tab).
  * - Optional `refreshWhile` condition (same syntax as `condition`): polling
  *   only runs while it evaluates true. When it turns false (e.g. the job
  *   finished) one final call is made, so the last state is still picked up.
@@ -17,6 +19,7 @@
 
 import { useContext, useEffect, useRef, useState } from 'react';
 import { FormValuesContext } from '../FormValuesContext';
+import { CollapsedContext } from '../CollapsedContext';
 import { evaluateCondition } from '../utils/conditionEvaluator';
 
 const isDocumentVisible = () =>
@@ -37,7 +40,10 @@ export function usePageVisible() {
 
 export function usePolling(callback, intervalSeconds, { refreshWhile, enabled = true } = {}) {
   const { values: formValues } = useContext(FormValuesContext);
-  const isVisible = usePageVisible();
+  const isCollapsed = useContext(CollapsedContext);
+  const isPageVisible = usePageVisible();
+  // A hidden tab and a collapsed container both mean nobody can see the result
+  const isVisible = isPageVisible && !isCollapsed;
 
   const callbackRef = useRef(callback);
   useEffect(() => {

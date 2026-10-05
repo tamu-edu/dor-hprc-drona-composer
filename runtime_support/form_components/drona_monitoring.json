@@ -1,0 +1,32 @@
+{
+  "drona_monitoringCollapse": {
+    "type": "collapsibleRowContainer",
+    "title": "MONITORING",
+    "default_state": "collapsed",
+    "layout": { "preset": "card", "title": "MONITORING" },
+    "elements": {
+      "drona_monitoringRow": {
+        "type": "rowContainer",
+        "elements": {
+          "drona_cpuMonitorEnable": {
+            "type": "checkbox",
+            "name": "drona_cpu_monitor",
+            "label": "Monitor CPU",
+            "help": "Collect CPU utilization and memory usage in the background (via ps) while the job runs, viewable as a live chart under Manage.",
+            "style": "button",
+            "value": "yes"
+          },
+          "drona_gpuMonitorEnable": {
+            "type": "checkbox",
+            "name": "drona_gpu_monitor",
+            "label": "Monitor GPU",
+            "help": "Collect GPU utilization/memory usage in the background (via nvidia-smi) while the job runs, viewable as a live chart under Manage.",
+            "style": "button",
+            "condition": " !drona_gpu.none && !drona_gpu. ",
+            "value": "yes"
+          }
+        }
+      }
+    }
+  }
+}

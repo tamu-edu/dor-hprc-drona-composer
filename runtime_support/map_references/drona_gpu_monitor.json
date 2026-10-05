@@ -1,0 +1,4 @@
+{
+  "GPU_MONITOR_START": "!retrieve_gpu_monitor_start($drona_gpu, $drona_gpu_monitor)",
+  "GPU_MONITOR_STOP": "!retrieve_gpu_monitor_stop($drona_gpu, $drona_gpu_monitor)"
+}

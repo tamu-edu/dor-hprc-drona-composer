@@ -56,6 +56,42 @@ const ChoiceOption = React.memo(function ChoiceOption({
     );
   }
 
+  if (kind === "toggle") {
+    return (
+      <div
+        className={stacked ? "d-block mb-1" : "d-inline-block mb-1"}
+        style={stacked ? undefined : { marginRight: "0.5rem" }}
+      >
+        <input
+          id={id}
+          type={type}
+          className="btn-check"
+          value={option.value}
+          name={name}
+          checked={checked}
+          onChange={onChange}
+          autoComplete="off"
+          style={HIDDEN_INPUT_STYLE}
+        />
+        <label
+          className="btn"
+          htmlFor={id}
+          style={{
+            marginBottom: 0,
+            cursor: "pointer",
+            border: "2px solid #500000",
+            color: checked ? "#ffffff" : "#500000",
+            backgroundColor: checked ? "#500000" : "#ffffff",
+            fontWeight: checked ? 600 : 400,
+            transition: "background-color .15s, color .15s",
+          }}
+        >
+          {checked ? "\u2713 " : "\u2610 "}{label}
+        </label>
+      </div>
+    );
+  }
+
   return (
     <div className={stacked ? "form-check" : "form-check form-check-inline"}>
       <input

@@ -149,21 +149,26 @@
  * @property {Object} [yAxis] - `{label, min, max}`
  * @property {boolean} [stacked=false] - Stack series (bar/area only)
  * @property {number} [height=300] - Chart height in pixels. Applies per-panel when `panels`/`seriesPerPanel` is used, unless a `panels` entry overrides it.
+ * @property {boolean} [expandable=false] - Show an "Expand" button that opens the chart(s) in a large popup
+ *   (panels stacked full-width, `expandedHeight` per panel). Pair with a small `height` for a compact inline view.
+ * @property {number} [expandedHeight=400] - Per-panel chart height in pixels inside the expanded popup
  * @property {boolean} [showLegend=true] - Show legend when there are 2+ series in a given pane
  * @property {boolean} [showGrid=true] - Show gridlines
  * @property {boolean} [showTable=false] - Show a "view as table" toggle below the chart (accessibility fallback). With `panels`/`seriesPerPanel`, one combined table covers every series across all panels.
  * @property {string} [emptyMessage="No data yet"] - Message shown before the first sample arrives
  * @property {Array<Object>} [panels] - Explicit, manual panel split from one shared poll:
- *   `{title, series, seriesLabelMap, colors, chartType, yAxis, stacked, showLegend, showGrid, height}`
+ *   `{title, series, seriesMatch, seriesLabelMap, colors, chartType, yAxis, stacked, showLegend, showGrid, height}`
  *   per panel. `series` is required per panel (usually an explicit `{key,label,color}` array,
  *   since the point is hand-grouping known keys by meaning). Omitted per-panel options fall back
- *   to the top-level prop of the same name. Takes precedence over `seriesPerPanel` if both are set.
+ *   to the top-level prop of the same name. With `series: "auto"`, `seriesMatch` (a regex string
+ *   tested against each key) restricts the panel to matching keys, e.g. to split `gpu0` from `gpu0_mem`. Takes precedence over `seriesPerPanel` if both are set.
  * @property {number} [seriesPerPanel] - Automatic split: chunks the series derived from the
  *   top-level `series` prop (auto or explicit) into groups of this size, one panel per group, in
  *   first-seen order. Panel count adjusts as new keys appear in the data. Ignored if `panels` is set.
  */
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import ReactDOM from "react-dom";
 import {
   LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -209,7 +214,8 @@ const TIME_FORMATTERS = {
  * Derive the ordered list of series to render from the buffer, assigning stable
  * colors to newly-seen keys and reusing colors already assigned to known keys.
  */
-export function deriveSeries({ seriesProp, buffer, xKey, seriesLabelMap, colors, seenOrderRef }) {
+export function deriveSeries({ seriesProp, buffer, xKey, seriesLabelMap, colors, seenOrderRef, seriesMatch }) {
+  const matcher = seriesMatch ? new RegExp(seriesMatch) : null;
   if (Array.isArray(seriesProp)) {
     return seriesProp.map((s, i) => ({
       key: s.key,
@@ -224,7 +230,7 @@ export function deriveSeries({ seriesProp, buffer, xKey, seriesLabelMap, colors,
   const seen = seenOrderRef.current;
   for (const sample of buffer) {
     for (const key of Object.keys(sample)) {
-      if (key === xKey || seen.has(key)) continue;
+      if (key === xKey || seen.has(key) || (matcher && !matcher.test(key))) continue;
       seen.set(key, seen.size);
     }
   }
@@ -375,6 +381,45 @@ function ChartPanel({ instance, buffer, xKey, xAxisLabel, xTickFormatter }) {
   );
 }
 
+// Full-screen overlay (self-contained, independent of Bootstrap's modal JS). Closes on
+// backdrop click or Escape.
+function ExpandedOverlay({ title, onClose, children }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return ReactDOM.createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.5)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: "24px",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff", borderRadius: "6px", width: "100%", maxWidth: "1200px",
+          maxHeight: "100%", overflowY: "auto", padding: "16px 20px",
+        }}
+      >
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h5 className="mb-0">{title}</h5>
+          <button type="button" className="close" aria-label="Close" onClick={onClose}>
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function Chart(props) {
   const {
     chartType = "line",
@@ -393,6 +438,8 @@ function Chart(props) {
     refreshInterval,
     panels,
     seriesPerPanel,
+    expandable = false,
+    expandedHeight = 400,
   } = props;
 
   const xKey = xAxis.key || "timestamp";
@@ -400,6 +447,8 @@ function Chart(props) {
 
   const [buffer, setBuffer] = useState([]);
   const [showDataTable, setShowDataTable] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const closeExpanded = useCallback(() => setExpanded(false), []);
   const seenOrderRef = useRef(new Map());
 
   const { data, isLoading, isEvaluated, error, refreshError, lastSuccessAt, refetch } = useRetriever({
@@ -452,6 +501,7 @@ function Chart(props) {
           buffer,
           xKey,
           seriesLabelMap: p.seriesLabelMap,
+          seriesMatch: p.seriesMatch,
           colors: p.colors || colors,
           seenOrderRef: { current: new Map() },
         }))
@@ -509,6 +559,35 @@ function Chart(props) {
 
   const hasData = buffer.length > 0;
 
+  // Charts at their configured height, or at `heightOverride` (popup). In the popup,
+  // panels stack full-width instead of sitting side by side.
+  const renderCharts = (heightOverride, stack = false) => {
+    if (!isPanelMode) {
+      const h = heightOverride ?? instances[0].height;
+      return (
+        <div className="position-relative" style={{ height: `${h}px` }}>
+          <ResponsiveContainer width="100%" height="100%">
+            {renderChartBody({ ...instances[0], buffer, xKey, xAxisLabel: xAxis.label, xTickFormatter })}
+          </ResponsiveContainer>
+        </div>
+      );
+    }
+    return (
+      <div className="d-flex flex-wrap" style={{ gap: "16px", flexDirection: stack ? "column" : undefined }}>
+        {instances.map((instance, i) => (
+          <ChartPanel
+            key={instance.title || i}
+            instance={heightOverride ? { ...instance, height: heightOverride } : instance}
+            buffer={buffer}
+            xKey={xKey}
+            xAxisLabel={xAxis.label}
+            xTickFormatter={xTickFormatter}
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <FormElementWrapper
       labelOnTop={props.labelOnTop}
@@ -535,27 +614,20 @@ function Chart(props) {
         </div>
       )}
 
-      {hasData && !isPanelMode && (
-        <div className="position-relative" style={{ height: `${instances[0].height}px` }}>
-          <ResponsiveContainer width="100%" height="100%">
-            {renderChartBody({ ...instances[0], buffer, xKey, xAxisLabel: xAxis.label, xTickFormatter })}
-          </ResponsiveContainer>
+      {hasData && expandable && (
+        <div className="text-right mb-1">
+          <button type="button" className="btn btn-link btn-sm p-0" onClick={() => setExpanded(true)}>
+            &#x26F6; Expand
+          </button>
         </div>
       )}
 
-      {hasData && isPanelMode && (
-        <div className="d-flex flex-wrap" style={{ gap: "16px" }}>
-          {instances.map((instance, i) => (
-            <ChartPanel
-              key={instance.title || i}
-              instance={instance}
-              buffer={buffer}
-              xKey={xKey}
-              xAxisLabel={xAxis.label}
-              xTickFormatter={xTickFormatter}
-            />
-          ))}
-        </div>
+      {hasData && renderCharts()}
+
+      {expanded && hasData && (
+        <ExpandedOverlay title={props.label || props.name} onClose={closeExpanded}>
+          {renderCharts(expandedHeight, true)}
+        </ExpandedOverlay>
       )}
 
       {error && (

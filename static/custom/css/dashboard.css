@@ -223,3 +223,12 @@ footer {
   position: relative;
   z-index: 1;
 }
+
+/* Tighter vertical spacing between schema form elements (Bootstrap default is 1rem) */
+.drona-schema-form {
+  --drona-form-spacing: 0.7rem;
+}
+
+.drona-schema-form .form-group {
+  margin-bottom: var(--drona-form-spacing);
+}
