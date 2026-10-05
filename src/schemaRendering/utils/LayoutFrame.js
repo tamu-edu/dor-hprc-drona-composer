@@ -39,6 +39,15 @@ const CARD_TITLE_STYLE = {
   borderRadius: "999px",
 };
 
+const ACCENT_TITLE_STYLE = {
+  borderColor: "#500000",
+  color: "#ffffff",
+  background: "#500000",
+};
+
+// Accent cards are compact: form groups inside get a smaller bottom margin than the default 1rem.
+const ACCENT_CSS = ".choice-card-accent .form-group { margin-bottom: 0.75rem; }";
+
 const LIVE_DOT_STYLE = {
   width: "6px",
   height: "6px",
@@ -108,9 +117,14 @@ function LayoutFrame({ resolved, title: titleProp, collapse, children }) {
     return (
       <div
         style={frameStyle}
-        className={collapsed ? "choice-card-collapsed" : undefined}
+        className={
+          [collapsed && "choice-card-collapsed", resolved.accent && "choice-card-accent"]
+            .filter(Boolean)
+            .join(" ") || undefined
+        }
         onClick={collapse ? onFrameClick : undefined}
       >
+        {resolved.accent && <style>{ACCENT_CSS}</style>}
         {title && collapse ? (
           <>
             <style>{TOGGLE_CSS}</style>
@@ -129,7 +143,7 @@ function LayoutFrame({ resolved, title: titleProp, collapse, children }) {
           </>
         ) : (
           title && (
-            <div style={CARD_TITLE_STYLE}>
+            <div style={resolved.accent ? { ...CARD_TITLE_STYLE, ...ACCENT_TITLE_STYLE } : CARD_TITLE_STYLE}>
               {resolved.dot && (
                 <>
                   <style>{LIVE_DOT_KEYFRAMES}</style>

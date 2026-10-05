@@ -1,10 +1,10 @@
 {
   "drona_slurmUtilizationPanel": {
     "type": "collapsibleColContainer",
-    "title": "Slurm Job Utilization",
+    "title": "SLURM JOB UTILIZATION",
     "default_state": "collapsed",
     "condition": "!allworkflows. && !drona_status. && !jobs. && (drona_status.RUNNING || drona_status.DONE)",
-    "layout": { "preset": "card", "title": "Slurm Job Utilization" },
+    "layout": { "preset": "card", "title": "SLURM JOB UTILIZATION" },
     "elements": {
       "drona_sstat_usage": {
         "type": "staticText",

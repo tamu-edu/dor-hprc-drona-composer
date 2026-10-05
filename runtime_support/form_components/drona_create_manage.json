@@ -11,12 +11,14 @@
   "drona_ManageCreateContainer" : {
     "type" : "rowContainer",
     "condition": "configured.CONFIGURED",
+    "layout": { "preset": "card", "title": "Select Workflow Mode", "dot": false, "accent": true },
     "elements" : {
 
       "drona_mode" : {
         "type": "radioGroup",
         "style": "button",
         "label": "Mode",
+        "useLabel": false,
         "name": "mode",
         "condition": "configured.CONFIGURED",
         "options": [
@@ -28,6 +30,7 @@
       "drona_envSelect": {
         "type": "dynamicSelect",
         "label": "Select Workflow",
+        "labelOnTop": false,
         "name": "allworkflows",
         "condition": "mode.manage",
         "retriever": "builtin:db_options"

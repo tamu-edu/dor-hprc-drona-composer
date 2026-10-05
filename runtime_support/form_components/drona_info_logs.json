@@ -1,7 +1,7 @@
 {
   "drona_logCollapse": {
     "type": "collapsibleRowContainer",
-    "title": "Output/Error logs",
+    "title": "OUTPUT/ERROR LOGS",
     "condition": " !jobs.",
     "default_state": "collapsed",
     "elements": {

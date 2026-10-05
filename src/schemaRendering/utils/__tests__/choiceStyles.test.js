@@ -19,7 +19,21 @@ describe('resolveAppearance', () => {
 describe('resolveLayout', () => {
   test('empty layout resolves to no frame', () => {
     const r = resolveLayout(undefined);
-    expect(r).toEqual({ frame: null, box: null, inner: null, stacked: false, title: null, dot: false });
+    expect(r).toEqual({ frame: null, box: null, inner: null, stacked: false, title: null, dot: false, accent: false });
+  });
+  test('card accent adds the maroon edge; tint:false drops only the background', () => {
+    const plain = resolveLayout({ preset: 'card' });
+    expect(plain.accent).toBe(false);
+    expect(plain.frame.borderLeft).toBeUndefined();
+
+    const accent = resolveLayout({ preset: 'card', accent: true });
+    expect(accent.accent).toBe(true);
+    expect(accent.frame.borderLeft).toBe('4px solid #500000');
+    expect(accent.frame.background).toContain('linear-gradient');
+
+    const untinted = resolveLayout({ preset: 'card', accent: true, tint: false });
+    expect(untinted.frame.borderLeft).toBe('4px solid #500000');
+    expect(untinted.frame.background).toBe('#ffffff');
   });
   test('inline is a no-op', () => {
     expect(resolveLayout('inline').stacked).toBe(false);

@@ -17,6 +17,8 @@
  * @property {string} [label] - Display label for the field
  * @property {string} [value="Yes"] - Value to return when the checkbox is checked (defaults to "Yes")
  * @property {string} [help] - Help text displayed below the input
+ * @property {string} [align] - "button" style only: "right" pushes the button to the right edge of its column
+ * @property {boolean} [compact] - "button" style only: removes the bottom margin, for lining up with other elements in a row
  * @property {string} [style] - "button": renders as a toggle button (white with a maroon outline when off, filled maroon with a check mark when on); the help text becomes its tooltip. Unset keeps the plain checkbox.
  */
 
@@ -45,7 +47,13 @@ function Checkbox(props) {
     // FieldRenderer passes no id, so derive one; the label needs it to reach the hidden input.
     const inputId = props.id || `${props.name}-checkbox`;
     return (
-      <div className="form-group">
+      <div
+        className="form-group"
+        style={{
+          ...(props.align && { display: "flex", justifyContent: props.align === "right" ? "flex-end" : "flex-start" }),
+          ...(props.compact && { marginBottom: 0 }),
+        }}
+      >
         <input
           type="checkbox"
           className="btn-check"

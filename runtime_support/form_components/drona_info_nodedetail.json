@@ -2,7 +2,7 @@
   "drona_utilization_detail_section": {
     "type": "collapsibleRowContainer",
     "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
-    "title": "Resource Utilization",
+    "title": "RESOURCE UTILIZATION",
     "elements": {
       "drona_nodeSelect": {
         "type": "dynamicSelect",

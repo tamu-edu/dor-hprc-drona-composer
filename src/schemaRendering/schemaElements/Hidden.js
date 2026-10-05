@@ -29,12 +29,17 @@
  * browser tab is hidden; a poll is skipped if the previous one is still running.
  * @property {string} [refreshWhile] - Condition (same syntax as `condition`); periodic refresh only
  * runs while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
+ * @property {string} [failureNotice] - Text of a small inline warning shown while the retriever is
+ * failing (e.g. "Job status cannot be updated right now"), with the age of the last good value when
+ * there is one. Setting it replaces the global error alert for this element: failures are only
+ * logged, the last good value is kept, and the next poll clears the warning.
  * @property {function} [setError] - Function to handle errors during script execution
  */
 
 import React, { useEffect, useRef, useContext, useMemo } from "react";
 import { FormValuesContext } from "../FormValuesContext";
 import { useRetriever, usePolling } from "../hooks";
+import { formatAge } from "../utils/retrieverFailures";
 
 function Hidden(props) {
   const { updateValue } = useContext(FormValuesContext);
@@ -51,6 +56,9 @@ function Hidden(props) {
   const {
     data: dynamicData,
     isEvaluated,
+    error,
+    refreshError,
+    lastSuccessAt,
     refetch,
   } = useRetriever({
     retrieverPath,
@@ -59,7 +67,7 @@ function Hidden(props) {
     parseJSON: false, // Hidden typically returns raw text
     isShown: true, // Always shown (it's hidden but active)
     fetchOnMount: !!retrieverPath,
-    onError: props.setError,
+    onError: props.failureNotice ? undefined : props.setError,
   });
 
   // Determine the current value
@@ -96,8 +104,25 @@ function Hidden(props) {
     refreshWhile: props.refreshWhile,
   });
 
-  // Return input of type hidden so that it can be parse and map in map.json
-  return <input type="hidden" name={props.name} value={value} />; 
+  const failure = props.failureNotice ? refreshError || error : null;
+
+  // The input of type hidden is what gets parsed and mapped in map.json
+  return (
+    <>
+      <input type="hidden" name={props.name} value={value} />
+      {failure && (
+        <div
+          className="text-warning mt-1"
+          style={{ fontSize: "0.8em" }}
+          title={failure.message}
+          role="status"
+        >
+          ⚠ {props.failureNotice}
+          {lastSuccessAt ? `, showing status from ${formatAge(lastSuccessAt)}` : ""}
+        </div>
+      )}
+    </>
+  ); 
 }
 
 export default Hidden;

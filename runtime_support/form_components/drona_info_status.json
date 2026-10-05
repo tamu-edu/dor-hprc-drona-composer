@@ -3,6 +3,7 @@
     "type": "hidden",
     "name": "drona_status",
     "label": "Status",
+    "failureNotice": "Job status cannot be updated right now",
     "isDynamic": true,
     "condition": "!jobs.",
     "refreshInterval": "27",

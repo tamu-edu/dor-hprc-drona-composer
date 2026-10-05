@@ -37,7 +37,7 @@ function normalizeValue(value) {
   return "";
 }
 
-export default function WorkflowActions(props) {
+export default function WorkflowRerunRecreate(props) {
   const { values: formValues } = useContext(FormValuesContext);
 
   const [records, setRecords] = useState([]);
@@ -119,7 +119,7 @@ export default function WorkflowActions(props) {
     typeof props.handleForm === "function";
 
   return (
-    <div className="mt-3 mb-3">
+    <div className={props.compact ? "" : "mt-3 mb-3"}>
       {error && (
         <div className="alert alert-danger mb-3">
           {error}

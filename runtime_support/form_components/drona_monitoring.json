@@ -1,9 +1,9 @@
 {
   "drona_monitoringCollapse": {
     "type": "collapsibleRowContainer",
-    "title": "Monitoring",
+    "title": "MONITORING",
     "default_state": "collapsed",
-    "layout": { "preset": "card", "title": "Monitoring" },
+    "layout": { "preset": "card", "title": "MONITORING" },
     "elements": {
       "drona_monitoringRow": {
         "type": "rowContainer",

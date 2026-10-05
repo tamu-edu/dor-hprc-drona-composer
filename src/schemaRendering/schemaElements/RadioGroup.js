@@ -53,6 +53,7 @@ function RadioGroup(props) {
       name={props.name}
       label={props.label}
       help={props.help}
+      useLabel={props.useLabel}
     >
       <ChoiceOptions
         type="radio"
