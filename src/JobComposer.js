@@ -377,6 +377,8 @@ function JobComposer({
                                   locationPickedByUser={props.locationPickedByUser}
                                   handleRerun={props.handleRerun}
                                   handleForm={props.handleForm}
+                                  pendingValues={props.pendingValues}
+                                  onPendingApplied={props.onPendingApplied}
                                 />
                                 <div className="composer-actions" >
                                   <div className="invisible">

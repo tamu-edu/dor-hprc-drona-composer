@@ -16,6 +16,7 @@ export function App() {
   // "configured" check) never re-run and can end up in a value that
   // matches none of the schema's conditions, blanking the whole form.
   const [envInstanceId, setEnvInstanceId] = useState(0);
+  const [pendingValues, setPendingValues] = useState(null);
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
   const [messages, setMessages] = useState([]);
@@ -700,6 +701,8 @@ export function App() {
           setError={setError}
           environment={environment}
           envInstanceId={envInstanceId}
+          pendingValues={pendingValues}
+          onPendingApplied={() => setPendingValues(null)}
           environments={environments}
           fields={fields}
           runLocation={runLocation}

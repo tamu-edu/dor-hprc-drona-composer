@@ -22,7 +22,7 @@ Some retrievers don't need a script at all: set `"retriever"` to `"builtin:<name
 | `join` | no | join a plucked (`*`) list into one string, e.g. `" "`; requires `key` |
 | `limit` | no | max records, `environment` mode only |
 
-`db_options` params (all optional): `environment` (default: the current environment), `value` (template, default `{drona_id}`), `label` (template, default `{name} (drona_id: {drona_id}) submitted on {start_time:10}`), `limit`, `start_time_after`, `start_time_before`. Templates are literal text with `{field}`, `{field:N}` (first N characters) and, for `runtime_meta`/`env_params`, `{field.dotted.key}` placeholders; see `website/docs/environments/retriever-scripts.md` for the full rules. It returns `[]` when there are no records.
+`db_options` params (all optional): `environment` (default: the current environment), `value` (template, default `{drona_id}`), `label` (template, default `{name} (drona_id: {drona_id}) submitted on {start_time:10}`), `limit`, `start_time_after`, `start_time_before`. Templates are literal text with `{field}`, `{field:N}` (first N characters) and, for `runtime_meta`/`env_params`, `{field.dotted.key}` placeholders; see `website/docs/environments/retriever-scripts.md` for the full rules. It returns `[]` when there are no records. With an optional `columns` param (an ordered `{header: template}` object, any number of entries) it instead returns `{"columns": [headers], "rows": [{value, label: [cell, ...]}]}`, the table form read by `dynamicTable`; script retrievers can return the same shape.
 
 Three of the shared `form_components/` components already use these instead of a script:
 - `drona_info_jobdir.json`: `{"id": "$allworkflows", "field": "location"}` — replaces `drona_info_jobdir.sh`/`.py`

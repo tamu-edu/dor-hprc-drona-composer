@@ -38,7 +38,7 @@ function normalizeValue(value) {
 }
 
 export default function WorkflowRerunRecreate(props) {
-  const { values: formValues } = useContext(FormValuesContext);
+  const { values: formValues, updateValue } = useContext(FormValuesContext);
 
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -118,6 +118,29 @@ export default function WorkflowRerunRecreate(props) {
     Boolean(selectedRecord) &&
     typeof props.handleForm === "function";
 
+  async function deleteWorkflow() {
+    const label = selectedRecord?.name ? `"${selectedRecord.name}" (${selectedId})` : selectedId;
+    if (!window.confirm(`Delete workflow ${label} from the Drona database? The working directory is not deleted.`)) {
+      return;
+    }
+    try {
+      const response = await fetch(
+        `${document.dashboard_url}/jobs/composer/history/${selectedId}`,
+        { method: "DELETE", credentials: "same-origin" }
+      );
+      if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
+      setRecords((list) => list.filter((row) => getRecordId(row) !== selectedId));
+      updateValue?.(workflowField, "");
+      // lets dynamicSelect/dynamicTable lists reload
+      window.dispatchEvent(new CustomEvent("drona-refresh-options"));
+    } catch (err) {
+      setError(err?.message || "Failed to delete workflow");
+    }
+  }
+
+  const envName = selectedRecord?.runtime || "";
+  const envHref = `${window.location.pathname}?environment=${encodeURIComponent(envName)}`;
+
   return (
     <div className={props.compact ? "" : "mt-3 mb-3"}>
       {error && (
@@ -147,7 +170,29 @@ export default function WorkflowRerunRecreate(props) {
         >
           Recreate
         </button>
+
+        {props.showDelete && (
+          <button
+            type="button"
+            className="btn btn-outline-danger"
+            style={{ marginLeft: "auto" }}
+            disabled={!selectedId || isLoading}
+            onClick={deleteWorkflow}
+          >
+            Delete Workflow
+          </button>
+        )}
       </div>
+
+      {props.showDisclaimer && selectedRecord && (
+        <div className="alert alert-info mt-3 mb-0 text-center" role="note">
+          To see the full monitoring panel, open the{" "}
+          <a href={envHref}><strong>{envName || "environment"}</strong></a>{" "}
+          environment, select <strong>Manage</strong> and pick workflow{" "}
+          <strong>{selectedId}</strong>.
+          <div className="mt-1"><em>NOTE: Not all environments include a monitoring panel.</em></div>
+        </div>
+      )}
     </div>
   );
 }

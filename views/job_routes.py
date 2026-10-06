@@ -205,6 +205,13 @@ def get_job_from_history_route(job_id):
 
     return jsonify(job_data)
 
+def delete_job_from_history_route(job_id):
+    """Delete a workflow's record from the database. The working directory is left alone."""
+    from runtime_support.db_access.drona_db_retriever import delete_record
+    if not delete_record(str(job_id)):
+        return jsonify({'error': 'Workflow not found'}), 404
+    return jsonify({'deleted': str(job_id)})
+
 def register_job_routes(blueprint, socketio_instance=None):
     """Register all job-related routes to the blueprint and initialize socketio"""
     global socketio
@@ -215,3 +222,4 @@ def register_job_routes(blueprint, socketio_instance=None):
     blueprint.route('/preview', methods=['POST'])(preview_job_route)
     blueprint.route('/history', methods=['GET'])(get_history_route)
     blueprint.route('/history/<int:job_id>', methods=['GET'])(get_job_from_history_route)
+    blueprint.route('/history/<int:job_id>', methods=['DELETE'])(delete_job_from_history_route)

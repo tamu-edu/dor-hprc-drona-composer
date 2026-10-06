@@ -19,6 +19,7 @@
 - Automatic generation of all necessary job files
 - Editable preview of generated scripts before submission
 - Environment system for defining and sharing job templates
+- Workflow History environment for browsing, rerunning and deleting the workflows of all environments
 - Import feature for researchers to add new environments to their local storage
 - Built with React frontend and Flask backend
 

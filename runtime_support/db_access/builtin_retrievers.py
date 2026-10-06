@@ -20,7 +20,7 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from .drona_db_retriever import get_record, list_records_by_env
+from .drona_db_retriever import get_record, list_all_records, list_records_by_env
 
 
 class BuiltinRetrieverError(ValueError):
@@ -179,6 +179,9 @@ def db_lookup(params: Dict[str, Any]) -> Any:
 # db_options
 # ---------------------------------------------------------------------------
 
+# environment param value that selects the records of every environment
+ALL_ENVIRONMENTS = "*"
+
 DEFAULT_OPTION_VALUE = "{drona_id}"
 DEFAULT_OPTION_LABEL = "{name} (drona_id: {drona_id}) submitted on {start_time:10}"
 
@@ -275,17 +278,23 @@ def db_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
     """
     Select options built from the job_history records of one environment,
     newest first. Returns a list of {"value": ..., "label": ...} (the shape
-    dynamicSelect and friends expect); [] when the environment has no records.
+    dynamicSelect and friends expect), or the table form when `columns` is set; [] when the environment has no records.
 
     Params:
       environment (str, optional) - defaults to DRONA_ENV_NAME, which the
                                      frontend sends with every retriever call.
+                                     "*" selects the records of all environments.
       value (str, optional)  - template for each option's value.
                                 Default "{drona_id}".
       label (str, optional)  - template for each option's label. Default
                                 "{name} (drona_id: {drona_id}) submitted on
                                 {start_time:10}".
       limit (int, optional)  - keep only the newest N records.
+      columns (object, optional) - ordered {header: template}; any number of
+                             columns. Changes the result to
+                             {"columns": [headers], "rows": [{value, label:
+                             [cell, ...]}]} for dynamicTable, e.g.
+                             {"Name": "{name}", "Date": "{start_time:10}"}.
       start_time_after / start_time_before (str, optional)
                              - only records with start_time >= after / < before
                                 (compared as strings, e.g. "2026-09-01").
@@ -302,6 +311,7 @@ def db_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
     environment = params.get("environment") or params.get("DRONA_ENV_NAME")
     if not environment:
         raise BuiltinRetrieverError("'environment' is required (or DRONA_ENV_NAME must be set)")
+    all_environments = environment == ALL_ENVIRONMENTS
 
     value_parts = _parse_template(params.get("value") or DEFAULT_OPTION_VALUE, "value")
     label_parts = _parse_template(params.get("label") or DEFAULT_OPTION_LABEL, "label")
@@ -316,18 +326,37 @@ def db_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
         if limit_int < 1:
             raise BuiltinRetrieverError(f"'limit' must be at least 1, got {limit_int}")
 
-    records = list_records_by_env(
-        str(environment),
+    # Table columns (for dynamicTable): "columns" is an ordered {header: template}
+    # object. Any number of columns; the headers come from the keys.
+    columns = params.get("columns")
+    column_defs = []
+    if columns not in (None, ""):
+        if not isinstance(columns, dict) or not columns:
+            raise BuiltinRetrieverError("'columns' must be a non-empty object of {header: template}")
+        for i, (header, tpl) in enumerate(columns.items()):
+            column_defs.append((str(header), _parse_template(tpl, f"columns[{header}]")))
+
+    query = dict(
         limit=limit_int,
         start_time_after=_bound(params, "start_time_after"),
         start_time_before=_bound(params, "start_time_before"),
     )
+    if all_environments:
+        records = list_all_records(**query)
+    else:
+        records = list_records_by_env(str(environment), **query)
 
     options = []
     for record in records:
         value = _render(value_parts, record)
         if value:
-            options.append({"value": value, "label": _render(label_parts, record)})
+            if column_defs:
+                # table form: label is the list of cell values, one per column
+                options.append({"value": value, "label": [_render(parts, record) for _, parts in column_defs]})
+            else:
+                options.append({"value": value, "label": _render(label_parts, record)})
+    if column_defs:
+        return {"columns": [header for header, _ in column_defs], "rows": options}
     return options
 
 
