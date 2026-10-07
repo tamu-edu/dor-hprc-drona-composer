@@ -36,7 +36,7 @@ const FieldRenderer = ({
       );
     }
 
-    if (type === "dynamicSelect") {
+    if (type === "dynamicSelect" || type === "dynamicTable") {
       attributes.isShown = true;
     }
 

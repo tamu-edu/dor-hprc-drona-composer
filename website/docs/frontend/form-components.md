@@ -601,6 +601,68 @@ A dropdown select component that dynamically loads its options from a retriever 
 
 ---
 
+## DynamicTable
+
+A table that works like a `dynamicSelect`: its rows come from a retriever script, and clicking a row selects it. The selected value is the row's `value` (with its `label`), so conditions, `$field` references and restored workflows behave exactly as with `dynamicSelect`. Rows can be searched and sorted, which makes it a better fit than a dropdown when each option has several attributes. Like `dynamicSelect` rows are `{ value, label }`, but `label` may be a list with one cell per column, and the retriever may send the column headers along.
+
+### Properties
+- `name - Input field name, used for form submission` (string) - 
+- `label` (string, optional) - Display label for the field
+- `retriever - Path to the script that retrieves the rows` (string) - 
+- `retrieverParams` (Object, optional) - Parameters passed to the script as environment variables, values with $ prefix will be replaced with form values
+- `columns` (Array, optional) - Header names or objects `{ title?, align?: "left"|"right", sortable?: boolean (default true), width?, html?: boolean }`. When the retriever returns `columns` these refine them by position; otherwise they define the columns (legacy form: objects with `key` read that row key).
+- `value` (Object, optional) - Default/initial selected row (object with value and label)
+- `options` (Array, optional) - Initial rows, may be overridden by retriever
+- `searchable=true` (boolean, optional) - Show a search box that filters rows across all columns
+- `searchPlaceholder` (string, optional) - Placeholder text for the search box
+- `maxHeight="300px"` (string, optional) - Height at which the table body starts scrolling
+- `layout` (string|Object|Array, optional) - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Workflows" }; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
+- `useLabel=true` (boolean, optional) - false hides the label row (handy with `layout`, which has its own title)
+- `showRefreshButton=false` (boolean, optional) - Show a button next to the search box that re-fetches the rows
+- `collapseOnSelect=false` (boolean, optional) - After the user clicks a row, fold the table into a one-line summary of the selected row with a "Expand" button that brings the table back. Restored values do not collapse the table.
+- `pagination=false` (boolean, optional) - Use pages instead of scrolling
+- `emptyMessage="No options available"` (string, optional) - Text shown when there are no rows
+- `help` (string, optional) - Help text displayed below the table
+- `refreshInterval` (number, optional) - Re-fetch the rows every this many seconds. Omit/0 to fetch only when shown and when a `$field` in `retrieverParams` changes. Paused while the browser tab is hidden; a failed poll keeps the current rows.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); polling only runs while it is true, with one final fetch when it turns false
+
+### Examples
+#### Example 1
+```json
+// Retriever output: header names plus rows of { value, label: [one cell per column] }.
+// The number of columns is whatever the script returns; cells may be strings, numbers, null.
+{
+"columns": ["Name", "State", "Elapsed"],
+"rows": [
+{ "value": "123", "label": ["sim1", "RUNNING", "1:02"] },
+{ "value": "124", "label": ["sim2", "PENDING", null] }
+]
+}
+// Clicking a row sets the field to { value: "123", label: ["sim1", "RUNNING", "1:02"] }
+```
+
+#### Example 2
+```json
+// Schema: columns entries refine the retrieved headers by position (widths, alignment, ...)
+{
+"type": "dynamicTable",
+"name": "job",
+"retriever": "retrievers/my_jobs.sh",
+"columns": [{ "width": "40%" }, {}, { "align": "right" }],
+"maxHeight": "250px"
+}
+```
+
+#### Example 3
+```json
+// Legacy form: array of { value, label, ...extra keys }; every key except `value` is a column
+// retriever output: [{"value":"123","label":"sim1","state":"RUNNING"}]
+```
+
+*Source: `src/schemaRendering/schemaElements/DynamicTable.js`*
+
+---
+
 ## DynamicViewer
 
 A sandboxed iframe-based viewer component that can load external CDN libraries and execute custom initialization code. Supports dynamic data fetching via retriever scripts.

@@ -22,7 +22,7 @@ Some retrievers don't need a script at all: set `"retriever"` to `"builtin:<name
 | `join` | no | join a plucked (`*`) list into one string, e.g. `" "`; requires `key` |
 | `limit` | no | max records, `environment` mode only |
 
-`db_options` params (all optional): `environment` (default: the current environment), `value` (template, default `{drona_id}`), `label` (template, default `{name} (drona_id: {drona_id}) submitted on {start_time:10}`), `limit`, `start_time_after`, `start_time_before`. Templates are literal text with `{field}`, `{field:N}` (first N characters) and, for `runtime_meta`/`env_params`, `{field.dotted.key}` placeholders; see `website/docs/environments/retriever-scripts.md` for the full rules. It returns `[]` when there are no records.
+`db_options` params (all optional): `environment` (default: the current environment), `value` (template, default `{drona_id}`), `label` (template, default `{name} (drona_id: {drona_id}) submitted on {start_time:10}`), `limit`, `start_time_after`, `start_time_before`. Templates are literal text with `{field}`, `{field:N}` (first N characters) and, for `runtime_meta`/`env_params`, `{field.dotted.key}` placeholders; see `website/docs/environments/retriever-scripts.md` for the full rules. It returns `[]` when there are no records. With an optional `columns` param (an ordered `{header: template}` object, any number of entries) it instead returns `{"columns": [headers], "rows": [{value, label: [cell, ...]}]}`, the table form read by `dynamicTable`; script retrievers can return the same shape.
 
 Three of the shared `form_components/` components already use these instead of a script:
 - `drona_info_jobdir.json`: `{"id": "$allworkflows", "field": "location"}` — replaces `drona_info_jobdir.sh`/`.py`
@@ -51,6 +51,7 @@ Monitoring retrievers generate formatted HTML displays for real-time job and sys
 | drona_slurm_sstat.sh          | Runs sstat to fetch real-time statistics (MaxRSS, AveRSS, MaxVM, CPU time, disk I/O) for running jobs, injects values into HTML template (requires JOBID) |
 | drona_slurm_nodeutil.sh       | Uses srun to query per-node CPU usage (ps) and memory consumption (RSS), displays each node as HTML card with progress bars (requires JOBID) |
 | drona_slurm_cgroups.sh        | Reads cgroup filesystem data via srun (memory usage/limits, CPU time, throttling, cpuset, PIDs) for a job on specific node (requires JOBID, NODE) |
+| drona_slurm_processes.sh     | Lists the user's processes on one node (PID, command, CPU%, MEM%, RSS, elapsed) as an HTML table via srun --overlap (or ssh when JOBID is unset) (requires NODE, optional JOBID) |
 | drona_slurm_seff.sh           | Runs seff command to generate post-job CPU and memory efficiency percentages, displays color-coded HTML table (green/yellow/red based on >70%, >30%, else) (requires JOBIDS array) |
 
 ## Metadata Retriever Functions

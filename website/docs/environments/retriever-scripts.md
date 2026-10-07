@@ -214,9 +214,10 @@ Select options built from the `job_history` records of one environment, newest f
 
 | Param | Required | Description |
 |-------|----------|--------------|
-| `environment` | no | environment name; defaults to the current environment (`DRONA_ENV_NAME`, sent with every retriever call) |
+| `environment` | no | environment name; defaults to the current environment (`DRONA_ENV_NAME`, sent with every retriever call). `"*"` lists the records of all environments |
 | `value` | no | template for each option's value. Default `{drona_id}` |
 | `label` | no | template for each option's label. Default `{name} (drona_id: {drona_id}) submitted on {start_time:10}` |
+| `columns` | no | table form for [`dynamicTable`](../frontend/form-components#dynamictable): an ordered `{header: template}` object with any number of entries. Changes the result shape, see below |
 | `limit` | no | keep only the newest N records. There is no "show more"; older records are not listed |
 | `start_time_after`, `start_time_before` | no | only records with `start_time` at or after / before this value, compared as text, e.g. `2026-09-01` |
 
@@ -228,6 +229,19 @@ Templates are literal text with `{placeholders}`:
 - Anything else (unknown column, attribute access, a malformed placeholder, a template over 500 characters) is rejected with a 400, even if there are no records.
 
 Templates are not Python format strings and cannot compute anything. A label that needs logic (conditional text, a duration from two timestamps) needs a script.
+
+With `columns` set, the result is the table form instead of a plain list: the headers come from the object keys, and each row's `label` is the list of rendered cells, one per column. Clicking a row gives the field `value` (the workflow id) and that list as its `label`:
+
+```json
+{
+  "columns": ["Name", "ID", "Date"],
+  "rows": [
+    { "value": "123", "label": ["sim1", "123", "2026-10-01"] }
+  ]
+}
+```
+
+A script retriever can return the same shape to feed a `dynamicTable`; cells may be strings, numbers, booleans or `null`.
 
 A value template that does not start with `$` is sent as is. A `$` at the start of a param is read as a reference to a form field, so don't begin a template with one.
 
@@ -242,6 +256,29 @@ A value template that does not start with `$` is sent as is. A `$` at the start 
       "label": "{name} ({status}) - {start_time:16}",
       "limit": 30
     }
+  }
+}
+```
+
+A table of every workflow in the database, with a column per attribute:
+
+```json
+{
+  "workflowTable": {
+    "type": "dynamicTable",
+    "name": "allworkflows",
+    "label": "Workflows",
+    "retriever": "builtin:db_options",
+    "retrieverParams": {
+      "environment": "*",
+      "columns": {
+        "Environment": "{environment}",
+        "Name": "{name}",
+        "Workflow ID": "{drona_id}",
+        "Date": "{start_time:10}"
+      }
+    },
+    "pagination": true
   }
 }
 ```
@@ -270,6 +307,7 @@ Monitoring retrievers generate formatted HTML displays for real-time job and sys
 | `drona_slurm_sstat.sh` | Real-time statistics such as CPU time, disk I/O, MaxRSS, MaxVM |
 | `drona_slurm_nodeutil.sh` | Per-node CPU usage and memory consumption with progress bars |
 | `drona_slurm_cgroups.sh` | Cgroup data such as memory limits, CPU time, throttling, cpuset, PIDs |
+| `drona_slurm_processes.sh` | User's processes on one node with CPU%, MEM%, RSS and elapsed time |
 | `drona_slurm_seff.sh` | Post-job CPU and memory efficiency information |
 
 ### Metadata Retrievers

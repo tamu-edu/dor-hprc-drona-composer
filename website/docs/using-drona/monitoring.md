@@ -100,6 +100,25 @@ This view is particularly useful for catching **inter-node load imbalance**. A c
 
 ---
 
+## Workflow History
+
+The **WorkflowHistory** environment gives one place to browse every workflow recorded in the Drona database, across all environments. Select it like any other environment.
+
+- **Table.** Each row is a workflow, with columns for environment, name, workflow ID, date and location. The table can be searched, sorted by any column and paged.
+- **After you click a row** the page shows the workflow's **Slurm panel** (when it has recorded Slurm job ids), its **working directory**, and a **Workflow Actions** panel.
+- **Workflow Actions.** **Rerun** and **Recreate** work as in Manage mode and open the workflow in its own environment. **Delete Workflow** removes the workflow's record from the database after a confirmation. The working directory is not deleted.
+- **Full monitoring panel.** WorkflowHistory shows only a summary. A notice under the actions links to the workflow's environment; open it, select **Manage** and pick the workflow to see the full monitoring panel. Not all environments include one.
+
+The environment is built from shared components and needs no driver. Its schema is a [`dynamicTable`](../frontend/form-components#dynamictable) fed by [`builtin:db_options`](../environments/retriever-scripts#builtindb_options) with `environment: "*"`, plus the shared job and status checks and the `workflowRerunRecreate` element. That element takes three options:
+
+| Option | Description |
+|---|---|
+| `workflowField` | name of the field holding the selected workflow id (default `allworkflows`) |
+| `showDelete` | show the **Delete Workflow** button, which calls `DELETE /jobs/composer/history/<id>` |
+| `showDisclaimer` | show the notice that links to the workflow's environment |
+
+---
+
 ## Post-Completion Monitoring
 
 For completed jobs, Drona surfaces a **Job Efficiency** summary using the `seff` command. This provides:

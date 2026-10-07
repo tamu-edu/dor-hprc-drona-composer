@@ -12,6 +12,7 @@ import Module from "./Module";
 import Unit from "./Unit";
 import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
+import DynamicTable from "./DynamicTable";
 import TextArea from "./TextArea";
 import StaticText from "./StaticText";
 import Hidden from "./Hidden";
@@ -40,6 +41,7 @@ export {
 	Unit,
 	UnknownElement,
 	DynamicSelect,
+	DynamicTable,
 	TextArea,
 	StaticText,
 	Hidden,
@@ -70,6 +72,7 @@ export const componentsMap = {
 	module: Module,
 	unit: Unit,
 	dynamicSelect: DynamicSelect,
+	dynamicTable: DynamicTable,
 	textarea: TextArea,
 	staticText: StaticText,
 	autocompleteSelect: AutocompleteSelect,

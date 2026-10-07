@@ -1,0 +1,27 @@
+<div id="dc-procs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+    <style>
+        #dc-procs {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-divider: #f1f5f9;
+            color: var(--dc-text);
+        }
+        #dc-procs .dc-node-label { font-size: 11px; color: var(--dc-text-muted); margin-bottom: 8px; text-align: right; }
+        #dc-procs table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        #dc-procs th { text-align: left; color: var(--dc-text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 1px solid var(--dc-divider); }
+        #dc-procs td { padding: 4px 8px; border-bottom: 1px solid var(--dc-divider); font-family: 'JetBrains Mono', monospace; }
+        #dc-procs .num { text-align: right; }
+        #dc-procs th.num { text-align: right; }
+        #dc-procs .empty { text-align: center; color: var(--dc-text-muted); font-family: inherit; padding: 12px; }
+        #dc-procs .dc-footer { margin-top: 10px; font-size: 11px; color: var(--dc-text-muted); }
+    </style>
+
+    <div class="dc-node-label">Node: {{NODE_NAME}}</div>
+    <div style="max-height: 260px; overflow-y: auto;">
+        <table>
+            <thead><tr><th>PID</th><th>Command</th><th class="num">CPU</th><th class="num">MEM</th><th class="num">RSS</th><th class="num">Elapsed</th></tr></thead>
+            <tbody>{{PROC_ROWS}}</tbody>
+        </table>
+    </div>
+    <div class="dc-footer">{{PROC_COUNT}} processes · {{TOTAL_CPU}}% CPU · {{TOTAL_MEM}} MB RSS total</div>
+</div>
