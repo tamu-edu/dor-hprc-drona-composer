@@ -219,6 +219,9 @@ function DynamicTable(props) {
   }, [collapsed]);
 
   const showSummary = collapsed && !!value && !isValueInvalid;
+  // When the selected row is available, the collapsed view keeps the header and shows only that row
+  const selectedRow = showSummary ? rows.find(row => row.value === value.value) : undefined;
+  const showHeaderSummary = showSummary && !!selectedRow;
 
   const conditionalRowStyles = [
     {
@@ -243,7 +246,7 @@ function DynamicTable(props) {
     >
       <LayoutFrame resolved={resolvedLayout}>
       <div style={{ width: "100%" }}>
-        {showSummary && (
+        {showSummary && !showHeaderSummary && (
           <div
             className="d-flex align-items-center"
             style={{
@@ -259,6 +262,18 @@ function DynamicTable(props) {
             <span className="text-truncate flex-grow-1" title={labelText(value.label)} style={{ fontWeight: 600 }}>
               {labelText(value.label)}
             </span>
+            <button
+              type="button"
+              ref={changeButtonRef}
+              className="btn btn-sm btn-primary maroon-button"
+              onClick={expand}
+            >
+              Expand
+            </button>
+          </div>
+        )}
+        {showHeaderSummary && (
+          <div className="d-flex justify-content-end mb-2">
             <button
               type="button"
               ref={changeButtonRef}
@@ -300,7 +315,7 @@ function DynamicTable(props) {
             )}
           </div>
         )}
-        {!showSummary && <div
+        {(!showSummary || showHeaderSummary) && <div
           style={{
             border: isValueInvalid ? "1px solid #dc3545" : "1px solid #dee2e6",
             borderRadius: "4px",
@@ -311,19 +326,19 @@ function DynamicTable(props) {
         >
           <DataTable
             columns={columns}
-            data={visibleRows}
+            data={showHeaderSummary ? [selectedRow] : visibleRows}
             customStyles={compactTableStyles}
             conditionalRowStyles={conditionalRowStyles}
-            onRowClicked={handleRowClicked}
-            highlightOnHover
+            onRowClicked={showHeaderSummary ? undefined : handleRowClicked}
+            highlightOnHover={!showHeaderSummary}
             sortIcon={
               <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style={{ marginLeft: "4px" }}>
                 <path d="M6 9L2 5h8L6 9z" />
               </svg>
             }
-            fixedHeader={!props.pagination}
+            fixedHeader={!props.pagination && !showHeaderSummary}
             fixedHeaderScrollHeight={props.maxHeight || "300px"}
-            pagination={!!props.pagination}
+            pagination={!!props.pagination && !showHeaderSummary}
             progressPending={showLoading}
             noDataComponent={<div className="p-3 text-muted">{emptyMessage}</div>}
           />

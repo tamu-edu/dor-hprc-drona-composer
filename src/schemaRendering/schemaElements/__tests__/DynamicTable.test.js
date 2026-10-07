@@ -103,6 +103,8 @@ describe('DynamicTable Component', () => {
     expect(screen.queryByLabelText('Search table')).not.toBeInTheDocument();
     expect(screen.queryByText('sim-one')).not.toBeInTheDocument();
     expect(screen.getByText('sim-two')).toBeInTheDocument();
+    expect(document.querySelectorAll('[role="columnheader"]').length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('[role="row"]').length).toBe(2);
     expect(document.querySelector('input[name="job"]').value).toBe('j2');
     fireEvent.click(screen.getByText('Expand'));
     expect(screen.getByLabelText('Search table')).toBeInTheDocument();

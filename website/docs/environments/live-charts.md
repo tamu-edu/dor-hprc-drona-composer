@@ -88,6 +88,7 @@ this on every successful poll:
    retriever's stdout.
 2. If the result is an array, it becomes the new buffer (sliced to `maxDataPoints`).
    If it's a single object, it's appended to the existing buffer (then sliced).
+   (With [zoom](#zooming-enablezoom) on, the buffer is not sliced.)
 3. The buffer — an array of flat sample objects — is passed **directly** as
    Recharts' `data` prop: `<LineChart data={buffer}>`.
 4. One `<Line>` / `<Bar>` / `<Area>` is rendered per series, each pointing at one key
@@ -98,6 +99,67 @@ this on every successful poll:
 
 This is why the sample shape matters: it's not an intermediate format that gets
 transformed before use, it's (almost) exactly what Recharts consumes.
+
+## Zooming (`enableZoom`)
+
+Live views show a rolling window of the last `maxDataPoints` samples. For a finished
+run you usually want the whole history, and the ability to zoom into a spike. `enableZoom`
+adds that, and is **off by default** — charts without it behave exactly as described above.
+
+| Property | Description |
+|---|---|
+| `enableZoom` | `true` (always on) or a condition string with the same syntax as `refreshWhile`, e.g. `"drona_status.DONE"`. Zoom turns on once the condition is true. |
+| `zoomRetrieverParams` | Params merged over `retrieverParams` for the fetch made when zoom turns on, e.g. `{"MAX_POINTS": 0}`. |
+
+```json
+{
+  "type": "chart",
+  "name": "cpu_chart",
+  "retriever": "drona_cpu_chart_data.sh",
+  "retrieverParams": { "JOB_DIR": "$drona_job_dir", "MAX_POINTS": 120 },
+  "refreshInterval": 10,
+  "refreshWhile": "!drona_status.DONE",
+  "maxDataPoints": 120,
+  "enableZoom": "drona_status.DONE",
+  "zoomRetrieverParams": { "MAX_POINTS": 0 }
+}
+```
+
+**Live and zoom never overlap.** While `enableZoom` is false the chart polls and keeps
+its rolling window; there are no zoom controls. The moment it turns true:
+
+1. Polling stops.
+2. The chart makes **one** fetch with `zoomRetrieverParams` merged over `retrieverParams`.
+   The retriever returns the full data set in that single response.
+3. The chart keeps every returned point (`maxDataPoints` no longer applies).
+
+The environment creator decides what "finished" means, so the same property works for
+a job-state check, a training run ending, or `true` for a chart whose data is static.
+
+**Using it.** Drag across a chart to select a range; all panels of a multi-panel chart
+zoom together. A "Zoomed: … Reset zoom" line appears above the chart, and double-clicking
+the chart also resets. Zoom needs a numeric x-axis (timestamps, epochs, step counts) and
+applies to line, area and bar charts — pie charts are never zoomable. With `showTable`,
+the table lists the visible range (at most the last 1000 rows).
+
+**Downsampling.** A chart a few hundred pixels wide cannot show 20,000 points, and
+drawing them makes the page slow. When the visible range holds more than ~800 rows, the
+chart splits it into consecutive buckets and keeps, per bucket, the first and last row
+plus each series' minimum and maximum row. Short spikes are therefore never averaged
+away. The full data stays in the browser, and downsampling is redone for the visible
+range, so zooming in reveals progressively finer detail until every row is drawn.
+
+**Retriever support.** The retriever must be able to return everything when asked.
+The built-in `drona_cpu_chart_data.sh` and `drona_gpu_chart_data.sh` treat
+`MAX_POINTS=0` as "all samples". Without `zoomRetrieverParams`, zoom still works but only
+over what the retriever already returns (typically the tail). The full response is one
+JSON document: roughly 1–2 MB for a 48-hour job sampled every 10 s.
+
+**Array vs. single-object retrievers.** Zoom is designed for the array (tail) shape,
+where the zoom fetch replaces the tail with the full history. A retriever that returns a
+single object has no history to return: the zoom fetch appends one more sample and zoom
+covers only what the browser accumulated (up to `maxDataPoints`). Don't set
+`zoomRetrieverParams` for those.
 
 ## Dynamic series (`series: "auto"`)
 
