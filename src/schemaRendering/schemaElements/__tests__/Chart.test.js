@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, act, within } from '@testing-library/react';
-import Chart, { formatAutoLabel, deriveSeries, buildPieData, chunkSeries } from '../Chart';
+import Chart, { formatAutoLabel, deriveSeries, buildPieData, chunkSeries, getZoomView } from '../Chart';
 import { FormValuesContext } from '../../FormValuesContext';
 
 // Mock FormElementWrapper
@@ -373,5 +373,71 @@ describe('Chart component — seriesPerPanel (auto)', () => {
     const table = screen.getByRole('table');
     expect(within(table).getByText('Gpu 0')).toBeInTheDocument();
     expect(within(table).getByText('Gpu 3')).toBeInTheDocument();
+  });
+});
+
+describe('getZoomView', () => {
+  const rows = Array.from({ length: 1000 }, (_, i) => ({ t: i, v: i === 500 ? 999 : i % 10 }));
+
+  test('returns the buffer untouched when it is small enough', () => {
+    expect(getZoomView(rows.slice(0, 50), 't', ['v'], null)).toHaveLength(50);
+  });
+
+  test('restricts rows to the x domain', () => {
+    const view = getZoomView(rows, 't', ['v'], [100, 199], 800);
+    expect(view).toHaveLength(100);
+    expect(view[0].t).toBe(100);
+    expect(view[99].t).toBe(199);
+  });
+
+  test('downsamples large data but keeps spikes and the endpoints', () => {
+    const view = getZoomView(rows, 't', ['v'], null, 100);
+    expect(view.length).toBeLessThan(rows.length);
+    expect(view.length).toBeLessThanOrEqual(200);
+    expect(view.some((r) => r.v === 999)).toBe(true);
+    expect(view[0].t).toBe(0);
+    expect(view[view.length - 1].t).toBe(999);
+    expect(view.map((r) => r.t)).toEqual([...view.map((r) => r.t)].sort((a, b) => a - b));
+  });
+
+  test('ignores missing and non-numeric values when picking min/max', () => {
+    const sparse = Array.from({ length: 300 }, (_, i) => ({ t: i, v: i % 2 ? null : 'N/A' }));
+    expect(() => getZoomView(sparse, 't', ['v'], null, 50)).not.toThrow();
+  });
+});
+
+describe('Chart component — zoom', () => {
+  const many = Array.from({ length: 12 }, (_, i) => ({ t: i, gpu0: i }));
+
+  test('does not offer zoom unless enableZoom is set', async () => {
+    mockFetchOnce(many);
+    renderChart(<Chart {...defaultProps} xAxis={{ key: 't' }} />);
+    await waitFor(() => expect(document.querySelector('svg')).toBeInTheDocument());
+    expect(screen.queryByText('Drag on a chart to zoom')).not.toBeInTheDocument();
+  });
+
+  test('offers zoom and keeps every point (no maxDataPoints cap) when enableZoom is true', async () => {
+    mockFetchOnce(many);
+    renderChart(<Chart {...defaultProps} xAxis={{ key: 't' }} maxDataPoints={5} enableZoom showTable />);
+    expect(await screen.findByText('Drag on a chart to zoom')).toBeInTheDocument();
+
+    await act(async () => { screen.getByText('View data as table').click(); });
+    expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(many.length + 1);
+  });
+
+  test('does not poll while zoom is enabled', async () => {
+    mockFetchOnce(many);
+    renderChart(<Chart {...defaultProps} xAxis={{ key: 't' }} refreshInterval={1} enableZoom />);
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+    await new Promise((r) => setTimeout(r, 1500));
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  test('without enableZoom the rolling window still caps the buffer', async () => {
+    mockFetchOnce(many);
+    renderChart(<Chart {...defaultProps} xAxis={{ key: 't' }} maxDataPoints={5} showTable />);
+    const toggle = await screen.findByText('View data as table');
+    await act(async () => { toggle.click(); });
+    expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(6);
   });
 });
