@@ -51,6 +51,7 @@ Monitoring retrievers generate formatted HTML displays for real-time job and sys
 | drona_slurm_sstat.sh          | Runs sstat to fetch real-time statistics (MaxRSS, AveRSS, MaxVM, CPU time, disk I/O) for running jobs, injects values into HTML template (requires JOBID) |
 | drona_slurm_nodeutil.sh       | Uses srun to query per-node CPU usage (ps) and memory consumption (RSS), displays each node as HTML card with progress bars (requires JOBID) |
 | drona_slurm_cgroups.sh        | Reads cgroup filesystem data via srun (memory usage/limits, CPU time, throttling, cpuset, PIDs) for a job on specific node (requires JOBID, NODE) |
+| drona_slurm_processes.sh     | Lists the user's processes on one node (PID, command, CPU%, MEM%, RSS, elapsed) as an HTML table via srun --overlap (or ssh when JOBID is unset) (requires NODE, optional JOBID) |
 | drona_slurm_seff.sh           | Runs seff command to generate post-job CPU and memory efficiency percentages, displays color-coded HTML table (green/yellow/red based on >70%, >30%, else) (requires JOBIDS array) |
 
 ## Metadata Retriever Functions

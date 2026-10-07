@@ -1,0 +1,34 @@
+{
+  "drona_processes_section": {
+    "type": "collapsibleRowContainer",
+    "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
+    "title": "PROCESSES",
+    "elements": {
+      "drona_procNodeSelect": {
+        "type": "dynamicSelect",
+        "label": "pick node to inspect",
+        "name": "drona_proc_node",
+        "retriever": "drona_select_nodes.sh",
+        "retrieverParams": {
+          "JOBID": "$jobs"
+        }
+      },
+      "drona_process_table": {
+        "type": "staticText",
+        "name": "drona_processtable",
+        "condition": "!drona_proc_node.",
+        "label": "",
+        "isDynamic": true,
+        "retrieverParams": {
+          "JOBID": "$jobs",
+          "NODE": "$drona_proc_node"
+        },
+        "retriever": "drona_slurm_processes.sh",
+        "layout": { "preset": "card", "title": "Processes · $drona_proc_node" },
+        "refreshInterval": "60",
+        "showRefreshButton": true,
+        "allowHtml": true
+      }
+    }
+  }
+}

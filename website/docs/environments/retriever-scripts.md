@@ -307,6 +307,7 @@ Monitoring retrievers generate formatted HTML displays for real-time job and sys
 | `drona_slurm_sstat.sh` | Real-time statistics such as CPU time, disk I/O, MaxRSS, MaxVM |
 | `drona_slurm_nodeutil.sh` | Per-node CPU usage and memory consumption with progress bars |
 | `drona_slurm_cgroups.sh` | Cgroup data such as memory limits, CPU time, throttling, cpuset, PIDs |
+| `drona_slurm_processes.sh` | User's processes on one node with CPU%, MEM%, RSS and elapsed time |
 | `drona_slurm_seff.sh` | Post-job CPU and memory efficiency information |
 
 ### Metadata Retrievers
