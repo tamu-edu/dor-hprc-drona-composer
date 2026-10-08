@@ -46,7 +46,7 @@
  * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Workflows" }; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
  * @property {boolean} [useLabel=true] - false hides the label row (handy with `layout`, which has its own title)
  * @property {boolean} [showRefreshButton=false] - Show a button next to the search box that re-fetches the rows
- * @property {boolean} [collapseOnSelect=false] - After the user clicks a row, fold the table into a one-line summary of the selected row with a "Expand" button that brings the table back. Restored values do not collapse the table.
+ * @property {boolean} [collapseOnSelect=false] - After the user clicks a row, fold the table down to its header row plus the selected row (a one-line summary if that row is not loaded) with a back-arrow button that brings the table back. Restored values do not collapse the table.
  * @property {boolean} [pagination=false] - Use pages instead of scrolling
  * @property {string} [emptyMessage="No options available"] - Text shown when there are no rows
  * @property {string} [help] - Help text displayed below the table
@@ -86,7 +86,7 @@ const ROW_EVENTS = { "data-tag": "allowRowEvents" };
 function DynamicTable(props) {
   const [value, setValue] = useState(props.value || "");
   const [search, setSearch] = useState("");
-  // With `collapseOnSelect` the table folds into a summary bar after the user clicks a row
+  // With `collapseOnSelect` the table folds down to the selected row after the user clicks a row
   const [collapsed, setCollapsed] = useState(false);
   const changeButtonRef = useRef(null);
   const searchRef = useRef(null);
@@ -267,8 +267,12 @@ function DynamicTable(props) {
               ref={changeButtonRef}
               className="btn btn-sm btn-primary maroon-button"
               onClick={expand}
+              title="Back to table"
+              aria-label="Back to table"
             >
-              Expand
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style={{ verticalAlign: "text-bottom" }}>
+                <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+              </svg>
             </button>
           </div>
         )}
@@ -279,8 +283,12 @@ function DynamicTable(props) {
               ref={changeButtonRef}
               className="btn btn-sm btn-primary maroon-button"
               onClick={expand}
+              title="Back to table"
+              aria-label="Back to table"
             >
-              Expand
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style={{ verticalAlign: "text-bottom" }}>
+                <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+              </svg>
             </button>
           </div>
         )}

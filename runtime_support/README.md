@@ -32,7 +32,7 @@ This file explains how the three fit together and lists the conventions that are
 This is why an environment can have its own `drona_slurm_seff.sh` that takes priority over the shared one, without anything needing to know which copy is actually running — but it also means **a shared script's bugs are invisible in any environment that happens to have a local override masking them**, and only show up in environments that don't. Check both when debugging.
 
 **Rendering the result.** What the retriever's stdout becomes depends on the element:
-- `Hidden` → a form value used by `condition` strings elsewhere in the schema (e.g. `configured.CONFIGURED`). Must be plain text, trimmed and compared as-is.
+- `Hidden` → a form value used by `condition` strings elsewhere in the schema (e.g. `drona_create_manage_configured.CONFIGURED`). Must be plain text, trimmed and compared as-is.
 - `StaticText` with `allowHtml: true` → rendered with `dangerouslySetInnerHTML`. This is the "live widget" pattern: the script loads a matching file from `html_templates/`, fills in `{{PLACEHOLDER}}` tokens, and prints the result.
 - Selection elements (`DynamicSelect`, etc.) → a JSON array of `{"label": ..., "value": ...}`.
 
@@ -50,7 +50,7 @@ A fragment in `map_references/` is evaluated like any entry in `map.json` (same 
 
 | Fragment (`map_references/`) | Keys | Function (`drona_runtime_utils/`) | Form fields it expects |
 |---|---|---|---|
-| `drona_cancel_jobs.json` | `CANCEL` | `retrieve_cancel_jobs` (`cancel.py`) | `mode`, `drona_cancel_jobs`, `jobs` |
+| `drona_cancel_jobs.json` | `CANCEL` | `retrieve_cancel_jobs` (`cancel.py`) | `drona_create_manage_mode`, `drona_cancel_jobs`, `drona_info_jobs` |
 | `drona_cpu_monitor.json` | `CPU_MONITOR_START`, `CPU_MONITOR_STOP` | `retrieve_cpu_monitor_start/stop` (`monitoring.py`) | `drona_cpu_monitor` |
 | `drona_gpu_monitor.json` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start/stop` (`monitoring.py`) | `drona_gpu`, `drona_gpu_monitor` |
 | `drona_slurm_params.json` | `DUMMY` | `retrieve_slurm_params` (`slurm.py`) | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |

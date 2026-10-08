@@ -1,7 +1,7 @@
 {
   "drona_utilization_detail_section": {
     "type": "collapsibleRowContainer",
-    "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
+    "condition": "!drona_create_manage_allworkflows. &&  !drona_status. && drona_status.RUNNING && !drona_info_jobs. ",
     "title": "RESOURCE UTILIZATION",
     "elements": {
       "drona_nodeSelect": {
@@ -10,7 +10,7 @@
         "name": "drona_node",
         "retriever": "drona_select_nodes.sh",
         "retrieverParams": {
-          "JOBID": "$jobs"
+          "JOBID": "$drona_info_jobs"
         }
       },
       "drona_top_table": {
@@ -20,11 +20,11 @@
         "label": "",
         "isDynamic": true,
         "retrieverParams": {
-          "JOBID": "$jobs",
+          "JOBID": "$drona_info_jobs",
           "NODE": "$drona_node"
         },
         "retriever": "drona_slurm_cgroups.sh",
-        "layout": { "preset": "card", "title": "System Monitor · Job $jobs" },
+        "layout": { "preset": "card", "title": "System Monitor · Job $drona_info_jobs" },
         "refreshInterval": "120",
         "showRefreshButton": false,
         "allowHtml": true

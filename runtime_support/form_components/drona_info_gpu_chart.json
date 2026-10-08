@@ -5,7 +5,7 @@
     "label": "GPU Monitor Active",
     "failureNotice": "GPU monitoring status cannot be updated right now",
     "isDynamic": true,
-    "condition": "!jobs. && !drona_job_dir.",
+    "condition": "!drona_info_jobs. && !drona_job_dir.",
     "refreshInterval": "15",
     "refreshWhile": "!drona_gpu_monitor_active.ACTIVE && !drona_status.DONE",
     "retrieverParams": {
@@ -18,7 +18,7 @@
     "type": "chart",
     "name": "drona_gpu_chart",
     "label": "GPU Utilization",
-    "condition": "!jobs. && drona_gpu_monitor_active.ACTIVE",
+    "condition": "!drona_info_jobs. && drona_gpu_monitor_active.ACTIVE",
     "retriever": "drona_gpu_chart_data.sh",
     "retrieverParams": {
       "JOB_DIR": "$drona_job_dir",

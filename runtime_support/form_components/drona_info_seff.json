@@ -1,7 +1,7 @@
 {
   "drona_job_summary_section": {
     "type": "rowContainer",
-    "condition": "!allworkflows. && !drona_status. && drona_status.DONE && !jobs.",
+    "condition": "!drona_create_manage_allworkflows. && !drona_status. && drona_status.DONE && !drona_info_jobs.",
     "elements": {
       "drona_seff_summary": {
         "type": "staticText",
@@ -9,7 +9,7 @@
         "useLabel": false,
         "isDynamic": true,
         "retrieverParams": {
-          "JOBIDS": "$jobs"
+          "JOBIDS": "$drona_info_jobs"
         },
         "retriever": "drona_slurm_seff.sh",
         "showRefreshButton": false,

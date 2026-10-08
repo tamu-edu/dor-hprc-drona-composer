@@ -145,7 +145,7 @@ def db_lookup(params: Dict[str, Any]) -> Any:
     if join is not None and not key:
         raise BuiltinRetrieverError("'join' requires 'key' (it joins a plucked list)")
     if "id" in params and not drona_id and not environment:
-        # id mode with an unresolved reference (e.g. $allworkflows before a
+        # id mode with an unresolved reference (e.g. $drona_create_manage_allworkflows before a
         # workflow is picked in manage mode): empty data, not malformed params.
         return "" if join is not None else None
     if bool(drona_id) == bool(environment):

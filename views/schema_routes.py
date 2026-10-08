@@ -228,17 +228,22 @@ def execute_builtin(retriever_path, params):
                                time.monotonic() - start, params, str(e))
         raise APIError(str(e), status_code=400, details={'builtin': name, 'params': params})
 
-def _runtime_dir_loader(uri, **kwargs):
+def _make_schema_loader(env_dir):
     """
-    jsonref's default loader for local/remote files does not know about our
-    $DRONA_RUNTIME_DIR placeholder, so any file it follows a $ref into (e.g.
-    schemas/create.schema.json) would see the literal, unsubstituted string.
-    Substitute it here too, so $DRONA_RUNTIME_DIR refs work at any nesting depth.
+    Build the loader jsonref uses for every file a $ref points at (local or remote).
+    Its default loader does not know our placeholders, so any file it follows a $ref into
+    (e.g. schemas/create.schema.json, or a shared form component) would see them
+    unsubstituted. Substituting here makes them work at any nesting depth:
+      $DRONA_RUNTIME_DIR - the fixed runtime_support directory
+      $DRONA_ENV_DIR     - the environment being loaded, so shared components can point at
+                           its fixed layout, e.g. $DRONA_ENV_DIR/schemas/create.schema.json
     """
-    with urlopen(uri) as content:
-        raw = content.read().decode("utf-8")
-    raw = Template(raw).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir())
-    return json.loads(raw, **kwargs)
+    def loader(uri, **kwargs):
+        with urlopen(uri) as content:
+            raw = content.read().decode("utf-8")
+        raw = Template(raw).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir(), DRONA_ENV_DIR=env_dir)
+        return json.loads(raw, **kwargs)
+    return loader
 
 def convert_jsonref_to_dict(obj):
     """
@@ -285,9 +290,9 @@ def get_schema_route(environment):
         abs_path = os.path.abspath(base_path)
         base_uri = f'file:///{abs_path.lstrip("/").replace(os.sep, "/")}/'
         # Allows $ref targets to point at the fixed runtime_support directory via e.g.
-        # "$ref": "$DRONA_RUNTIME_DIR/foo.json#/defs/bar"
-        schema_data = Template(schema_data).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir())
-        jsonref_result = jsonref.loads(schema_data, base_uri=base_uri, proxies=True, loader=_runtime_dir_loader)
+        # "$ref": "$DRONA_RUNTIME_DIR/foo.json#/defs/bar" (or $DRONA_ENV_DIR/... for the environment's own files)
+        schema_data = Template(schema_data).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir(), DRONA_ENV_DIR=abs_path)
+        jsonref_result = jsonref.loads(schema_data, base_uri=base_uri, proxies=True, loader=_make_schema_loader(abs_path))
         
         schema_dict = convert_jsonref_to_dict(jsonref_result)
         

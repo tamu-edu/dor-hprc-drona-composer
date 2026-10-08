@@ -5,11 +5,11 @@
     "label": "Status",
     "failureNotice": "Job status cannot be updated right now",
     "isDynamic": true,
-    "condition": "!jobs.",
+    "condition": "!drona_info_jobs.",
     "refreshInterval": "27",
     "refreshWhile": "!drona_status.DONE",
     "retrieverParams": {
-      "JOBID": "$jobs"
+      "JOBID": "$drona_info_jobs"
     },
     "retriever": "drona_info_slurmstatus.sh"
   }
