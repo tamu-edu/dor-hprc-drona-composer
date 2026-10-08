@@ -1,0 +1,20 @@
+{
+  "drona_utilizationPanel": {
+    "type": "collapsibleColContainer",
+    "title": "UTILIZATION PANEL",
+    "default_state": "collapsed",
+    "condition": "!drona_info_jobs. && (drona_gpu_monitor_active.ACTIVE || drona_cpu_monitor_active.ACTIVE)",
+    "layout": {
+      "preset": "card",
+      "title": "UTILIZATION PANEL"
+    },
+    "elements": {
+      "drona_gpuUtilizationChart": {
+        "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_gpu_chart.json#/drona_gpu_chart"
+      },
+      "drona_cpuUtilizationChart": {
+        "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_cpu_chart.json#/drona_cpu_chart"
+      }
+    }
+  }
+}

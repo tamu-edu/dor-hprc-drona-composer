@@ -5,7 +5,7 @@
     "label": "CPU Monitor Active",
     "failureNotice": "CPU monitoring status cannot be updated right now",
     "isDynamic": true,
-    "condition": "!jobs. && !drona_job_dir.",
+    "condition": "!drona_info_jobs. && !drona_job_dir.",
     "refreshInterval": "15",
     "refreshWhile": "!drona_cpu_monitor_active.ACTIVE && !drona_status.DONE",
     "retrieverParams": {
@@ -18,7 +18,7 @@
     "type": "chart",
     "name": "drona_cpu_chart",
     "label": "CPU Utilization",
-    "condition": "!jobs. && drona_cpu_monitor_active.ACTIVE",
+    "condition": "!drona_info_jobs. && drona_cpu_monitor_active.ACTIVE",
     "retriever": "drona_cpu_chart_data.sh",
     "retrieverParams": {
       "JOB_DIR": "$drona_job_dir",

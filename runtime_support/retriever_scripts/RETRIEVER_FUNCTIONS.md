@@ -25,8 +25,8 @@ Some retrievers don't need a script at all: set `"retriever"` to `"builtin:<name
 `db_options` params (all optional): `environment` (default: the current environment), `value` (template, default `{drona_id}`), `label` (template, default `{name} (drona_id: {drona_id}) submitted on {start_time:10}`), `limit`, `start_time_after`, `start_time_before`. Templates are literal text with `{field}`, `{field:N}` (first N characters) and, for `runtime_meta`/`env_params`, `{field.dotted.key}` placeholders; see `website/docs/environments/retriever-scripts.md` for the full rules. It returns `[]` when there are no records. With an optional `columns` param (an ordered `{header: template}` object, any number of entries) it instead returns `{"columns": [headers], "rows": [{value, label: [cell, ...]}]}`, the table form read by `dynamicTable`; script retrievers can return the same shape.
 
 Three of the shared `form_components/` components already use these instead of a script:
-- `drona_info_jobdir.json`: `{"id": "$allworkflows", "field": "location"}` — replaces `drona_info_jobdir.sh`/`.py`
-- `drona_info_jobs.json`: `{"id": "$allworkflows", "field": "runtime_meta", "key": "jobinfo.*.id", "join": " "}` — replaces `drona_info_jobs.sh`
+- `drona_info_jobdir.json`: `{"id": "$drona_create_manage_allworkflows", "field": "location"}` — replaces `drona_info_jobdir.sh`/`.py`
+- `drona_info_jobs.json`: `{"id": "$drona_create_manage_allworkflows", "field": "runtime_meta", "key": "jobinfo.*.id", "join": " "}` — replaces `drona_info_jobs.sh`
 - `drona_create_manage.json` (the "Select Workflow" dropdown): `builtin:db_options` with no params — replaces `drona_select_wf.sh`/`.py`
 
 Reach for a builtin when a retriever is *only* a fixed-shape `job_history` lookup with no other logic (file reads, HTML templating, Slurm calls). Anything else - including a lookup that also builds HTML, like `drona_slurm_logs.sh` - stays a script; only the pure-lookup piece of it is a builtin candidate.

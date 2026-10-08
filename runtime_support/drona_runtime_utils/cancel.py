@@ -35,7 +35,7 @@ def _parse_job_ids(value):
 
 def retrieve_cancel_jobs(mode, cancel_jobs, jobs):
     if not mode or mode != "manage":
-        return "echo 'No action taken.'"
+        return ""
 
     selected = _parse_job_ids(cancel_jobs)
     # never cancel anything that does not belong to this workflow
@@ -43,13 +43,13 @@ def retrieve_cancel_jobs(mode, cancel_jobs, jobs):
     allowed = set(_parse_job_ids(jobs))
     selected = [j for j in selected if j.split("_")[0] in allowed]
     if not selected:
-        return "echo 'No jobs selected for cancellation.'"
-
-    db_retriever = os.path.join(_RUNTIME_DIR, "db_access", "drona_db_retriever.py")
-    cleanup = f"python3 {db_retriever} --delete -i $DRONA_WF_ID && echo 'Manage workflow record cleaned up.' || echo 'Cleanup failed.'"
+        return ""
 
     ids = " ".join(selected)
+    # the manage workflow's own record is cleaned up by [MANAGE]
     return (
-        f"scancel {ids} && echo 'Cancelled job(s): {ids}.' || echo 'scancel returned an error.'\n"
-        f"{cleanup}"
+        f"echo '==> Cancelling Slurm job(s): {ids}'\n"
+        f"echo '+ scancel {ids}'\n"
+        f"scancel {ids} && echo 'Done: cancel request sent for {ids}.' "
+        f"|| echo 'FAILED: scancel returned an error (exit code '$?').'"
     )

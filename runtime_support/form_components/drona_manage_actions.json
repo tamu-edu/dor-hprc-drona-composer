@@ -4,7 +4,7 @@
     "name": "drona_action",
     "label": "Action",
     "labelOnTop": true,
-    "condition": "!allworkflows.",
+    "condition": "!drona_create_manage_allworkflows.",
     "options": [
       { "value": "none", "label": "No Action" },
       { "value": "cancel", "label": "Cancel Job" },
@@ -19,5 +19,49 @@
     "label": "Delete the working directory along with workflow",
     "condition": "drona_action.delete",
     "value": "yes"
+  },
+
+  "drona_workflowActions": {
+    "type": "container",
+    "condition": "!drona_create_manage_allworkflows.",
+    "layout": {
+      "preset": "card",
+      "title": "WORKFLOW ACTIONS",
+      "dot": false
+    },
+    "elements": {
+      "drona_workflowActionsRow": {
+        "type": "rowContainer",
+        "alignItems": "center",
+        "elements": {
+          "drona_rerunRecreate": {
+            "type": "workflowRerunRecreate",
+            "name": "drona_rerun_recreate",
+            "compact": true
+          },
+          "drona_deleteWorkflow": {
+            "type": "checkbox",
+            "style": "button",
+            "name": "drona_delete_workflow",
+            "label": "Remove from history",
+            "value": "yes",
+            "compact": true,
+            "align": "right",
+            "help": "Remove this workflow from history when you submit. The working directory is kept."
+          }
+        }
+      },
+      "drona_deleteFiles": {
+        "type": "checkbox",
+        "style": "button",
+        "name": "drona_delete_files",
+        "label": "Also delete files",
+        "value": "yes",
+        "compact": true,
+        "align": "right",
+        "condition": "drona_delete_workflow.Yes",
+        "help": "Also delete the working directory from disk. This is permanent and cannot be undone."
+      }
+    }
   }
 }

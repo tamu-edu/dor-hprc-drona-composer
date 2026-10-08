@@ -5,9 +5,9 @@
     "label": "Job Directory Path",
     "failureNotice": "Working directory cannot be updated right now",
     "isDynamic": true,
-    "condition": "!jobs.",
+    "condition": "!drona_info_jobs.",
     "retrieverParams": {
-      "id": "$allworkflows",
+      "id": "$drona_create_manage_allworkflows",
       "field": "location"
     },
     "retriever": "builtin:db_lookup"

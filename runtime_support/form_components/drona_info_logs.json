@@ -2,7 +2,7 @@
   "drona_logCollapse": {
     "type": "collapsibleRowContainer",
     "title": "OUTPUT/ERROR LOGS",
-    "condition": " !jobs.",
+    "condition": " !drona_info_jobs.",
     "default_state": "collapsed",
     "elements": {
       "drona_row_section": {
@@ -14,7 +14,7 @@
             "label": "",
             "isDynamic": true,
             "retrieverParams": {
-              "WORKFLOW_ID": "$allworkflows"
+              "WORKFLOW_ID": "$drona_create_manage_allworkflows"
             },
             "retriever": "drona_slurm_logs.sh",
             "refreshInterval": "70",

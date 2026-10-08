@@ -1,7 +1,7 @@
 {
   "drona_workingDirectory": {
     "type": "rowContainer",
-    "condition": "!jobs.",
+    "condition": "!drona_info_jobs.",
     "elements": {
       "drona_jobDirLabel": {
         "type": "staticText",

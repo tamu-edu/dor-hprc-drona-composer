@@ -1,7 +1,7 @@
 {
   "drona_processes_section": {
     "type": "collapsibleRowContainer",
-    "condition": "!allworkflows. &&  !drona_status. && drona_status.RUNNING && !jobs. ",
+    "condition": "!drona_create_manage_allworkflows. &&  !drona_status. && drona_status.RUNNING && !drona_info_jobs. ",
     "title": "PROCESSES",
     "elements": {
       "drona_procNodeSelect": {
@@ -10,7 +10,7 @@
         "name": "drona_proc_node",
         "retriever": "drona_select_nodes.sh",
         "retrieverParams": {
-          "JOBID": "$jobs"
+          "JOBID": "$drona_info_jobs"
         }
       },
       "drona_process_table": {
@@ -20,7 +20,7 @@
         "label": "",
         "isDynamic": true,
         "retrieverParams": {
-          "JOBID": "$jobs",
+          "JOBID": "$drona_info_jobs",
           "NODE": "$drona_proc_node"
         },
         "retriever": "drona_slurm_processes.sh",

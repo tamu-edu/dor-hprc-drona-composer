@@ -2,7 +2,7 @@
   "drona_slurmCollapse": {
     "type": "collapsibleRowContainer",
     "title": "SLURM OPTIONS",
-    "default_state": "collapsed",
+    "default_state": "expanded",
     "elements": {
       "drona_ContainerTasks": {
         "type": "rowContainer",

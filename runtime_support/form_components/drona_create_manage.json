@@ -1,16 +1,7 @@
 {
 
-  "drona_configure" : {
-    "type" : "hidden",
-    "label" : "configured",
-    "name" : "configured",
-    "isDynamic": true,
-    "retriever" : "drona_info_configure.sh"
-  },
-
   "drona_ManageCreateContainer" : {
     "type" : "rowContainer",
-    "condition": "configured.CONFIGURED",
     "layout": { "preset": "card", "title": "Select Workflow Mode", "dot": false, "accent": true },
     "elements" : {
 
@@ -19,8 +10,7 @@
         "style": "button",
         "label": "Mode",
         "useLabel": false,
-        "name": "mode",
-        "condition": "configured.CONFIGURED",
+        "name": "drona_create_manage_mode",
         "options": [
           { "label": "Create", "value": "create" },
           { "label": "Manage", "value": "manage" }
@@ -31,11 +21,27 @@
         "type": "dynamicSelect",
         "label": "Select Workflow",
         "labelOnTop": false,
-        "name": "allworkflows",
-        "condition": "mode.manage",
+        "name": "drona_create_manage_allworkflows",
+        "condition": "drona_create_manage_mode.manage",
         "retriever": "builtin:db_options"
       }
 
     }
+  },
+
+  "drona_CreateContainer" : {
+    "type" : "container",
+    "elements" : {
+      "$ref" : "$DRONA_ENV_DIR/schemas/create.schema.json"
+    },
+    "condition" : "drona_create_manage_mode.create"
+  },
+
+  "drona_ManageContainer" : {
+    "type" : "container",
+    "elements" : {
+      "$ref" : "$DRONA_ENV_DIR/schemas/manage.schema.json"
+    },
+    "condition" : "drona_create_manage_mode.manage"
   }
 }
