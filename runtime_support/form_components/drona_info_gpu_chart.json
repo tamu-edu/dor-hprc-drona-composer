@@ -13,15 +13,20 @@
     },
     "retriever": "drona_gpu_chart_active.sh"
   },
-
   "drona_gpu_chart": {
     "type": "chart",
     "name": "drona_gpu_chart",
     "label": "GPU Utilization",
+    "layout": {
+      "preset": "card",
+      "title": "Job GPU · Node $drona_node_scope",
+      "dot": false
+    },
     "condition": "!drona_info_jobs. && drona_gpu_monitor_active.ACTIVE",
     "retriever": "drona_gpu_chart_data.sh",
     "retrieverParams": {
       "JOB_DIR": "$drona_job_dir",
+      "NODE": "$drona_node_scope",
       "MAX_POINTS": 120
     },
     "refreshInterval": 10,
@@ -30,21 +35,33 @@
     "height": 180,
     "expandable": true,
     "expandedHeight": 420,
-    "xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
+    "xAxis": {
+      "key": "timestamp",
+      "label": "Time",
+      "format": "time"
+    },
     "panels": [
       {
-        "title": "GPU Utilization",
+        "title": "Utilization",
         "chartType": "line",
         "series": "auto",
         "seriesMatch": "^(?!.*_mem$)",
-        "yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 }
+        "yAxis": {
+          "label": "Utilization (%)",
+          "min": 0,
+          "max": 100
+        }
       },
       {
-        "title": "GPU Memory Used",
+        "title": "Memory used",
         "chartType": "line",
         "series": "auto",
         "seriesMatch": "_mem$",
-        "yAxis": { "label": "Memory used (%)", "min": 0, "max": 100 }
+        "yAxis": {
+          "label": "Memory used (%)",
+          "min": 0,
+          "max": 100
+        }
       }
     ],
     "showTable": true,

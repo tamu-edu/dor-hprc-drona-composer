@@ -28,6 +28,8 @@ export const CHOICE_THEME = {
 export const APPEARANCES = {
   default: { kind: "input" },
   button: { kind: "button" },
+  // Small, subtle buttons
+  compact: { kind: "compact" },
   // Same look as a checkbox with style "button": check mark / empty box in front of the label
   toggle: { kind: "toggle" },
 };
@@ -47,6 +49,17 @@ export const LAYOUTS = {
     },
     params: ["title"],
   },
+  // Flat strip: optional badge pill, bold title, then the content, all on one line
+  bar: {
+    box: {
+      // Same box as the workdir strip (html_templates/workdir-template.html .dc-path-box)
+      background: "#f1f5f9",
+      border: "1px solid #e2e8f0",
+      borderRadius: "8px",
+      padding: "8px 12px",
+    },
+    params: ["title", "badge"],
+  },
   // Rounded card with the title as a pill on the top border and an optional live dot.
   // Border/title sit on an outer frame; bare CSS objects apply to the option area inside it.
   card: {
@@ -62,7 +75,7 @@ export const LAYOUTS = {
       boxSizing: "border-box",
       boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
     },
-    params: ["title", "dot", "accent", "tint"],
+    params: ["title", "dot", "accent", "tint", "compact", "badge", "collapsible", "collapsed"],
   },
 };
 
@@ -77,6 +90,13 @@ const CARD_ACCENT_FRAME = {
   boxShadow: "0 3px 10px rgba(80, 0, 0, 0.14)",
 };
 
+// Optional "compact" on a card: tighter padding and margins for one-line content such as a selector.
+const CARD_COMPACT_FRAME = {
+  padding: "14px 14px 2px 14px",
+  marginTop: "12px",
+  marginBottom: "20px",
+};
+
 const DEFAULT_GRID_MIN_WIDTH = "12rem";
 
 const EMPTY_LAYOUT = Object.freeze({
@@ -87,6 +107,11 @@ const EMPTY_LAYOUT = Object.freeze({
   title: null,
   dot: false,
   accent: false,
+  badge: null,
+  compact: false,
+  bar: false,
+  collapsible: false,
+  collapsed: false,
 });
 
 export function resolveAppearance(style) {
@@ -118,10 +143,19 @@ function applyPreset(acc, name, params, warnedParams, only) {
   if (preset.frame) acc.frame = { ...acc.frame, ...preset.frame };
   if (preset.box) acc.box = { ...acc.box, ...preset.box };
   if (preset.inner) acc.inner = { ...acc.inner, ...preset.inner };
-  if ((name === "boxed" || name === "card") && typeof params.title === "string") {
+  if ((name === "boxed" || name === "card" || name === "bar") && typeof params.title === "string") {
     acc.title = params.title;
   }
+  if (name === "bar") acc.bar = true;
   if (name === "card") acc.dot = params.dot !== false;
+  if ((name === "card" || name === "bar") && typeof params.badge === "string") acc.badge = params.badge;
+  if (name === "card" && params.compact === true) acc.compact = true;
+  // Elements that opt in (staticText) get a toggle on the title pill; "collapsed" is the initial state
+  if (name === "card" && (params.collapsible === true || params.collapsed === true)) {
+    acc.collapsible = true;
+    acc.collapsed = params.collapsed === true;
+  }
+  if (name === "card" && params.compact === true) acc.frame = { ...acc.frame, ...CARD_COMPACT_FRAME };
   if (name === "card" && params.accent === true) {
     // "tint": false keeps the accent border/edge/shadow but leaves the background plain white
     const { background, ...untinted } = CARD_ACCENT_FRAME;
@@ -145,7 +179,7 @@ export function resolveLayout(layout, options = {}) {
   if (layout == null || layout === "") return EMPTY_LAYOUT;
 
   const items = Array.isArray(layout) ? layout : [layout];
-  const acc = { frame: null, box: null, inner: null, stacked: false, title: null, dot: false, accent: false };
+  const acc = { frame: null, box: null, inner: null, stacked: false, title: null, dot: false, accent: false, badge: null, compact: false, bar: false, collapsible: false, collapsed: false };
   const warnedParams = [];
 
   for (const item of items) {

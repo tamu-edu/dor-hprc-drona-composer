@@ -1,4 +1,4 @@
-<div id="dc-logs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; padding-top: 15px;">
+<div id="dc-logs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
     <style>
         #dc-logs {
             --dc-text: #1e293b;
@@ -15,11 +15,8 @@
             position: relative;
             width: 100%;
             background: #ffffff;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-card);
-            padding-top: 24px;
+            /* The surrounding card supplies the frame and the title */
             box-sizing: border-box;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
         }
 
         /* Clips the tab bar/panes to the card's bottom corners without
@@ -27,34 +24,10 @@
            card's own top edge. */
         #dc-logs .dc-body {
             overflow: hidden;
-            border-radius: 0 0 var(--dc-radius-card) var(--dc-radius-card);
+            border-radius: var(--dc-radius-card);
         }
 
-        #dc-logs .dc-title {
-            position: absolute;
-            top: -12px;
-            left: 20px;
-            background: #ffffff;
-            padding: 2px 16px;
-            font-size: 11px;
-            font-weight: 900;
-            color: var(--dc-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--dc-border);
-            border-radius: var(--dc-radius-pill);
-        }
 
-        #dc-logs .dc-live-dot {
-            width: 6px; height: 6px; background: var(--dc-live); border-radius: 50%;
-            box-shadow: 0 0 6px var(--dc-live);
-            animation: dc-pulse 2s infinite;
-        }
-        @keyframes dc-pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         #dc-logs input[type="radio"] { display: none; }
 
@@ -89,7 +62,6 @@
         }
 
         #dc-logs .pane {
-            max-height: 320px;
             min-height: 48px;
             padding: 16px 20px;
             overflow-y: auto;
@@ -102,14 +74,26 @@
             color: #334155;
         }
 
+        #dc-logs .pane-footer {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 20px;
+            font-size: 11px;
+            color: var(--dc-text-muted);
+            border-top: 1px solid var(--dc-divider);
+        }
+        #dc-logs .pane-footer a { color: #500000; font-weight: 600; text-decoration: none; }
+        #dc-logs .pane-footer a:hover { text-decoration: underline; }
+        #dc-logs #tab-out:checked ~ #stdout-footer { display: flex; }
+        #dc-logs #tab-err:checked ~ #stderr-footer { display: flex; }
+
         #dc-logs #tab-out:checked ~ #stdout-pane { display: block; }
         #dc-logs #tab-err:checked ~ #stderr-pane { display: block; color: #b91c1c; }
     </style>
 
     <div class="dc-card">
-        <div class="dc-title"><div class="dc-live-dot"></div> Job Logs &middot; Job {{JOBID}}</div>
-
-        <div class="dc-body">
+                <div class="dc-body">
             <input type="radio" id="tab-out" name="dc-logs-toggle" checked>
             <input type="radio" id="tab-err" name="dc-logs-toggle">
 
@@ -118,8 +102,11 @@
                 <label for="tab-err" class="tab-label">Error Log</label>
             </div>
 
-            <div id="stdout-pane" class="pane">{{OUTPUT}}</div>
-            <div id="stderr-pane" class="pane">{{ERROR}}</div>
+            <div id="stdout-pane" class="pane" style="max-height: {{PANE_HEIGHT}}px">{{OUTPUT}}</div>
+            <div id="stderr-pane" class="pane" style="max-height: {{PANE_HEIGHT}}px">{{ERROR}}</div>
+
+            <div id="stdout-footer" class="pane-footer"><span>Last {{LINES}} lines</span>{{OUT_LINK}}</div>
+            <div id="stderr-footer" class="pane-footer"><span>Last {{LINES}} lines</span>{{ERR_LINK}}</div>
         </div>
     </div>
 </div>

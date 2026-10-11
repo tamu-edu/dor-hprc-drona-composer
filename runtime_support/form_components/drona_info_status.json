@@ -1,5 +1,5 @@
 {
-  "drona_hidden_status_check": {
+  "drona_hidden_selected_job_status_check": {
     "type": "hidden",
     "name": "drona_status",
     "label": "Status",

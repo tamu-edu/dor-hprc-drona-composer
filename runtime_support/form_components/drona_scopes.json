@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Shared job/node picker. Include with $ref per key (file.json#/drona_job_scope); this key is never rendered.",
+    "Naming convention for form components:",
+    "  $drona_job_scope  - the ONE selected job id. Job-level panels use it (retriever param JOBID, condition !drona_job_scope.).",
+    "  $drona_node_scope - the ONE selected node, only set once a job is picked. Node-level panels use it (param NODE, condition !drona_node_scope.).",
+    "  $drona_info_jobs - ALL job ids of the workflow, space separated (params JOBS/JOBIDS). Only for panels that span jobs on purpose (seff, jobs panel, WorkflowHistory).",
+    "Do not define other node/job pickers in panels; read these values instead."
+  ],
+  "drona_job_scope": {
+    "type": "dynamicRadioGroup",
+    "name": "drona_job_scope",
+    "retriever": "builtin:db_job_options",
+    "retrieverParams": {
+      "id": "$drona_create_manage_allworkflows",
+      "state": "true"
+    },
+    "hideWhenSingle": true,
+    "autoSelect": "first",
+    "refreshInterval": "60",
+    "style": "compact",
+    "useLabel": false
+  },
+  "drona_node_scope": {
+    "type": "dynamicRadioGroup",
+    "name": "drona_node_scope",
+    "condition": "!drona_job_scope.",
+    "retriever": "drona_select_nodes.sh",
+    "retrieverParams": {
+      "JOBID": "$drona_job_scope"
+    },
+    "hideWhenSingle": true,
+    "refreshInterval": "60",
+    "style": "compact",
+    "autoSelect": "first",
+    "useLabel": false
+  }
+}

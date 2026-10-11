@@ -1,9 +1,9 @@
 import React from "react";
 import Label from "./Label";
 
-const FormElementWrapper = ({ labelOnTop, name, label, help, children, useLabel = true }) => {
+const FormElementWrapper = ({ labelOnTop, name, label, help, children, useLabel = true, compact = false }) => {
   return (
-    <div className="form-group">
+    <div className="form-group" style={compact ? { marginBottom: "0.25rem" } : undefined}>
 
       {useLabel ?
         labelOnTop ? (

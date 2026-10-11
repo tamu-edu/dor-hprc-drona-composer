@@ -53,6 +53,8 @@ All form components share a set of standard properties that control basic behavi
 
 `container`, `rowContainer` and `staticText` accept the same `layout` prop, limited to `card` and `boxed` (plus a CSS object for the content area); other presets are ignored with a console warning. Without `layout` nothing is drawn around the container. `collapsibleRowContainer` and `collapsibleColContainer` take `layout: "card"` only: the title pill becomes the expand/collapse toggle (a maroon chevron replaces the green dot) and the separate Show/Hide button is dropped. The pill highlights on hover and keyboard focus, and a collapsed card shows a "Click to expand" hint and expands when clicked anywhere on the strip. To hide a whole card, put the `condition` on the container itself, since the card is drawn even if every child is hidden.
 
+`staticText` can also collapse itself: a `card` layout with `"collapsible": true` (and `"collapsed": true` for the initial state, which implies `collapsible`) turns the title pill into the toggle, e.g. `{ "preset": "card", "title": "Job Logs", "collapsible": true, "collapsed": true }`. While collapsed, the element's retriever and polling are held back, as in a collapsible container. These two params apply to `staticText` only.
+
 Unknown preset names are ignored with a console warning. Titles and labels are rendered as text, never HTML.
 
 A `title` can reference form fields as `$fieldName`, which is replaced by the field's current value (empty when the field has no value), e.g. `{ "preset": "card", "title": "Resource Usage · Job $jobs" }`. This is the same `$` convention as `retrieverParams`. A `$` not followed by a letter or underscore (such as `$5`) is left as written. This works in every element that takes `layout`.
@@ -617,6 +619,8 @@ A table that works like a `dynamicSelect`: its rows come from a retriever script
 - `searchPlaceholder` (string, optional) - Placeholder text for the search box
 - `maxHeight="300px"` (string, optional) - Height at which the table body starts scrolling
 - `layout` (string|Object|Array, optional) - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Workflows" }; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
+- `layout.collapsible` / `layout.collapsed` (boolean, optional, card only) - `"collapsible": true` makes the title pill a toggle (chevron before the title) so the card can be folded; `"collapsed": true` sets the initial state to folded and implies `collapsible`. While folded, the retriever and polling are held back. Example: `{ "preset": "card", "title": "Job Logs", "collapsible": true, "collapsed": true }`
+- `showRefreshButton` on a card layout puts the button on the top border at the right corner, opposite the title pill
 - `useLabel=true` (boolean, optional) - false hides the label row (handy with `layout`, which has its own title)
 - `showRefreshButton=false` (boolean, optional) - Show a button next to the search box that re-fetches the rows
 - `collapseOnSelect=false` (boolean, optional) - After the user clicks a row, fold the table into a one-line summary of the selected row with a "Expand" button that brings the table back. Restored values do not collapse the table.

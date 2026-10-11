@@ -1,30 +1,19 @@
 {
   "drona_processes_section": {
-    "type": "collapsibleRowContainer",
-    "condition": "!drona_create_manage_allworkflows. &&  !drona_status. && drona_status.RUNNING && !drona_info_jobs. ",
-    "title": "PROCESSES",
+    "type": "rowContainer",
+    "condition": "!drona_create_manage_allworkflows. &&  !drona_status. && drona_status.RUNNING && !drona_node_scope.",
     "elements": {
-      "drona_procNodeSelect": {
-        "type": "dynamicSelect",
-        "label": "pick node to inspect",
-        "name": "drona_proc_node",
-        "retriever": "drona_select_nodes.sh",
-        "retrieverParams": {
-          "JOBID": "$drona_info_jobs"
-        }
-      },
       "drona_process_table": {
         "type": "staticText",
         "name": "drona_processtable",
-        "condition": "!drona_proc_node.",
         "label": "",
         "isDynamic": true,
         "retrieverParams": {
-          "JOBID": "$drona_info_jobs",
-          "NODE": "$drona_proc_node"
+          "JOBID": "$drona_job_scope",
+          "NODE": "$drona_node_scope"
         },
         "retriever": "drona_slurm_processes.sh",
-        "layout": { "preset": "card", "title": "Processes · $drona_proc_node" },
+        "layout": { "preset": "card", "title": "Processes · Job $drona_job_scope · $drona_node_scope" },
         "refreshInterval": "60",
         "showRefreshButton": true,
         "allowHtml": true

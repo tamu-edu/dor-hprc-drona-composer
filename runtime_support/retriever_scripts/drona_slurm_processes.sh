@@ -5,12 +5,30 @@
 
 : "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-processes-template.html}"
 
-PS_CMD="ps -u $USER -o pid=,pcpu=,pmem=,rss=,etimes=,comm= --sort=-pcpu"
+PS_FMT="-o pid=,pcpu=,pmem=,rss=,etimes=,comm= --sort=-pcpu"
+SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=5)
 
 if [[ -n "$JOBID" ]]; then
-    RAW=$(srun --jobid="$JOBID" -w "$NODE" --overlap --ntasks=1 bash -c "$PS_CMD" 2>/dev/null)
+    # Restrict output to the job's own processes so other jobs of the same user on the
+    # node are excluded. PID sources, in order: `scontrol listpids` (portable across
+    # cgroup versions), the job's cgroup v1 tasks files, then all of the user's
+    # processes. Runs over ssh (no job step created), falling back to srun --overlap.
+    # The script is fed on stdin to avoid nested quoting.
+    JOB_SCRIPT="JOBID=$JOBID; PS_FMT='$PS_FMT'; USER_NAME=$USER
+"'
+PIDS=$(scontrol listpids "$JOBID" 2>/dev/null | awk "NR>1 && \$1+0>0 {print \$1}" | sort -un | grep -vx $$ | paste -sd,)
+if [ -z "$PIDS" ]; then
+    CG_PATH="/sys/fs/cgroup/cpu,cpuacct/slurm/uid_$(id -u)/job_$JOBID"
+    PIDS=$(find "$CG_PATH" -name tasks -exec cat {} + 2>/dev/null | sort -un | grep -vx $$ | paste -sd,)
+fi
+if [ -n "$PIDS" ]; then ps -p "$PIDS" $PS_FMT; else ps -u "$USER_NAME" $PS_FMT; fi
+'
+    RAW=$(ssh "${SSH_OPTS[@]}" "$NODE" bash -s <<< "$JOB_SCRIPT" 2>/dev/null)
+    if [[ -z "$RAW" ]]; then
+        RAW=$(srun --jobid="$JOBID" -w "$NODE" --overlap --ntasks=1 bash -s <<< "$JOB_SCRIPT" 2>/dev/null)
+    fi
 else
-    RAW=$(ssh -o BatchMode=yes -o ConnectTimeout=5 "$NODE" "$PS_CMD" 2>/dev/null)
+    RAW=$(ssh "${SSH_OPTS[@]}" "$NODE" "ps -u $USER $PS_FMT" 2>/dev/null)
 fi
 
 html_escape() { local s=${1//&/&amp;}; s=${s//</&lt;}; echo "${s//>/&gt;}"; }

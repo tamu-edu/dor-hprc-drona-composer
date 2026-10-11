@@ -23,7 +23,10 @@ from collections import deque
 from datetime import datetime
 
 job_dir, window = sys.argv[1], int(sys.argv[2])
-files = sorted(glob.glob(os.path.join(job_dir.strip(), "drona_monitoring", "gpu_util_node_*.csv")))
+node = os.environ.get("NODE", "").strip()
+# NODE selects one node's file (keys gpu0, gpu1...); without it all nodes are merged
+files = sorted(glob.glob(os.path.join(job_dir.strip(), "drona_monitoring",
+                                      f"gpu_util_node_{node}.csv" if node else "gpu_util_node_*.csv")))
 multi = len(files) > 1
 
 rows = {}  # epoch second -> {series: util}
