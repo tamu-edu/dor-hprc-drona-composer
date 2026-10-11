@@ -43,7 +43,7 @@
  * @property {boolean} [searchable=true] - Show a search box that filters rows across all columns
  * @property {string} [searchPlaceholder] - Placeholder text for the search box
  * @property {string} [maxHeight="300px"] - Height at which the table body starts scrolling
- * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Workflows" }; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
+ * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Workflows" }; Card layouts also accept `"collapsible"` / `"collapsed"`: the title pill toggles the table, and the retriever and polling are held back while folded; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
  * @property {boolean} [useLabel=true] - false hides the label row (handy with `layout`, which has its own title)
  * @property {boolean} [showRefreshButton=false] - Show a button next to the search box that re-fetches the rows
  * @property {boolean} [collapseOnSelect=false] - After the user clicks a row, fold the table down to its header row plus the selected row (a one-line summary if that row is not loaded) with a back-arrow button that brings the table back. Restored values do not collapse the table.
@@ -60,7 +60,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import DataTable from "react-data-table-component";
 import FormElementWrapper from "../utils/FormElementWrapper";
-import LayoutFrame from "../utils/LayoutFrame";
+import CollapsibleFrame from "../utils/CollapsibleFrame";
 import { resolveLayout } from "../utils/choiceStyles";
 import { useRetriever, usePolling } from "../hooks";
 import { compactTableStyles } from "../../tablestyle.jsx";
@@ -83,7 +83,26 @@ const compareCells = (a, b) =>
 // Click events only reach the row when the clicked element is tagged like this
 const ROW_EVENTS = { "data-tag": "allowRowEvents" };
 
+// Shell: label wrapper and frame with the collapse state. The content (DynamicTableContent) holds the
+// retriever and polling hooks, so they sit under the collapse provider and are held back while folded.
 function DynamicTable(props) {
+  const resolvedLayout = useMemo(() => resolveLayout(props.layout, { only: FRAME_PRESETS }), [props.layout]);
+  return (
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+      useLabel={props.useLabel}
+    >
+      <CollapsibleFrame resolved={resolvedLayout}>
+        <DynamicTableContent {...props} />
+      </CollapsibleFrame>
+    </FormElementWrapper>
+  );
+}
+
+function DynamicTableContent(props) {
   const [value, setValue] = useState(props.value || "");
   const [search, setSearch] = useState("");
   // With `collapseOnSelect` the table folds down to the selected row after the user clicks a row
@@ -91,8 +110,6 @@ function DynamicTable(props) {
   const changeButtonRef = useRef(null);
   const searchRef = useRef(null);
   const focusAfterToggle = useRef(null);
-
-  const resolvedLayout = useMemo(() => resolveLayout(props.layout, { only: FRAME_PRESETS }), [props.layout]);
 
   const retrieverPath = props.retrieverPath || props.retriever;
   const searchable = props.searchable !== false;
@@ -237,14 +254,6 @@ function DynamicTable(props) {
       : props.emptyMessage || "No options available";
 
   return (
-    <FormElementWrapper
-      labelOnTop={props.labelOnTop}
-      name={props.name}
-      label={props.label}
-      help={props.help}
-      useLabel={props.useLabel}
-    >
-      <LayoutFrame resolved={resolvedLayout}>
       <div style={{ width: "100%" }}>
         {showSummary && !showHeaderSummary && (
           <div
@@ -359,8 +368,6 @@ function DynamicTable(props) {
           </div>
         )}
       </div>
-      </LayoutFrame>
-    </FormElementWrapper>
   );
 }
 
