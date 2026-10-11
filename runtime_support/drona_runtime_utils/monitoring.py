@@ -41,7 +41,7 @@ def retrieve_cpu_monitor_start(monitor_enabled):
         os.path.join(_RUNTIME_DIR, "driver_scripts", "drona_start_cpu_monitor"), "CPU Monitor Script")
 
     return (
-        "# Start CPU utilization monitoring (writes drona_monitoring/cpu_util.jsonl, read by the Manage chart). DO NOT REMOVE.\n"
+        "# Start CPU utilization monitoring (writes drona_monitoring/cpu_util_node_<host>.jsonl, read by the Manage chart). DO NOT REMOVE.\n"
         "chmod +x drona_start_cpu_monitor\n"
         "./drona_start_cpu_monitor &\n"
         "DRONA_CPU_MONITOR_PID=$!"
