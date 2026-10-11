@@ -36,7 +36,9 @@ export function App() {
   const composerRef = useRef(null);
 
 
-  const [fieldsLoadedResolver, setFieldsLoadedResolver] = useState(null);
+  // Resolver for "schema loaded" (Recreate waits on it). A ref, not state: as state it was a dependency of
+  // the schema-fetch effect, so resolving it re-ran the effect and loaded (and reset) the form a second time.
+  const fieldsLoadedResolverRef = useRef(null);
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
@@ -169,9 +171,10 @@ export function App() {
         setFields(data);
 
         // Resolve the promise if there's a resolver
-        if (fieldsLoadedResolver) {
-          fieldsLoadedResolver(data);
-          setFieldsLoadedResolver(null);
+        if (fieldsLoadedResolverRef.current) {
+          const resolve = fieldsLoadedResolverRef.current;
+          fieldsLoadedResolverRef.current = null;
+          resolve(data);
         }
       } catch (error) {
         setError(error);
@@ -179,7 +182,7 @@ export function App() {
     };
 
     fetchSchema();
-  }, [environment, fieldsLoadedResolver]);
+  }, [environment]);
 
 
   function handleEnvChange(key, option) {
@@ -189,14 +192,22 @@ export function App() {
       icon: option.icon,
       is_user_env: option.is_user_env,
    });
+    // Drop the previous environment's schema until the new one arrives; otherwise the remounted form
+    // fires the old fields' retrievers (e.g. Generic's "configured" check) against the new environment
+    setFields({});
+    setPendingValues(null);
     setEnvInstanceId((id) => id + 1);
 
-  const params = new URLSearchParams(window.location.search);
-  params.set("environment", option.value);
-
-  const newUrl = `${window.location.pathname}?${params.toString()}`;
-  window.history.pushState({}, "", newUrl);
+  setEnvironmentInUrl(option.value);
 }
+
+  // Keep ?environment= in step with the selected environment, so a reload or shared link opens it
+  function setEnvironmentInUrl(envName) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("environment") === envName) return;
+    params.set("environment", envName);
+    window.history.pushState({}, "", `${window.location.pathname}?${params.toString()}`);
+  }
     
   useEffect(() => {
   const params = new URLSearchParams(window.location.search);
@@ -347,7 +358,10 @@ export function App() {
         ...savedForm,
 
         // Force the Create form to open after clicking Recreate from Manage.
+        // `mode` is the field name in older schemas; the shared create/manage components use
+        // drona_create_manage_mode, and the saved form data holds "manage" under it.
         mode: "create",
+        drona_create_manage_mode: "create",
 
         // Generic uses this composite schema element for job name/location.
         runDestinationFinal: {
@@ -429,14 +443,20 @@ export function App() {
 
       if (!sameEnvironment) {
         const fieldsPromise = new Promise((resolve) => {
-          setFieldsLoadedResolver(() => resolve);
+          fieldsLoadedResolverRef.current = resolve;
         });
 
         setEnvironment({ env: envName, src: envDir });
+        setEnvironmentInUrl(envName);
 
         // Wait for schema reload after changing environments.
         await fieldsPromise;
       }
+
+      // Fields that only appear after a retriever resolves (e.g. `mode` after Generic's "configured"
+      // check) would miss a one-shot setValues, so also hand the values to Composer as pending: they
+      // are applied as each field becomes visible.
+      setPendingValues(recreateValues);
 
       // Let Composer render/update first, then push values.
       setTimeout(() => {

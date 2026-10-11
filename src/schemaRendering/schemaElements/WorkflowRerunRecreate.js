@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FormValuesContext } from "../FormValuesContext";
 import { getFieldValue } from "../utils/fieldUtils";
 
+const DEFAULT_WORKFLOW_FIELDS = ["drona_create_manage_allworkflows", "allworkflows"];
+
 function getRecordId(row) {
   return String(
     row?.job_id ??
@@ -44,7 +46,11 @@ export default function WorkflowRerunRecreate(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const workflowField = props.workflowField || "allworkflows";
+  // Table field holding the selected workflow: `workflowField` if set, else the current name
+  // (drona_create_manage_allworkflows) or the legacy one (allworkflows, e.g. Generic-Vision)
+  const workflowField = props.workflowField ||
+    DEFAULT_WORKFLOW_FIELDS.find((name) => getFieldValue(formValues, name) !== undefined) ||
+    DEFAULT_WORKFLOW_FIELDS[0];
 
   const selectedId = normalizeValue(
     getFieldValue(formValues, workflowField)
