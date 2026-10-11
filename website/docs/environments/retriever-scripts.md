@@ -294,7 +294,7 @@ Selection retrievers populate dropdown menus, checkboxes, and radio groups with 
 | Retriever Name | Return Value |
 |----------------|--------------|
 | `drona_select_wf.sh` | Workflows with names, drona_ids, and submission dates. The shared `drona_create_manage.json` component uses [`builtin:db_options`](#builtindb_options) instead; this script remains available for custom environments. |
-| `drona_select_nodes.sh` | Allocated nodes via `squeue` |
+| `drona_select_nodes.sh` | Allocated nodes via `squeue` (`sacct` for finished jobs) |
 
 ### Monitoring Retrievers
 

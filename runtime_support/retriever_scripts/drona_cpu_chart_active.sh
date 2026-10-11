@@ -7,8 +7,11 @@
 # fails closed correctly if monitoring was enabled but never actually
 # produced data.
 
-if [ -f "$JOB_DIR/drona_monitoring/cpu_util.jsonl" ]; then
-    echo "ACTIVE"
-else
-    echo "INACTIVE"
-fi
+# One file per node (cpu_util_node_<host>.jsonl)
+for f in "$JOB_DIR"/drona_monitoring/cpu_util_node_*.jsonl; do
+    if [ -f "$f" ]; then
+        echo "ACTIVE"
+        exit 0
+    fi
+done
+echo "INACTIVE"

@@ -17,7 +17,7 @@
         "allowHtml": true,
         "retrieverParams": {
           "JOBID": "$drona_info_jobs",
-          "NODE": "$drona_node"
+          "NODE": "$drona_node_scope"
         },
         "retriever": "drona_slurm_sstat.sh",
         "layout": { "preset": "boxed", "title": "Resource Usage · Job $drona_info_jobs" }

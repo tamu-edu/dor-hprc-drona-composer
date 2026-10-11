@@ -12,7 +12,7 @@ import { getFieldValue } from "./fieldUtils";
 // (empty when unset). Same `$` convention as retrieverParams.
 const FIELD_REF = /\$([A-Za-z_][\w.]*)/g;
 
-function substituteFieldRefs(text, formValues) {
+export function substituteFieldRefs(text, formValues) {
   if (!text || !text.includes("$")) return text;
   return text.replace(FIELD_REF, (_, name) => {
     const value = getFieldValue(formValues || [], name);
@@ -39,6 +39,36 @@ const CARD_TITLE_STYLE = {
   borderRadius: "999px",
 };
 
+// Right-corner counterpart of the title pill: sits on the top border so it never covers the content
+const ACTION_SLOT_STYLE = { position: "absolute", top: "-12px", right: "20px", display: "flex", gap: "6px" };
+
+// Optional badge pill (filled maroon) and then the title pill sit side by side on the top border.
+const BADGE_ROW_STYLE = {
+  position: "absolute",
+  top: "-12px",
+  left: "20px",
+  display: "flex",
+  gap: "6px",
+};
+const TITLE_IN_ROW = { position: "static" };
+const BADGE_STYLE = { color: "#ffffff", background: "#500000", borderColor: "#500000" };
+
+// Flat "bar" layout: one line, badge pill + bold title + content
+const BAR_ROW_STYLE = { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.25rem 0.6rem", marginBottom: "1rem" };
+const BAR_TITLE_STYLE = { fontSize: "14px", fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap" };
+const BAR_BADGE_STYLE = {
+  fontSize: "10px",
+  fontWeight: 600,
+  lineHeight: "16px",
+  padding: "0 8px",
+  color: "#500000",
+  background: "#faf3f3",
+  border: "1px solid #ead7d7",
+  borderRadius: "999px",
+  whiteSpace: "nowrap",
+};
+const BAR_CSS = ".choice-bar .form-group { margin-bottom: 0; } .choice-bar .mb-1 { margin-bottom: 0 !important; }";
+
 const ACCENT_TITLE_STYLE = {
   borderColor: "#500000",
   color: "#ffffff",
@@ -46,6 +76,7 @@ const ACCENT_TITLE_STYLE = {
 };
 
 // Accent cards are compact: form groups inside get a smaller bottom margin than the default 1rem.
+const COMPACT_CSS = ".choice-card-compact .form-group { margin-bottom: 0.25rem; } .choice-card-compact .btn-group-toggle, .choice-card-compact .mb-1 { margin-bottom: 0 !important; }";
 const ACCENT_CSS = ".choice-card-accent .form-group { margin-bottom: 0.75rem; }";
 
 const LIVE_DOT_STYLE = {
@@ -95,12 +126,26 @@ const TOGGLE_CSS = `
 /**
  * @param {Object} resolved - result of resolveLayout
  * @param {string} [title] - fallback title when the layout has none
+ * @param {Function} [actionRef] - card only: callback ref for a slot on the top border at the right corner,
+ *   mirroring the title pill; the owner portals a small action (e.g. a refresh button) into it
  * @param {{isCollapsed: boolean, onToggle: Function}} [collapse] - card only: the title pill becomes
  *   the toggle (chevron instead of the live dot) and the content is hidden (kept mounted) when collapsed
  */
-function LayoutFrame({ resolved, title: titleProp, collapse, children }) {
+function LayoutFrame({ resolved, title: titleProp, collapse, actionRef, children }) {
   const { values: formValues } = useContext(FormValuesContext);
   const title = substituteFieldRefs(resolved.title || titleProp, formValues)?.trim();
+  const badge = substituteFieldRefs(resolved.badge, formValues)?.trim();
+
+  if (resolved.bar) {
+    return (
+      <div style={{ ...BAR_ROW_STYLE, ...resolved.box }} className="choice-bar">
+        <style>{BAR_CSS}</style>
+        {badge && <span style={BAR_BADGE_STYLE}>{badge}</span>}
+        {title && <span style={BAR_TITLE_STYLE}>{title}</span>}
+        <div style={{ flex: "1 1 auto" }}>{children}</div>
+      </div>
+    );
+  }
 
   if (resolved.frame) {
     const collapsed = !!collapse?.isCollapsed;
@@ -118,13 +163,14 @@ function LayoutFrame({ resolved, title: titleProp, collapse, children }) {
       <div
         style={frameStyle}
         className={
-          [collapsed && "choice-card-collapsed", resolved.accent && "choice-card-accent"]
+          [collapsed && "choice-card-collapsed", resolved.accent && "choice-card-accent", resolved.compact && "choice-card-compact"]
             .filter(Boolean)
             .join(" ") || undefined
         }
         onClick={collapse ? onFrameClick : undefined}
       >
         {resolved.accent && <style>{ACCENT_CSS}</style>}
+        {resolved.compact && <style>{COMPACT_CSS}</style>}
         {title && collapse ? (
           <>
             <style>{TOGGLE_CSS}</style>
@@ -143,17 +189,26 @@ function LayoutFrame({ resolved, title: titleProp, collapse, children }) {
           </>
         ) : (
           title && (
-            <div style={resolved.accent ? { ...CARD_TITLE_STYLE, ...ACCENT_TITLE_STYLE } : CARD_TITLE_STYLE}>
-              {resolved.dot && (
-                <>
-                  <style>{LIVE_DOT_KEYFRAMES}</style>
-                  <div style={LIVE_DOT_STYLE} />
-                </>
-              )}
-              {title}
+            <div style={BADGE_ROW_STYLE}>
+              {badge && <div style={{ ...CARD_TITLE_STYLE, ...TITLE_IN_ROW, ...BADGE_STYLE }}>{badge}</div>}
+              <div
+                style={{
+                  ...(resolved.accent ? { ...CARD_TITLE_STYLE, ...ACCENT_TITLE_STYLE } : CARD_TITLE_STYLE),
+                  ...TITLE_IN_ROW,
+                }}
+              >
+                {resolved.dot && (
+                  <>
+                    <style>{LIVE_DOT_KEYFRAMES}</style>
+                    <div style={LIVE_DOT_STYLE} />
+                  </>
+                )}
+                {title}
+              </div>
             </div>
           )
         )}
+        {actionRef && <div ref={actionRef} style={ACTION_SLOT_STYLE} />}
         {collapsed && (
           <div style={COLLAPSED_HINT_STYLE} aria-hidden="true">
             Click to expand

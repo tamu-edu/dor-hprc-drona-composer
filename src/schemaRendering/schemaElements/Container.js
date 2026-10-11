@@ -39,7 +39,7 @@ import FieldRenderer from "../FieldRenderer";
 import LayoutFrame from "../utils/LayoutFrame";
 import { resolveLayout } from "../utils/choiceStyles";
 
-const FRAME_PRESETS = ["boxed", "card"];
+const FRAME_PRESETS = ["boxed", "card", "bar"];
 
 function Container({
   elements,

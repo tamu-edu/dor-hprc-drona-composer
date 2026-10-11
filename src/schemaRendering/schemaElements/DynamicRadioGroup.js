@@ -40,13 +40,18 @@
  * the current options.
  * @property {string} [refreshWhile] - Condition (same syntax as `condition`); polling only runs while
  * it is true, with one final fetch when it turns false, e.g. "!drona_status.DONE"
+ * @property {boolean|"single"|"first"} [autoSelect] - When the current value is empty or no longer
+ * available once the options load: true/"single" selects the only option, "first" selects the first one
+ * @property {boolean} [hideWhenSingle] - When the retriever returns exactly one option, show its label
+ * as plain text instead of the radio group (the value is still set and submitted). Implies autoSelect.
  * @property {string} [help] - Help text displayed below the radio buttons
  */
 
 import React, { useState, useEffect, useMemo } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import ChoiceOptions from "../utils/ChoiceOptions";
-import { useRetriever, usePolling } from "../hooks";
+import SingleOptionValue from "../utils/SingleOptionValue";
+import { useRetriever, usePolling, useAutoSelect } from "../hooks";
 
 function DynamicRadioGroup(props) {
     const [value, setValue] = useState(props.value || "");
@@ -96,17 +101,29 @@ function DynamicRadioGroup(props) {
         setIsValueInvalid(!!value && !optionValues.has(value));
     }, [options, value, isEvaluated]);
 
-    // User selects a new option -> clear invalid flag, emit value
-    const handleValueChange = (event) => {
-        const newValue = event.target.value;
+    const selectValue = (newValue) => {
         setValue(newValue);
         setIsValueInvalid(false);
         props.onChange?.(props.index, newValue);
     };
 
+    // User selects a new option -> clear invalid flag, emit value
+    const handleValueChange = (event) => selectValue(event.target.value);
+
+    useAutoSelect({
+        options,
+        isEvaluated,
+        mode: props.autoSelect || (props.hideWhenSingle ? "single" : false),
+        current: value,
+        select: (option) => selectValue(option.value),
+    });
+
+    const showSingle = props.hideWhenSingle && isEvaluated && options.length === 1;
+
     return (
         <FormElementWrapper
             labelOnTop={props.labelOnTop}
+            useLabel={props.useLabel}
             name={props.name}
             label={props.label}
             help={props.help}
@@ -115,6 +132,8 @@ function DynamicRadioGroup(props) {
                 <div>Loading options...</div>
             ) : options.length === 0 && isEvaluated ? (
                 <div>No options available</div>
+            ) : showSingle ? (
+                <SingleOptionValue name={props.name} option={options[0]} />
             ) : (
                 <>
                     <span className="sr-only" role="status">

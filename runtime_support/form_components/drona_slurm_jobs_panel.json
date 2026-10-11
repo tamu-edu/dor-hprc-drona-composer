@@ -2,7 +2,6 @@
   "drona_slurmPanel": {
     "type": "container",
     "condition": "!drona_info_jobs.",
-    "layout": { "preset": "card", "title": "Slurm Panel" },
     "elements": {
       "drona_slurm_summary": {
         "type": "staticText",
@@ -15,7 +14,7 @@
           "JOBS": "$drona_info_jobs"
         },
         "retriever": "drona_slurm_jobs.sh",
-        "layout": { "preset": "boxed", "title": "Slurm Jobs" }
+        "layout": { "preset": "card", "title": "Slurm Jobs" }
       },
       "drona_cancel_jobs": {
         "type": "dynamicCheckboxGroup",
@@ -25,7 +24,7 @@
         "pruneMissing": true,
         "style": "toggle",
         "layout": [
-          { "preset": "boxed", "title": "Slurm Actions" },
+          { "preset": "card", "title": "Slurm Actions" },
           "list",
           { "maxHeight": "220px", "overflowY": "auto" }
         ],

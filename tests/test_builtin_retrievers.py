@@ -115,5 +115,59 @@ class DbOptionsTest(unittest.TestCase):
             lookup.assert_not_called()
 
 
+class DbJobOptionsTest(unittest.TestCase):
+    def options(self, params, record=RECORDS[0]):
+        with mock.patch.object(br, "get_record", return_value=record):
+            return br.db_job_options(params)
+
+    def test_registered(self):
+        self.assertIs(br.BUILTIN_REGISTRY["db_job_options"], br.db_job_options)
+
+    def test_one_option_per_job_in_order(self):
+        self.assertEqual(
+            self.options({"id": "20"}),
+            [{"value": "111", "label": "Job 111"}, {"value": "222", "label": "Job 222"}],
+        )
+
+    def test_unresolved_id_is_empty(self):
+        self.assertEqual(self.options({"id": ""}), [])
+
+    def test_missing_id_param_is_an_error(self):
+        with self.assertRaises(br.BuiltinRetrieverError):
+            br.db_job_options({})
+
+    def test_workflow_without_jobs_or_record_is_empty(self):
+        self.assertEqual(self.options({"id": "10"}, RECORDS[1]), [])
+        self.assertEqual(self.options({"id": "99"}, None), [])
+
+    def test_state_is_opt_in_and_adds_state_and_detail(self):
+        states = {"111": {"state": "RUNNING", "elapsed": "01:02:03", "nodes": "2"},
+                  "222": {"state": "COMPLETED", "elapsed": "00:10:00", "nodes": "1"}}
+        with mock.patch.object(br, "_job_states", return_value=states) as lookup:
+            self.assertEqual(self.options({"id": "20"})[0], {"value": "111", "label": "Job 111"})
+            lookup.assert_not_called()
+            opts = self.options({"id": "20", "state": "true"})
+        self.assertEqual(opts[0], {"value": "111", "label": "Job 111", "state": "running",
+                                   "detail": "2 nodes \u00b7 01:02:03"})
+        self.assertEqual(opts[1]["detail"], "1 node \u00b7 00:10:00")
+
+    def test_job_unknown_to_slurm_stays_plain(self):
+        with mock.patch.object(br, "_job_states", return_value={}):
+            self.assertEqual(self.options({"id": "20", "state": "true"})[0],
+                             {"value": "111", "label": "Job 111"})
+
+
+class JobStatesTest(unittest.TestCase):
+    def test_squeue_then_sacct_for_the_rest_and_failures_are_soft(self):
+        rows = {"squeue": [["111", "RUNNING", "1:00", "2"]],
+                "sacct": [["222", "CANCELLED by 5", "0:10", "1"]]}
+        with mock.patch.object(br, "_slurm_query", side_effect=lambda cmd: rows[cmd[0]]):
+            states = br._job_states(["111", "222"])
+        self.assertEqual(states["111"]["state"], "RUNNING")
+        self.assertEqual(states["222"], {"state": "CANCELLED", "elapsed": "0:10", "nodes": "1"})
+        with mock.patch.object(br.subprocess, "run", side_effect=OSError):
+            self.assertEqual(br._job_states(["111"]), {})
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -38,7 +38,7 @@ Selection retrievers populate dropdown menus, checkboxes, and radio groups with 
 | Retriever Name                | Purpose                                                                                           |
 |-------------------------------|---------------------------------------------------------------------------------------------------|
 | drona_select_wf.sh            | Queries Drona database for workflows in the current environment, returns JSON with workflow names, drona_ids, and submission dates. Superseded for the shared `drona_create_manage.json` component by `builtin:db_options` (see above); still usable directly in a custom environment. |
-| drona_select_nodes.sh         | Queries SLURM (squeue/scontrol) for nodes allocated to a job, expands node ranges to individual hostnames (requires JOBID) |
+| drona_select_nodes.sh         | Queries SLURM (squeue, or sacct for finished jobs, and scontrol) for nodes allocated to a job, expands node ranges to individual hostnames (requires JOBID) |
 
 ## Monitoring Retriever Functions
 

@@ -38,6 +38,10 @@
  * the current options.
  * @property {string} [refreshWhile] - Condition (same syntax as `condition`); polling only runs while
  * it is true, with one final fetch when it turns false, e.g. "!drona_status.DONE"
+ * @property {boolean|"single"|"first"} [autoSelect] - When the current value is empty or no longer
+ * available once the options load: true/"single" selects the only option, "first" selects the first one
+ * @property {boolean} [hideWhenSingle] - When the retriever returns exactly one option, show its label
+ * as plain text instead of the dropdown (the value is still set and submitted). Implies autoSelect.
  * @property {boolean} [showAddMore=false] - Whether to show an add more button
  */
 
@@ -45,7 +49,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
-import { useRetriever, usePolling } from "../hooks";
+import SingleOptionValue from "../utils/SingleOptionValue";
+import { useRetriever, usePolling, useAutoSelect } from "../hooks";
 
 function DynamicSelect(props) {
   const [value, setValue] = useState(props.value || "");
@@ -114,6 +119,16 @@ function DynamicSelect(props) {
     }
   };
 
+  useAutoSelect({
+    options: fetchedOptions,
+    isEvaluated,
+    mode: props.autoSelect || (props.hideWhenSingle ? "single" : false),
+    current: value?.value,
+    select: handleValueChange,
+  });
+
+  const showSingle = props.hideWhenSingle && isEvaluated && fetchedOptions.length === 1;
+
   const getNoOptionsMessage = () => {
     if (showLoading) return "Loading options...";
     if (isEvaluated && options.length === 0) return "No options available";
@@ -127,6 +142,9 @@ function DynamicSelect(props) {
       label={props.label}
       help={props.help}
     >
+      {showSingle ? (
+        <SingleOptionValue name={props.name} option={fetchedOptions[0]} withLabelInput />
+      ) : (
       <div style={{ display: "flex" }}>
         <Select
           menuPortalTarget={document.body}
@@ -168,7 +186,8 @@ function DynamicSelect(props) {
           </button>
         )}
       </div>
-      {isValueInvalid && (
+      )}
+      {isValueInvalid && !showSingle && (
         <div className="text-danger" style={{ fontSize: '0.875em', marginTop: '0.25rem' }}>
           This option may no longer be available
         </div>

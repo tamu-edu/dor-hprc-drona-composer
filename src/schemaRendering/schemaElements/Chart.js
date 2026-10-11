@@ -129,6 +129,7 @@
  * @property {string} name - Component name
  * @property {string} [label] - Display label
  * @property {boolean} [labelOnTop=false] - Label above vs. beside the chart
+ * @property {string|Object|Array} [layout] - Optional frame: "card" or "boxed", e.g. { "preset": "card", "title": "CPU & Memory · Node $drona_node_scope" }. Card layouts also accept `"collapsible"` / `"collapsed"` (title pill toggles the content; retriever and polling are held back while folded). The title may reference form fields as `$fieldName`; when a layout is set it replaces the label. Panel titles also accept `$fieldName`.
  * @property {string} [help] - Help text below the chart
  * @property {"line"|"bar"|"area"|"pie"} [chartType="line"] - Chart type. Applies to the single
  *   pane, or uniformly to every `seriesPerPanel`-generated panel; ignored for `panels` entries
@@ -188,6 +189,11 @@ import { useRetriever, usePolling } from "../hooks";
 import { RefreshFailedNotice } from "../utils/retrieverFailures";
 import { FormValuesContext } from "../FormValuesContext";
 import { evaluateCondition } from "../utils/conditionEvaluator";
+import { substituteFieldRefs } from "../utils/LayoutFrame";
+import CollapsibleFrame from "../utils/CollapsibleFrame";
+import { resolveLayout } from "../utils/choiceStyles";
+
+const FRAME_PRESETS = ["boxed", "card"];
 
 // Approximate number of rows drawn per chart once zoom is on (see getZoomView).
 const ZOOM_RENDER_POINTS = 800;
@@ -445,9 +451,11 @@ function ChartPane({ instance, buffer, xKey, xAxisLabel, xTickFormatter, zoom })
 
 // One panel in multi-panel mode: title + its own fixed-height ResponsiveContainer.
 function ChartPanel({ instance, buffer, xKey, xAxisLabel, xTickFormatter, zoom }) {
+  const { values: formValues } = useContext(FormValuesContext);
+  const panelTitle = substituteFieldRefs(instance.title, formValues)?.trim();
   return (
     <div style={{ flex: "1 1 320px", minWidth: "280px" }}>
-      {instance.title && <div className="text-muted mb-1" style={{ fontSize: "0.85em" }}>{instance.title}</div>}
+      {panelTitle && <div className="text-muted mb-1" style={{ fontSize: "0.85em" }}>{panelTitle}</div>}
       <div style={{ height: `${instance.height}px` }}>
         <ChartPane
           instance={instance}
@@ -501,7 +509,19 @@ function ExpandedOverlay({ title, onClose, children }) {
   );
 }
 
+// Shell: frame and collapse state. The content (ChartContent) holds the retriever and polling hooks, so they
+// sit under the collapse provider and are held back while a collapsible card is folded.
 function Chart(props) {
+  const resolvedLayout = useMemo(() => resolveLayout(props.layout, { only: FRAME_PRESETS }), [props.layout]);
+  return (
+    <CollapsibleFrame resolved={resolvedLayout}>
+      <ChartContent {...props} resolvedLayout={resolvedLayout} />
+    </CollapsibleFrame>
+  );
+}
+
+function ChartContent(props) {
+  const resolvedLayout = props.resolvedLayout;
   const {
     chartType = "line",
     maxDataPoints = 120,
@@ -526,6 +546,8 @@ function Chart(props) {
   } = props;
 
   const { values: formValues } = useContext(FormValuesContext);
+  // With a card/boxed frame its title replaces the element label
+  const framed = !!(resolvedLayout.frame || resolvedLayout.box || resolvedLayout.title);
   // `enableZoom` is a boolean or a condition string, like `refreshWhile`
   const zoomActive = typeof enableZoom === "string"
     ? !!evaluateCondition(enableZoom, formValues || [])
@@ -751,7 +773,7 @@ function Chart(props) {
       name={props.name}
       label={props.label}
       help={props.help}
-      useLabel={props.useLabel}
+      useLabel={framed ? false : props.useLabel}
     >
       {!hasData && (
         <div className="position-relative" style={{ height: `${height}px` }}>
@@ -798,7 +820,7 @@ function Chart(props) {
       )}
 
       {expanded && hasData && (
-        <ExpandedOverlay title={props.label || props.name} onClose={closeExpanded}>
+        <ExpandedOverlay title={substituteFieldRefs(resolvedLayout.title || props.label, formValues)?.trim() || props.name} onClose={closeExpanded}>
           {renderCharts(expandedHeight, true)}
         </ExpandedOverlay>
       )}

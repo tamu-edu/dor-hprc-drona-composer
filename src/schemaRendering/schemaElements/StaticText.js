@@ -56,10 +56,15 @@
  * while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
  * @property {boolean} [isHeading=false] - Whether to style the text as a heading with larger, bold font
  * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Job Efficiency" }; a CSS object applies to the content area. The title may reference form fields as `$fieldName`, e.g. "Resource Usage · Job $jobs". Unset renders no frame.
+ * @property {boolean} [layout.collapsible] - Card layouts only: the title pill toggles the content (chevron before the title)
+ * @property {boolean} [layout.collapsed] - Card layouts only: initial state folded (implies collapsible); the retriever and
+ * polling are held back while folded, e.g. { "preset": "card", "title": "Job Logs", "collapsible": true, "collapsed": true }
  * @property {function} [setError] - Function to handle errors during content fetching
  */
 
 import React, { useState, useEffect, useContext, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { CollapsedProvider, CollapsedContext } from "../CollapsedContext";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import LayoutFrame from "../utils/LayoutFrame";
 import { resolveLayout } from "../utils/choiceStyles";
@@ -70,11 +75,46 @@ import { RefreshFailedNotice } from "../utils/retrieverFailures";
 
 const FRAME_PRESETS = ["boxed", "card"];
 
+// Outer shell: label wrapper and frame. With a collapsible card the title pill toggles the content, and
+// CollapsedProvider holds back the retriever and polling (StaticTextContent) while it is collapsed.
 function StaticText(props) {
   const resolved = useMemo(() => resolveLayout(props.layout, { only: FRAME_PRESETS }), [props.layout]);
+  const [isCollapsed, setIsCollapsed] = useState(resolved.collapsed);
+  // Card frames get a slot on the top border for the refresh button; other frames keep it in the content
+  const [actionTarget, setActionTarget] = useState(null);
+  const collapse = resolved.collapsible && resolved.frame
+    ? {
+        isCollapsed,
+        onToggle: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsCollapsed((prev) => !prev);
+        },
+      }
+    : undefined;
+
+  return (
+    <FormElementWrapper
+      labelOnTop={props.labelOnTop}
+      name={props.name}
+      label={props.label}
+      help={props.help}
+      useLabel={props.useLabel}
+    >
+      <LayoutFrame resolved={resolved} collapse={collapse} actionRef={resolved.frame ? setActionTarget : undefined}>
+        <CollapsedProvider collapsed={!!collapse && isCollapsed}>
+          <StaticTextContent {...props} actionTarget={resolved.frame ? actionTarget : null} />
+        </CollapsedProvider>
+      </LayoutFrame>
+    </FormElementWrapper>
+  );
+}
+
+function StaticTextContent(props) {
   const [staticContent, setStaticContent] = useState(props.value || "");
 
   const { values: formValues, updateValue } = useContext(FormValuesContext);
+  const isCollapsed = useContext(CollapsedContext);
 
   const retrieverPath = props.isDynamic ? props.retrieverPath : undefined;
 
@@ -121,16 +161,48 @@ function StaticText(props) {
     refetch();
   };
 
-  return (
-    <FormElementWrapper
-      labelOnTop={props.labelOnTop}
-      name={props.name}
-      label={props.label}
-      help={props.help}
-      useLabel={props.useLabel}
+  // In the content (top-right, over the text) or, with a card frame, on the top border at the right corner
+  const refreshButton = (onBorder) => (
+    <button
+      onClick={handleRefresh}
+      className={`btn btn-primary maroon-button btn-sm${onBorder ? "" : " position-absolute"}`}
+      style={
+        onBorder
+          ? { padding: "2px 12px", lineHeight: 1.2, borderRadius: "999px" }
+          : {
+              right: showLoading ? '30px' : '0',
+              // Retrieved HTML (rendered below via dangerouslySetInnerHTML)
+              // often uses position:relative internally (e.g. for a
+              // floating title badge), which puts it in this same
+              // stacking layer and, being later in the DOM, would
+              // otherwise paint its background over this button.
+              zIndex: 10,
+            }
+      }
+      aria-label="Refresh content"
     >
-      <LayoutFrame resolved={resolved}>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <polyline points="23 4 23 10 17 10" />
+        <polyline points="1 20 1 14 7 14" />
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+      </svg>
+    </button>
+  );
+
+  return (
       <div className="py-2 position-relative">
+        {props.isDynamic && props.showRefreshButton && props.actionTarget && !isCollapsed &&
+          createPortal(refreshButton(true), props.actionTarget)}
         {showLoading && (
           <div className="position-absolute" style={{ top: '0', right: '0', zIndex: 10 }}>
             <div className="spinner-border spinner-border-sm text-primary" role="status">
@@ -139,38 +211,7 @@ function StaticText(props) {
           </div>
         )}
 
-        {props.isDynamic && props.showRefreshButton && (
-          <button
-            onClick={handleRefresh}
-            className="btn btn btn-primary maroon-button  btn-sm position-absolute"
-            style={{
-              right: showLoading ? '30px' : '0',
-              // Retrieved HTML (rendered below via dangerouslySetInnerHTML)
-              // often uses position:relative internally (e.g. for a
-              // floating title badge), which puts it in this same
-              // stacking layer and, being later in the DOM, would
-              // otherwise paint its background over this button.
-              zIndex: 10,
-            }}
-            aria-label="Refresh content"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="23 4 23 10 17 10" />
-              <polyline points="1 20 1 14 7 14" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
-          </button>
-        )}
+        {props.isDynamic && props.showRefreshButton && !props.actionTarget && refreshButton(false)}
 
         {props.allowHtml ? (
           <div
@@ -191,8 +232,6 @@ function StaticText(props) {
 
         <RefreshFailedNotice error={refreshError} lastSuccessAt={lastSuccessAt} />
       </div>
-      </LayoutFrame>
-    </FormElementWrapper>
   );
 }
 

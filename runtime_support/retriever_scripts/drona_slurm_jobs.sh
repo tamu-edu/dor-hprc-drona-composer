@@ -36,7 +36,10 @@ escape_html() {
     printf '%s' "$s"
 }
 
-for JID in "${JOBS[@]}"; do
+# JOBS arrives as a single space-separated string (env vars cannot be arrays)
+read -ra JOB_LIST <<< "${JOBS//,/ }"
+
+for JID in "${JOB_LIST[@]}"; do
     # Fetch data: ID|Name|UsedTime|LimitTime|State
     DATA=$(squeue -j "$JID" -h -o "%i|%j|%M|%l|%T" 2>/dev/null)
     # If not in queue, check accounting history (strip sacct's trailing

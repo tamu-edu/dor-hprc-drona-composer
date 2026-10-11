@@ -1,8 +1,8 @@
 #!/bin/bash
 # Started in the background from jobscripts/generic-job.slurm when the create
 # form's "Monitor CPU utilization" checkbox is enabled. Appends one JSON-lines
-# sample per interval to drona_monitoring/cpu_util.jsonl in the job's working
-# directory,
+# sample per interval per node to drona_monitoring/cpu_util_node_<hostname>.jsonl in the job's
+# working directory,
 # matching the `chart` schema element's tail-based retriever contract (see
 # website/docs/environments/live-charts.md).
 #
@@ -20,15 +20,31 @@
 #   cores_used - average number of CPUs busy over the interval (raw CPU-seconds
 #                per wall-second, so 2.5 = 250% in `top` terms)
 #   memory - job RSS as % of the job's memory limit (--mem), not node RAM
-# Only covers the node the batch script runs on; a multi-node job would need
-# a per-node variant.
+# Covers every node of the job: the script launches itself once per node via srun
+# (inside the job's allocation) and each copy writes its own
+# drona_monitoring/cpu_util_node_<hostname>.jsonl.
 #
 # Killed by the job script via `kill "$DRONA_CPU_MONITOR_PID"` once the
 # user's commands finish.
 
-INTERVAL="${1:-10}"
+# Launcher: one worker per node. --overlap shares the allocation with the user's own steps and
+# --gpus-per-task=0 keeps this step from taking GPUs they need.
+if [ "$1" != "--worker" ]; then
+    mkdir -p drona_monitoring || exit 0
+    srun --jobid="$SLURM_JOB_ID" --overlap \
+         --ntasks="$SLURM_NNODES" --ntasks-per-node=1 --gpus-per-task=0 \
+         bash "$(readlink -f "$0")" --worker "${1:-10}" &
+    SRUN_PID=$!
+    # When the job script kills this script, take the srun (and its steps) with it.
+    trap 'kill "$SRUN_PID" 2>/dev/null' TERM INT EXIT
+    wait "$SRUN_PID"
+    exit 0
+fi
+
+# Worker (runs on each node)
+INTERVAL="${2:-10}"
 LOG_DIR="drona_monitoring"
-LOG="$LOG_DIR/cpu_util.jsonl"
+LOG="$LOG_DIR/cpu_util_node_${SLURMD_NODENAME:-$(hostname -s)}.jsonl"
 mkdir -p "$LOG_DIR" || exit 0
 
 # Print the cgroup dir of the first /proc/self/cgroup line matching $1
