@@ -47,6 +47,7 @@ Monitoring retrievers generate formatted HTML displays for real-time job and sys
 | Retriever Name                | Purpose                                                                                           |
 |-------------------------------|---------------------------------------------------------------------------------------------------|
 | drona_slurm_jobs.sh           | Queries squeue/sacct for job data, generates HTML table with job ID, name, walltime progress bars, and state badges (requires JOBS array, WORKFLOW_ID) |
+| drona_slurm_jobs_table.sh     | Queries squeue/sacct and emits a status line plus Job ID/Name/Status/Elapsed/Node(s) table (requires JOBS) |
 | drona_slurm_logs.sh           | Retrieves last 10 lines from stdout (out.JOBID) and stderr (error.JOBID) log files, displays in HTML template (requires WORKFLOW_ID, JOBID) |
 | drona_slurm_sstat.sh          | Runs sstat to fetch real-time statistics (MaxRSS, AveRSS, MaxVM, CPU time, disk I/O) for running jobs, injects values into HTML template (requires JOBID) |
 | drona_slurm_nodeutil.sh       | Uses srun to query per-node CPU usage (ps) and memory consumption (RSS), displays each node as HTML card with progress bars (requires JOBID) |

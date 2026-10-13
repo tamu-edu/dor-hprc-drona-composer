@@ -145,6 +145,9 @@ export function useRetriever({
       .map(value => value.substring(1));
   }, [retrieverParamsKey]); // Use the serialized key for stability
 
+  const relevantFieldNamesRef = useRef(relevantFieldNames);
+  relevantFieldNamesRef.current = relevantFieldNames;
+
   // Core fetch function - uses refs to avoid dependency issues
   const fetchData = useCallback(async ({ background = false } = {}) => {
     if (!retrieverPath) {
@@ -155,6 +158,12 @@ export function useRetriever({
 
     // A slow retriever must not pile up overlapping polls behind it
     if (background && inFlightRef.current > 0) return;
+
+    // Remember which form values this request is built from, so a value that
+    // changes while it is in flight is seen as a change and triggers a refetch
+    for (const fieldName of relevantFieldNamesRef.current) {
+      prevRelevantValuesRef.current[fieldName] = getFieldValue(formValuesRef.current, fieldName);
+    }
 
     const requestId = ++requestSeqRef.current;
     inFlightRef.current += 1;
@@ -263,11 +272,15 @@ export function useRetriever({
       }
     }
 
-    if (hasRelevantValueChanged && isEvaluated) {
-      // Trigger refetch when relevant values change
+    // Refetch once a first fetch has been started, even if it has not finished: a
+    // value that arrives while it is in flight would otherwise be lost, and the
+    // element would keep a result built from the old value. The older response is
+    // dropped by requestSeqRef. Before the first fetch there is nothing to correct,
+    // because it reads the latest values when it starts.
+    if (hasRelevantValueChanged && initialFetchDoneRef.current) {
       debouncedFetch();
     }
-  }, [formValues, isActive, isCollapsed, relevantFieldNames, debouncedFetch, isEvaluated]);
+  }, [formValues, isActive, isCollapsed, relevantFieldNames, debouncedFetch]);
 
   // Manual refetch function; pass { background: true } for periodic polls
   const refetch = useCallback((options) => {

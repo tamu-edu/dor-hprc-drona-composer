@@ -68,9 +68,17 @@ if [[ "$VISIBLE_LINES" -gt 100 ]]; then VISIBLE_LINES=100; fi
 # 20px per line (12.5px font x 1.6 line height) plus the pane's 16px top and bottom padding
 PANE_HEIGHT=$(( VISIBLE_LINES * 20 + 32 ))
 
+# Last LINES lines of a log. Progress bars (tqdm, Lightning) redraw with carriage returns instead of
+# newlines, so a log can be megabytes in a handful of "lines" - and the bash substitutions below are
+# quadratic in size. So only read the file's tail, treat each \r redraw as its own line (as the browser
+# shows it), and cap each line's length.
+tail_log() {
+    tail -c 262144 "$1" | tr '\r' '\n' | awk '{ print substr($0, 1, 2000) }' | tail -n "$LINES"
+}
+
 output=$(
   if [ -f "$outputfile" ]; then
-    tail -n "$LINES" "$outputfile"
+    tail_log "$outputfile"
   else
     echo "No output file found"
   fi
@@ -78,7 +86,7 @@ output=$(
 
 error=$(
   if [ -f "$errorfile" ]; then
-    tail -n "$LINES" "$errorfile"
+    tail_log "$errorfile"
   else
     echo "No error file found"
   fi
