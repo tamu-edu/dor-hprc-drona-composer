@@ -123,7 +123,7 @@ function StaticTextContent(props) {
     retrieverParams: props.retrieverParams,
     initialData: props.value || "",
     parseJSON: false,
-    onError: props.setError,
+    // No global alert: a failed fetch is shown as a muted note below
   });
 
   const content = props.isDynamic ? data : staticContent;
@@ -225,8 +225,13 @@ function StaticTextContent(props) {
         )}
 
         {error && (
-          <div className="text-danger mt-2" style={{ fontSize: '0.875em' }}>
-            Error: {error.message || "Failed to load content"}
+          <div
+            className="text-muted mt-2"
+            style={{ fontSize: '0.875em' }}
+            title={[error.status_code ? `HTTP ${error.status_code}` : null, error.message].filter(Boolean).join(': ')}
+            role="status"
+          >
+            {error.status_code === 504 ? "Timed out loading this content" : "Unable to load this content"}
           </div>
         )}
 
