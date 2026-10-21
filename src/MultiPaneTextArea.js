@@ -151,7 +151,9 @@ const MultiPaneTextArea = forwardRef(({
   // Expose interface for form data collection
   useImperativeHandle(ref, () => ({
     getPaneRefs: () => {
-      return sortedPanes.map((pane) => {
+      // Hidden panes (order -1) are not shown but must still be submitted
+      const hiddenPanes = (panes || []).filter(pane => pane.order === -1);
+      return [...sortedPanes, ...hiddenPanes].map((pane) => {
         return {
           current: {
             getAttribute: (attr) => {
