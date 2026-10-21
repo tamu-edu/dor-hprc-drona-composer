@@ -1,0 +1,39 @@
+#!/bin/bash
+# NVML counterpart of drona_start_gpu_monitor. Instead of a long-lived
+# `nvidia-smi -l`, launches one drona_gpu_nvml_sampler.py per node of the job
+# (via srun, inside the job's allocation), which reads the GPUs through the
+# NVML library directly and appends samples to
+# drona_monitoring/gpu_util_node_<hostname>.csv in the job's working directory,
+# in the SAME format drona_start_gpu_monitor writes, so drona_gpu_chart_data.sh /
+# drona_gpu_chart_active.sh and the `chart` element work unchanged:
+#   timestamp, index, utilization.gpu, memory.used, memory.total
+#
+# drona_gpu_nvml_sampler.py must sit next to this script (both are copied into
+# the job directory).
+#
+# Killed by the job script via `kill "$DRONA_GPU_MONITOR_PID"` once the user's
+# commands finish (that PID is this script, whose srun is its foreground child;
+# see the trap below).
+
+RATE="${1:-10}"
+SAMPLER="$(dirname "$(readlink -f "$0")")/drona_gpu_nvml_sampler.py"
+mkdir -p drona_monitoring || exit 0
+[ -f "$SAMPLER" ] || { echo "drona_start_gpu_monitor_nvml: $SAMPLER not found" >&2; exit 0; }
+
+# Regular integer only, minimum 10s, so a bad argument can't hammer the GPUs.
+if [[ "$RATE" =~ ^[0-9]+$ ]]; then
+    [ "$RATE" -lt 10 ] && RATE=10
+else
+    RATE=10
+fi
+
+# --gpus-per-task=0 so this step does not consume GPU resources the user's own
+# steps need; --overlap lets it share the allocation with them.
+srun --jobid="$SLURM_JOB_ID" --overlap \
+     --ntasks="$SLURM_NNODES" --ntasks-per-node=1 --gpus-per-task=0 \
+     python3 "$SAMPLER" "$RATE" &
+SRUN_PID=$!
+
+# When the job script kills this script, take the srun (and its steps) with it.
+trap 'kill "$SRUN_PID" 2>/dev/null' TERM INT EXIT
+wait "$SRUN_PID"

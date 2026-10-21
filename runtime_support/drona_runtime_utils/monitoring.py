@@ -13,12 +13,29 @@ def retrieve_gpu_monitor_start(gpu, monitor_enabled):
         return ""
 
     drona_add_additional_file(
-        os.path.join(_RUNTIME_DIR, "driver_scripts", "drona_start_gpu_monitor"), "GPU Monitor Script")
+        os.path.join(_RUNTIME_DIR, "driver_scripts", "drona_start_gpu_monitor"), "GPU Monitor Script", preview_order=-1)
 
     return (
         "# Start GPU utilization monitoring (writes drona_monitoring/gpu_util_node_*.csv, read by the Manage chart). DO NOT REMOVE.\n"
         "chmod +x drona_start_gpu_monitor\n"
         "./drona_start_gpu_monitor &\n"
+        "DRONA_GPU_MONITOR_PID=$!"
+    )
+
+
+def retrieve_gpu_monitor_start_nvml(gpu, monitor_enabled):
+    if not monitor_enabled or not gpu or gpu == "none":
+        return ""
+
+    drona_add_additional_file(
+        os.path.join(_RUNTIME_DIR, "driver_scripts", "drona_start_gpu_monitor_nvml"), "GPU Monitor Script", preview_order=-1)
+    drona_add_additional_file(
+        os.path.join(_RUNTIME_DIR, "driver_scripts", "drona_gpu_nvml_sampler.py"), "GPU Monitor Sampler", preview_order=-1)
+
+    return (
+        "# Start GPU utilization monitoring via NVML (writes drona_monitoring/gpu_util_node_*.csv, read by the Manage chart). DO NOT REMOVE.\n"
+        "chmod +x drona_start_gpu_monitor_nvml\n"
+        "./drona_start_gpu_monitor_nvml &\n"
         "DRONA_GPU_MONITOR_PID=$!"
     )
 
@@ -38,7 +55,7 @@ def retrieve_cpu_monitor_start(monitor_enabled):
         return ""
 
     drona_add_additional_file(
-        os.path.join(_RUNTIME_DIR, "driver_scripts", "drona_start_cpu_monitor"), "CPU Monitor Script")
+        os.path.join(_RUNTIME_DIR, "driver_scripts", "drona_start_cpu_monitor"), "CPU Monitor Script", preview_order=-1)
 
     return (
         "# Start CPU utilization monitoring (writes drona_monitoring/cpu_util_node_<host>.jsonl, read by the Manage chart). DO NOT REMOVE.\n"
