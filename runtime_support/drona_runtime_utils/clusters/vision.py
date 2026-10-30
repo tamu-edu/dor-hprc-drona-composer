@@ -3,7 +3,7 @@ import math
 maxcpunode=112
 maxmemnode=1960
 
-def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,numgpunum,timestring,extra,drona_add_mapping,drona_add_message):
+def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timestring,account,extra,drona_add_mapping,drona_add_message):
 
    times=timestring.split(':')
    total_hours = (int(times[0])+int(times[1])/60)
@@ -57,8 +57,10 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,numgpunum,timestring
    drona_add_mapping("PARTITION","#SBATCH --gres=gpu:"+str(numgpunum))
  
    # combine the extra parameters with partition info and account
-   if extra != "":
-      extra_all = "#SBATCH "+extra
+   if account != "":
+      account="--account="+account
+   if extra != "" or account != "":
+      extra_all = "#SBATCH "+extra+" "+account
       drona_add_mapping("EXTRA",extra_all)
    else:
       drona_add_mapping("EXTRA","")
