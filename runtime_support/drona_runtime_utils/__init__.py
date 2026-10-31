@@ -5,3 +5,4 @@
 from .cancel import *
 from .monitoring import *
 from .slurm import *
+from .workflow import *

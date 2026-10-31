@@ -43,7 +43,8 @@
             "label": "Use Accelerator",
             "help": "Only select an accelerator if your job will utilize them. You might need to setup the environment for the accelerator you selected in the job script.",
             "name": "drona_gpu",
-            "retriever": "retrieve_gpus"
+            "retriever": "retrieve_gpus",
+            "hideWhenSingle": true
           },
 
           "drona_numgpus": {

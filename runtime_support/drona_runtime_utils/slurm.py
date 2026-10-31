@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import importlib
+import importlib.util
 import subprocess
 
 from drona_utils import drona_add_mapping, drona_add_message
@@ -18,7 +19,14 @@ def _retrieve_cluster_info():
     return cluster, cluster_module
 
 
-def retrieve_slurm_params(nodes, tasks, cpus, mem, gpu, numgpu, walltime, account, extra):
+def cluster_max_cores():
+    """Cores per node of the current cluster (maxcpunode in its clusters/ module), or None if unknown."""
+    _, cluster_module = _retrieve_cluster_info()
+    return getattr(cluster_module, "maxcpunode", None)
+
+
+def retrieve_slurm_params(nodes, tasks, cpus, mem, gpu, numgpu, walltime, account, extra, mapping_filter=None):
+    # mapping_filter(key, value) -> value lets a caller adjust a mapping (e.g. PARTITION) before it is added
 
     # if gpu not set, variable numgpu does not exit.
     numgpunum = 1
@@ -35,9 +43,12 @@ def retrieve_slurm_params(nodes, tasks, cpus, mem, gpu, numgpu, walltime, accoun
 
     # dynamic dispatch to the module for the current cluster,
     # which checks the provided values and adds the Slurm mappings
+    add_mapping = drona_add_mapping
+    if mapping_filter is not None:
+        add_mapping = lambda key, value: drona_add_mapping(key, mapping_filter(key, value))
     cluster, cluster_module = _retrieve_cluster_info()
     cluster_module.cluster_slurm_checks(nodenum, tasknum, cpunum, totalmemnum, gpu, numgpunum,
                                         timestring, account, extra,
-                                        drona_add_mapping, drona_add_message)
+                                        add_mapping, drona_add_message)
 
     return ""
