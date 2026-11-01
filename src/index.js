@@ -774,6 +774,7 @@ export function App() {
           envModalRef={envModalRef}
           onAddEnvironment={handleAddEnvironment}
           setError={setError}
+          installedEnvNames={environments.filter((e) => e.is_user_env).map((e) => e.value || e.env)}
         />
       </>
     </GlobalFilesContext.Provider>

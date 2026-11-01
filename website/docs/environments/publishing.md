@@ -51,7 +51,8 @@ A requirement is one or more comma-separated clauses with `>=`, `>`, `<=`, `<`, 
 What Drona does with it:
 
 - **Import dialog**: environments whose requirement doesn't match are listed under a collapsed
-  *Requires a newer Drona* group, with the reason and a disabled **Add** button.
+  *Requires a newer Drona* group, with the reason and no **Add** button. (Installed environments have their own
+  collapsed *Installed* group; the main list shows only what can still be added, grouped by category.)
 - **Import**: the `add_environment` request is refused with HTTP 409, before anything is copied.
 - **Opening an installed environment**: the form still loads, with a warning above it.
 
