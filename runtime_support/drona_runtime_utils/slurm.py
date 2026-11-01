@@ -55,7 +55,7 @@ def retrieve_slurm_params(nodes, tasks, cpus, mem, gpu, numgpu, walltime, accoun
         # if numgpu not set, default to 1
         numgpunum = 1 if numgpu == "" else int(numgpu)
 
-    tasknum = int(tasks)
+    tasknum = 1 if tasks == "" else int(tasks)
     nodenum = 0 if nodes == "" else int(nodes)
     cpunum = 1 if cpus == "" else int(cpus)
 
