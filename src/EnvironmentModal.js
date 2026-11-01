@@ -9,6 +9,7 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError }) => {
   const [categories, setCategories] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showIncompatible, setShowIncompatible] = useState(false);
 
   useEffect(() => {
     const modal = envModalRef?.current;
@@ -127,6 +128,10 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError }) => {
     });
   }
 	
+  // Missing "compatible" (older server) counts as compatible
+  const compatibleEnvironments = filteredEnvironments.filter(env => env.compatible !== false);
+  const incompatibleEnvironments = filteredEnvironments.filter(env => env.compatible === false);
+
   const resetFilters = () => {
     setSearchTerm('');
     setCategoryFilter('');
@@ -195,37 +200,33 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError }) => {
                     <button className="btn btn-link" onClick={resetFilters}>Reset filters</button>
                   </div>
                 ) : (
-                  <div className="table-responsive">
-                    <table className="table table-striped table-bordered">
-                      <thead>
-                        <tr>
-                          <th>Environment</th>
-                          <th>Description</th>
-                          <th>Category</th>
-                          <th>Organization</th>
-                          <th>Version</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredEnvironments.map((env, index) => (
-                          <tr key={index}>
-                            <td>{env.env}</td>
-                            <td>{env.description}</td>
-                            <td>{env.category || 'N/A'}</td>
-                            <td>{env.organization || 'N/A'}</td>
-                            <td>{env.version || 'N/A'}</td>
-                            <td>
-                              <AddEnvironmentButton
-                                env={env}
-                                onAddEnvironment={handleAddEnvironment}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <>
+                    {compatibleEnvironments.length > 0 && (
+                      <EnvironmentTable
+                        environments={compatibleEnvironments}
+                        onAddEnvironment={handleAddEnvironment}
+                      />
+                    )}
+                    {incompatibleEnvironments.length > 0 && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          className="btn btn-link px-0"
+                          aria-expanded={showIncompatible}
+                          onClick={() => setShowIncompatible(!showIncompatible)}
+                        >
+                          {showIncompatible ? "\u25BE" : "\u25B8"} Requires a newer Drona ({incompatibleEnvironments.length})
+                        </button>
+                        {showIncompatible && (
+                          <EnvironmentTable
+                            environments={incompatibleEnvironments}
+                            onAddEnvironment={handleAddEnvironment}
+                            muted
+                          />
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="mt-2 text-muted small">
@@ -242,6 +243,56 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError }) => {
     </div>
   );
 };
+
+const EnvironmentTable = ({ environments, onAddEnvironment, muted = false }) => (
+  <div className="table-responsive">
+    <table className={"table table-striped table-bordered" + (muted ? " text-muted" : "")}>
+      <thead>
+        <tr>
+          <th>Environment</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Organization</th>
+          <th>Version</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {environments.map((env) => (
+          <tr key={env.env}>
+            <td>{env.env}</td>
+            <td>
+              {env.description}
+              {env.compatible === false && (
+                <div className="mt-1">
+                  <span className="badge badge-warning" style={{ whiteSpace: 'normal', textAlign: 'left' }}>
+                    {env.incompatible_reason}
+                  </span>
+                </div>
+              )}
+            </td>
+            <td>{env.category || 'N/A'}</td>
+            <td>{env.organization || 'N/A'}</td>
+            <td>{env.version || 'N/A'}</td>
+            <td>
+              {env.compatible === false ? (
+                <button
+                  className="btn btn-secondary btn-sm"
+                  disabled
+                  title={env.requires_drona ? `Requires Drona ${env.requires_drona}` : undefined}
+                >
+                  Add
+                </button>
+              ) : (
+                <AddEnvironmentButton env={env} onAddEnvironment={onAddEnvironment} />
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
 const AddEnvironmentButton = ({ env, onAddEnvironment }) => {
   const [isAdding, setIsAdding] = useState(false);

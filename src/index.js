@@ -57,6 +57,8 @@ export function App() {
 
   const [environments, setEnvironments] = useState([]);
   const [error, setError] = useState(null);
+  // Set when the selected environment needs a newer Drona (X-Drona-Env-Warning from the schema route)
+  const [envWarning, setEnvWarning] = useState(null);
 
   useEffect(() => {
     console.log("locationPickedByUser changed ->", locationPickedByUser);
@@ -167,6 +169,7 @@ export function App() {
           };
         }
 
+        setEnvWarning(response.headers.get("X-Drona-Env-Warning"));
         const data = await response.json();
         setFields(data);
 
@@ -195,6 +198,7 @@ export function App() {
     // Drop the previous environment's schema until the new one arrives; otherwise the remounted form
     // fires the old fields' retrievers (e.g. Generic's "configured" check) against the new environment
     setFields({});
+    setEnvWarning(null);
     setPendingValues(null);
     setEnvInstanceId((id) => id + 1);
 
@@ -719,6 +723,8 @@ export function App() {
         <JobComposer
           error={error}
           setError={setError}
+          envWarning={envWarning}
+          onDismissEnvWarning={() => setEnvWarning(null)}
           environment={environment}
           envInstanceId={envInstanceId}
           pendingValues={pendingValues}

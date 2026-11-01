@@ -10,6 +10,7 @@ import shutil
 from .error_handler import APIError, handle_api_error
 from .utils import create_folder_if_not_exist, get_drona_dir, get_envs_dir
 from .env_repo_manager import EnvironmentRepoManager
+from .env_api import DRONA_ENV_API
 
 
 ENV_ICON_DIR = os.path.abspath(os.path.join("static", "env-icons"))
@@ -180,6 +181,19 @@ def add_environment_route():
         return jsonify({"message": eres["reason"]}), 400
     user_envs_dir = eres["path"]
 
+    # Refuse environments that need a newer Drona before copying: the copy replaces an existing one.
+    # The Import dialog already disables them; this covers direct requests and stale dialogs.
+    env_info = repo_manager.get_environment_info(env)
+    if env_info is not None and not env_info["compatible"]:
+        raise APIError(
+            "Environment needs a newer Drona",
+            status_code=409,
+            details={
+                'error': env_info["incompatible_reason"],
+                'requires_drona': env_info["requires_drona"],
+                'drona_env_api': DRONA_ENV_API,
+            }
+        )
 
     try:
         repo_manager.copy_environment_to_user(env, user_envs_dir)

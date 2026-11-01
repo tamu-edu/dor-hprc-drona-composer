@@ -7,6 +7,7 @@ from flask import current_app as app
 from typing import Dict, List
 from subprocess import PIPE
 from .utils import get_envs_dir
+from .env_api import check_compatible
 
 # Branch of the environment repo this Drona reads environments from. Older Drona
 # versions always read "main", so "main" stays the legacy channel and new-format
@@ -99,11 +100,20 @@ class EnvironmentRepoManager:
                 "cluster": env_data.get("cluster", "Unknown"),
                 "organization": env_data.get("organization", "Unknown"),
                 "author": env_data.get("author", "Unknown"),
-                "last_updated": env_data.get("last_updated", "Unknown")
+                "last_updated": env_data.get("last_updated", "Unknown"),
+                "requires_drona": env_data.get("requires_drona"),
             }
+            env_info["compatible"], env_info["incompatible_reason"] = check_compatible(env_info["requires_drona"])
             transformed.append(env_info)
         return transformed
 
+
+    def get_environment_info(self, env_name: str) -> Dict:
+        """Entry for one environment from metadata.json, or None when the repo does not list it"""
+        for env_info in self.get_environments_info():
+            if env_info["env"] == env_name:
+                return env_info
+        return None
 
     def copy_environment_to_user(self, env_name: str, user_envs_path: str):
         """

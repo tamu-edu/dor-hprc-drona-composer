@@ -11,6 +11,7 @@ from urllib.request import urlopen
 from .error_handler import APIError, handle_api_error
 from copy import deepcopy
 from .utils import get_envs_dir, get_runtime_dir
+from .env_api import check_compatible, read_env_requirement
 from .logger import Logger
 from runtime_support.db_access.builtin_retrievers import BUILTIN_REGISTRY, BuiltinRetrieverError
 
@@ -312,7 +313,13 @@ def get_schema_route(environment):
             element["isEvaluated"] = False
             element["isShown"] = False
 
-    return jsonref.dumps(schema_dict)
+    response = make_response(jsonref.dumps(schema_dict))
+    response.mimetype = "application/json"
+    # The schema still loads when the environment needs a newer Drona; the frontend shows this as a warning
+    compatible, reason = check_compatible(read_env_requirement(base_path))
+    if not compatible:
+        response.headers["X-Drona-Env-Warning"] = reason
+    return response
 
 def get_map_route(environment):
     """Get map.json for a specific environment"""

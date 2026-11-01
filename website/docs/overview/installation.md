@@ -64,6 +64,7 @@ development: &common_settings
   modules_db_path: "/path/to/modules/bin/" # Path to modules database script
   driver_scripts_path: "/path/to/machine_driver_scripts"
   env_repo_github: "https://github.com/..."  # Environment repository URL
+  env_repo_ref: "drona-v2"                 # Optional: branch of the environment repository
   retriever_timeout: 30                    # Optional: seconds before a retriever script is killed
 
 production:
@@ -85,6 +86,7 @@ The section chosen at runtime is whichever one matches `APP_ENV` (set in `.env` 
 - **`modules_db_path`** — Path to the external script that retrieves available modules. Used by the module form element
 - **`driver_scripts_path`** — Absolute path to the `machine_driver_scripts/` directory
 - **`env_repo_github`** — GitHub repository URL from which users can import environments
+- **`env_repo_ref`** *(optional, default `drona-v2`)* — Branch of `env_repo_github` to list and import environments from. If the repository doesn't have that branch, `main` is used. `main` of the TAMU environment repository is kept for Drona versions from before this setting, which always read `main`; environments for this Drona are on `drona-v2`. See [Publishing Workflows](../environments/publishing#declaring-the-drona-version) for how environments declare the Drona version they need.
 - **`retriever_timeout`** *(optional, default `30`)* — Maximum run time in seconds for a [retriever script](../environments/retriever-scripts). A script still running after this is killed along with any processes it started (e.g. a stuck `squeue`), and the element gets a "timed out" error (HTTP 504) naming the script. This stops a slow Slurm controller from tying up the app while periodic refreshes queue up behind it. `setup.sh` asks for this value. If the key is missing (e.g. a `config.yml` created before this setting existed), the `DRONA_RETRIEVER_TIMEOUT` environment variable is used, then `30`. The value is read once when the app starts, so restart the app after changing it; a value that isn't a positive whole number (e.g. `30s`) stops the app at startup with an error naming the setting. The `local` section doesn't inherit from `common_settings`, so set it there separately if needed.
 
 Every retriever failure (timeout, non-zero exit, or invalid JSON) is appended to `logs/retriever_errors` as one JSON object per line, with the script, its parameters, run time, and error message. Use it to see which retrievers fail and how often; for example, repeated `drona_slurm_sstat.sh` timeouts at the same time of day point to Slurm controller load rather than a bug in the page.
