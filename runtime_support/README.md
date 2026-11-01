@@ -55,7 +55,7 @@ A fragment in `map_references/` is evaluated like any entry in `map.json` (same 
 | `drona_gpu_monitor.json` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start/stop` (`monitoring.py`) | `drona_gpu`, `drona_gpu_monitor` |
 | `drona_slurm_params.json` | `DUMMY` | `retrieve_slurm_params` (`slurm.py`) | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
 
-`retrieve_slurm_params` runs `cluster_slurm_checks` from `drona_runtime_utils/clusters/<cluster>.py` (named after the output of `/sw/local/bin/clustername`, with `defaultcluster.py` as the fallback). That function adds the Slurm mappings (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) with `drona_add_mapping`. To support a new cluster, add one file to `clusters/`. There is no per-environment override: the older environments (Generic, GenericChart, Generic-Vision) still use their own `clusters/` with their own local function.
+`retrieve_slurm_params` runs `cluster_slurm_checks` from `drona_runtime_utils/clusters/<cluster>.py` (named after `drona_cluster_name()`: `slurm_cluster` in config.yml if set, else Slurm's `ClusterName` from `scontrol show config`, lowercased; `defaultcluster.py` is the fallback). That function adds the Slurm mappings (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) with `drona_add_mapping`. To support a new cluster, add one file to `clusters/`. There is no per-environment override: the older environments (Generic, GenericChart, Generic-Vision) still use their own `clusters/` with their own local function.
 
 ## Retriever script conventions
 

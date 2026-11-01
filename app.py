@@ -63,6 +63,11 @@ app.config['retriever_timeout'] = resolve_retriever_timeout(app.config)
 app.config['user'] = os.environ['USER']
 app.config['drona_root'] = get_drona_root()
 
+# Cluster used to pick runtime_support/drona_runtime_utils/clusters/<name>.py.
+# Empty means auto-detect from Slurm's ClusterName; an existing DRONA_CLUSTER wins.
+if app.config.get('slurm_cluster'):
+    os.environ.setdefault('DRONA_CLUSTER', str(app.config['slurm_cluster']))
+
 
 @app.context_processor
 def inject_user_config():

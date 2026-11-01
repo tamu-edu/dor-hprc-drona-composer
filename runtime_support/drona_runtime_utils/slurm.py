@@ -1,18 +1,39 @@
 #!/usr/bin/env python3
 
+import functools
 import importlib
 import importlib.util
+import os
+import re
 import subprocess
 
 from drona_utils import drona_add_mapping, drona_add_message
 
 
+@functools.lru_cache(maxsize=1)
+def drona_cluster_name():
+    """Name of the current cluster (lowercase), or "" if it cannot be determined.
+
+    Uses the DRONA_CLUSTER environment variable when set (the app sets it from
+    slurm_cluster in config.yml), else Slurm's own ClusterName."""
+    name = os.environ.get("DRONA_CLUSTER", "").strip()
+    if not name:
+        try:
+            out = subprocess.check_output(["scontrol", "show", "config"], universal_newlines=True,
+                                          timeout=5, stderr=subprocess.DEVNULL)
+            match = re.search(r"^ClusterName\s*=\s*(\S+)", out, re.M)
+            name = match.group(1) if match else ""
+        except (OSError, subprocess.SubprocessError):
+            name = ""
+    return name.lower()
+
+
 def _retrieve_cluster_info():
     # Cluster check modules live in drona_runtime_utils/clusters/<cluster>.py;
-    # defaultcluster is used when there is none for the current cluster.
-    #TODO
-    cluster = subprocess.check_output(["/sw/local/bin/clustername"], text=True).strip()
-    if importlib.util.find_spec(f".clusters.{cluster}", package=__package__) is not None:
+    # defaultcluster is used when the cluster is unknown or has no module.
+    cluster = drona_cluster_name()
+    if cluster and re.fullmatch(r"\w+", cluster) and \
+            importlib.util.find_spec(f".clusters.{cluster}", package=__package__) is not None:
         cluster_module = importlib.import_module(f".clusters.{cluster}", package=__package__)
     else:
         cluster_module = importlib.import_module(".clusters.defaultcluster", package=__package__)
