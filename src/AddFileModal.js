@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import * as M from './styles/modalStyles';
+import { COLORS } from './styles/modalStyles';
 
 // ── Styles ───────────────────────────────────────────────────────────────────
 
+// Compact variant of the shared dialog look (styles/modalStyles.js): 12px rows
 const S = {
   overlay: {
     position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
@@ -13,7 +16,7 @@ const S = {
     maxHeight: '80vh', overflow: 'hidden',
   },
   header: {
-    backgroundColor: '#500000', color: 'white', padding: '0 1rem',
+    backgroundColor: COLORS.maroon, color: 'white', padding: '0 1rem',
     height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     flexShrink: 0,
   },
@@ -24,81 +27,48 @@ const S = {
   },
   tabBar: {
     display: 'flex', alignItems: 'center', gap: '4px',
-    backgroundColor: '#f0f0f0', borderBottom: '1px solid #dee2e6',
+    backgroundColor: '#f0f0f0', borderBottom: `1px solid ${COLORS.border}`,
     padding: '0 8px', height: '36px', flexShrink: 0,
   },
   tab: (active) => ({
     padding: '3px 12px', fontSize: '12px', fontWeight: active ? '600' : '400',
-    color: active ? '#500000' : '#6c757d',
+    color: active ? COLORS.maroon : COLORS.muted,
     backgroundColor: active ? 'white' : 'transparent',
-    border: `1px solid ${active ? '#dee2e6' : 'transparent'}`,
+    border: `1px solid ${active ? COLORS.border : 'transparent'}`,
     borderRadius: '3px', cursor: 'pointer', lineHeight: '1.2',
   }),
   body: {
     padding: '12px', flexGrow: 1, display: 'flex', flexDirection: 'column',
     minHeight: 0,
   },
-  label: { fontSize: '12px', fontWeight: '600', color: '#495057', marginBottom: '5px', display: 'block' },
-  hint: { fontSize: '12px', color: '#6c757d', marginBottom: '10px' },
-  input: {
-    width: '100%', padding: '6px 10px', fontSize: '13px',
-    border: '1px solid #ced4da', borderRadius: '4px',
-    outline: 'none', boxSizing: 'border-box', marginBottom: '10px',
-    fontFamily: 'monospace',
-  },
-  primaryBtn: (disabled) => ({
-    padding: '5px 14px', fontSize: '12px', fontWeight: '500',
-    backgroundColor: disabled ? '#ccc' : '#500000',
-    border: `1px solid ${disabled ? '#ccc' : '#500000'}`,
-    borderRadius: '3px', color: 'white',
-    cursor: disabled ? 'default' : 'pointer',
-  }),
+  label: { fontSize: '12px', fontWeight: '600', color: COLORS.textSecondary, marginBottom: '5px', display: 'block' },
+  hint: { ...M.hint, marginBottom: '10px' },
+  input: { ...M.textInput, marginBottom: '10px', fontFamily: 'monospace' },
+  primaryBtn: M.primaryBtn,
   breadcrumb: {
-    display: 'flex', alignItems: 'center', flexWrap: 'wrap',
-    gap: '2px', padding: '5px 8px', backgroundColor: '#f8f9fa',
-    border: '1px solid #dee2e6', borderRadius: '4px', marginBottom: '8px',
-    fontSize: '12px', flexShrink: 0,
+    ...M.bar, padding: '5px 8px', marginBottom: '8px', fontSize: '12px',
+    minHeight: 'auto', flexShrink: 0,
   },
-  crumbBtn: (isLast) => ({
-    background: 'none', border: 'none', padding: '1px 3px',
-    fontSize: '12px', cursor: isLast ? 'default' : 'pointer',
-    color: isLast ? '#495057' : '#500000',
-    fontWeight: isLast ? '600' : '400',
-    borderRadius: '3px',
-  }),
-  fileList: {
-    border: '1px solid #dee2e6', borderRadius: '4px',
-    overflowY: 'auto', flex: 1, minHeight: 0,
-  },
+  crumbBtn: (isLast) => ({ ...M.crumbBtn(isLast), padding: '1px 3px', fontSize: '12px' }),
+  fileList: { ...M.list, maxHeight: 'none', minHeight: 0, flex: 1 },
   entry: (selected, isDir) => ({
     display: 'flex', alignItems: 'center', gap: '8px',
     padding: '5px 10px', fontSize: '12px', cursor: 'pointer',
-    backgroundColor: selected ? '#fff0f0' : 'transparent',
-    borderBottom: '1px solid #f0f0f0',
-    color: isDir ? '#500000' : '#343a40',
+    backgroundColor: selected ? COLORS.rowHover : 'transparent',
+    borderBottom: `1px solid ${COLORS.rowDivider}`,
+    color: isDir ? COLORS.maroon : '#343a40',
     userSelect: 'none',
   }),
   entryIcon: (isDir) => ({
     fontSize: '11px', opacity: 0.7, flexShrink: 0,
-    color: isDir ? '#500000' : '#6c757d',
+    color: isDir ? COLORS.maroon : COLORS.muted,
     fontWeight: isDir ? '700' : '400',
     fontFamily: 'monospace',
   }),
-  empty: {
-    padding: '16px', textAlign: 'center', fontSize: '12px', color: '#6c757d',
-  },
-  selectedBar: {
-    marginTop: '8px', padding: '7px 10px',
-    backgroundColor: '#f8f9fa', border: '1px solid #dee2e6',
-    borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '10px',
-    flexShrink: 0,
-  },
-  selectedPath: {
-    fontSize: '12px', color: '#495057', flex: 1,
-    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-    fontFamily: 'monospace',
-  },
-  errorMsg: { fontSize: '12px', color: '#dc3545', padding: '6px 0' },
+  empty: { ...M.emptyState, padding: '16px', fontSize: '12px' },
+  selectedBar: { ...M.selectedBar, marginTop: '8px', padding: '7px 10px', gap: '10px', flexShrink: 0 },
+  selectedPath: { ...M.monoText, fontSize: '12px' },
+  errorMsg: { fontSize: '12px', color: COLORS.danger, padding: '6px 0' },
 };
 
 // ── New File tab ─────────────────────────────────────────────────────────────
@@ -207,7 +177,7 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
       <div style={S.breadcrumb}>
         {breadcrumbs.map((crumb, i) => (
           <React.Fragment key={crumb.path}>
-            {i > 0 && <span style={{ color: '#adb5bd' }}>/</span>}
+            {i > 0 && <span style={{ color: COLORS.faint }}>/</span>}
             <button
               style={S.crumbBtn(i === breadcrumbs.length - 1)}
               onClick={() => i < breadcrumbs.length - 1 && navigate(crumb.path)}
@@ -220,7 +190,7 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
 
       <div style={S.fileList}>
         {loading && <div style={S.empty}>Loading…</div>}
-        {!loading && error && <div style={{ ...S.empty, color: '#dc3545' }}>{error}</div>}
+        {!loading && error && <div style={{ ...S.empty, color: COLORS.danger }}>{error}</div>}
         {!loading && !error && entries.subdirectories.length === 0 && entries.subfiles.length === 0 && (
           <div style={S.empty}>Empty directory</div>
         )}
@@ -231,7 +201,7 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
                 key={dir}
                 style={S.entry(false, true)}
                 onClick={() => navigate(joinPath(currentPath, dir))}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fff0f0'}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = COLORS.rowHover}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span style={S.entryIcon(true)}>▸</span>
@@ -247,7 +217,7 @@ const BrowseTab = ({ defaultPath, onAdd, onClose }) => {
                   style={S.entry(isSelected, false)}
                   onClick={() => setSelected({ path: filePath, name: file })}
                   onDoubleClick={() => addFile(filePath, file)}
-                  onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#f8f9fa'; }}
+                  onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = COLORS.rowHoverNeutral; }}
                   onMouseOut={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
                   <span style={S.entryIcon(false)}>—</span>
