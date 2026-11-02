@@ -7,6 +7,13 @@ from flask import current_app as app
 from typing import Dict, List
 from subprocess import PIPE
 from .utils import get_envs_dir
+from .env_api import check_compatible
+
+# Branch of the environment repo this Drona reads environments from. Older Drona
+# versions always read "main", so "main" stays the legacy channel and new-format
+# environments live on DEFAULT_ENV_REPO_REF. Set env_repo_ref in config.yml to override.
+DEFAULT_ENV_REPO_REF = "drona-v2"
+FALLBACK_ENV_REPO_REF = "main"
 
 def create_folder_if_not_exist(dir_path):
     if not os.path.isdir(dir_path):
@@ -18,17 +25,46 @@ class EnvironmentRepoManager:
         self.repo_dir = repo_dir
 
         self.git_path = app.config.get('git_path', 'git')
+        self.repo_ref = app.config.get('env_repo_ref') or DEFAULT_ENV_REPO_REF
+        self._resolved_ref = None
+
+    def resolve_ref(self) -> str:
+        """
+        Branch to read environments from: env_repo_ref if the repo has it,
+        else main (e.g. before the repo has a drona-v2 branch)
+        """
+        if self._resolved_ref is None:
+            ref = self.repo_ref
+            if ref != FALLBACK_ENV_REPO_REF:
+                result = subprocess.run([self.git_path, 'ls-remote', '--heads', self.repo_url, ref],
+                                        stdout=PIPE, stderr=PIPE, universal_newlines=True)
+                if result.returncode != 0 or not result.stdout.strip():
+                    ref = FALLBACK_ENV_REPO_REF
+            self._resolved_ref = ref
+        return self._resolved_ref
+
+    def _current_branch(self) -> str:
+        result = subprocess.run([self.git_path, 'rev-parse', '--abbrev-ref', 'HEAD'],
+                                cwd=self.repo_dir, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        return result.stdout.strip() if result.returncode == 0 else ""
 
     def ensure_metadata_repo(self):
         """
-        Ensures we have a local repo with just metadata.json
+        Ensures we have a local repo with just metadata.json, on the branch from resolve_ref()
         """
-        if not os.path.exists(os.path.join(self.repo_dir, "metadata.json")):
-            subprocess.run([self.git_path, 'clone', '--depth=1', '--no-checkout', self.repo_url, self.repo_dir])
+        ref = self.resolve_ref()
+        metadata_path = os.path.join(self.repo_dir, "metadata.json")
+        # A shallow clone only has one branch: start over when the branch changed
+        # or an earlier clone did not finish
+        if os.path.isdir(self.repo_dir) and (not os.path.exists(metadata_path) or self._current_branch() != ref):
+            shutil.rmtree(self.repo_dir)
+        if not os.path.exists(metadata_path):
+            subprocess.run([self.git_path, 'clone', '--depth=1', '--no-checkout', '--branch', ref,
+                            self.repo_url, self.repo_dir])
             subprocess.run([self.git_path, 'sparse-checkout', 'set', "metadata.json"], cwd=self.repo_dir)
-            subprocess.run([self.git_path, 'checkout', 'main'], cwd=self.repo_dir)
+            subprocess.run([self.git_path, 'checkout', ref], cwd=self.repo_dir)
         else:
-            subprocess.run([self.git_path, 'pull', 'origin', 'main'], cwd=self.repo_dir)
+            subprocess.run([self.git_path, 'pull', 'origin', ref], cwd=self.repo_dir)
 
     def get_environments_info(self, cluster_name: str = None) -> List[Dict]:
         """
@@ -64,11 +100,20 @@ class EnvironmentRepoManager:
                 "cluster": env_data.get("cluster", "Unknown"),
                 "organization": env_data.get("organization", "Unknown"),
                 "author": env_data.get("author", "Unknown"),
-                "last_updated": env_data.get("last_updated", "Unknown")
+                "last_updated": env_data.get("last_updated", "Unknown"),
+                "requires_drona": env_data.get("requires_drona"),
             }
+            env_info["compatible"], env_info["incompatible_reason"] = check_compatible(env_info["requires_drona"])
             transformed.append(env_info)
         return transformed
 
+
+    def get_environment_info(self, env_name: str) -> Dict:
+        """Entry for one environment from metadata.json, or None when the repo does not list it"""
+        for env_info in self.get_environments_info():
+            if env_info["env"] == env_name:
+                return env_info
+        return None
 
     def copy_environment_to_user(self, env_name: str, user_envs_path: str):
         """
@@ -85,8 +130,9 @@ class EnvironmentRepoManager:
         # Create a temporary directory for the cloned environment
         with tempfile.TemporaryDirectory() as temp_dir:
             try:
+                ref = self.resolve_ref()
                 subprocess.run([
-                    self.git_path, 'clone', '--depth=1', '--no-checkout',
+                    self.git_path, 'clone', '--depth=1', '--no-checkout', '--branch', ref,
                     self.repo_url, temp_dir
                 ], check=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
@@ -95,7 +141,7 @@ class EnvironmentRepoManager:
                 ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
                 subprocess.run([
-                    self.git_path, 'checkout', 'main'
+                    self.git_path, 'checkout', ref
                 ], cwd=temp_dir, check=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
                 src_env_path = os.path.join(temp_dir, env_name)

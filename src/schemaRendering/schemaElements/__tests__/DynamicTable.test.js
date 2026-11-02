@@ -97,7 +97,7 @@ describe('DynamicTable Component', () => {
     expect(screen.getByText('Runs')).toBeInTheDocument();
   });
 
-  test('collapseOnSelect folds into a summary bar and Expand brings the table back', async () => {
+  test('collapseOnSelect folds into a summary bar and Back to table brings the table back', async () => {
     await renderTable({ collapseOnSelect: true });
     fireEvent.click(screen.getByText('sim-two'));
     expect(screen.queryByLabelText('Search table')).not.toBeInTheDocument();
@@ -106,7 +106,7 @@ describe('DynamicTable Component', () => {
     expect(document.querySelectorAll('[role="columnheader"]').length).toBeGreaterThan(0);
     expect(document.querySelectorAll('[role="row"]').length).toBe(2);
     expect(document.querySelector('input[name="job"]').value).toBe('j2');
-    fireEvent.click(screen.getByText('Expand'));
+    fireEvent.click(screen.getByLabelText('Back to table'));
     expect(screen.getByLabelText('Search table')).toBeInTheDocument();
     expect(screen.getByText('sim-one')).toBeInTheDocument();
   });

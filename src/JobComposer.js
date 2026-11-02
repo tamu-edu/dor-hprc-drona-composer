@@ -288,6 +288,14 @@ function JobComposer({
   return (
     <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
+      {props.envWarning && (
+        <div className="alert alert-warning alert-dismissible mb-2" role="alert">
+          {props.envWarning}
+          <button type="button" className="close" aria-label="Close" onClick={props.onDismissEnvWarning}>
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      )}
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
 
         <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
@@ -435,7 +443,7 @@ function JobComposer({
         isSubmitDisabled={isSubmitDisabled}
       />
 
-      <EnvironmentModal envModalRef={envModalRef} />
+      {document.env_import_enabled !== false && <EnvironmentModal envModalRef={envModalRef} />}
 
       <ConfirmationModal
         isOpen={showConfirmationModal}

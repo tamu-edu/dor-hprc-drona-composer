@@ -70,7 +70,7 @@ To keep periodic refreshes from overloading the scheduler, refreshing (on `stati
 
 - **pauses while the browser tab is hidden**, and refreshes once when the user comes back if at least one refresh was missed.
 - **skips a refresh while the previous one is still running**, so a slow script doesn't pile up overlapping requests.
-- **gives up on slow scripts**: a script still running after the server's `retriever_timeout` (default 30 seconds, see [Installation](../overview/installation#configyml)) is killed and counts as a failure.
+- **gives up on slow scripts**: a script still running after the server's `retriever_timeout` (default 10 seconds, see [Installation](../overview/installation#configyml)) is killed and counts as a failure.
 
 #### Stopping refreshes with `refreshWhile`
 
@@ -389,7 +389,7 @@ python3 "${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py" -i "$DRONA_WF_ID"
 
 ## Best Practices
 
-- Keep execution under 5 seconds for responsive interfaces; scripts are killed after `retriever_timeout` (default 30 seconds)
+- Keep execution under 5 seconds for responsive interfaces; scripts are killed after `retriever_timeout` (default 10 seconds)
 - Exit non-zero when a command the output depends on fails (e.g. `squeue` timing out) rather than printing a guess; the element keeps its previous content and reports the failure
 - Use `refreshWhile` to stop refreshing data that can't change any more, e.g. once a job is done
 - Return meaningful errors with appropriate messages

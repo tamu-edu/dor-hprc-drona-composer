@@ -39,97 +39,51 @@
 import React, { useEffect, useMemo, useState, useRef, useContext } from "react";
 import { GlobalFilesContext } from "../../GlobalFilesContext";
 import FormElementWrapper from "../utils/FormElementWrapper"
+import * as M from "../../styles/modalStyles";
+import { COLORS } from "../../styles/modalStyles";
 
-// Styles for the directory-browser modal body, matching the maroon (#500000)
-// branding and breadcrumb/list-row pattern used by AddFileModal.js.
+// Styles for the directory-browser modal body. The shared dialog look
+// (maroon branding, breadcrumb/list-row pattern) comes from styles/modalStyles.js.
 const S = {
-  headerBtnRow: { display: "flex", gap: "8px" },
-  cancelBtn: {
-    padding: "5px 14px", fontSize: "12px", fontWeight: "500",
-    backgroundColor: "white", color: "#500000",
-    border: "1px solid #500000", borderRadius: "4px", cursor: "pointer",
-  },
-  selectBtn: (disabled) => ({
-    padding: "5px 14px", fontSize: "12px", fontWeight: "500",
-    backgroundColor: disabled ? "#ccc" : "#500000",
-    border: `1px solid ${disabled ? "#ccc" : "#500000"}`,
-    borderRadius: "4px", color: "white",
-    cursor: disabled ? "default" : "pointer",
-  }),
-  quickAccessRow: { display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" },
-  quickAccessBtn: {
-    padding: "4px 12px", fontSize: "12px", fontWeight: "500",
-    backgroundColor: "white", color: "#500000",
-    border: "1px solid #500000", borderRadius: "14px", cursor: "pointer",
-  },
-  breadcrumb: {
-    display: "flex", alignItems: "center", flexWrap: "wrap", gap: "2px",
-    padding: "6px 10px", backgroundColor: "#f8f9fa",
-    border: "1px solid #dee2e6", borderRadius: "4px", marginBottom: "10px",
-    fontSize: "13px", minHeight: "32px",
-  },
-  crumbBtn: (isLast) => ({
-    background: "none", border: "none", padding: "2px 4px",
-    fontSize: "13px", cursor: isLast ? "default" : "pointer",
-    color: isLast ? "#495057" : "#500000",
-    fontWeight: isLast ? "600" : "400",
-    borderRadius: "3px",
-  }),
-  fileList: {
-    border: "1px solid #dee2e6", borderRadius: "4px",
-    overflowY: "auto", maxHeight: "320px", minHeight: "120px",
-    backgroundColor: "white",
-  },
-  entry: (selected) => ({
-    display: "flex", alignItems: "center", gap: "10px",
-    padding: "6px 12px", fontSize: "13px", cursor: "pointer",
-    backgroundColor: selected ? "#fff0f0" : "transparent",
-    borderBottom: "1px solid #f0f0f0",
-  }),
+  headerBtnRow: M.headerBtnRow,
+  cancelBtn: M.cancelBtn,
+  selectBtn: M.primaryBtn,
+  quickAccessRow: M.pillRow,
+  quickAccessBtn: M.pillBtn(false),
+  breadcrumb: M.bar,
+  crumbBtn: M.crumbBtn,
+  fileList: M.list,
+  entry: M.row,
   entryIcon: (isDir) => ({
     fontSize: isDir ? "15px" : "13px", flexShrink: 0, width: "16px", textAlign: "center",
     // Folder amber vs. plain-gray file matches the universal file-manager
     // convention. Both shades are picked to clear ~4.5:1 contrast on white
     // (WCAG AA) — a plain gold/light-gray pair reads nicely but fails that
     // check, so these are darkened versions of the same hues.
-    color: isDir ? "#8a6300" : "#6c757d",
+    color: isDir ? COLORS.folder : COLORS.muted,
   }),
   entryName: (isDir) => ({
-    flex: 1, minWidth: 0, color: isDir ? "#212529" : "#495057",
+    flex: 1, minWidth: 0, color: isDir ? COLORS.text : COLORS.textSecondary,
     fontWeight: isDir ? "600" : "400",
-    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+    ...M.ellipsis,
   }),
-  entryChevron: { fontSize: "11px", color: "#adb5bd", flexShrink: 0 },
-  empty: { padding: "24px 16px", textAlign: "center", fontSize: "13px", color: "#6c757d" },
-  loadingRow: {
-    display: "flex", alignItems: "center", gap: "8px",
-    padding: "4px 0 12px", fontSize: "13px", color: "#500000",
-  },
-  selectedBar: {
-    marginTop: "10px", padding: "8px 12px",
-    backgroundColor: "#f8f9fa", border: "1px solid #dee2e6",
-    borderRadius: "4px", display: "flex", alignItems: "center", gap: "8px",
-  },
-  selectedPath: {
-    fontSize: "13px", color: "#495057", flex: 1,
-    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-    fontFamily: "monospace",
-  },
-  filterHint: {
-    fontSize: "12px", color: "#6c757d", fontStyle: "italic",
-    marginBottom: "6px",
-  },
+  entryChevron: M.rowChevron,
+  empty: M.emptyState,
+  loadingRow: M.loadingRow,
+  selectedBar: M.selectedBar,
+  selectedPath: M.monoText,
+  filterHint: { ...M.hint, fontStyle: "italic", marginBottom: "6px" },
   // One full path per row (matches the single-select field's own
   // full-path display) instead of truncated pills, with a real, clearly
   // clickable remove button per row rather than a small bare icon.
   multiList: {
-    flex: 1, minWidth: 0, border: "1px solid #dee2e6", borderRadius: "4px",
+    flex: 1, minWidth: 0, border: `1px solid ${COLORS.border}`, borderRadius: "4px",
     maxHeight: "160px", overflowY: "auto", backgroundColor: "white",
   },
   multiRow: {
     display: "flex", alignItems: "center", gap: "8px",
-    padding: "6px 10px", fontSize: "13px", color: "#495057",
-    fontFamily: "monospace", borderBottom: "1px solid #f0f0f0",
+    padding: "6px 10px", fontSize: "13px", color: COLORS.textSecondary,
+    fontFamily: "monospace", borderBottom: `1px solid ${COLORS.rowDivider}`,
   },
   multiRowPath: {
     flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -139,12 +93,12 @@ const S = {
   // fill (same convention as the folder/file row hover) makes it obviously
   // interactive without needing a heavy filled default state.
   multiRemoveBtn: {
-    flexShrink: 0, border: "none", background: "transparent", color: "#6c757d",
+    flexShrink: 0, border: "none", background: "transparent", color: COLORS.muted,
     cursor: "pointer", width: "22px", height: "22px", borderRadius: "50%",
     display: "flex", alignItems: "center", justifyContent: "center",
     fontSize: "16px", fontWeight: "600", lineHeight: 1, padding: 0,
   },
-  pillEmpty: { fontSize: "12px", color: "#6c757d", fontStyle: "italic" },
+  pillEmpty: { ...M.hint, fontStyle: "italic" },
   // Circle border follows the button's own text color (maroon normally,
   // white on the .maroon-button hover state), so it stays visible either way.
   plusBadge: {
@@ -157,7 +111,7 @@ const S = {
     display: "inline-flex", alignItems: "center", justifyContent: "center",
     minWidth: "18px", height: "18px", padding: "0 5px",
     borderRadius: "9px", fontSize: "11px", fontWeight: "700",
-    marginLeft: "8px", backgroundColor: "white", color: "#500000",
+    marginLeft: "8px", backgroundColor: "white", color: COLORS.maroon,
   },
 };
 
@@ -566,12 +520,12 @@ function Picker(props) {
                           style={S.multiRemoveBtn}
                           onClick={() => removeMultiValue(path)}
                           onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = "#fff0f0";
-                            e.currentTarget.style.color = "#500000";
+                            e.currentTarget.style.backgroundColor = COLORS.rowHover;
+                            e.currentTarget.style.color = COLORS.maroon;
                           }}
                           onMouseOut={(e) => {
                             e.currentTarget.style.backgroundColor = "transparent";
-                            e.currentTarget.style.color = "#6c757d";
+                            e.currentTarget.style.color = COLORS.muted;
                           }}
                         >
                           &minus;
@@ -633,13 +587,13 @@ function Picker(props) {
             <div className="modal-body">
               <div className="container">
                 {mainPathsError && (
-                  <div className="alert alert-warning py-1 px-2" role="alert" style={{ fontSize: "13px" }}>
+                  <div className="alert alert-warning py-1 px-2" role="alert" style={M.inlineAlert}>
                     {mainPathsError}
                   </div>
                 )}
                 {isLoadingMainPaths ? (
                   <div style={S.loadingRow}>
-                    <span className="spinner-border spinner-border-sm" style={{ color: "#500000" }} role="status" aria-hidden="true"></span>
+                    <span className="spinner-border spinner-border-sm" style={M.spinner} role="status" aria-hidden="true"></span>
                     Loading locations&hellip;
                   </div>
                 ) : (
@@ -663,7 +617,7 @@ function Picker(props) {
                   <div style={S.breadcrumb}>
                     {breadcrumbs.map((crumb, i) => (
                       <React.Fragment key={crumb.path}>
-                        {i > 0 && <span style={{ color: "#adb5bd" }}>/</span>}
+                        {i > 0 && <span style={{ color: COLORS.faint }}>/</span>}
                         <button
                           type="button"
                           style={S.crumbBtn(i === breadcrumbs.length - 1)}
@@ -684,12 +638,12 @@ function Picker(props) {
                 )}
 
                 {browseError && (
-                  <div className="alert alert-danger py-1 px-2" role="alert" style={{ fontSize: "13px" }}>
+                  <div className="alert alert-danger py-1 px-2" role="alert" style={M.inlineAlert}>
                     {browseError}
                   </div>
                 )}
                 {truncated && !browseError && (
-                  <div className="alert alert-warning py-1 px-2" role="alert" style={{ fontSize: "13px" }}>
+                  <div className="alert alert-warning py-1 px-2" role="alert" style={M.inlineAlert}>
                     Showing the first 500 entries only — this directory has more.
                   </div>
                 )}
@@ -697,7 +651,7 @@ function Picker(props) {
                 <div style={S.fileList}>
                   {isLoading && (
                     <div style={S.empty}>
-                      <span className="spinner-border spinner-border-sm me-2" style={{ color: "#500000" }} role="status" aria-hidden="true"></span>
+                      <span className="spinner-border spinner-border-sm me-2" style={M.spinner} role="status" aria-hidden="true"></span>
                       Loading&hellip;
                     </div>
                   )}
@@ -721,7 +675,7 @@ function Picker(props) {
                       style={S.entry(false)}
                       onClick={() => navigateTo(path[1])}
                       onKeyDown={(e) => handleRowKeyDown(e, () => navigateTo(path[1]))}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#fff0f0")}
+                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = COLORS.rowHover)}
                       onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                     >
                       <i className="fas fa-folder" style={S.entryIcon(true)} aria-hidden="true"></i>
@@ -742,7 +696,7 @@ function Picker(props) {
                           style={S.entry(isSelected)}
                           onClick={() => selectFile(path[1])}
                           onKeyDown={(e) => handleRowKeyDown(e, () => selectFile(path[1]))}
-                          onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "#f8f9fa"; }}
+                          onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = COLORS.rowHoverNeutral; }}
                           onMouseOut={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
                         >
                           <i className="fas fa-file" style={S.entryIcon(false)} aria-hidden="true"></i>
@@ -754,7 +708,7 @@ function Picker(props) {
 
                 {selectedFilePath && (
                   <div style={S.selectedBar}>
-                    <i className="fas fa-file" style={{ color: "#500000" }} aria-hidden="true"></i>
+                    <i className="fas fa-file" style={{ color: COLORS.maroon }} aria-hidden="true"></i>
                     <span style={S.selectedPath}>{selectedFilePath}</span>
                   </div>
                 )}

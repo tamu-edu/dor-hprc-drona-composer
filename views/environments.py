@@ -10,6 +10,7 @@ import shutil
 from .error_handler import APIError, handle_api_error
 from .utils import create_folder_if_not_exist, get_drona_dir, get_envs_dir
 from .env_repo_manager import EnvironmentRepoManager
+from .env_api import DRONA_ENV_API
 
 
 ENV_ICON_DIR = os.path.abspath(os.path.join("static", "env-icons"))
@@ -159,9 +160,21 @@ def get_environment_route(environment):
 
     return template_data
 
+def require_env_import_enabled():
+    """Refuse import requests when the installer turned import off (env_import_enabled
+    in config.yml). The UI hides Import then; this stops direct calls and pages opened
+    before the setting changed. Checked before the env repo is touched."""
+    if not app.config.get('env_import_enabled', True):
+        raise APIError(
+            "Importing environments is disabled",
+            status_code=403,
+            details={'error': 'Importing environments is turned off on this installation.'}
+        )
+
 @handle_api_error
 def add_environment_route():
     """Add a new environment from the repository"""
+    require_env_import_enabled()
     env = request.form.get("env")
 
     if not env:
@@ -180,6 +193,19 @@ def add_environment_route():
         return jsonify({"message": eres["reason"]}), 400
     user_envs_dir = eres["path"]
 
+    # Refuse environments that need a newer Drona before copying: the copy replaces an existing one.
+    # The Import dialog already disables them; this covers direct requests and stale dialogs.
+    env_info = repo_manager.get_environment_info(env)
+    if env_info is not None and not env_info["compatible"]:
+        raise APIError(
+            "Environment needs a newer Drona",
+            status_code=409,
+            details={
+                'error': env_info["incompatible_reason"],
+                'requires_drona': env_info["requires_drona"],
+                'drona_env_api': DRONA_ENV_API,
+            }
+        )
 
     try:
         repo_manager.copy_environment_to_user(env, user_envs_dir)
@@ -276,8 +302,10 @@ def delete_environment_route():
         "env": env
     })
 
+@handle_api_error
 def get_more_envs_info_route():
     """Get additional information about available environments from the repository"""
+    require_env_import_enabled()
     cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
         repo_url=app.config["env_repo_github"],

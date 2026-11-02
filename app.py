@@ -42,10 +42,10 @@ def load_config(config_file='config.yml'):
 
 def resolve_retriever_timeout(config):
     """Seconds a retriever script may run before it is killed: `retriever_timeout`
-    in config.yml, else the DRONA_RETRIEVER_TIMEOUT environment variable, else 30.
+    in config.yml, else the DRONA_RETRIEVER_TIMEOUT environment variable, else 10.
     Resolved once at startup; an invalid value stops the app with a clear error
     instead of being silently replaced."""
-    value = config.get('retriever_timeout', os.getenv('DRONA_RETRIEVER_TIMEOUT', 30))
+    value = config.get('retriever_timeout', os.getenv('DRONA_RETRIEVER_TIMEOUT', 10))
     try:
         timeout = int(value)
     except (TypeError, ValueError):
@@ -56,12 +56,36 @@ def resolve_retriever_timeout(config):
         )
     return timeout
 
+def resolve_env_import_enabled(config):
+    """Whether users may import environments from env_repo_github: `env_import_enabled`
+    in config.yml (missing = true, for config.yml files from before this setting).
+    An empty env_repo_github also disables import, since there is nothing to import from.
+    An unrecognized value stops the app with a clear error."""
+    value = config.get('env_import_enabled', True)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in ('true', 'yes', 'on', '1'):
+            value = True
+        elif normalized in ('false', 'no', 'off', '0'):
+            value = False
+    elif isinstance(value, int):
+        value = bool(value)
+    if not isinstance(value, bool):
+        raise ValueError(f"env_import_enabled must be true or false, got {value!r}")
+    return value and bool(config.get('env_repo_github'))
+
 config_data = load_config()
 config = config_data.get(env, config_data.get('local', config_data['production']))
 app.config.update(config)
 app.config['retriever_timeout'] = resolve_retriever_timeout(app.config)
+app.config['env_import_enabled'] = resolve_env_import_enabled(app.config)
 app.config['user'] = os.environ['USER']
 app.config['drona_root'] = get_drona_root()
+
+# Cluster used to pick runtime_support/drona_runtime_utils/clusters/<name>.py.
+# Empty means auto-detect from Slurm's ClusterName; an existing DRONA_CLUSTER wins.
+if app.config.get('slurm_cluster'):
+    os.environ.setdefault('DRONA_CLUSTER', str(app.config['slurm_cluster']))
 
 
 @app.context_processor
