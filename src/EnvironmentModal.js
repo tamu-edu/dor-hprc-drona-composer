@@ -7,6 +7,7 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError, installedEn
   const [filteredEnvironments, setFilteredEnvironments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   // Installed names as of the last list load: an environment added while the dialog is open stays in place
   // (marked Installed) instead of jumping into the Installed group
   const installedRef = useRef(installedEnvNames || []);
@@ -57,12 +58,18 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError, installedEn
 
   const loadEnvironments = () => {
     setIsLoading(true);
+    setLoadError(null);
 
     const url = document.dashboard_url + "/jobs/composer/get_more_envs_info";
     fetch(url)
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          // The server explains in details.error (e.g. 403 when import is turned off)
+          return response.json().catch(() => null).then((body) => {
+            const reason = body && body.details && body.details.error;
+            setLoadError(reason || `Could not load environments (HTTP ${response.status}).`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          });
         }
         return response.json();
       })
@@ -135,6 +142,8 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError, installedEn
     .sort((a, b) => a.env.localeCompare(b.env));
 
   const resetFilters = () => setSearchTerm('');
+  const isSearching = searchTerm.trim() !== '';
+  const hiddenMatches = installedEnvironments.length + incompatibleEnvironments.length;
 
   const installed = new Set(installedEnvNames || []);
 
@@ -165,7 +174,11 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError, installedEn
               <span>{CLUSTER_NOTICE}</span>
             </div>
 
-            {isLoading ? (
+            {loadError ? (
+              <div style={{ ...M.list, ...S.listBox }}>
+                <div style={M.emptyState} role="alert">{loadError}</div>
+              </div>
+            ) : isLoading ? (
               <div style={{ ...M.list, ...S.listBox }}>
                 <div style={M.emptyState}>
                   <span className="spinner-border spinner-border-sm mr-2" style={M.spinner} role="status" aria-hidden="true"></span>
@@ -205,13 +218,17 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError, installedEn
                       </div>
                     ) : (
                       <div style={{ ...M.list, ...S.listBox }}>
-                        <div style={M.emptyState}>No new environments to add.</div>
+                        <div style={M.emptyState}>
+                          {isSearching && hiddenMatches > 0
+                            ? "No new environments match. Matches are shown in the sections below."
+                            : "No new environments to add."}
+                        </div>
                       </div>
                     )}
-                    <CollapsibleGroup title="Installed" envs={installedEnvironments}>
+                    <CollapsibleGroup title="Installed" envs={installedEnvironments} autoOpen={isSearching}>
                       {(env) => <EnvironmentRow key={env.env} env={env} isInstalled />}
                     </CollapsibleGroup>
-                    <CollapsibleGroup title="Requires a newer Drona" envs={incompatibleEnvironments}>
+                    <CollapsibleGroup title="Requires a newer Drona" envs={incompatibleEnvironments} autoOpen={isSearching}>
                       {(env) => <EnvironmentRow key={env.env} env={env} isInstalled={installed.has(env.env)} />}
                     </CollapsibleGroup>
                   </>
@@ -281,21 +298,60 @@ const S = {
     textTransform: "uppercase", color: COLORS.textSecondary,
   },
   groupCount: { fontWeight: "400", color: COLORS.muted },
-  groupToggle: {
-    ...M.bar, width: "100%", textAlign: "left", cursor: "pointer",
-    color: COLORS.textSecondary, fontSize: "13px", fontWeight: "500", marginBottom: "8px",
+  // Section toggle: maroon and white (not a grey bar) so it doesn't read as a static heading like the category headers
+  groupToggle: (hover) => ({
+    display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left", cursor: "pointer",
+    padding: "6px 10px", marginBottom: "8px", fontSize: "13px", fontWeight: "600", color: COLORS.maroon,
+    backgroundColor: hover ? COLORS.rowHover : "white",
+    border: "none", borderTop: `1px solid ${COLORS.border}`, borderRadius: 0,
+  }),
+  groupChevron: { fontSize: "12px", color: COLORS.maroon, width: "12px", flexShrink: 0 },
+  groupToggleCount: {
+    fontSize: "11px", fontWeight: "400", padding: "0 6px", borderRadius: "9px",
+    border: `1px solid ${COLORS.border}`, color: COLORS.muted, lineHeight: "16px",
   },
+  groupToggleAction: { marginLeft: "auto", fontSize: "12px", fontWeight: "400", color: COLORS.maroon },
 };
 
-// Collapsed-by-default section below the main list (Installed, Requires a newer Drona); hidden when empty
-const CollapsibleGroup = ({ title, envs, children }) => {
+// Collapsed-by-default section below the main list (Installed, Requires a newer Drona); hidden when empty.
+// autoOpen (a search is active) opens it while it has matches, so a match is never hidden in a closed section;
+// it closes again when the search is cleared unless the user toggled it in the meantime.
+const CollapsibleGroup = ({ title, envs, autoOpen, children }) => {
   const [open, setOpen] = useState(false);
+  const [hover, setHover] = useState(false);
+  const autoOpened = useRef(false);
+  const shouldAutoOpen = !!autoOpen && envs.length > 0;
+
+  useEffect(() => {
+    if (shouldAutoOpen && !open) {
+      setOpen(true);
+      autoOpened.current = true;
+    } else if (!shouldAutoOpen && autoOpened.current) {
+      setOpen(false);
+      autoOpened.current = false;
+    }
+  }, [shouldAutoOpen]);
+
   if (!envs.length) return null;
+  const toggle = () => {
+    autoOpened.current = false;
+    setOpen(!open);
+  };
   return (
     <div style={{ marginTop: "10px" }}>
-      <button type="button" style={S.groupToggle} aria-expanded={open} onClick={() => setOpen(!open)}>
-        <i className={"fas " + (open ? "fa-chevron-down" : "fa-chevron-right")} style={M.rowChevron} aria-hidden="true"></i>
-        <span style={{ marginLeft: "6px" }}>{title} ({envs.length})</span>
+      <button
+        type="button"
+        style={S.groupToggle(hover)}
+        aria-expanded={open}
+        aria-label={`${title} (${envs.length})`}
+        onClick={toggle}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+      >
+        <i className={"fas " + (open ? "fa-chevron-down" : "fa-chevron-right")} style={S.groupChevron} aria-hidden="true"></i>
+        {title}
+        <span style={S.groupToggleCount}>{envs.length}</span>
+        <span style={S.groupToggleAction} aria-hidden="true">{open ? "Hide" : "Show"}</span>
       </button>
       {open && <div style={{ ...M.list, ...S.listBox }}>{envs.map(children)}</div>}
     </div>

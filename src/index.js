@@ -6,6 +6,9 @@ import RerunPromptModal from "./RerunPromptModal";
 import EnvironmentModal from "./EnvironmentModal";
 import { GlobalFilesContext } from './GlobalFilesContext';
 
+// Installer setting (env_import_enabled in config.yml, set by layout.html); missing = enabled
+const envImportEnabled = document.env_import_enabled !== false;
+
 export function App() {
   const [globalFiles, setGlobalFiles] = useState([]);
   const [environment, setEnvironment] = useState({ env: "", src: "" });
@@ -740,7 +743,7 @@ export function App() {
           handlePreview={handlePreview}
           rerunInfo={rerunInfo}
           handleEnvChange={handleEnvChange}
-          handleAddEnv={handleAddEnv}
+          handleAddEnv={envImportEnabled ? handleAddEnv : undefined}
           handleUploadedFiles={handleUploadedFiles}
           sync_job_name={sync_job_name}
           formRef={formRef}
@@ -770,12 +773,14 @@ export function App() {
             onCancel={handleRerunCancel}
           />
         )}
-        <EnvironmentModal
-          envModalRef={envModalRef}
-          onAddEnvironment={handleAddEnvironment}
-          setError={setError}
-          installedEnvNames={environments.filter((e) => e.is_user_env).map((e) => e.value || e.env)}
-        />
+        {envImportEnabled && (
+          <EnvironmentModal
+            envModalRef={envModalRef}
+            onAddEnvironment={handleAddEnvironment}
+            setError={setError}
+            installedEnvNames={environments.filter((e) => e.is_user_env).map((e) => e.value || e.env)}
+          />
+        )}
       </>
     </GlobalFilesContext.Provider>
   );

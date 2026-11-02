@@ -87,6 +87,44 @@ test('groups environments by category and searches category, organization and cl
   expect(screen.getByText('Generic')).toBeInTheDocument();
 });
 
+test('a search opens the sections that hold matches and closes them again when cleared', async () => {
+  mockFetch({ body: { status: 'Success' } });
+  await renderModal({ installedEnvNames: ['Generic'] }, 'PyTorch-Lightning');
+  const installedToggle = screen.getByRole('button', { name: /Installed \(1\)/ });
+  expect(installedToggle).toHaveAttribute('aria-expanded', 'false');
+  expect(installedToggle).toHaveTextContent('Show');
+
+  const search = screen.getByRole('textbox', { name: 'Search environments' });
+  fireEvent.change(search, { target: { value: 'generic' } });
+  expect(screen.getByText('Generic')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Installed \(1\)/ })).toHaveAttribute('aria-expanded', 'true');
+  expect(screen.getByRole('button', { name: /Installed \(1\)/ })).toHaveTextContent('Hide');
+  expect(screen.getByText(/Matches are shown in the sections below/)).toBeInTheDocument();
+
+  fireEvent.change(search, { target: { value: '' } });
+  expect(screen.getByRole('button', { name: /Installed \(1\)/ })).toHaveAttribute('aria-expanded', 'false');
+  expect(screen.queryByText('Generic')).toBeNull();
+
+  // Opened by hand: stays open through a search and after it is cleared
+  fireEvent.click(screen.getByRole('button', { name: /Installed \(1\)/ }));
+  fireEvent.change(search, { target: { value: 'generic' } });
+  fireEvent.change(search, { target: { value: '' } });
+  expect(screen.getByRole('button', { name: /Installed \(1\)/ })).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('shows the server reason when the list cannot be loaded (import turned off)', async () => {
+  global.fetch = jest.fn(() => Promise.resolve({
+    ok: false, status: 403,
+    json: () => Promise.resolve({ error: true, message: 'Importing environments is disabled',
+      details: { error: 'Importing environments is turned off on this installation.' } }),
+  }));
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+  await renderModal({}, 'Importing environments is turned off on this installation.');
+  expect(screen.getByRole('alert')).toHaveTextContent('turned off on this installation');
+  expect(screen.queryByText(/No environments match/)).toBeNull();
+  console.error.mockRestore();
+});
+
 test('a successful Add shows Installed and notifies the composer', async () => {
   mockFetch({ body: { status: 'Success' } });
   const { onAdd } = await renderModal();

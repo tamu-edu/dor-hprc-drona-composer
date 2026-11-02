@@ -71,6 +71,7 @@
         document.file_editor_url = "{{ config.file_editor_url }}";
         document.user = "{{ config.user }}";
 	document.drona_dir = {{ current_drona_dir|tojson }};
+	document.env_import_enabled = {{ config.get('env_import_enabled', True)|tojson }};
 	document.drona_root = "{{ config.drona_root }}";
 	document.module_db_root = "{{ config.module_db_root or '' }}";
 

@@ -443,7 +443,7 @@ function JobComposer({
         isSubmitDisabled={isSubmitDisabled}
       />
 
-      <EnvironmentModal envModalRef={envModalRef} />
+      {document.env_import_enabled !== false && <EnvironmentModal envModalRef={envModalRef} />}
 
       <ConfirmationModal
         isOpen={showConfirmationModal}

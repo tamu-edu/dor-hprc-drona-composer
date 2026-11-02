@@ -160,9 +160,21 @@ def get_environment_route(environment):
 
     return template_data
 
+def require_env_import_enabled():
+    """Refuse import requests when the installer turned import off (env_import_enabled
+    in config.yml). The UI hides Import then; this stops direct calls and pages opened
+    before the setting changed. Checked before the env repo is touched."""
+    if not app.config.get('env_import_enabled', True):
+        raise APIError(
+            "Importing environments is disabled",
+            status_code=403,
+            details={'error': 'Importing environments is turned off on this installation.'}
+        )
+
 @handle_api_error
 def add_environment_route():
     """Add a new environment from the repository"""
+    require_env_import_enabled()
     env = request.form.get("env")
 
     if not env:
@@ -290,8 +302,10 @@ def delete_environment_route():
         "env": env
     })
 
+@handle_api_error
 def get_more_envs_info_route():
     """Get additional information about available environments from the repository"""
+    require_env_import_enabled()
     cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
         repo_url=app.config["env_repo_github"],

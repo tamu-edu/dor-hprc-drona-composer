@@ -26,14 +26,26 @@ rm config.yml.bak
 # Ask how long a retriever script may run before it is killed (retriever_timeout
 # in config.yml). Enter keeps the default.
 while true; do
-  read -p "Retriever script timeout in seconds [30]: " RETRIEVER_TIMEOUT
-  RETRIEVER_TIMEOUT="${RETRIEVER_TIMEOUT:-30}"
+  read -p "Retriever script timeout in seconds [10]: " RETRIEVER_TIMEOUT
+  RETRIEVER_TIMEOUT="${RETRIEVER_TIMEOUT:-10}"
   if [[ "$RETRIEVER_TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
     break
   fi
   echo "Timeout must be a positive whole number of seconds."
 done
 sed -i -e "s/^\(  retriever_timeout: \)[0-9]*/\1$RETRIEVER_TIMEOUT/" config.yml
+
+# Ask whether users may import environments from the environment repository
+# (env_import_enabled in config.yml). Enter keeps the default (yes).
+while true; do
+  read -p "Allow users to import environments from the environment repository? [Y/n]: " ENV_IMPORT
+  case "${ENV_IMPORT:-y}" in
+    [Yy]*) ENV_IMPORT_ENABLED=true;  break ;;
+    [Nn]*) ENV_IMPORT_ENABLED=false; break ;;
+    *) echo "Please answer y or n." ;;
+  esac
+done
+sed -i -e "s/^\(  env_import_enabled: \)[a-z]*/\1$ENV_IMPORT_ENABLED/" config.yml
 
 # Ask which environment this app should run as (matches the sections in config.yml).
 # The menu shows friendlier labels, but the value written to .env/config.yml

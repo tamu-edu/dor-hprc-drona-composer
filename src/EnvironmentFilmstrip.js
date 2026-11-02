@@ -142,14 +142,17 @@ function EnvironmentFilmstrip({
             <div className="env-empty">No environments found.</div>
           )}
 
-          <button
-            type="button"
-            className="env-tile env-add"
-            onClick={onAddEnvironment}
-          >
-            <div className="env-add-icon">+</div>
-            <div className="env-name">Import</div>
-          </button>
+          {/* No handler when the installer turned import off (env_import_enabled: false) */}
+          {onAddEnvironment && (
+            <button
+              type="button"
+              className="env-tile env-add"
+              onClick={onAddEnvironment}
+            >
+              <div className="env-add-icon">+</div>
+              <div className="env-name">Import</div>
+            </button>
+          )}
         </div>
       </div>
     </div>

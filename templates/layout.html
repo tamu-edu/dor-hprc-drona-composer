@@ -108,6 +108,7 @@
            document.file_editor_url = "{{ config.file_editor_url }}";
            document.user = "{{ config.user }}";
            document.drona_dir = {{ current_drona_dir|tojson }};
+           document.env_import_enabled = {{ config.get('env_import_enabled', True)|tojson }};
 
         window.CONFIG_STATUS_URL = "{{ url_for('job_composer.config_status') }}";
         window.CONFIG_SAVE_URL = "{{ url_for('job_composer.config_save') }}";
