@@ -58,15 +58,17 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
+// escalates: whether repeated failures raise the global error alert. StaticText never does
+// (a073c2f: its failures stay in the element); Chart does after FAILURE_ESCALATION_THRESHOLD in a row.
 describe.each([
   ['StaticText', (setError) => (
     <StaticText name="txt" isDynamic retrieverPath="r.sh" refreshInterval={10} setError={setError} />
-  ), 'hello'],
+  ), 'hello', false],
   ['Chart', (setError) => (
     <Chart name="chart" retriever="r.sh" refreshInterval={10} setError={setError} />
-  ), [{ timestamp: 1, cpu: 5 }]],
-])('%s background refresh failures', (_name, makeElement, payload) => {
-  it('keeps content, shows the inline notice, and escalates only after repeated failures', async () => {
+  ), [{ timestamp: 1, cpu: 5 }], true],
+])('%s background refresh failures', (_name, makeElement, payload, escalates) => {
+  it('keeps content, shows the inline notice, and escalates (if at all) only after repeated failures', async () => {
     const setError = jest.fn();
     global.fetch = jest.fn().mockResolvedValueOnce(okResponse(payload)).mockResolvedValue(errorResponse());
 
@@ -81,7 +83,7 @@ describe.each([
     expect(setError).not.toHaveBeenCalled();
 
     for (let i = 1; i < FAILURE_ESCALATION_THRESHOLD; i++) await poll(10000);
-    expect(setError).toHaveBeenCalledTimes(1);
+    expect(setError).toHaveBeenCalledTimes(escalates ? 1 : 0);
 
     global.fetch.mockResolvedValue(okResponse(payload));
     await poll(10000);
