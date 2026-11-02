@@ -15,7 +15,7 @@ def drona_cluster_name():
     """Name of the current cluster (lowercase), or "" if it cannot be determined.
 
     Uses the DRONA_CLUSTER environment variable when set (the app sets it from
-    slurm_cluster in config.yml), else Slurm's own ClusterName."""
+    cluster_name in config.yml), else Slurm's own ClusterName."""
     name = os.environ.get("DRONA_CLUSTER", "").strip()
     if not name:
         try:

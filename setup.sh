@@ -13,8 +13,8 @@ while true; do
   echo "Cluster name cannot be empty."
 done
 
-# Capitalize first letter of CLUSTERNAME
-CLUSTERNAME="$(tr '[:lower:]' '[:upper:]' <<< ${CLUSTERNAME:0:1})${CLUSTERNAME:1}"
+# CLUSTERNAME is written exactly as entered (display name, e.g. "VISION");
+# drona_cluster_name() lowercases it to pick runtime_support clusters/<name>.py.
 
 # Generate config.yml from its template, then replace cluster-name, app-name, user-name
 cp config.yml.template config.yml
