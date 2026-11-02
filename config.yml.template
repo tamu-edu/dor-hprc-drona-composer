@@ -1,5 +1,5 @@
 development: &common_settings
-  cluster_name: "[cluster-name]"
+  cluster_name: "[cluster-name]"  # display name; lowercased it also selects runtime_support clusters/<name>.py
   dashboard_url: "/pun/dev/[app-name]"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"
@@ -11,7 +11,6 @@ development: &common_settings
   retriever_timeout: 10  # seconds before a retriever script is killed (HTTP 504)
   env_import_enabled: true  # false: hide Import; users can't import environments from env_repo_github
   env_repo_ref: "drona-v2"  # branch of env_repo_github to import from; falls back to main if missing
-  slurm_cluster: ""  # selects runtime_support clusters/<name>.py; empty = Slurm's ClusterName
 
 production:
   <<: *common_settings

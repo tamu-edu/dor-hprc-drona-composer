@@ -82,10 +82,11 @@ app.config['env_import_enabled'] = resolve_env_import_enabled(app.config)
 app.config['user'] = os.environ['USER']
 app.config['drona_root'] = get_drona_root()
 
-# Cluster used to pick runtime_support/drona_runtime_utils/clusters/<name>.py.
-# Empty means auto-detect from Slurm's ClusterName; an existing DRONA_CLUSTER wins.
-if app.config.get('slurm_cluster'):
-    os.environ.setdefault('DRONA_CLUSTER', str(app.config['slurm_cluster']))
+# cluster_name (lowercased by drona_cluster_name()) picks
+# runtime_support/drona_runtime_utils/clusters/<name>.py. Empty means auto-detect
+# from Slurm's ClusterName; an existing DRONA_CLUSTER wins.
+if app.config.get('cluster_name'):
+    os.environ.setdefault('DRONA_CLUSTER', str(app.config['cluster_name']))
 
 
 @app.context_processor
