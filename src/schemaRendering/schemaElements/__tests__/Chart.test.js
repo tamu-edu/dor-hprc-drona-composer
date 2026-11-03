@@ -111,6 +111,26 @@ describe('deriveSeries', () => {
     ]);
   });
 
+  test('auto mode drops keys no longer in the buffer but keeps their color if they return', () => {
+    const seenOrderRef = { current: new Map() };
+    const colors = ['#a', '#b', '#c'];
+    const run = (buffer) => deriveSeries({ seriesProp: 'auto', buffer, xKey: 'Step', colors, seenOrderRef });
+
+    expect(run([{ Step: 0, Temp: 3, Press: 1, PotEng: -6 }]).map((s) => s.key))
+      .toEqual(['Temp', 'Press', 'PotEng']);
+
+    // Press unchecked in the filter: the retriever stops sending it.
+    expect(run([{ Step: 0, Temp: 3, PotEng: -6 }]).map((s) => [s.key, s.color]))
+      .toEqual([['Temp', '#a'], ['PotEng', '#c']]);
+
+    // Empty buffer: no series at all.
+    expect(run([])).toEqual([]);
+
+    // Press re-checked: back in its original position and color.
+    expect(run([{ Step: 0, Temp: 3, Press: 1, PotEng: -6 }]).map((s) => [s.key, s.color]))
+      .toEqual([['Temp', '#a'], ['Press', '#b'], ['PotEng', '#c']]);
+  });
+
   test('reassigns colors from the start of the sequence past the palette length, with a dash pattern', () => {
     const seenOrderRef = { current: new Map() };
     const colors = ['#a', '#b'];

@@ -150,7 +150,7 @@ function applyPreset(acc, name, params, warnedParams, only) {
   if (name === "card") acc.dot = params.dot !== false;
   if ((name === "card" || name === "bar") && typeof params.badge === "string") acc.badge = params.badge;
   if (name === "card" && params.compact === true) acc.compact = true;
-  // Elements that opt in (staticText) get a toggle on the title pill; "collapsed" is the initial state
+  // Card frames (staticText, chart, dynamicTable, container, choice groups) get a toggle on the title pill; "collapsed" is the initial state
   if (name === "card" && (params.collapsible === true || params.collapsed === true)) {
     acc.collapsible = true;
     acc.collapsed = params.collapsed === true;

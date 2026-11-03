@@ -30,13 +30,15 @@
  *   }
  * }
  *
- * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Job Resources" }; a CSS object applies to the content area. Unset renders no frame.
+ * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot), "boxed" or "bar", e.g. { "preset": "card", "title": "Job Resources" }; a CSS object applies to the content area. Unset renders no frame.
+ * @property {boolean} [layout.collapsible] - Card only: the title pill folds the content (kept mounted; retrievers of child elements pause while folded).
+ * @property {boolean} [layout.collapsed] - Card only: start folded (implies collapsible).
  * @property {Array} elements - Array of field configuration objects to be rendered in the row
  */
 
 import React, { useMemo } from "react";
 import FieldRenderer from "../FieldRenderer";
-import LayoutFrame from "../utils/LayoutFrame";
+import CollapsibleFrame from "../utils/CollapsibleFrame";
 import { resolveLayout } from "../utils/choiceStyles";
 
 const FRAME_PRESETS = ["boxed", "card", "bar"];
@@ -55,7 +57,7 @@ function Container({
   const resolved = useMemo(() => resolveLayout(layout, { only: FRAME_PRESETS }), [layout]);
 
   return (
-    <LayoutFrame resolved={resolved}>
+    <CollapsibleFrame resolved={resolved}>
       <div className="form-group">
         <FieldRenderer
           fields={elements}
@@ -67,7 +69,7 @@ function Container({
           locationProps={locationProps}
         />
       </div>
-    </LayoutFrame>
+    </CollapsibleFrame>
   );
 }
 

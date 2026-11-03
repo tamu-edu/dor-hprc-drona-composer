@@ -14,7 +14,7 @@
           "JOBS": "$drona_info_jobs"
         },
         "retriever": "drona_slurm_jobs.sh",
-        "layout": { "preset": "card", "title": "Slurm Jobs" }
+        "layout": { "preset": "card", "title": "Slurm Jobs", "collapsible": true }
       },
       "drona_cancel_jobs": {
         "type": "dynamicCheckboxGroup",
@@ -24,7 +24,7 @@
         "pruneMissing": true,
         "style": "toggle",
         "layout": [
-          { "preset": "card", "title": "Slurm Actions" },
+          { "preset": "card", "title": "Slurm Actions", "collapsible": true },
           "list",
           { "maxHeight": "220px", "overflowY": "auto" }
         ],

@@ -249,16 +249,21 @@ export function deriveSeries({ seriesProp, buffer, xKey, seriesLabelMap, colors,
   }
 
   // "auto" mode: union of keys across the buffer, excluding the x-axis key,
-  // in first-seen order (cached across renders so colors stay stable).
+  // in first-seen order. The first-seen index is cached across renders so colors stay
+  // stable, but only keys present in the current buffer are returned: a key the
+  // retriever stopped sending (e.g. a filter option was unchecked) drops out instead of
+  // leaving an empty series/panel, and gets its old color back if it returns.
   const seen = seenOrderRef.current;
+  const present = new Set();
   for (const sample of buffer) {
     for (const key of Object.keys(sample)) {
-      if (key === xKey || seen.has(key) || (matcher && !matcher.test(key))) continue;
-      seen.set(key, seen.size);
+      if (key === xKey || present.has(key) || (matcher && !matcher.test(key))) continue;
+      present.add(key);
+      if (!seen.has(key)) seen.set(key, seen.size);
     }
   }
 
-  return Array.from(seen.keys()).map((key) => {
+  return Array.from(seen.keys()).filter((key) => present.has(key)).map((key) => {
     const i = seen.get(key);
     return {
       key,

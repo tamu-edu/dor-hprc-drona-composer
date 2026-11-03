@@ -74,3 +74,16 @@ describe('ChoiceOptions', () => {
     expect(screen.getByText('Plain').querySelector('style')).toBeNull();
   });
 });
+
+describe('ChoiceOptions collapsible card', () => {
+  test('title pill folds the options', () => {
+    render(<ChoiceOptions type="checkbox" {...base} selected={[]}
+      layout={[{ preset: 'card', title: 'Slurm Actions', collapsed: true }, 'list']} />);
+    const pill = screen.getByRole('button', { name: /Slurm Actions/ });
+    expect(pill).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByText('Alpha')).not.toBeVisible();
+    fireEvent.click(pill);
+    expect(pill).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Alpha')).toBeVisible();
+  });
+});
