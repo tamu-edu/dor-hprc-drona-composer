@@ -56,7 +56,7 @@ The functions these entries call live in `runtime_support/drona_runtime_utils/` 
 |---|---|---|---|
 | `drona_cancel_jobs` | `CANCEL` | `retrieve_cancel_jobs` | `mode`, `drona_cancel_jobs`, `jobs` |
 | `drona_cpu_monitor` | `CPU_MONITOR_START`, `CPU_MONITOR_STOP` | `retrieve_cpu_monitor_start/stop` | `drona_cpu_monitor` |
-| `drona_gpu_monitor` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start/stop` | `drona_gpu`, `drona_gpu_monitor` |
+| `drona_gpu_monitor_nvml` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start_nvml`, `retrieve_gpu_monitor_stop` | `drona_gpu`, `drona_gpu_monitor` |
 | `drona_slurm_params` | `DUMMY` | `retrieve_slurm_params` | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
 
 `retrieve_slurm_params` calls `cluster_slurm_checks` from `runtime_support/drona_runtime_utils/clusters/<cluster>.py`, chosen by the cluster name (with `defaultcluster.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the workflow needs no cluster files of its own.

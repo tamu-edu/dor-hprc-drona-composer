@@ -1,6 +1,6 @@
 #!/bin/bash
 # Hidden checker for schemas/manage.schema.json — the "GPU Utilization" chart
-# is only shown once this reports ACTIVE, i.e. drona_start_gpu_monitor has
+# is only shown once this reports ACTIVE, i.e. drona_start_gpu_monitor_nvml has
 # actually written at least one sample. This is checked (not the create-time
 # checkbox value, which no longer exists once Manage's own form is open) so
 # the chart correctly stays hidden both when monitoring was never enabled AND

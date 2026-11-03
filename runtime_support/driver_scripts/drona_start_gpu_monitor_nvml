@@ -1,11 +1,10 @@
 #!/bin/bash
-# NVML counterpart of drona_start_gpu_monitor. Instead of a long-lived
-# `nvidia-smi -l`, launches one drona_gpu_nvml_sampler.py per node of the job
-# (via srun, inside the job's allocation), which reads the GPUs through the
-# NVML library directly and appends samples to
-# drona_monitoring/gpu_util_node_<hostname>.csv in the job's working directory,
-# in the SAME format drona_start_gpu_monitor writes, so drona_gpu_chart_data.sh /
-# drona_gpu_chart_active.sh and the `chart` element work unchanged:
+# NVIDIA GPU utilization monitor. Launches one drona_gpu_nvml_sampler.py per
+# node of the job (via srun, inside the job's allocation), which reads the GPUs
+# through the NVML library directly and appends samples to
+# drona_monitoring/gpu_util_node_<hostname>.csv in the job's working directory.
+# drona_gpu_chart_data.sh / drona_gpu_chart_active.sh and the `chart` element
+# read this format:
 #   timestamp, index, utilization.gpu, memory.used, memory.total
 #
 # drona_gpu_nvml_sampler.py must sit next to this script (both are copied into

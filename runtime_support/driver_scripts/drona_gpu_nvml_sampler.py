@@ -2,9 +2,9 @@
 # Per-node GPU sampler used by drona_start_gpu_monitor_nvml (one copy per node,
 # launched via srun). Reads utilization and memory straight from NVML
 # (libnvidia-ml.so.1, loaded with ctypes so no pynvml install is needed) and
-# appends samples to drona_monitoring/gpu_util_node_<hostname>.csv in the SAME
-# format drona_start_gpu_monitor's `nvidia-smi --query-gpu` writes, so
-# drona_gpu_chart_data.sh / drona_gpu_chart_active.sh work unchanged:
+# appends samples to drona_monitoring/gpu_util_node_<hostname>.csv in the CSV
+# format of `nvidia-smi --query-gpu` (what drona_gpu_chart_data.sh /
+# drona_gpu_chart_active.sh read):
 #   YYYY/MM/DD HH:MM:SS.mmm, index, utilization %, memory used MiB, memory total MiB
 #
 # NVML is initialized once and kept open for the life of the process, for the
