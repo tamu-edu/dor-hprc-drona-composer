@@ -69,16 +69,20 @@ To get additional information for any of the input fields, hover over the little
 :::
 
 :::note
-You are not required to enter values for all (or any) of the fields. When no value is specified, Drona Workflow Engine will use default values. Once you are finished entering values, click the **Preview** button.
+You are not required to enter values for all (or any) of the fields. When no value is specified, Drona Workflow Engine will use default values. Once you are finished entering values, click the **Generate** button.
 :::
 
-## Drona Preview Window
+## Generated Scripts Window
 
-After clicking Preview, a preview window will appear showing the generated job scripts and any validation messages.
+After clicking Generate, the **Generated Scripts** window appears, showing the generated job scripts and any validation messages. Click **Run** in that window to run them; the output streams into the same window.
+
+:::note
+Some environments use their own wording for these buttons and this window, for example **Run action** in Manage mode.
+:::
 
 ![Drona Preview Window](/img/user-guide/preview-window.png)
 
-The preview window contains the following components:
+The window contains the following components:
 
 ### Message Pane
 

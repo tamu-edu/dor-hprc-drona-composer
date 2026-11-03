@@ -11,6 +11,7 @@ import { useJobSocket } from "./hooks/useJobSocket";
 import EnvironmentFilmstrip from "./EnvironmentFilmstrip";
 import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
 import ConfigGate from "./ConfigGate";
+import { DEFAULT_BUTTON_LABELS } from "./schemaRendering/utils/buttonLabels";
 import Footer from "./Footer";
 import "./styles/JobComposerEnvSplitStyles.js";
 
@@ -39,6 +40,8 @@ function JobComposer({
   const [showEnvironmentFilmstrip, setShowEnvironmentFilmstrip] = useState(true);
 
   const [workflowMode, setWorkflowmode] = useState(null)
+  // Workflow button text; the schema's visible buttonLabels element sets it (see Composer)
+  const [buttonLabels, setButtonLabels] = useState(DEFAULT_BUTTON_LABELS);
 
   const {
     lines,
@@ -376,6 +379,7 @@ function JobComposer({
                                   onFileChange={props.handleUploadedFiles}
                                   setError={setError}
                                   ref={props.composerRef}
+                                  onButtonLabelsChange={setButtonLabels}
                                   sync_job_name={props.sync_job_name}
                                   runLocation={props.runLocation}
                                   setRunLocation={props.setRunLocation}
@@ -397,7 +401,7 @@ function JobComposer({
                                         type="button"
                                         id="job-preview-button"
                                         className="btn btn-primary maroon-button"
-                                        value={props.previewButtonText || "Preview"}
+                                        value={buttonLabels.preview}
                                         onClick={handlePreview}
                                       />
                                     </div>
@@ -441,6 +445,8 @@ function JobComposer({
         // Job control
         isJobRunning={isJobRunning}
         isSubmitDisabled={isSubmitDisabled}
+        submitLabel={buttonLabels.submit}
+        title={buttonLabels.title}
       />
 
       {document.env_import_enabled !== false && <EnvironmentModal envModalRef={envModalRef} />}

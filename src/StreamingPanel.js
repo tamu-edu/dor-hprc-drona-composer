@@ -36,7 +36,7 @@ const StreamingContent = ({ status, htmlOutput, outputLines, styles }) => {
     <div style={styles.placeholder}>
       <div style={styles.placeholder.title}>Live Output Stream</div>
       <div style={styles.placeholder.subtitle}>
-        Job execution output will appear here in real-time once you submit your configuration.
+        Output will appear here in real time once the generated scripts run.
       </div>
     </div>
   );

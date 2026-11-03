@@ -88,7 +88,7 @@ When you check the "Advanced task options" box, additional fields become availab
 
 6. **Write your job script** — In the job composer's main editor, write your Bash script with the commands to run. The script will have access to all uploaded files, loaded modules, and specified resources.
 
-7. **Submit** — Submit your job to run on the cluster.
+7. **Generate and Run** — Click **Generate** to see the generated scripts, then **Run** to submit your job to the cluster.
 
 ### Example Use Cases
 

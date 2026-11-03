@@ -35,6 +35,23 @@ Schema files can utilize all available [Frontend Form Components](../frontend/fo
 
 Components can be organized using containers such as `rowContainer` and `collapsibleRowContainer` that group elements together for conditional display or stylistic purposes to control layout. Containers enable better organization of related fields and create intuitive user interfaces that guide users through workflow configuration.
 
+## Workflow Button Labels
+
+The two workflow buttons default to **Generate** (on the form) and **Run** (in the generated-scripts window, titled **Generated Scripts**). A schema can change all three with a [`buttonLabels`](../frontend/form-components#buttonlabels) element. It only applies while it is visible, so an environment with Create and Manage modes can put one inside its Manage schema and label that mode for actions:
+
+```json
+{
+  "drona_buttons": {
+    "type": "buttonLabels",
+    "preview": "Generate action",
+    "submit": "Run action",
+    "title": "Action Preview"
+  }
+}
+```
+
+Put it at the top level of `schema.json` to change the labels for the whole environment. When several are visible, the most deeply nested one wins.
+
 ## Dynamic Content Integration
 
 Schema files integrate dynamic content through retriever scripts that populate field options or display real-time information. The script provided will be executed when the field loads and whenever user input triggers an update. For detailed information about creating and configuring retriever scripts, see [Retriever Scripts](./retriever-scripts).
