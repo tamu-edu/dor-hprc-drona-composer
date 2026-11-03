@@ -35,7 +35,7 @@ A demonstration of Drona Workflow Engine in action, showing the complete workflo
 | **Jobs Tab** | Access Drona from the HPRC Portal Jobs menu |
 | **Environments Dropdown** | Select from system and user environments |
 | **Input Form** | Fill in workflow-specific fields |
-| **Preview Window** | Review and edit generated job script before submission |
+| **Generated Scripts Window** | Opened with **Generate**; review and edit the generated job script, then click **Run** |
 | **Message Pane** | View form validation warnings such as resource allocation constraints and environment-specific guidance |
 
 ### Environment Types
@@ -52,7 +52,7 @@ Explore and add existing Drona environments using the + icon next to the environ
 
 - **Environments** define the workflow type and determine which form fields are available
 - **Form Fields** are dynamically generated based on the selected environment
-- **Preview Window** shows the generated Slurm scripts, which are fully editable before submission
+- **Generated Scripts window** shows the generated Slurm scripts, which are fully editable before you click **Run**
 - **Message Pane** provides validation feedback and environment-specific guidance
 - **Importing** environments allows you to add new environments from the HPRC repository to your personal directory
 

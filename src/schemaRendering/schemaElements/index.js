@@ -26,6 +26,7 @@ import DynamicViewer from "./DynamicViewer";
 import Container from "./Container";
 import WorkflowRerunRecreate from "./WorkflowRerunRecreate";
 import Chart from "./Chart";
+import ButtonLabels from "./ButtonLabels";
 
 export {
 	Text,
@@ -56,7 +57,8 @@ export {
 	Container,
 	DynamicViewer,
 	WorkflowRerunRecreate,
-	Chart
+	Chart,
+	ButtonLabels
 }
 
 export const componentsMap = {
@@ -87,7 +89,8 @@ export const componentsMap = {
 	container: Container,
 	workflowRerunRecreate: WorkflowRerunRecreate,
 	hidden: Hidden,
-	chart: Chart
+	chart: Chart,
+	buttonLabels: ButtonLabels
 
 };
 

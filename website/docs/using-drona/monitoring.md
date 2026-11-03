@@ -27,13 +27,13 @@ Drona's monitoring capabilities provide:
 
 ## Manage Mode
 
-Each Drona environment that supports monitoring exposes a **Manage** tab alongside the standard **Create** tab. Switching to Manage mode repurposes the familiar three-phase Drona interface (Form → Preview → Execution) for observation and control rather than submission:
+Each Drona environment that supports monitoring exposes a **Manage** tab alongside the standard **Create** tab. Switching to Manage mode repurposes the familiar three-phase Drona interface (Form → Generate → Run) for observation and control rather than submission:
 
 | Phase | In Create mode | In Manage mode |
 |---|---|---|
 | **Form** | Collects job parameters from the user | Displays current workflow metadata and offers action selection |
-| **Preview** | Generates the batch script | Generates the management command (e.g., `scancel`, walltime extension) |
-| **Execution** | Submits the job | Executes the selected action and shows immediate feedback |
+| **Generate** | Generates the batch script | Generates the management command (e.g., `scancel`, walltime extension) |
+| **Run** | Submits the job | Executes the selected action and shows immediate feedback |
 
 To start monitoring a workflow:
 
@@ -62,7 +62,7 @@ This panel also includes an **Action** selector where you can choose to:
 - **Cancel Job** — generates and executes a `scancel` command
 - **Request Walltime Extension** — submits a walltime extension request through the scheduler
 
-Once an action is selected, proceed through the Preview and Execution phases to carry it out. Drona will display immediate feedback confirming the outcome.
+Once an action is selected, click **Generate** and then **Run** to carry it out (an environment may label these buttons for actions, e.g. **Run action**). Drona will display immediate feedback confirming the outcome.
 
 ### Logs
 

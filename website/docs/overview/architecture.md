@@ -119,9 +119,9 @@ sequenceDiagram
     E->>E: Process map.json + utils.py
     E->>E: Generate driver.sh Scripts
     E->>D: Return Generated Scripts
-    D->>R: Show Preview Window
+    D->>R: Show Generated Scripts Window
     R->>D: Approve / Edit Scripts
-    D->>E: Submit Job
+    D->>E: Run (submit job)
     E->>H: Submit to Slurm
     H->>E: Job Status Updates
     E->>D: Real-time Monitoring

@@ -35,11 +35,11 @@ https://portal.hprc.tamu.edu/drona-composer
 1. **Fill out the form** - Complete the dynamically generated form fields
 2. **Upload files** - Add any input files your job requires
 3. **Configure resources** - Set CPU, memory, and time requirements
-4. **Preview** - Review your job configuration before submission
+4. **Generate** - Review and edit the generated scripts before running them
 
 ### Step 4: Submit and Monitor
 
-1. **Submit** your job to the HPC scheduler
+1. **Run** - click Run in the Generated Scripts window to submit your job to the HPC scheduler
 2. **Monitor** real-time status updates
 3. **Download** results when complete
 
@@ -79,7 +79,7 @@ Review the generated job script and submit to the scheduler.
 #### Job Composer Panel
 - **Form Fields**: Dynamically generated based on selected environment
 - **File Manager**: Upload, browse, and manage files
-- **Preview**: Real-time preview of generated job scripts
+- **Generated Scripts**: Review and edit the generated job scripts before running them
 - **History**: Access to previous job submissions
 
 #### Status Panel

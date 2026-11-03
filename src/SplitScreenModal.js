@@ -2,12 +2,13 @@ import React, { useRef, useEffect } from "react";
 import { styles } from "./styles/SplitScreenModalStyles";
 import { useResizeHandle } from "./hooks/useResizeHandle";
 import PreviewPanel from "./PreviewPanel";
+import { DEFAULT_BUTTON_LABELS } from "./schemaRendering/utils/buttonLabels";
 import StreamingPanel from "./StreamingPanel";
 
 // ── Normal modal header ──────────────────────────────────────────────────────
-const ModalHeader = ({ isFullscreen, onFullscreen, onClose, onMinimize, styles }) => (
+const ModalHeader = ({ isFullscreen, onFullscreen, onClose, onMinimize, styles, title }) => (
   <div style={styles.header}>
-    <h5 style={styles.title}>Job Preview</h5>
+    <h5 style={styles.title}>{title}</h5>
     <div style={{ display: 'flex', gap: '0.5rem' }}>
       <button style={styles.minimizeButton} onClick={onFullscreen}
         onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
@@ -47,7 +48,7 @@ const ideIconBtn = {
   lineHeight: 1,
 };
 
-const IDEHeader = ({ onFullscreen, onMinimize, onClose }) => (
+const IDEHeader = ({ onFullscreen, onMinimize, onClose, submitLabel, title }) => (
   <div style={{
     backgroundColor: '#500000',
     height: '36px',
@@ -59,12 +60,12 @@ const IDEHeader = ({ onFullscreen, onMinimize, onClose }) => (
     userSelect: 'none',
   }}>
     <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: '500', flex: 1 }}>
-      Job Preview
+      {title}
     </span>
     <button type="submit" form="slurm-config-form" style={ideHeaderBtn}
       onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
       onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
-    >Submit Job</button>
+    >{submitLabel}</button>
     <button style={ideIconBtn} onClick={onMinimize} title="Minimize"
       onMouseOver={(e) => e.currentTarget.style.color = 'white'}
       onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
@@ -130,12 +131,12 @@ const ResizeHandle = ({ isResizing, onMouseDown, styles }) => (
 );
 
 // ── Normal footer ────────────────────────────────────────────────────────────
-const ModalFooter = ({ onClose, styles }) => (
+const ModalFooter = ({ onClose, styles, submitLabel }) => (
   <div style={styles.footer}>
     <button type="submit" form="slurm-config-form" style={styles.button.primary}
       onMouseOver={(e) => e.target.style.backgroundColor = '#500000'}
       onMouseOut={(e) => e.target.style.backgroundColor = 'maroon'}
-    >Submit Job</button>
+    >{submitLabel}</button>
     <button onClick={onClose} style={styles.button.secondary}
       onMouseOver={(e) => e.target.style.backgroundColor = '#545b62'}
       onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
@@ -169,6 +170,8 @@ const SplitScreenModal = ({
   onMinimize: onMinimizeCallback,
   onExpand: onExpandCallback,
   forceMinimized = null,
+  submitLabel = DEFAULT_BUTTON_LABELS.submit,
+  title = DEFAULT_BUTTON_LABELS.title,
 }) => {
   const contentRef = useRef(null);
   const modalRef = useRef(null);
@@ -221,8 +224,8 @@ const SplitScreenModal = ({
       <div style={modalStyle} onClick={(e) => e.stopPropagation()} ref={modalRef} data-modal-ref>
 
         {isFullscreen
-          ? <IDEHeader onFullscreen={() => setIsFullscreen(false)} onMinimize={handleMinimize} onClose={onClose} />
-          : <ModalHeader isFullscreen={false} onFullscreen={() => setIsFullscreen(true)} onMinimize={handleMinimize} onClose={onClose} styles={styles} />
+          ? <IDEHeader onFullscreen={() => setIsFullscreen(false)} onMinimize={handleMinimize} onClose={onClose} submitLabel={submitLabel} title={title} />
+          : <ModalHeader isFullscreen={false} onFullscreen={() => setIsFullscreen(true)} onMinimize={handleMinimize} onClose={onClose} styles={styles} title={title} />
         }
 
         <div style={styles.contentContainer}>
@@ -251,7 +254,7 @@ const SplitScreenModal = ({
 
         {isFullscreen
           ? <IDEStatusBar status={status} />
-          : <ModalFooter onClose={onClose} styles={styles} />
+          : <ModalFooter onClose={onClose} styles={styles} submitLabel={submitLabel} />
         }
 
       </div>

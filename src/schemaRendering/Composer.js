@@ -5,6 +5,7 @@ import { FormValuesContext } from './FormValuesContext';
 import { evaluateCondition } from './utils/conditionEvaluator';
 
 import { Containers } from "./schemaElements/index"
+import { resolveButtonLabels } from './utils/buttonLabels';
 
 const Composer = forwardRef((props, ref) => {
   const [fields, setFields] = useState([]);
@@ -248,6 +249,13 @@ const Composer = forwardRef((props, ref) => {
       return fields;
     }
   }));
+  // Report the workflow button labels; they follow whichever buttonLabels element is visible
+  const { onButtonLabelsChange } = props;
+  const buttonLabels = resolveButtonLabels(fields);
+  useEffect(() => {
+    onButtonLabelsChange?.(buttonLabels);
+  }, [buttonLabels.preview, buttonLabels.submit, buttonLabels.title, onButtonLabelsChange]);
+
   const contextValue = {
     values: fields,
     updateValue: handleValueChange,

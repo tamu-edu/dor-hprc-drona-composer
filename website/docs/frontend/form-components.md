@@ -123,6 +123,41 @@ A dynamic search-based dropdown component that fetches options as you type. Uses
 
 ---
 
+## ButtonLabels
+
+Sets the text of the two workflow buttons and the title of the window that shows the generated scripts. Renders nothing. It applies only while it is visible: a `buttonLabels` element inside a mode's container (for example in `manage.schema.json`) changes the labels only in that mode. When several are visible, the most deeply nested one wins; at equal depth the later one wins. Keys left out, and the whole element when there is none, fall back to the defaults: **Generate** / **Run** / **Generated Scripts**.
+
+### Properties
+- `preview` (string, optional) - Text of the form button that generates the scripts. Default `Generate`
+- `submit` (string, optional) - Text of the button in the generated-scripts window that runs them. Default `Run`
+- `title` (string, optional) - Title of the generated-scripts window. Default `Generated Scripts`
+- `condition` (string, optional) - Same as other elements; the labels apply only while it is true
+
+### Examples
+#### Example 1
+```json
+// In manage.schema.json: label the buttons for running actions
+{
+"type": "buttonLabels",
+"preview": "Generate action",
+"submit": "Run action",
+"title": "Action Preview"
+}
+```
+
+#### Example 2
+```json
+// At the top of schema.json: one label for the whole environment
+{
+"type": "buttonLabels",
+"submit": "Submit to Slurm"
+}
+```
+
+*Source: `src/schemaRendering/schemaElements/ButtonLabels.js`*
+
+---
+
 ## Chart
 
 A declarative, self-contained live chart backed by Recharts. Polls a retriever script on an interval (like `staticText`) and renders line/bar/area/pie charts from whatever JSON it returns — no JSX or hand-written JS required, every aspect of the chart (type, axes, series, colors) is controlled by plain JSON properties. The retriever may emit a JSON array of samples (replaces the rolling window each poll — the recommended `tail -n <N>` pattern) or a single JSON sample object (appended to an in-memory buffer capped at `maxDataPoints`). Set `series: "auto"` to derive series from whatever keys show up in each sample when the metric set isn't known until runtime (e.g. GPU count varies per job), or pass an explicit array when metric names are fixed and known ahead of time. See the "Live Charts" guide under Environment Development > Advanced Features for the full retriever contract, data-format examples, and suggested retriever scripts. A single poll can also be split across multiple side-by-side panels instead of one combined chart — see `panels` (explicit, for grouping semantically different metrics like GPU % vs. memory GB, each with its own y-axis) and `seriesPerPanel` (automatic, for capping how many lines land in one panel when the series count isn't known ahead of time, e.g. `series: "auto"` with a variable GPU count). Both still poll the retriever exactly once per interval regardless of panel count. If both are given, `panels` wins and `seriesPerPanel` is ignored.
