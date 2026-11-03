@@ -19,7 +19,8 @@ This file explains how the three fit together and lists the conventions that are
 **Schema loading.** When an environment's form is requested, `views/schema_routes.py` reads its `schema.json`, substitutes `$DRONA_RUNTIME_DIR` for the real path, and resolves `$ref`s with `jsonref` (including refs nested inside a referenced file, e.g. a form_component that itself references another form_component). This is how `environments/<Env>/schema.json` pulls in a shared field like:
 
 ```json
-"Modules": { "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_module_picker.json#/Modules" }
+"Modules": { "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_module_picker.json#/drona_Modules",
+             "module_db_root": "/path/readable/by/ood/modules" }
 ```
 
 **Map references.** A `map.json` can list shared mapping files under the reserved `"$include"` key, e.g. `"$include": ["drona_cancel_jobs"]`. A bare name (with or without `.json`) is looked up in `map_references/`; a path containing `/` is used as given (`$DRONA_RUNTIME_DIR` is substituted). The engine (`resolve_map_includes` in `machine_driver_scripts/utils.py`) merges their entries in; entries written directly in the environment's `map.json` override included ones. The fragment relies on the matching form component's field names (`drona_cancel_jobs` needs the cancel element in the schema).

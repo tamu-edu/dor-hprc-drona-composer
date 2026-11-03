@@ -24,10 +24,13 @@ A `form_components/*.json` file is a flat JSON object where each top-level key i
 ```json
 {
   "Modules": {
-    "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_module_picker.json#/Modules"
+    "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_module_picker.json#/drona_Modules",
+    "module_db_root": "/path/readable/by/ood/modules"
   }
 }
 ```
+
+Keys written next to `$ref` override the shared fragment's values. The module picker has no `module_db_root` of its own, so every environment that uses it sets one (see [Form Components → Module](../frontend/form-components#module)).
 
 Two conventions worth following:
 
