@@ -140,6 +140,23 @@ def normalize_toolchain(value):
 def _usable_db(path):
     return os.path.isfile(path) and os.path.getsize(path) > 0
 
+def _has_modules(path):
+    """True if the database exists and its modules table has at least one row.
+
+    A database can be non-empty on disk (schema only) but hold no modules;
+    listing it would offer a toolchain whose search always comes back empty.
+    Opened read-only so a missing file is never created."""
+    if not _usable_db(path):
+        return False
+    try:
+        conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        try:
+            return conn.execute("SELECT 1 FROM modules LIMIT 1").fetchone() is not None
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return False
+
 def module_db_file(module_db_root, toolchain):
     """Path of the database for a toolchain value, or None if there is none.
 
@@ -181,14 +198,14 @@ def get_modules_route():
     return jsonify({'data': module_names})
 
 def list_module_toolchains(module_db_root):
-    """Toolchains that have a non-empty database under module_db_root.
+    """Toolchains whose database under module_db_root has at least one module.
 
     <root>/modules.sqlite3 is "No toolchain (default)" (value ""), and each
     <root>/<family>/<version>.sqlite3 is toolchain <family>/<version>. Legacy
     <root>/modules-<family>/ directories are listed under <family> too; if both
     exist for one toolchain it is listed once."""
     toolchains = []
-    if _usable_db(os.path.join(module_db_root, DEFAULT_MODULE_DB)):
+    if _has_modules(os.path.join(module_db_root, DEFAULT_MODULE_DB)):
         toolchains.append({"label": "No toolchain (default)", "value": ""})
 
     try:
@@ -209,7 +226,7 @@ def list_module_toolchains(module_db_root):
             continue
         for filename in files:
             version, ext = os.path.splitext(filename)
-            if ext != ".sqlite3" or not _usable_db(os.path.join(dir_path, filename)):
+            if ext != ".sqlite3" or not _has_modules(os.path.join(dir_path, filename)):
                 continue
             value = normalize_toolchain(f"{family}/{version}")
             if value and value not in found:
