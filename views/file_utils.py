@@ -1,5 +1,6 @@
 from flask import request, jsonify, send_file, current_app as app
 import os
+import re
 import sqlite3
 from .error_handler import handle_api_error, APIError
 
@@ -104,26 +105,128 @@ def download_file_route():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-def get_modules_route():
-    """Get list of modules matching a query"""
-    query = request.args.get('query')
-    toolchain = request.args.get('toolchain')
-    
-    module_db_root = request.args.get("module_db_root")
-    if not module_db_root:
-        module_db_root = app.config["modules_db_path"]
-    modules_db_path = os.path.join(module_db_root, f"{toolchain}.sqlite3")
-    #modules_db_path = request.args.get("module_db_root") + f'{toolchain}.sqlite3'
-    #modules_db_path = app.config['modules_db_path'] + f'{toolchain}.sqlite3'
+# Module picker databases
+#
+# A toolchain value is the toolchain's module name, e.g. "foss/2024a"; "" means
+# no toolchain. The database for a value is <module_db_root>/<value>.sqlite3,
+# and <module_db_root>/modules.sqlite3 for "". The environment sets
+# module_db_root on its module element; Drona has no default for it.
+#
+# Older schemas and directories used "modules-foss/2024a" (and "modules" for the
+# default); those are still accepted: the prefix is dropped from values, and a
+# database at <root>/modules-<family>/<version>.sqlite3 is still found.
 
-    with sqlite3.connect(modules_db_path) as modules_db:
+DEFAULT_MODULE_DB = "modules.sqlite3"
+LEGACY_TOOLCHAIN_PREFIX = "modules-"
+_TOOLCHAIN_PART = re.compile(r"^[A-Za-z0-9_+][A-Za-z0-9._+-]*$")
+
+def normalize_toolchain(value):
+    """Toolchain module name for a picker value ("" = none), or None if invalid.
+
+    Drops the legacy "modules-" prefix and maps the legacy "modules" to "".
+    Each "/"-separated part must be a plain name (no "..", no leading "/"),
+    because the value becomes a path under module_db_root."""
+    value = (value or "").strip()
+    if value == "modules":
+        return ""
+    if value.startswith(LEGACY_TOOLCHAIN_PREFIX):
+        value = value[len(LEGACY_TOOLCHAIN_PREFIX):]
+    if value == "":
+        return ""
+    if all(_TOOLCHAIN_PART.match(part) for part in value.split("/")):
+        return value
+    return None
+
+def _usable_db(path):
+    return os.path.isfile(path) and os.path.getsize(path) > 0
+
+def module_db_file(module_db_root, toolchain):
+    """Path of the database for a toolchain value, or None if there is none.
+
+    Never creates a file (sqlite3.connect would create an empty one)."""
+    name = normalize_toolchain(toolchain)
+    if name is None:
+        return None
+    if name == "":
+        candidates = [DEFAULT_MODULE_DB]
+    else:
+        candidates = [f"{name}.sqlite3", f"{LEGACY_TOOLCHAIN_PREFIX}{name}.sqlite3"]
+    for candidate in candidates:
+        path = os.path.join(module_db_root, candidate)
+        if _usable_db(path):
+            return path
+    return None
+
+def get_modules_route():
+    """Modules whose name starts with the query, from the toolchain's database.
+
+    Without module_db_root, or with no database for the toolchain, the list is
+    empty (no fallback to a site-wide path)."""
+    query = request.args.get('query') or ''
+    module_db_root = request.args.get("module_db_root")
+    if not query or not module_db_root:
+        return jsonify({'data': []})
+    db_path = module_db_file(module_db_root, request.args.get('toolchain'))
+    if db_path is None:
+        return jsonify({'data': []})
+
+    modules_db = sqlite3.connect(db_path)
+    try:
         cursor = modules_db.cursor()
         cursor.execute("SELECT name FROM modules WHERE name LIKE ?", (f'{query}%',))
-        results = cursor.fetchall()
-        module_names = [result[0] for result in results]
+        module_names = [result[0] for result in cursor.fetchall()]
+    finally:
+        modules_db.close()
 
-    response_data = {'data': module_names}
-    return jsonify(response_data)
+    return jsonify({'data': module_names})
+
+def list_module_toolchains(module_db_root):
+    """Toolchains that have a non-empty database under module_db_root.
+
+    <root>/modules.sqlite3 is "No toolchain (default)" (value ""), and each
+    <root>/<family>/<version>.sqlite3 is toolchain <family>/<version>. Legacy
+    <root>/modules-<family>/ directories are listed under <family> too; if both
+    exist for one toolchain it is listed once."""
+    toolchains = []
+    if _usable_db(os.path.join(module_db_root, DEFAULT_MODULE_DB)):
+        toolchains.append({"label": "No toolchain (default)", "value": ""})
+
+    try:
+        entries = sorted(os.listdir(module_db_root))
+    except OSError:
+        entries = []
+    found = set()
+    for dir_name in entries:
+        dir_path = os.path.join(module_db_root, dir_name)
+        if dir_name.startswith(".") or not os.path.isdir(dir_path):
+            continue
+        family = normalize_toolchain(dir_name)
+        if not family:
+            continue
+        try:
+            files = sorted(os.listdir(dir_path))
+        except OSError:
+            continue
+        for filename in files:
+            version, ext = os.path.splitext(filename)
+            if ext != ".sqlite3" or not _usable_db(os.path.join(dir_path, filename)):
+                continue
+            value = normalize_toolchain(f"{family}/{version}")
+            if value and value not in found:
+                found.add(value)
+                toolchains.append({"label": value, "value": value})
+    default = toolchains[:1] if toolchains and toolchains[0]["value"] == "" else []
+    return default + sorted(toolchains[len(default):], key=lambda tc: tc["value"])
+
+def get_module_toolchains_route():
+    """List the toolchains available in a module database directory.
+
+    The environment sets module_db_root on its module element; without it
+    there is nothing to list (no fallback to a site-wide path)."""
+    module_db_root = request.args.get("module_db_root")
+    if not module_db_root:
+        return jsonify({"data": []})
+    return jsonify({"data": list_module_toolchains(module_db_root)})
 
 def get_subdirectories_route():
     """Get subdirectories and files in a directory"""
@@ -177,5 +280,6 @@ def register_file_routes(blueprint):
     """Register all file-related routes to the blueprint"""
     blueprint.route('/download_file', methods=['POST'])(download_file_route)
     blueprint.route('/modules', methods=['GET'])(get_modules_route)
+    blueprint.route('/modules/toolchains', methods=['GET'])(get_module_toolchains_route)
     blueprint.route('/subdirectories', methods=['GET'])(get_subdirectories_route)
     blueprint.route('/file_content', methods=['GET'])(read_file_content_route)

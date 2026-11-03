@@ -31,13 +31,11 @@ After setup, review `config.yml` in the project root. The setup script will popu
 ```yaml
 development: &common_settings
   cluster_name: "Grace"                      # Display name for your cluster
-  modules_db_path: "/path/to/modules/bin/"   # Path to modules database script
   driver_scripts_path: "/path/to/machine_driver_scripts"
   env_repo_github: "https://github.com/..."  # Repository for importable environments
 ```
 
 - **`cluster_name`** — Used internally and displayed in form titles
-- **`modules_db_path`** — Required by the module form element to retrieve available modules
 - **`driver_scripts_path`** — Absolute path to the `machine_driver_scripts/` directory
 - **`env_repo_github`** — GitHub repository that powers the environment import feature
 

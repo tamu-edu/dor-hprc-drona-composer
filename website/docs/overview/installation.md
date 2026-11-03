@@ -62,7 +62,6 @@ The main configuration file controls application behavior. Key settings:
 development: &common_settings
   cluster_name: "Grace"                    # Your cluster name
   dashboard_url: "/pun/dev/drona-composer" # URL path for the app
-  modules_db_path: "/path/to/modules/bin/" # Path to modules database script
   driver_scripts_path: "/path/to/machine_driver_scripts"
   env_repo_github: "https://github.com/..."  # Environment repository URL
   env_repo_ref: "drona-v2"                 # Optional: branch of the environment repository
@@ -74,7 +73,7 @@ production:
   dashboard_url: "/pun/sys/drona-composer"
 
 # local doesn't inherit from common_settings — it's meant for running
-# outside Open OnDemand entirely, so paths like modules_db_path are blank
+# outside Open OnDemand entirely, so paths like driver_scripts_path are local
 local:
   cluster_name: "Local"
   dashboard_url: "http://localhost:5000"
@@ -85,7 +84,7 @@ local:
 The section chosen at runtime is whichever one matches `APP_ENV` (set in `.env` by `setup.sh`, or exported directly in your shell) — `development`, `production`, or `local`.
 
 - **`cluster_name`** — Display name for the cluster, used internally and in form titles
-- **`modules_db_path`** — Path to the external script that retrieves available modules. Used by the module form element
+- The module picker has no site-wide setting: each environment sets `module_db_root` on its module element (see [Form Components → Module](../frontend/form-components#module)). The old `modules_db_path` key is no longer read and can be removed.
 - **`driver_scripts_path`** — Absolute path to the `machine_driver_scripts/` directory
 - **`env_repo_github`** — GitHub repository URL from which users can import environments
 - **`env_repo_ref`** *(optional, default `drona-v2`)* — Branch of `env_repo_github` to list and import environments from. If the repository doesn't have that branch, `main` is used. `main` of the TAMU environment repository is kept for Drona versions from before this setting, which always read `main`; environments for this Drona are on `drona-v2`. See [Publishing Workflows](../environments/publishing#declaring-the-drona-version) for how environments declare the Drona version they need.

@@ -846,32 +846,43 @@ A composite form component that combines job name input and location picker in a
 
 ## Module
 
-A module selection component that allows users to search and select software modules from different toolchains. Features autocomplete suggestions from a server, toolchain selection, and visual representation of selected modules as removable badges.
+A module selection component that allows users to search and select software modules from different toolchains. Features autocomplete suggestions from a server, toolchain selection, and visual representation of selected modules as removable badges. The environment creator must set `module_db_root` to a directory the OOD host can read; Drona has no default for it. A toolchain value is the toolchain's module name, e.g. `foss/2024a`, and `""` means no toolchain. Its database is `<module_db_root>/<value>.sqlite3`, e.g. `foss/2024a.sqlite3`; the default (no toolchain) is `modules.sqlite3`. The first module a user adds is preceded by the chosen toolchain, so `foss/2024a` is loaded before it. Without a toolchains list, the dropdown shows the non-empty databases found under `module_db_root`, so each cluster offers what its OOD host has; if the directory is missing, the dropdown is empty. Older values such as `modules-foss/2024a` and `modules`, and databases in `modules-foss/` directories, still work. The Generic environment's `configuration/README` describes how to build the databases with `generate_modules_db.py`. The shared `drona_module_picker.json` component has no `module_db_root` either: an environment that uses it sets the key next to its `$ref`.
 
 ### Properties
 - `name - Input field name, used for form submission` (string) - 
 - `label` (string, optional) - Display label for the field
 - `value` (string, optional) - Default/initial value as space-separated list of modules
-- `toolchains - Array of toolchain options, each with value and label properties` (Array) - 
+- `toolchains` (Array, optional) - Toolchain options, each with value (the toolchain module name, "" for none) and an optional label (defaults to the value). Omit it to list the toolchains that have a database under module_db_root; set it to pin a fixed list.
 - `toolchainName="toolchain"` (string, optional) - Name for the toolchain select input
 - `help` (string, optional) - Help text displayed below the input
-- `module_db_root` (string, optional) - Base directory where module database is located
+- `module_db_root` (string) - Directory that holds the module databases. Set by the environment creator; no default.
 
-### Example
+### Examples
+#### Example 1
 ```json
-// Module selection component with multiple toolchains
+// Module selection; toolchains are listed from the databases under module_db_root
 {
 "type": "module",
 "name": "moduleList",
 "label": "Module",
 "value": "gcc/9.3.0 openmpi/4.0.5",
-"toolchains": [
-{ "value": "modules", "label": "Modules" },
-{ "value": "lmod-gcc", "label": "GCC Modules" },
-{ "value": "lmod-intel", "label": "Intel Modules" }
-],
+"module_db_root": "/path/readable/by/ood/modules",
 "toolchainName": "toolchain",
 "help": "Search and select software modules for your environment"
+}
+```
+
+#### Example 2
+```json
+// Pinned toolchain list (value = toolchain module name, "" = none)
+{
+"type": "module",
+"name": "moduleList",
+"module_db_root": "/path/readable/by/ood/modules",
+"toolchains": [
+{ "label": "No toolchain (default)", "value": "" },
+{ "label": "foss/2024a", "value": "foss/2024a" }
+]
 }
 ```
 
