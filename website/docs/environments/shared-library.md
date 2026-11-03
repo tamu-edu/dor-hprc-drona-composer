@@ -34,7 +34,7 @@ Keys written next to `$ref` override the shared fragment's values. The module pi
 
 Two conventions worth following:
 
-- **Group fields that depend on each other in the same file**, rather than spreading them across separate `$ref`s that have to stay in sync by hand. For example, `drona_create_manage.json` defines a hidden "configured" check *and* the mode selector it gates, together — so a change to one can't silently drift out of sync with the other.
+- **Group fields that depend on each other in the same file**, rather than spreading them across separate `$ref`s that have to stay in sync by hand. For example, `drona_create_manage-table.json` defines the Create/Manage mode selector *and* the workflow table that only Manage mode shows, together — so a change to one can't silently drift out of sync with the other.
 - **Don't copy a fragment into an environment's own schema "just this once."** If it needs a small variation, that's usually a sign it should take a parameter or condition rather than be forked — a forked copy stops receiving fixes made to the shared original.
 
 ## Shared retriever scripts
@@ -70,6 +70,35 @@ A few things make these fragments play well together, since several can be mount
 - **Scope every CSS rule under the widget's own container `#id`.** Define colors/spacing as CSS custom properties on that container rather than as bare global values, so nothing leaks into (or gets clobbered by) another widget's fragment.
 - **The floating "pill" title is the shared header pattern** — a small badge that overlaps its card's top edge. If a card also needs `overflow: hidden` (for example, to clip edge-to-edge content to its rounded corners), put that on an *inner* wrapper instead of the card itself, or the title gets clipped along with everything else.
 - **`staticText`'s manual refresh button is a real DOM sibling of your HTML**, absolutely positioned in the top-right corner of the same wrapper. It always paints above the retrieved content, but avoid putting your own content in that exact corner regardless — it'll look cramped next to the button.
+
+### Workflow directory: card or inline
+
+`drona_info_jobdir_html.sh` renders the workflow directory as a link to the OOD file browser (`JOB_DIR` is passed in `retrieverParams`). It has two looks, chosen with the `WORKDIR_STYLE` parameter:
+
+| `WORKDIR_STYLE` | Template | Use it when |
+|---|---|---|
+| unset (default) | `html_templates/workdir-template.html` | the widget stands alone; the template carries its own label |
+| `inline` | `html_templates/workdir-inline-template.html` | the widget sits in a container that already shows the label, e.g. a `bar` layout titled "Workflow Directory:" |
+
+```json
+"drona_workdir": {
+  "type": "container",
+  "layout": { "preset": "bar", "title": "Workflow Directory:" },
+  "elements": {
+    "drona_jobDirLabel": {
+      "type": "staticText",
+      "isDynamic": true,
+      "allowHtml": true,
+      "useLabel": false,
+      "condition": "!drona_job_dir.",
+      "retriever": "drona_info_jobdir_html.sh",
+      "retrieverParams": { "JOB_DIR": "$drona_job_dir", "WORKDIR_STYLE": "inline" }
+    }
+  }
+}
+```
+
+An `HTML_TEMPLATE` parameter still overrides either choice.
 
 ## Gotchas
 
