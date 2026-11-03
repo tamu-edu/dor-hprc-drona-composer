@@ -27,7 +27,8 @@
     "layout": {
       "preset": "card",
       "title": "WORKFLOW ACTIONS",
-      "dot": false
+      "dot": false,
+      "collapsible": true
     },
     "elements": {
       "drona_workflowActionsRow": {

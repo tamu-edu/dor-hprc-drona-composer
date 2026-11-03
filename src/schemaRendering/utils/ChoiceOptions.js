@@ -6,7 +6,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { CHOICE_THEME, resolveAppearance, resolveLayout } from "./choiceStyles";
-import LayoutFrame from "./LayoutFrame";
+import CollapsibleFrame from "./CollapsibleFrame";
 
 const HIDDEN_INPUT_STYLE = {
   position: "absolute",
@@ -195,7 +195,7 @@ const ChoiceOption = React.memo(function ChoiceOption({
  * @param {*} selected - a value (radio) or an array of values (checkbox)
  * @param {Function} onChange - native change event handler
  * @param {string} [style] - appearance preset
- * @param {string|Object|Array} [layout] - layout presets / CSS
+ * @param {string|Object|Array} [layout] - layout presets / CSS; a card with "collapsible"/"collapsed" folds on its title pill (the owning element's retriever keeps running)
  * @param {boolean} [accent] - maroon accent on the default appearance
  */
 function ChoiceOptions({ type, name, options, selected, onChange, style, layout, accent = false }) {
@@ -231,7 +231,7 @@ function ChoiceOptions({ type, name, options, selected, onChange, style, layout,
 
   const body = resolved.inner ? <div style={resolved.inner}>{items}</div> : items;
 
-  return <LayoutFrame resolved={resolved}>{body}</LayoutFrame>;
+  return <CollapsibleFrame resolved={resolved}>{body}</CollapsibleFrame>;
 }
 
 export default ChoiceOptions;
