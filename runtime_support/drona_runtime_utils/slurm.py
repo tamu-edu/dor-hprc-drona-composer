@@ -73,3 +73,60 @@ def retrieve_slurm_params(nodes, tasks, cpus, mem, gpu, numgpu, walltime, accoun
                                         add_mapping, drona_add_message)
 
     return ""
+
+
+def _form_value(value):
+    """A form value, or "" when the field is missing (map left the literal "$name") or unset."""
+    value = (value or "").strip()
+    return "" if value.startswith("$") else value
+
+
+def retrieve_slurm_params_training(nodes, tasks, cpus, mem, gpu, numgpu, walltime, account, extra,
+                                   training="", reservation="", slice_type="", partition="", slice_count="",
+                                   mapping_filter=None):
+    """retrieve_slurm_params plus the optional Training row of drona_slurm_resources.json.
+
+    Without a training reservation this is exactly retrieve_slurm_params. With one, the
+    regular GPU fields are ignored: the cluster checks run as a CPU job (cores, memory,
+    nodes) and the PARTITION mapping is replaced by the reservation, its partition and
+    the selected accelerator/MIG slice."""
+    training = _form_value(training)
+    reservation = _form_value(reservation)
+    # Any non-empty checkbox value counts as checked (the Checkbox element sends "Yes")
+    if not training or training.lower() in ("no", "false", "0") or not reservation:
+        return retrieve_slurm_params(nodes, tasks, cpus, mem, gpu, numgpu, walltime, account, extra,
+                                     mapping_filter=mapping_filter)
+
+    if not re.fullmatch(r"[\w.\-]+", reservation):
+        drona_add_message("Invalid reservation name: " + reservation, "error")
+        return ""
+
+    directives = []
+    partition = _form_value(partition)
+    if partition and re.fullmatch(r"[\w.\-]+", partition):
+        directives.append("--partition=" + partition)
+    directives.append("--reservation=" + reservation)
+
+    slice_type = _form_value(slice_type)
+    if slice_type and slice_type != "none":
+        if not re.fullmatch(r"[\w.\-]+", slice_type):
+            drona_add_message("Invalid accelerator type: " + slice_type, "error")
+            return ""
+        count = _form_value(slice_count) or "1"
+        if not count.isdigit() or int(count) < 1:
+            drona_add_message("Number of accelerators must be a positive number; using 1.", "warning")
+            count = "1"
+        directives.append("--gres=gpu:%s:%s" % (slice_type, count))
+
+    partition_line = "#SBATCH " + " ".join(directives)
+
+    # mapping_filter (from an env wrapper) sees the reservation line, so filters that read
+    # --gres from PARTITION (e.g. PyTorch-Lightning's tasks-per-GPU) keep working
+    def use_reservation(key, value):
+        value = partition_line if key == "PARTITION" else value
+        return mapping_filter(key, value) if mapping_filter else value
+
+    # The cluster checks still apply their CPU-job rules (cores, memory, node and walltime
+    # limits); only the partition/GRES line is swapped for the reservation's.
+    return retrieve_slurm_params(nodes, tasks, cpus, mem, "none", "", walltime, account, extra,
+                                 mapping_filter=use_reservation)
