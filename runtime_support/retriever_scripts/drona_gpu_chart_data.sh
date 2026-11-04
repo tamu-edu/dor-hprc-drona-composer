@@ -1,6 +1,6 @@
 #!/bin/bash
 # Retriever for the `chart` schema element in schemas/manage.schema.json.
-# Reads the per-node CSVs written by drona_start_gpu_monitor
+# Reads the per-node CSVs written by drona_start_gpu_monitor_nvml
 # (drona_monitoring/gpu_util_node_<host>.csv: timestamp,index,util,mem_used,mem_total) and
 # returns the last MAX_POINTS samples (0 = all samples) as a JSON array of
 #   {"timestamp": <epoch>, "gpu0": <util %>, "gpu0_mem": <memory used % of total>, ...}

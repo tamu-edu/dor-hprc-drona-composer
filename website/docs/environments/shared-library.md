@@ -34,7 +34,7 @@ Keys written next to `$ref` override the shared fragment's values. The module pi
 
 Two conventions worth following:
 
-- **Group fields that depend on each other in the same file**, rather than spreading them across separate `$ref`s that have to stay in sync by hand. For example, `drona_create_manage.json` defines a hidden "configured" check *and* the mode selector it gates, together — so a change to one can't silently drift out of sync with the other.
+- **Group fields that depend on each other in the same file**, rather than spreading them across separate `$ref`s that have to stay in sync by hand. For example, `drona_create_manage-table.json` defines the Create/Manage mode selector *and* the workflow table that only Manage mode shows, together — so a change to one can't silently drift out of sync with the other.
 - **Don't copy a fragment into an environment's own schema "just this once."** If it needs a small variation, that's usually a sign it should take a parameter or condition rather than be forked — a forked copy stops receiving fixes made to the shared original.
 
 ## Shared retriever scripts
@@ -56,7 +56,7 @@ The functions these entries call live in `runtime_support/drona_runtime_utils/` 
 |---|---|---|---|
 | `drona_cancel_jobs` | `CANCEL` | `retrieve_cancel_jobs` | `mode`, `drona_cancel_jobs`, `jobs` |
 | `drona_cpu_monitor` | `CPU_MONITOR_START`, `CPU_MONITOR_STOP` | `retrieve_cpu_monitor_start/stop` | `drona_cpu_monitor` |
-| `drona_gpu_monitor` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start/stop` | `drona_gpu`, `drona_gpu_monitor` |
+| `drona_gpu_monitor_nvml` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start_nvml`, `retrieve_gpu_monitor_stop` | `drona_gpu`, `drona_gpu_monitor` |
 | `drona_slurm_params` | `DUMMY` | `retrieve_slurm_params` | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
 
 `retrieve_slurm_params` calls `cluster_slurm_checks` from `runtime_support/drona_runtime_utils/clusters/<cluster>.py`, chosen by the cluster name (with `defaultcluster.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the workflow needs no cluster files of its own.
@@ -70,6 +70,35 @@ A few things make these fragments play well together, since several can be mount
 - **Scope every CSS rule under the widget's own container `#id`.** Define colors/spacing as CSS custom properties on that container rather than as bare global values, so nothing leaks into (or gets clobbered by) another widget's fragment.
 - **The floating "pill" title is the shared header pattern** — a small badge that overlaps its card's top edge. If a card also needs `overflow: hidden` (for example, to clip edge-to-edge content to its rounded corners), put that on an *inner* wrapper instead of the card itself, or the title gets clipped along with everything else.
 - **`staticText`'s manual refresh button is a real DOM sibling of your HTML**, absolutely positioned in the top-right corner of the same wrapper. It always paints above the retrieved content, but avoid putting your own content in that exact corner regardless — it'll look cramped next to the button.
+
+### Workflow directory: card or inline
+
+`drona_info_jobdir_html.sh` renders the workflow directory as a link to the OOD file browser (`JOB_DIR` is passed in `retrieverParams`). It has two looks, chosen with the `WORKDIR_STYLE` parameter:
+
+| `WORKDIR_STYLE` | Template | Use it when |
+|---|---|---|
+| unset (default) | `html_templates/workdir-template.html` | the widget stands alone; the template carries its own label |
+| `inline` | `html_templates/workdir-inline-template.html` | the widget sits in a container that already shows the label, e.g. a `bar` layout titled "Workflow Directory:" |
+
+```json
+"drona_workdir": {
+  "type": "container",
+  "layout": { "preset": "bar", "title": "Workflow Directory:" },
+  "elements": {
+    "drona_jobDirLabel": {
+      "type": "staticText",
+      "isDynamic": true,
+      "allowHtml": true,
+      "useLabel": false,
+      "condition": "!drona_job_dir.",
+      "retriever": "drona_info_jobdir_html.sh",
+      "retrieverParams": { "JOB_DIR": "$drona_job_dir", "WORKDIR_STYLE": "inline" }
+    }
+  }
+}
+```
+
+An `HTML_TEMPLATE` parameter still overrides either choice.
 
 ## Gotchas
 
