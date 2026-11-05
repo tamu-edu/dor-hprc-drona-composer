@@ -73,15 +73,6 @@
         "zoomRetrieverParams": {
           "MAX_POINTS": 0
         }
-      },
-      "drona_resources_processes": {
-        "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_processes.json#/drona_processes_section/elements/drona_process_table",
-        "condition": "drona_status.RUNNING && !drona_node_scope.",
-        "layout": {
-          "preset": "card",
-          "title": "Processes · Node $drona_node_scope",
-          "collapsed": true
-        }
       }
     }
   }
