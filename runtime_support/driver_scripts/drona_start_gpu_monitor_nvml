@@ -8,7 +8,7 @@
 #   timestamp, index, utilization.gpu, memory.used, memory.total
 #
 # drona_gpu_nvml_sampler.py must sit next to this script (both are copied into
-# the job directory).
+# .drona/ in the workflow directory).
 #
 # Killed by the job script via `kill "$DRONA_GPU_MONITOR_PID"` once the user's
 # commands finish (that PID is this script, whose srun is its foreground child;

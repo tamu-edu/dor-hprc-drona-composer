@@ -83,7 +83,7 @@ Drona provides a support library with functions to dynamically add additional fi
 | `drona_add_warning(String)` | Adds a warning message displayed to the researcher in the UI. |
 | `drona_add_error(String)` | Adds an error message displayed to the researcher in the UI. |
 | `drona_add_note(String)` | Adds an informational note displayed to the researcher in the UI. |
-| `drona_add_additional_file(String, String, Integer)` | Dynamically adds a file to the workflow. First parameter (required) is the filename. Second parameter (optional) is the preview tab name. Third parameter (optional) is the position in tabs; -1 excludes from preview. |
+| `drona_add_additional_file(path, preview_name, preview_order, content=, name=)` | Dynamically adds a file to the workflow. `path` is a file in the environment (relative to the environment directory, or absolute); it is saved under its base name. `preview_name` (optional) is the preview tab name. `preview_order` (optional) is the position in tabs; -1 excludes from preview. Instead of a path you can pass the text as `content=` together with `name=`. `name=` sets the file name in the workflow directory and may be a relative path such as `.drona/helper.py`. |
 
 :::note
 Dynamic mappings (from `drona_add_mapping`) are evaluated like the static mappings from `map.json`. A value in either can contain `[KEY]` placeholders for keys from the other, because placeholders are replaced by scanning the template, not in map order (see [Map](./map)).
@@ -108,6 +108,21 @@ if gpu == "PVC":
 else:
     drona_add_additional_file("pre_process.py", "Regular preprocess", 1)
 ```
+
+Generated files don't need to be written anywhere first. Pass the text directly with `content=` and `name=`:
+
+```python
+drona_add_additional_file(content=render_train_script(params), name="train.py", preview_name="Training script")
+drona_add_additional_file("helpers/compat.py", name=".drona/compat.py", preview_order=-1)
+```
+
+The files are shown in the preview and written to the workflow directory only when the job is submitted. **Don't write
+files into the workflow directory from a map function:** that happens at every preview and overwrites what the user
+edited there.
+
+`name=` must be a relative path inside the workflow directory: absolute paths, `..` and empty parts are rejected
+(an error message appears in the preview). Subdirectories are created at submit. Placeholders (`[KEY]`) in the file
+text are replaced at preview; what the user sees in the preview, including their edits, is written as is.
 
 ## Best Practices
 
