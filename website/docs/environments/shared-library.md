@@ -80,21 +80,16 @@ A few things make these fragments play well together, since several can be mount
 | unset (default) | `html_templates/workdir-template.html` | the widget stands alone; the template carries its own label |
 | `inline` | `html_templates/workdir-inline-template.html` | the widget sits in a container that already shows the label, e.g. a `bar` layout titled "Workflow Directory:" |
 
+`drona_info_jobdir_view.json` ships both versions, so an environment only needs a `$ref`:
+
+| Entry | Look |
+|---|---|
+| `drona_workingDirectory` | default card template (standalone row) |
+| `drona_workingDirectoryBar` | `bar` container titled "Workflow Directory:" with `WORKDIR_STYLE: inline` |
+
 ```json
-"drona_workdir": {
-  "type": "container",
-  "layout": { "preset": "bar", "title": "Workflow Directory:" },
-  "elements": {
-    "drona_jobDirLabel": {
-      "type": "staticText",
-      "isDynamic": true,
-      "allowHtml": true,
-      "useLabel": false,
-      "condition": "!drona_job_dir.",
-      "retriever": "drona_info_jobdir_html.sh",
-      "retrieverParams": { "JOB_DIR": "$drona_job_dir", "WORKDIR_STYLE": "inline" }
-    }
-  }
+"workingDirectory": {
+  "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_jobdir_view.json#/drona_workingDirectoryBar"
 }
 ```
 
