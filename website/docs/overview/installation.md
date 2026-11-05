@@ -105,10 +105,10 @@ user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments
 
 #### Temporary Directory
 
-Drona uses `/tmp` for temporary files during job processing. If your cluster uses a different location, update the relevant functions in:
-
-- `machine_driver_scripts/utils.py` — `drona_add_additional_file()`, `drona_add_warning()`, `drona_add_mapping()`
-- `machine_driver_scripts/engine.py` — `set_dynamic_additional_files()`, `get_dynamic_map()`, `get_warnings()`
+During a preview, the files, messages and mappings that environment functions add (`drona_add_*` in
+`packages/drona_utils/core.py`) are kept in a private directory created for that preview only
+(`/tmp/drona-preview-XXXXXX`, mode 0700, removed afterwards). `/tmp` is used, not `$TMPDIR`, because it should be fast local
+disk. To use a different location, change `PREVIEW_TMP_ROOT` in `machine_driver_scripts/engine.py`.
 
 
 

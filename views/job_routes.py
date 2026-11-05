@@ -68,7 +68,10 @@ def submit_job_route():
 
     engine = Engine()
     engine.set_environment(params.get("runtime"), params.get("env_dir"))
-    bash_script_path = engine.generate_script(params)
+    try:
+        bash_script_path = engine.generate_script(params)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     driver_script_path = engine.generate_driver_script(params)
 
     bash_cmd = build_driver_command(driver_script_path)

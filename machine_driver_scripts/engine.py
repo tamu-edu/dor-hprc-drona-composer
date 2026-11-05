@@ -6,8 +6,33 @@ import ast
 import shutil
 import os
 import sys
+import tempfile
 from machine_driver_scripts.utils import *
 import importlib.util
+
+# drona_utils lives in <repo>/packages. Import it here so the engine and the
+# environment functions share one module (and so one preview directory).
+_PACKAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'packages')
+if _PACKAGES_DIR not in sys.path:
+    sys.path.append(_PACKAGES_DIR)
+import drona_utils
+
+# Preview state files go to a private directory on local disk (fast even when
+# the shared file systems are slow). Not $TMPDIR: a site may point it at scratch.
+PREVIEW_TMP_ROOT = "/tmp"
+
+
+def safe_relative_name(name):
+    """Return name as a clean relative path ("a/b.py"), or None if it is absolute or uses "..", "." or empty parts."""
+    if not isinstance(name, str):
+        return None
+    name = name.strip().replace("\\", "/")
+    if not name or name.startswith("/") or "\0" in name:
+        return None
+    parts = name.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        return None
+    return "/".join(parts)
 
 def load_module_with_imports(module_name, file_path):
     if not os.path.exists(file_path):
@@ -271,6 +296,7 @@ class Engine():
         self.drona_job_name = None
         self.drona_job_location = None
         self.additional_files=None
+        self.preview_messages = []
     
     def set_schema(self, schema_path):
         with open(schema_path) as json_file:
@@ -356,43 +382,58 @@ class Engine():
 
 
     def set_dynamic_additional_files(self, env_path, params):
-        user_id = os.getenv('USER')
-
+        """Files added by environment functions with drona_add_additional_file()."""
         self.dynamic_additional_files = {}
-        files_path = env_path
-        additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
-        
+        additional_files_path = drona_utils.drona_state_path("additional_files")
+
         if not os.path.exists(additional_files_path):
-            return 
+            return
 
-        with open(additional_files_path, 'r') as file: 
+        with open(additional_files_path, 'r') as file:
             additional_files = json.load(file)
- 
-        for additional_file in additional_files:
-                file_name  = additional_file["file_name"].strip()
-            
-                preview_name = additional_file["preview_name"].strip()
-                preview_name = file_name if preview_name == "" else preview_name 
-
-                preview_order = additional_file["preview_order"]
-                preview_order = 0 if preview_order < -1 else preview_order
-
-                file_path = os.path.join(files_path, file_name)
-                if os.path.isfile(file_path):
-                    with open(file_path) as file:
-                        self.dynamic_additional_files[os.path.basename(file_name)] = {
-                                "content": file.read(),
-                                "preview_name": preview_name,
-                                "preview_order": preview_order
-                        }
-
         os.remove(additional_files_path)
-            
-    def get_dynamic_map(self):
-        user_id = os.getenv('USER')
 
-        dynamic_map = os.path.join("/tmp", f"{user_id}.map")
-        
+        for additional_file in additional_files:
+            file_name = (additional_file.get("file_name") or "").strip()
+
+            # Name in the workflow directory: the given name (may be a relative
+            # path), else the base name of the source file as before.
+            if additional_file.get("name"):
+                target = safe_relative_name(additional_file["name"])
+                if target is None:
+                    self.preview_messages.append({"type": "error", "text":
+                        f"Additional file name not allowed: {additional_file['name']!r} "
+                        "(use a relative path without '..')"})
+                    continue
+            else:
+                target = os.path.basename(file_name)
+            if not target:
+                continue
+
+            preview_name = (additional_file.get("preview_name") or "").strip()
+            preview_name = target if preview_name == "" else preview_name
+
+            preview_order = additional_file.get("preview_order", 0)
+            preview_order = 0 if preview_order < -1 else preview_order
+
+            if additional_file.get("content") is not None:
+                content = str(additional_file["content"])
+            else:
+                file_path = os.path.join(env_path, file_name)
+                if not os.path.isfile(file_path):
+                    continue  # skipped silently, as before
+                with open(file_path) as file:
+                    content = file.read()
+
+            self.dynamic_additional_files[target] = {
+                "content": content,
+                "preview_name": preview_name,
+                "preview_order": preview_order
+            }
+
+    def get_dynamic_map(self):
+        dynamic_map = drona_utils.drona_state_path("map")
+
         if not os.path.exists(dynamic_map):
             return {}
 
@@ -402,8 +443,6 @@ class Engine():
         os.remove(dynamic_map)
 
         return map_dict
-
-   
 
     def get_environment(self):
         return self.environment
@@ -424,24 +463,16 @@ class Engine():
         return globals()
 
     def get_messages(self, params):
-        user_id = os.getenv('USER')
-        messages_path = os.path.join("/tmp", f"{user_id}.messages")
+        messages = list(self.preview_messages)
+        messages_path = drona_utils.drona_state_path("messages")
         if not os.path.exists(messages_path):
-            return []
+            return messages
 
-        messages = []
-        
-        with open(messages_path, 'r') as file: 
+        with open(messages_path, 'r') as file:
             messages_dict = json.load(file)
- 
-        if "messages" in messages_dict:
-            messages = messages_dict["messages"] 
-
         os.remove(messages_path)
 
-        return messages
-        
-
+        return messages_dict.get("messages", []) + messages
 
     def fetch_template(self, template_path):
         try:
@@ -532,6 +563,21 @@ class Engine():
     
     
     def preview_script(self, params):
+        """Evaluate the map and build the preview. Files, messages and mappings
+        that environment functions add go to a private directory for this
+        preview only (mode 0700, removed afterwards)."""
+        if self.environment is None:
+            return "No environment selected"
+        preview_dir = tempfile.mkdtemp(prefix="drona-preview-", dir=PREVIEW_TMP_ROOT)
+        previous_dir = drona_utils.drona_get_preview_dir()
+        drona_utils.drona_set_preview_dir(preview_dir)
+        try:
+            return self._preview_script(params)
+        finally:
+            drona_utils.drona_set_preview_dir(previous_dir)
+            shutil.rmtree(preview_dir, ignore_errors=True)
+
+    def _preview_script(self, params):
         if self.environment is None:
             return "No environment selected"
         else:
@@ -594,14 +640,27 @@ class Engine():
                     job_file.write(self.script)
 
             self.additional_files = json.loads(params["additional_files"])
+            location_real = os.path.realpath(params['location'])
+
+            # Check every name before writing anything.
+            targets = []
             for fname, content in self.additional_files.items():
-                # Copy  files with the job script
-                nfile=content
-                additional_job_file_path = os.path.join(params['location'], fname)
-                with open(os.path.join(additional_job_file_path), "w") as ajob_file:
-                    nfile = self.replace_placeholders(nfile, self.map, params)
-                    ajob_file.write(nfile)
-            
+                rel = safe_relative_name(fname)
+                path = os.path.realpath(os.path.join(location_real, rel)) if rel else None
+                if path is None or os.path.commonpath([location_real, path]) != location_real:
+                    raise ValueError(f"Additional file name not allowed: {fname!r}")
+                targets.append((path, content))
+
+            for path, content in targets:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Placeholders were already replaced at preview (with the
+                # evaluated map); the text may have been edited since, so only
+                # normalize tabs and line endings, like the job script.
+                text = str(content).replace("\t", " ")
+                text = re.sub(r'\r\n?|\r', '\n', text)
+                with open(path, "w") as ajob_file:
+                    ajob_file.write(text)
+
             if params.get("run_command") is not None:
                 return job_file_path
             else:
