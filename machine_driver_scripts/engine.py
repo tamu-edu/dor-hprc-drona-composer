@@ -277,6 +277,7 @@ def process_function(value, environment, env_dir):
             elif global_module and hasattr(global_module, function_name) and callable(getattr(global_module, function_name)):
                 dynamic_function = getattr(global_module, function_name)
             else:
+                drona_utils.drona_add_error(f"Function {function_name} not found (neither in the environment's utils.py nor in the shared utils).")
                 return f"Function {function_name} not found in local or global utils."
 
             # Execute the function
@@ -284,6 +285,10 @@ def process_function(value, environment, env_dir):
                 result = dynamic_function(*processed_variables)
             except Exception as e:
                 result = f"Error: {e}"
+                # Also show it in the preview: the value alone is easy to miss
+                # (e.g. a map key that isn't used in any template).
+                kind = "" if isinstance(e, ValueError) else f"{type(e).__name__}: "
+                drona_utils.drona_add_error(f"{function_name}(): {kind}{e}")
             if result is None:
                 result = ""
             print(result)
