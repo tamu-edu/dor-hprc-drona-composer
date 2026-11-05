@@ -22,6 +22,37 @@ import drona_utils
 PREVIEW_TMP_ROOT = "/tmp"
 
 
+# Environment directories seen by this process (see forget_env_modules).
+_ENV_ROOTS = set()
+_APP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def forget_env_modules(env_dir):
+    """Drop cached modules that were imported from an environment directory.
+
+    The app is one long-running process, and Python caches imports by name in
+    sys.modules. Without this, a helper package of an environment (e.g.
+    `generators`) stays cached: another environment with a package of the same
+    name gets the first one's code, and edits only take effect after a restart.
+    Called once per preview; the environment's helpers are imported fresh.
+    """
+    if env_dir:
+        root = os.path.abspath(env_dir)
+        # never the app's own tree (drona_utils, runtime support, the engine)
+        if not (_APP_ROOT + os.sep).startswith(root + os.sep):
+            _ENV_ROOTS.add(root + os.sep)
+    if not _ENV_ROOTS:
+        return
+    roots = tuple(_ENV_ROOTS)
+    for name, module in list(sys.modules.items()):
+        location = getattr(module, "__file__", None)
+        if not location:
+            paths = list(getattr(module, "__path__", None) or [])  # namespace packages
+            location = paths[0] if paths else None
+        if location and os.path.abspath(location).startswith(roots):
+            sys.modules.pop(name, None)
+
+
 def safe_relative_name(name):
     """Return name as a clean relative path ("a/b.py"), or None if it is absolute or uses "..", "." or empty parts."""
     if not isinstance(name, str):
@@ -568,6 +599,7 @@ class Engine():
         preview only (mode 0700, removed afterwards)."""
         if self.environment is None:
             return "No environment selected"
+        forget_env_modules(self.env_dir)
         preview_dir = tempfile.mkdtemp(prefix="drona-preview-", dir=PREVIEW_TMP_ROOT)
         previous_dir = drona_utils.drona_get_preview_dir()
         drona_utils.drona_set_preview_dir(preview_dir)
