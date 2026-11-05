@@ -73,8 +73,16 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
            drona_add_message("Request " + str(cpunum) + " cpus per task. Regular  nodes have max of "+str(maxcpunode) + "cores per node. Your job will not run.","error")
 
    if gpu != "" and gpu != "none":
-      partition=partition+" --partition=gpu "
-      if gpu == "t4":
+      if gpu == "a40":
+         # A40 nodes are in their own partition on Grace (3 GPUs per node)
+         partition=partition+" --partition=gpu-a40 "
+      else:
+         partition=partition+" --partition=gpu "
+      if gpu == "a40":
+         if numgpunum > 3:
+            drona_add_message("Max num A40 gpus is 3, requested " + str(numgpunum) + " GPUs. Reducing to max of 3.","warning")
+            numgpunum=3
+      elif gpu == "t4":
          if numgpunum > 4:
             drona_add_message("Max num T4 gpus is 4, requested " + str(numgpunum) + " GPUs. Reducing to max of 4.","warning")
             numgpunum=4
