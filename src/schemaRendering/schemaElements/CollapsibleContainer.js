@@ -42,6 +42,7 @@
  * @property {string} [title="Collapsible Row Container"] - Title displayed in the container header
  * @property {('collapsed'|'expanded')} [default_state="expanded"] - Initial visibility state
  * @property {string|Object} [layout] - "card" (or { "preset": "card" }) draws a rounded card whose title pill is the toggle (chevron, no separate button). Unset keeps the default header and button.
+ * @property {string} [layout.summary] - Card only: text shown in the folded strip instead of "Click to expand", with `$field` references replaced by the current values, e.g. "seed $seed · precision $precision". Parts (separated by " · ") whose fields are all empty are left out; if nothing is left the hint is shown.
  */
 
 import React, { useState, useMemo } from "react";

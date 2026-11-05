@@ -12,10 +12,27 @@ import { getFieldValue } from "./fieldUtils";
 // (empty when unset). Same `$` convention as retrieverParams.
 const FIELD_REF = /\$([A-Za-z_][\w.]*)/g;
 
+// Card "summary": like substituteFieldRefs, but the text is split into " · " parts and a part whose
+// field references are all empty is left out (e.g. a walltime left at the cluster default, an
+// unchecked checkbox). Returns "" when nothing is left.
+export function summarizeFieldRefs(text, formValues) {
+  if (!text) return "";
+  return text
+    .split(" · ")
+    .filter((part) => {
+      const refs = part.match(FIELD_REF);
+      return !refs || refs.some((ref) => substituteFieldRefs(ref, formValues).trim() !== "");
+    })
+    .map((part) => substituteFieldRefs(part, formValues).trim())
+    .join(" · ");
+}
+
 export function substituteFieldRefs(text, formValues) {
   if (!text || !text.includes("$")) return text;
   return text.replace(FIELD_REF, (_, name) => {
-    const value = getFieldValue(formValues || [], name);
+    let value = getFieldValue(formValues || [], name);
+    // Select fields hold an option object once changed; print its value, as conditions compare it
+    if (value && typeof value === "object" && !Array.isArray(value)) value = value.value;
     return value == null ? "" : String(value);
   });
 }
@@ -105,6 +122,17 @@ const CHEVRON_STYLE = { fontSize: "14px", lineHeight: 1, color: ACCENT };
 
 const COLLAPSED_FRAME_PADDING = "14px 20px";
 
+// Folded strip with a "summary": the current settings in plain muted text, left-aligned under the title
+const COLLAPSED_SUMMARY_STYLE = {
+  fontSize: "12px",
+  color: CHOICE_THEME.cardMuted,
+  lineHeight: "16px",
+  paddingTop: "2px",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+};
+
 const COLLAPSED_HINT_STYLE = {
   textAlign: "right",
   fontSize: "11px",
@@ -135,6 +163,7 @@ function LayoutFrame({ resolved, title: titleProp, collapse, actionRef, children
   const { values: formValues } = useContext(FormValuesContext);
   const title = substituteFieldRefs(resolved.title || titleProp, formValues)?.trim();
   const badge = substituteFieldRefs(resolved.badge, formValues)?.trim();
+  const summary = summarizeFieldRefs(resolved.summary, formValues);
 
   if (resolved.bar) {
     return (
@@ -210,9 +239,13 @@ function LayoutFrame({ resolved, title: titleProp, collapse, actionRef, children
         )}
         {actionRef && <div ref={actionRef} style={ACTION_SLOT_STYLE} />}
         {collapsed && (
-          <div style={COLLAPSED_HINT_STYLE} aria-hidden="true">
-            Click to expand
-          </div>
+          summary ? (
+            <div style={COLLAPSED_SUMMARY_STYLE}>{summary}</div>
+          ) : (
+            <div style={COLLAPSED_HINT_STYLE} aria-hidden="true">
+              Click to expand
+            </div>
+          )
         )}
         <div style={contentStyle}>{children}</div>
       </div>

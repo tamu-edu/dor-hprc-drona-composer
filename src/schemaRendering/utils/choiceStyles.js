@@ -75,7 +75,7 @@ export const LAYOUTS = {
       boxSizing: "border-box",
       boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
     },
-    params: ["title", "dot", "accent", "tint", "compact", "badge", "collapsible", "collapsed"],
+    params: ["title", "dot", "accent", "tint", "compact", "badge", "collapsible", "collapsed", "summary"],
   },
 };
 
@@ -108,6 +108,7 @@ const EMPTY_LAYOUT = Object.freeze({
   dot: false,
   accent: false,
   badge: null,
+  summary: null,
   compact: false,
   bar: false,
   collapsible: false,
@@ -150,6 +151,8 @@ function applyPreset(acc, name, params, warnedParams, only) {
   if (name === "card") acc.dot = params.dot !== false;
   if ((name === "card" || name === "bar") && typeof params.badge === "string") acc.badge = params.badge;
   if (name === "card" && params.compact === true) acc.compact = true;
+  // Collapsible cards: text shown in the folded strip instead of "Click to expand"; may reference $fields
+  if (name === "card" && typeof params.summary === "string") acc.summary = params.summary;
   // Card frames (staticText, chart, dynamicTable, container, choice groups) get a toggle on the title pill; "collapsed" is the initial state
   if (name === "card" && (params.collapsible === true || params.collapsed === true)) {
     acc.collapsible = true;
@@ -179,7 +182,7 @@ export function resolveLayout(layout, options = {}) {
   if (layout == null || layout === "") return EMPTY_LAYOUT;
 
   const items = Array.isArray(layout) ? layout : [layout];
-  const acc = { frame: null, box: null, inner: null, stacked: false, title: null, dot: false, accent: false, badge: null, compact: false, bar: false, collapsible: false, collapsed: false };
+  const acc = { frame: null, box: null, inner: null, stacked: false, title: null, dot: false, accent: false, badge: null, summary: null, compact: false, bar: false, collapsible: false, collapsed: false };
   const warnedParams = [];
 
   for (const item of items) {

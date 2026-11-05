@@ -21,13 +21,17 @@ describe('resolveLayout', () => {
     const r = resolveLayout(undefined);
     expect(r).toEqual({
       frame: null, box: null, inner: null, stacked: false, title: null, dot: false, accent: false,
-      badge: null, compact: false, bar: false, collapsible: false, collapsed: false,
+      badge: null, summary: null, compact: false, bar: false, collapsible: false, collapsed: false,
     });
   });
   test('card collapsible/collapsed params', () => {
     expect(resolveLayout({ preset: 'card' })).toMatchObject({ collapsible: false, collapsed: false });
     expect(resolveLayout({ preset: 'card', collapsible: true })).toMatchObject({ collapsible: true, collapsed: false });
     expect(resolveLayout({ preset: 'card', collapsed: true })).toMatchObject({ collapsible: true, collapsed: true });
+  });
+  test('card summary param', () => {
+    expect(resolveLayout({ preset: 'card' }).summary).toBeNull();
+    expect(resolveLayout({ preset: 'card', collapsed: true, summary: 'seed $seed' }).summary).toBe('seed $seed');
   });
   test('card accent adds the maroon edge; tint:false drops only the background', () => {
     const plain = resolveLayout({ preset: 'card' });
