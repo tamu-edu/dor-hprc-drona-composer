@@ -16,5 +16,28 @@
         "retriever": "drona_info_jobdir_html.sh"
       }
     }
+  },
+  "drona_workingDirectoryBar": {
+    "type": "container",
+    "condition": "!drona_info_jobs.",
+    "layout": {
+      "preset": "bar",
+      "title": "Workflow Directory:"
+    },
+    "elements": {
+      "drona_jobDirLabel": {
+        "type": "staticText",
+        "useLabel": false,
+        "name": "drona_job_dir_html",
+        "isDynamic": true,
+        "allowHtml": true,
+        "condition": "!drona_job_dir.",
+        "retrieverParams": {
+          "JOB_DIR": "$drona_job_dir",
+          "WORKDIR_STYLE": "inline"
+        },
+        "retriever": "drona_info_jobdir_html.sh"
+      }
+    }
   }
 }
