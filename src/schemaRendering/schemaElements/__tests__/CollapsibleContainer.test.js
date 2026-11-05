@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CollapsibleRowContainer, CollapsibleColContainer } from '../CollapsibleContainer';
+import { FormValuesContext } from '../../FormValuesContext';
 
 jest.mock('../../FieldRenderer', () => function MockFieldRenderer() {
   return <div data-testid="fields" />;
@@ -47,6 +48,40 @@ describe.each([
     render(<Component elements={{}} title="T" layout="boxed" />);
     expect(screen.getByText(/Hide T/)).toBeInTheDocument();
     warn.mockRestore();
+  });
+
+  test('collapsed card with a summary shows the field values instead of the hint', () => {
+    const values = [
+      { name: 'seed', value: '42' },
+      { name: 'precision', value: { value: '16-mixed', label: '16-bit mixed (GPU)' } },
+    ];
+    render(
+      <FormValuesContext.Provider value={{ values, updateValue: () => {} }}>
+        <Component elements={{}} title="Advanced" default_state="collapsed"
+          layout={{ preset: 'card', summary: 'seed $seed · precision $precision' }} />
+      </FormValuesContext.Provider>);
+    expect(screen.getByText('seed 42 · precision 16-mixed')).toBeInTheDocument();
+    expect(screen.queryByText('Click to expand')).toBeNull();
+    fireEvent.click(screen.getByRole('button'));
+    expect(screen.queryByText('seed 42 · precision 16-mixed')).toBeNull();
+  });
+
+  test('summary leaves out parts whose fields are empty, and falls back to the hint', () => {
+    const values = [{ name: 'walltime', value: '' }, { name: 'memory', value: '8G' }, { name: 'onnx', value: '' }];
+    const { rerender } = render(
+      <FormValuesContext.Provider value={{ values, updateValue: () => {} }}>
+        <Component elements={{}} title="Additional" default_state="collapsed"
+          layout={{ preset: 'card', summary: 'walltime $walltime · memory $memory · ONNX $onnx' }} />
+      </FormValuesContext.Provider>);
+    expect(screen.getByText('memory 8G')).toBeInTheDocument();
+
+    const empty = values.map((v) => ({ ...v, value: '' }));
+    rerender(
+      <FormValuesContext.Provider value={{ values: empty, updateValue: () => {} }}>
+        <Component elements={{}} title="Additional" default_state="collapsed"
+          layout={{ preset: 'card', summary: 'walltime $walltime · memory $memory · ONNX $onnx' }} />
+      </FormValuesContext.Provider>);
+    expect(screen.getByText('Click to expand')).toBeInTheDocument();
   });
 
   test('collapsed card shows a hint and expands when the strip is clicked', () => {
