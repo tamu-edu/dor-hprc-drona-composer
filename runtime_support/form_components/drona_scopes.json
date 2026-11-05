@@ -30,6 +30,7 @@
       "JOBID": "$drona_job_scope"
     },
     "hideWhenSingle": true,
+    "hideWhenEmpty": true,
     "refreshInterval": "60",
     "style": "compact",
     "autoSelect": "first",
