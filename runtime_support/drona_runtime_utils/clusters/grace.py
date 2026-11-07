@@ -38,7 +38,7 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
 
    # let's check for conflicting requirements
    if nodenum > 128:
-      drona_add_messagr("Limit for jobs is 128 nodes. Requested #nodes > 32. Your job will not run. Please adjust #nodes.", "error")
+      drona_add_message("Limit for jobs is 128 nodes. Requested #nodes > 32. Your job will not run. Please adjust #nodes.", "error")
    elif nodenum > 64:
       if total_hours > 24:
          drona_add_message("Limit for jobs requesting more than 64 nodes is 24 hours. Your job will not run. Please adjust time or request number of nodes","error")
@@ -76,6 +76,9 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
       if gpu == "a40":
          # A40 nodes are in their own partition on Grace (3 GPUs per node)
          partition=partition+" --partition=gpu-a40 "
+      elif gpu == "any":
+         # untyped GPU request in both GPU partitions: the job starts on whichever GPU is free first
+         partition=partition+" --partition=gpu,gpu-a40 "
       else:
          partition=partition+" --partition=gpu "
       if gpu == "a40":
@@ -86,11 +89,16 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
          if numgpunum > 4:
             drona_add_message("Max num T4 gpus is 4, requested " + str(numgpunum) + " GPUs. Reducing to max of 4.","warning")
             numgpunum=4
+      elif gpu == "any":
+          if numgpunum > 2:
+            drona_add_message("Any GPU: max 2 GPUs per node (the smallest GPU nodes), requested " + str(numgpunum)
+                              + ". Reducing to 2; select a GPU type for more (A40: 3, T4: 4).","warning")
+            numgpunum=2
       else:
           if numgpunum > 2:
             drona_add_message("Max num for A100 and RTX gpus is 2, requested " + str(numgpunum) + " GPUs. Reducing to max of 2.","warning")
             numgpunum=2
-      sbatchgpustring="--gres=gpu:"+gpu+":"+str(numgpunum)
+      sbatchgpustring="--gres=gpu:"+("" if gpu == "any" else gpu+":")+str(numgpunum)
 
 
    # add all the mappings

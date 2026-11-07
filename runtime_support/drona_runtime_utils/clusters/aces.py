@@ -43,7 +43,8 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
    
    # let's check for conflicting requirements
 
-   if gpu == "h100" or gpu == "a30":
+   # "any": untyped GPU request in the gpu partition (H100 or A30, whichever is free first; PVC has its own partition)
+   if gpu == "h100" or gpu == "a30" or gpu == "any":
       partition="gpu"
       if nodenum > 8: 
          drona_add_message("GPU jobs cannot request more than 8 nodes. Your job will not run.", "error")
@@ -51,7 +52,7 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
          drona_add_message("GPU jobs have walltime limit of 48 hours. Your job will not run.", "error")
       if numgpunum > 32:
          drona_add_message("Max limit of 32 GPUs, you requested "+str(numgpunum) + ". Setting number of GPUs to 32.", "warning")
-      sbatchgpustring=" --gres=gpu:"+gpu+":"+str(numgpunum)
+      sbatchgpustring=" --gres=gpu:"+("" if gpu == "any" else gpu+":")+str(numgpunum)
    elif gpu == "pvc":
       partition="pvc"
       if nodenum > 32:

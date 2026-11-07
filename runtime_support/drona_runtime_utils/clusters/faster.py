@@ -45,14 +45,15 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
    if nodenum > 128:
       drona_add_message("Limit for jobs is 128 nodes. Your job will not run. Please adjust #nodes.","error")
    elif total_hours > 7*24:
-      drona_add_warning("You requested more walltime than the maximum of 7 days. Your job will not run.","error")
+      drona_add_message("You requested more walltime than the maximum of 7 days. Your job will not run.","error")
 
    if gpu != "" and gpu != "none":
        if numgpunum > 10:
            drona_add_message("Max num of gpus is 10, requested " + str(numgpunum) + " GPUs. Reducing to max of 10.","warning")
            numgpunum=10
        partition="gpu"
-       sbatchgpustring="--gres=gpu:"+gpu+":"+str(numgpunum)
+       # "any": untyped GPU request, the job starts on whichever GPU type is free first
+       sbatchgpustring="--gres=gpu:"+("" if gpu == "any" else gpu+":")+str(numgpunum)
    else:
        partition="cpu"
        sbatchgpustring=""
@@ -73,7 +74,7 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
       drona_add_mapping("EXTRA",extra_all)
    else:
       drona_add_mapping("EXTRA","")
-   return nodenum,memnum,total_hours,partition,gpu,numgpu
+   return nodenum,memnum,total_hours,partition,gpu,numgpunum
 
 
 

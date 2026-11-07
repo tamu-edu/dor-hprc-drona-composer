@@ -41,14 +41,15 @@ def cluster_slurm_checks(nodenum,tasknum,cpunum,totalmemnum,gpu,numgpunum,timest
    sbatchgpustring=""
 
    # calculate correct max values, gpu nodes have more memory and are allowed more nodes per job
-   if gpu == "a30":   
+   # "any": same as a30 (the only GPU type), but untyped
+   if gpu == "a30" or gpu == "any":
       actualmaxmempernode=maxmemnodegpu
       actualmaxnodes=maxnodesgpu
       if numgpunum > 2:
          drona_add_message("Requested "+str(numgpunum)+" gpus per node.Resetting to max of 2 gpus per node","warning")
          numgpunum=2
       partition="gpu"
-      sbatchgpustring=" --gres=gpu:"+gpu+":"+str(numgpunum)
+      sbatchgpustring=" --gres=gpu:"+("" if gpu == "any" else gpu+":")+str(numgpunum)
    else:
       actualmaxmempernode=maxmemnodecpu
       actualmaxnodes=maxnodescpu
