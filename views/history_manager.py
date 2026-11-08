@@ -72,6 +72,23 @@ class JobHistoryManager:
         except (sqlite3.Error, PermissionError):
             return False
 
+    def get_record(self, job_id):
+        """Core columns of a workflow record ({"drona_id", "name", "location"}), or None
+        when there is no such record or the database can't be read."""
+        if not self.db_path or not job_id:
+            return None
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute(
+                    "SELECT drona_id, name, location FROM job_history WHERE drona_id = ?",
+                    (str(job_id),)
+                ).fetchone()
+        except (sqlite3.Error, PermissionError):
+            return None
+        if row is None:
+            return None
+        return {"drona_id": str(row[0]), "name": row[1] or "", "location": row[2] or ""}
+
     def workflow_at_location(self, location, exclude_id=None):
         """Drona id of a workflow record whose directory is location (compared after
         normalizing, and through symlinks), other than exclude_id; None if there is none."""

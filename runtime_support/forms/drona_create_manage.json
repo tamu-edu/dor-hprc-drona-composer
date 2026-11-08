@@ -23,6 +23,7 @@
         "labelOnTop": false,
         "name": "drona_create_manage_allworkflows",
         "condition": "drona_create_manage_mode.manage",
+        "workflowTarget": true,
         "retriever": "builtin:db_options"
       }
 

@@ -39,10 +39,16 @@ for JOB_FILE in "${JOB_FILES[@]}"; do
     PREV_JOBID="$CURRENT_ID"
 done
 
-# 3. Construct the JSON string for "jobinfo": [{"id": N}, {"id": N, "label": "..."}]
-JOBINFO_JSON=$(python3 -c '
-import json, sys
-n = len(sys.argv) // 2
+# 3. Record the jobs in the workflow's runtime_meta.jobinfo: [{"id": N}, {"id": N, "label": "..."}]
+#    A new workflow's list is replaced. In a run on an existing workflow (DRONA_RUN_DIR is
+#    set, e.g. a Manage action) DRONA_WF_ID is that workflow, so the jobs are appended to
+#    its list instead. Other runtime_meta keys are kept in both cases.
+python3 - "${ALL_JOBIDS[@]}" "${ALL_LABELS[@]}" <<'PYEOF'
+import json, os, sys
+sys.path.insert(0, os.path.join(os.environ.get("DRONA_RUNTIME_DIR", ""), "db_access"))
+import drona_db_retriever as db
+
+n = (len(sys.argv) - 1) // 2
 ids, labels = sys.argv[1:1 + n], sys.argv[1 + n:]
 jobs = []
 for job_id, label in zip(ids, labels):
@@ -50,12 +56,24 @@ for job_id, label in zip(ids, labels):
     if label:
         job["label"] = label
     jobs.append(job)
-print(json.dumps({"jobinfo": jobs}))
-' "${ALL_JOBIDS[@]}" "${ALL_LABELS[@]}")
 
-# 4. Update the Database Record
-# Using the specific path: ${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py
-python3 "${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py" --edit  -i "$DRONA_WF_ID" --runtime-meta "$JOBINFO_JSON" > /dev/null
+wf_id = os.environ.get("DRONA_WF_ID", "")
+record = db.get_record(wf_id) if wf_id else None
+if record is None:
+    sys.exit(0)
+try:
+    meta = json.loads(record.get("runtime_meta") or "{}")
+except ValueError:
+    meta = {}
+if not isinstance(meta, dict):
+    meta = {}
+if os.environ.get("DRONA_RUN_DIR"):
+    old = [j for j in (meta.get("jobinfo") or []) if isinstance(j, dict)]
+    known = {str(j.get("id")) for j in old}
+    jobs = old + [j for j in jobs if str(j["id"]) not in known]
+meta["jobinfo"] = jobs
+db.update_record(wf_id, runtime_meta=json.dumps(meta))
+PYEOF
 
 # 5. Formatted Output
 if [ "${#ALL_JOBIDS[@]}" -eq 1 ]; then

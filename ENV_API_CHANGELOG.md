@@ -37,5 +37,9 @@ First versioned API (the `hprc-dev` line). Environments written for it need at l
 - retriever polling (`refreshInterval`), the retriever timeout, and paused retrievers in collapsed containers
 - hidden additional files (`preview_order: -1`)
 - shared workflow manage actions (rerun/recreate/cancel), job/node scope pickers, CPU/GPU monitoring
+- runs on an existing workflow: reserved field `drona_target_wf` (schema flag `"workflowTarget": true`),
+  no new record, script in `<wfdir>/.drona/runs/<timestamp>/`, run started in the workflow directory,
+  `DRONA_WF_NAME` and `DRONA_RUN_DIR`, jobinfo append in `drona_wf_driver_sbatch`. Env code that deletes
+  `$DRONA_WF_ID` as manage self-cleanup must skip it when `DRONA_RUN_DIR` is set.
 
 Environments from before 2.0 (no `requires_drona`) keep working.

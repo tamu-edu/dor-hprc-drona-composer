@@ -497,7 +497,8 @@ export function App() {
         var jobScript = request.response;
         callback(null, jobScript); // Pass the result to the callback
       } else {
-        callback(`Error ${request.status}. Try again!`); // Pass the error to the callback
+        const serverError = request.response && request.response.error;
+        callback(serverError ? `Error ${request.status}: ${serverError}` : `Error ${request.status}. Try again!`);
       }
     };
     request.onerror = function (event) {
