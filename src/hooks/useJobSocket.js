@@ -339,7 +339,10 @@ export function useJobSocket() {
             startHttpJob(initialRequest.response.bash_cmd, initialRequest.response.drona_job_id, initialRequest.response.location,
               initialRequest.response.env_name, initialRequest.response.env_dir);
           } else {
-            appendOutput(`\nError starting the job: ${initialRequest.status}\n`);
+            const serverError = initialRequest.response && initialRequest.response.error;
+            appendOutput(serverError
+              ? `\nError starting the job: ${serverError}\n`
+              : `\nError starting the job: ${initialRequest.status}\n`);
             setStatus('error');
           }
         }

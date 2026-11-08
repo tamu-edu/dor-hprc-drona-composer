@@ -10,6 +10,8 @@ from .history_manager import JobHistoryManager
 from .utils import create_folder_if_not_exist, get_drona_dir
 from machine_driver_scripts.engine import Engine
 from .file_utils import save_file
+from .error_handler import APIError
+from .workflow_dirs import strip_name_component, directory_owner, free_sibling_directory
 
 logger = Logger()
 socketio = None  # Will be initialized when passed from main app
@@ -59,6 +61,17 @@ def submit_job_route():
     if not (params.get("name") or "").strip():
         params["name"] = drona_job_id
 
+    history_manager = JobHistoryManager()
+
+    # A preview's id is used for one workflow only. A second submit with the same id would
+    # overwrite the first run's run.sh and files and clash with its record, so refuse it
+    # before anything is written.
+    if drona_job_id and history_manager.job_exists(drona_job_id):
+        return jsonify({
+            "error": (f"Workflow {drona_job_id} was already submitted from this preview. "
+                      "Close the preview and open it again to start a new workflow.")
+        }), 409
+
     # Filesystem side effects use the preview-computed location
     create_folder_if_not_exist(location)
 
@@ -76,7 +89,6 @@ def submit_job_route():
 
     bash_cmd = build_driver_command(driver_script_path)
 
-    history_manager = JobHistoryManager()
     job_record = history_manager.save_job(
         params,
         files,
@@ -86,6 +98,12 @@ def submit_job_route():
         },
         job_id=drona_job_id
     )
+    if not job_record:
+        # Without a record the run would have no workflow to report its jobs to
+        # (and an id clash means another run already owns it), so don't start it.
+        return jsonify({
+            "error": f"Could not save the workflow record for {drona_job_id or 'this run'}; the run was not started."
+        }), 500
 
     return jsonify({
         "bash_cmd": bash_cmd,
@@ -94,6 +112,7 @@ def submit_job_route():
         "env_name": params.get("env_name"),
         "env_dir": params.get("env_dir")
     })
+
 
 
 
@@ -172,7 +191,30 @@ def preview_job_route():
         if is_deprecated and old_id:
             location_effective = strip_trailing_component(location_effective, old_id)
 
+        # The client sends back the previous preview's location, which may already end in
+        # <name> or a <name>-N picked below; strip it so the directory is chosen afresh.
+        location_effective = strip_name_component(location_effective, effective_name)
         location_effective = ensure_component_appended(location_effective, effective_name)
+
+    # Never put a new workflow into a directory another workflow already uses: that would
+    # overwrite its run.sh and job files. Auto locations get a -2, -3, ... suffix; a picked
+    # location is the user's choice, so only warn.
+    location_messages = []
+    history_manager = JobHistoryManager()
+    owner = directory_owner(history_manager, location_effective, drona_job_id)
+    if owner:
+        if user_picked_location:
+            location_messages.append({"type": "warning", "text": (
+                f"{location_effective} is already used by {owner}. Submitting this workflow "
+                "there overwrites files with the same name (run.sh, job files).")})
+        else:
+            taken = location_effective
+            location_effective = free_sibling_directory(history_manager, taken, drona_job_id)
+            if location_effective is None:
+                raise APIError("No free workflow directory", status_code=409,
+                               details=f"{taken}-2, {taken}-3, ... are all in use; choose another name.")
+            location_messages.append({"type": "note", "text": (
+                f"{taken} is already used by {owner}, so this workflow goes to {location_effective}.")})
 
     params["location"] = location_effective
 
@@ -180,6 +222,8 @@ def preview_job_route():
     engine = Engine()
     engine.set_environment(params.get("runtime"), params.get("env_dir"))
     preview_job = engine.preview_script(params)
+    if location_messages:
+        preview_job["messages"] = location_messages + list(preview_job.get("messages") or [])
 
     # Return fields client injects back into form
     preview_job["drona_job_id"] = drona_job_id

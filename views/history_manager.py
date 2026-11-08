@@ -58,6 +58,45 @@ class JobHistoryManager:
         except (sqlite3.Error, PermissionError):
             pass
 
+    def job_exists(self, job_id):
+        """True when a workflow record with this drona id exists. False when there is no
+        database (nothing can clash then) or it can't be read."""
+        if not self.db_path or not job_id:
+            return False
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute(
+                    "SELECT 1 FROM job_history WHERE drona_id = ?", (str(job_id),)
+                ).fetchone()
+                return row is not None
+        except (sqlite3.Error, PermissionError):
+            return False
+
+    def workflow_at_location(self, location, exclude_id=None):
+        """Drona id of a workflow record whose directory is location (compared after
+        normalizing, and through symlinks), other than exclude_id; None if there is none."""
+        if not self.db_path or not location:
+            return None
+
+        def forms(path):
+            path = os.path.normpath(os.path.expanduser(str(path)))
+            return {path, os.path.realpath(path)}
+
+        wanted = forms(location)
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                rows = conn.execute(
+                    "SELECT drona_id, location FROM job_history WHERE location IS NOT NULL AND location != ''"
+                ).fetchall()
+        except (sqlite3.Error, PermissionError):
+            return None
+        for drona_id, row_location in rows:
+            if exclude_id is not None and str(drona_id) == str(exclude_id):
+                continue
+            if forms(row_location) & wanted:
+                return str(drona_id)
+        return None
+
     def get_job(self, job_id):
         if not self.db_path:
             return None
