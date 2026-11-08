@@ -399,6 +399,9 @@ def db_job_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
     """
     Select options for the Slurm jobs of one workflow: one {"value": "<job id>",
     "label": "Job <job id>"} per entry of runtime_meta.jobinfo, in submission order.
+    An entry with a "label" (e.g. {"id": 111, "label": "MSA (CPU)"}, written by
+    drona_wf_driver_sbatch from a "#DRONA label:" line in the job file) gets
+    "<label> \u00b7 Job <job id>".
 
     Params:
       id (str)    - drona_id of the workflow. An empty/unresolved id (e.g. before a
@@ -417,11 +420,14 @@ def db_job_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
     jobinfo = _field_value(record, "runtime_meta", "jobinfo") if record else None
     if not isinstance(jobinfo, list):
         return []
-    ids = [str(job["id"]) for job in jobinfo if isinstance(job, dict) and job.get("id") is not None]
+    jobs = [job for job in jobinfo if isinstance(job, dict) and job.get("id") is not None]
+    ids = [str(job["id"]) for job in jobs]
     states = _job_states(ids) if ids and str(params.get("state", "")).lower() == "true" else {}
     options = []
-    for job_id in ids:
-        option = {"value": job_id, "label": f"Job {job_id}"}
+    for job, job_id in zip(jobs, ids):
+        stage = str(job.get("label") or "").strip()
+        label = f"{stage} \u00b7 Job {job_id}" if stage else f"Job {job_id}"
+        option = {"value": job_id, "label": label}
         info = states.get(job_id)
         if info and info["state"]:
             option["state"] = info["state"].lower()

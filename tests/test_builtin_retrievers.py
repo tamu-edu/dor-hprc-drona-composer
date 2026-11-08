@@ -129,6 +129,14 @@ class DbJobOptionsTest(unittest.TestCase):
             [{"value": "111", "label": "Job 111"}, {"value": "222", "label": "Job 222"}],
         )
 
+    def test_stage_label_from_jobinfo(self):
+        record = {"drona_id": "30", "runtime_meta": {"jobinfo": [
+            {"id": 111, "label": "MSA (CPU)"}, {"id": 222, "label": "  "}, {"id": 333}]}}
+        self.assertEqual(
+            [o["label"] for o in self.options({"id": "30"}, record)],
+            ["MSA (CPU) \u00b7 Job 111", "Job 222", "Job 333"],
+        )
+
     def test_unresolved_id_is_empty(self):
         self.assertEqual(self.options({"id": ""}), [])
 

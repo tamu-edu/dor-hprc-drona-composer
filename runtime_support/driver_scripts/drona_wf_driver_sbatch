@@ -1,5 +1,9 @@
 #!/bin/bash
 # Usage: drona_wf_driver_sbatch <job_file1> [job_file2] ... [job_fileN]
+#
+# A job file may name its stage with a line "#DRONA label: <text>" (e.g.
+# "#DRONA label: MSA (CPU)"). The label is stored with the job id in
+# runtime_meta.jobinfo and shown by the job scope picker ("MSA (CPU) · Job 123").
 
 # 1. Check for at least one job file
 if [ "$#" -lt 1 ]; then
@@ -10,6 +14,7 @@ fi
 JOB_FILES=("$@")
 PREV_JOBID=""
 ALL_JOBIDS=()
+ALL_LABELS=()
 
 # 2. Iterate over the job files to build the pipeline
 for JOB_FILE in "${JOB_FILES[@]}"; do
@@ -30,19 +35,27 @@ for JOB_FILE in "${JOB_FILES[@]}"; do
     fi
 
     ALL_JOBIDS+=("$CURRENT_ID")
+    ALL_LABELS+=("$(sed -n 's/^#DRONA[[:space:]]\+label:[[:space:]]*//p' "$JOB_FILE" | head -n 1 | sed 's/[[:space:]]*$//')")
     PREV_JOBID="$CURRENT_ID"
 done
 
-# 3. Construct the JSON string for "jobinfo"
-JOB_JSON_ARRAY=""
-for id in "${ALL_JOBIDS[@]}"; do
-    [ -n "$JOB_JSON_ARRAY" ] && JOB_JSON_ARRAY+=", "
-    JOB_JSON_ARRAY+="{\"id\": $id}"
-done
+# 3. Construct the JSON string for "jobinfo": [{"id": N}, {"id": N, "label": "..."}]
+JOBINFO_JSON=$(python3 -c '
+import json, sys
+n = len(sys.argv) // 2
+ids, labels = sys.argv[1:1 + n], sys.argv[1 + n:]
+jobs = []
+for job_id, label in zip(ids, labels):
+    job = {"id": int(job_id)}
+    if label:
+        job["label"] = label
+    jobs.append(job)
+print(json.dumps({"jobinfo": jobs}))
+' "${ALL_JOBIDS[@]}" "${ALL_LABELS[@]}")
 
 # 4. Update the Database Record
 # Using the specific path: ${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py
-python3 "${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py" --edit  -i "$DRONA_WF_ID" --runtime-meta "{\"jobinfo\": [$JOB_JSON_ARRAY]}" > /dev/null
+python3 "${DRONA_RUNTIME_DIR}/db_access/drona_db_retriever.py" --edit  -i "$DRONA_WF_ID" --runtime-meta "$JOBINFO_JSON" > /dev/null
 
 # 5. Formatted Output
 if [ "${#ALL_JOBIDS[@]}" -eq 1 ]; then
