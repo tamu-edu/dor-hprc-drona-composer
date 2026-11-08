@@ -217,16 +217,117 @@ const styles = `
   padding: 0.75rem 0.25rem;
 }
 
+/* The Generate bar stays visible at the bottom while a long form scrolls. It keeps its
+   place at the end of the form, so it never covers the last field. Low z-index: select
+   menus (portaled, z-index 9999) and field popups open over it. */
 .composer-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+
   margin-top: 1rem;
-  padding-top: 1rem;
+  padding: 0.6rem 0;
 
   border-top: 1px solid #ddd;
   background: white;
+  box-shadow: 0 -4px 8px -6px rgba(0, 0, 0, 0.18);
+}
+
+/* Generate: the form's main action, so the only filled button in the form (the others use
+   the outlined .maroon-button). */
+.composer-generate-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #500000;
+  border: 1px solid #500000;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 6px rgba(80, 0, 0, 0.35);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.composer-generate-button:hover,
+.composer-generate-button:focus {
+  color: #fff;
+  background-color: #6b0f0f;
+  border-color: #6b0f0f;
+  box-shadow: 0 4px 12px rgba(80, 0, 0, 0.45);
+  transform: translateY(-1px);
+}
+
+.composer-generate-button:focus-visible {
+  outline: 2px solid #500000;
+  outline-offset: 2px;
+}
+
+.composer-generate-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(80, 0, 0, 0.35);
+}
+
+.composer-generate-arrow {
+  transition: transform 0.15s ease;
+}
+
+.composer-generate-button:hover .composer-generate-arrow {
+  transform: translateX(3px);
+}
+
+/* Run in the preview window: same look as Generate; when the preview was already run it is
+   greyed out and its text says why (SplitScreenModal runButtonState). */
+.composer-run-button {
+  font-size: 0.95rem;
+  padding: 0.35rem 1.1rem;
+}
+
+.composer-generate-button:disabled,
+.composer-generate-button:disabled:hover {
+  color: #6b7280;
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+/* Run in the fullscreen header (maroon bar): light button, greyed when disabled. */
+.ide-run-button {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  color: #500000;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 12px;
+  line-height: 1.4;
+}
+
+.ide-run-button:hover {
+  background: #fff;
+}
+
+.ide-run-button:disabled,
+.ide-run-button:disabled:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: not-allowed;
+}
+
+/* Keyboard focus and scroll-to-field keep fields clear of the sticky bar (the page is the
+   scroller). */
+html {
+  scroll-padding-bottom: 4.5rem;
 }
 
 .drona-footer {

@@ -289,7 +289,10 @@ function JobComposer({
   };
 
   return (
-    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'clip', display: 'flex', flexDirection: 'column' }}>
+      {/* The page is the only scroller: no max-height/overflow scroll area here, so the sticky
+          environment pane and Generate bar stick to the window. overflow-x: clip hides sideways
+          overflow without creating a scroll area (hidden would). */}
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       {props.envWarning && (
         <div className="alert alert-warning alert-dismissible mb-2" role="alert">
@@ -301,7 +304,8 @@ function JobComposer({
       )}
       <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-        <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
+        {/* No overflow here either (see the container above). */}
+        <div className="card-body" style={{ flex: '1 1 auto' }}>
 
           <ConfigGate onStatusChange={setConfigBlocked} />
 
@@ -391,19 +395,21 @@ function JobComposer({
                                   pendingValues={props.pendingValues}
                                   onPendingApplied={props.onPendingApplied}
                                 />
-                                <div className="composer-actions" >
+                                <div className="composer-actions">
                                   <div className="invisible">
                                     <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
                                   </div>
                                   {props.environment && props.environment.env !== "" && (
                                     <div>
-                                      <input
+                                      <button
                                         type="button"
                                         id="job-preview-button"
-                                        className="btn btn-primary maroon-button"
-                                        value={buttonLabels.preview}
+                                        className="btn composer-generate-button"
                                         onClick={handlePreview}
-                                      />
+                                      >
+                                        {buttonLabels.preview}
+                                        <span className="composer-generate-arrow" aria-hidden="true">&rarr;</span>
+                                      </button>
                                     </div>
                                   )}
                                 </div>
