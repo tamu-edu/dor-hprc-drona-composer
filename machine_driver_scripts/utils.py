@@ -11,12 +11,16 @@ runtime_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 if runtime_dir not in sys.path:
     sys.path.insert(0, runtime_dir)
 
+import drona_runtime_paths  # noqa: E402  (runtime_support/ is on sys.path above)
+
+
 def resolve_map_includes(map_data):
     """
     Expand the reserved "$include" key of a map.json into the entries of the
-    shared mapping files it lists (e.g. "$DRONA_RUNTIME_DIR/map_references/
+    shared mapping files it lists (e.g. "$DRONA_RUNTIME_DIR/maps/
     drona_cancel_jobs.json"). A bare name without a "/" (with or without
-    ".json") is looked up in runtime_support/map_references/. Entries written
+    ".json") is looked up in runtime_support/maps/; an old path (map_references/)
+    resolves through runtime_support/aliases.json. Entries written
     directly in map_data override included ones; later includes override
     earlier ones.
     """
@@ -27,7 +31,7 @@ def resolve_map_includes(map_data):
     if isinstance(includes, str):
         includes = [includes]
 
-    references_dir = os.path.join(runtime_dir, "map_references")
+    references_dir = os.path.join(runtime_dir, "maps")
 
     merged = {}
     for ref in includes:
@@ -38,7 +42,8 @@ def resolve_map_includes(map_data):
                 raise FileNotFoundError(
                     f'map include "{ref}" not found in {references_dir}')
         else:
-            path = Template(ref).safe_substitute(DRONA_RUNTIME_DIR=runtime_dir)
+            path = drona_runtime_paths.resolve(
+                Template(ref).safe_substitute(DRONA_RUNTIME_DIR=runtime_dir))
         with open(path) as f:
             merged.update(json.load(f))
     merged.update(map_data)

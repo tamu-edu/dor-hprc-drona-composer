@@ -22,7 +22,7 @@ parse_seconds() {
     echo $(( 10#$days*86400 + 10#$a*3600 + 10#$b*60 + 10#$c ))
 }
 
-: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-jobs-template.html}"
+: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/schedulers/slurm/templates/slurm-jobs-template.html}"
 ROWS=""
 
 # Job names are user-controlled (sbatch --job-name) and can contain HTML

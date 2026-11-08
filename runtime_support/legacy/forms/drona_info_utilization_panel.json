@@ -10,10 +10,10 @@
     },
     "elements": {
       "drona_gpuUtilizationChart": {
-        "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_gpu_chart.json#/drona_gpu_chart"
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_gpu_chart.json#/drona_gpu_chart"
       },
       "drona_cpuUtilizationChart": {
-        "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_cpu_chart.json#/drona_cpu_chart"
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_cpu_chart.json#/drona_cpu_chart"
       }
     }
   }

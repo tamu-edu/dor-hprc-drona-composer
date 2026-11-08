@@ -3,7 +3,7 @@
 # Env: NODE (required), JOBID (optional; when set, uses srun --overlap inside the
 # job's allocation, otherwise falls back to plain ssh)
 
-: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-processes-template.html}"
+: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/schedulers/slurm/templates/slurm-processes-template.html}"
 
 PS_FMT="-o pid=,pcpu=,pmem=,rss=,etimes=,comm= --sort=-pcpu"
 SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=5)

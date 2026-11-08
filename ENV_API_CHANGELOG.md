@@ -25,7 +25,12 @@ installed environment is opened.
 First versioned API (the `hprc-dev` line). Environments written for it need at least:
 
 - `runtime_support`: `$DRONA_RUNTIME_DIR` / `$DRONA_ENV_DIR` in schema `$ref`s, shared form components
-  (`form_components/*.json`), shared retriever scripts and `drona_runtime_utils`
+  (`forms/*.json`), map fragments (`maps/`), shared retriever scripts (`retrievers/`,
+  `schedulers/slurm/retrievers/`), `drona_runtime_utils`, and the submit tool
+  `schedulers/slurm/drona_wf_driver_sbatch` (with `#DRONA label:` stage labels). The pre-2.0 paths
+  (`form_components/`, `map_references/`, `retriever_scripts/`, `html_templates/`,
+  `driver_scripts/drona_wf_driver_sbatch`) still resolve through `runtime_support/aliases.json` and are
+  removed in 2.1. See `runtime_support/CATALOG.md`.
 - map.json `$include` and order-independent `[KEY]` substitution
 - built-in retrievers (`builtin:db_lookup`, `builtin:db_options`, `builtin:db_job_options`)
 - elements: `dynamicTable`, `chart` (incl. `enableZoom`), collapsible card layout, layout frame and shared choice options

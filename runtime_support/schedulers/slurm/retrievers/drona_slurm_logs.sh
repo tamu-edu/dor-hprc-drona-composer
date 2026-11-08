@@ -49,7 +49,7 @@ EOF
 # Optional JOBID param selects a specific job; otherwise the first job of the workflow is used
 if [[ -n "$SELECTED_JOBID" ]]; then JOBID="$SELECTED_JOBID"; fi
 
-HTML_TEMPLATE="$DRONA_RUNTIME_DIR/html_templates/slurm-logs-template.html"
+HTML_TEMPLATE="$DRONA_RUNTIME_DIR/schedulers/slurm/templates/slurm-logs-template.html"
 
 outputfile="${LOCATION}/out.${JOBID}"
 errorfile="${LOCATION}/error.${JOBID}"

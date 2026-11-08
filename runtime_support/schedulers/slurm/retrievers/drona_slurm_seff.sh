@@ -8,7 +8,7 @@
 #            absolute numbers (core-time, memory used of requested) and a hint when
 #            much less memory was used than requested
 
-: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-seff-template.html}"
+: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/schedulers/slurm/templates/slurm-seff-template.html}"
 VIEW="${VIEW:-detailed}"
 ROWS=""
 

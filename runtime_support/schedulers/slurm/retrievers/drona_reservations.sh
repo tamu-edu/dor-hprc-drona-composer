@@ -3,7 +3,7 @@
 # then ones starting within UPCOMING_DAYS, in order of start time.
 #   [ { "value": "<name>", "label": "<name> (until <end>)" },
 #     { "value": "<name>", "label": "<name> (starts <start>)" }, ... ]
-# Used by the Training row in form_components/drona_slurm_resources.json.
+# Used by the Training row in forms/drona_slurm_resources.json.
 #
 # Optional retrieverParams:
 #   PATTERN       - regular expression the reservation name must match (e.g. "^training_").

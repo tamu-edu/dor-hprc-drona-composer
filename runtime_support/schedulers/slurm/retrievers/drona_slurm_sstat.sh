@@ -11,7 +11,7 @@
 # are queried (--allsteps) and the busiest one (CPU time x tasks) is shown, so the
 # numbers describe the real work rather than an idle batch shell. extern is skipped.
 
-: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-sstat-template.html}"
+: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/schedulers/slurm/templates/slurm-sstat-template.html}"
 VIEW="${VIEW:-detailed}"
 
 escape_html() {

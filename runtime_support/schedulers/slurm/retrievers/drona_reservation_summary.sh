@@ -1,7 +1,7 @@
 #!/bin/bash
 # One-line summary of the reservation choices, plus warnings for choices that would
 # keep the job from starting (HTML for a staticText with allowHtml).
-# Used by the Reservation panel in form_components/drona_slurm_resources.json.
+# Used by the Reservation panel in forms/drona_slurm_resources.json.
 #
 #   Runs in pvc_llm (until 2027-07-20 08:00, 257d 20h left) · 2 × PVC (4 of 4 free now) · partition pvc
 #   ⚠ Run time 4:00 goes past the reservation's end ...

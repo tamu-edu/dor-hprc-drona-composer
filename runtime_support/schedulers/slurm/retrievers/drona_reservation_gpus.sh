@@ -1,6 +1,6 @@
 #!/bin/bash
 # Accelerators (including MIG slices) and partitions on the nodes of a reservation.
-# Used by the Training row in form_components/drona_slurm_resources.json.
+# Used by the Training row in forms/drona_slurm_resources.json.
 #
 # retrieverParams:
 #   RESERVATION - reservation name (required; empty -> "[]")

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Usage: ./get_node_stats.sh 1411567
 
-: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/html_templates/slurm-nodeutil-template.html}"
+: "${HTML_TEMPLATE:=$DRONA_RUNTIME_DIR/legacy/templates/slurm-nodeutil-template.html}"
 
 # Get the raw list of nodes and total CPUs allocated per node
 NODES=$(squeue -j "$JOBID" -h -o "%N")

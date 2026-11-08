@@ -8,23 +8,32 @@ Every environment lives in its own directory, but most environments need the sam
 
 ```
 runtime_support/
-├── form_components/    JSON schema fragments, pulled in with $ref
-├── retriever_scripts/  scripts that supply dynamic form data or live widget HTML
-├── html_templates/     HTML fragments that retriever scripts fill in and return
-├── map_references/     map.json fragments, pulled in with "$include"
-└── drona_runtime_utils/ Python functions called by the map fragments
+├── forms/               JSON schema fragments, pulled in with $ref
+├── maps/                map.json fragments, pulled in with "$include"
+├── retrievers/          scheduler-neutral scripts that supply dynamic form data or live widget HTML
+├── templates/           HTML fragments that those scripts fill in and return
+├── job_helpers/         scripts that run inside the job (CPU/GPU monitors, server start)
+├── drona_runtime_utils/ Python functions called by the map fragments
+├── db_access/           workflow database access and built-in retrievers
+├── schedulers/slurm/    everything that talks to Slurm: job states and cancel (scheduler.py),
+│                        resource parameters and cluster profiles, Slurm retrievers and templates,
+│                        and the submit tool drona_wf_driver_sbatch
+├── legacy/              files kept only for older environments
+└── CATALOG.md           which forms, maps, functions and retrievers make up each feature
 ```
+
+`runtime_support/CATALOG.md` lists every shared feature with all of its pieces; start there when you want to use one.
 
 This page explains how the pieces fit together, the conventions worth following when you add to them, and a few mistakes that are easy to make and hard to spot.
 
 ## Shared form components
 
-A `form_components/*.json` file is a flat JSON object where each top-level key is one reusable schema fragment. An environment's own `schema.json` pulls in exactly the fragments it needs with `$ref`, using the `$DRONA_RUNTIME_DIR` placeholder described in [Schema Decomposition](./schema#referencing-a-sharedcurated-component-directory):
+A `forms/*.json` file is a flat JSON object where each top-level key is one reusable schema fragment. An environment's own `schema.json` pulls in exactly the fragments it needs with `$ref`, using the `$DRONA_RUNTIME_DIR` placeholder described in [Schema Decomposition](./schema#referencing-a-sharedcurated-component-directory):
 
 ```json
 {
   "Modules": {
-    "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_module_picker.json#/drona_Modules",
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_module_picker.json#/drona_Modules",
     "module_db_root": "/path/readable/by/ood/modules"
   }
 }
@@ -39,16 +48,20 @@ Two conventions worth following:
 
 ## Shared retriever scripts
 
-Any schema element with `isDynamic: true` (`hidden`, `staticText`, `dynamicSelect`, and friends — see [Retriever Scripts](./retriever-scripts)) calls a script by name. The backend resolves that name in two steps:
+Any schema element with `isDynamic: true` (`hidden`, `staticText`, `dynamicSelect`, and friends — see [Retriever Scripts](./retriever-scripts)) calls a script by name. The backend resolves that name in this order:
 
 1. relative to the **environment's own directory** (an env-local override)
-2. `runtime_support/retriever_scripts/<name>` (the shared fallback)
+2. `runtime_support/schedulers/<scheduler>/retrievers/<name>` (scheduler-specific, e.g. `drona_slurm_sstat.sh`)
+3. `runtime_support/retrievers/<name>` (scheduler-neutral)
+4. `runtime_support/legacy/retrievers/<name>` (kept for older environments)
+
+The scheduler is set with `scheduler` in `config.yml` (default `slurm`), so a form names a retriever without saying which scheduler provides it.
 
 This lookup order is what lets one environment override a shared script — drop a same-named file directly in the environment's directory and it takes priority automatically, no schema change required. The flip side: **if you fix a bug in a shared script and it doesn't seem to take effect for one particular environment, check whether that environment has its own copy of the same name shadowing it.**
 
 ## Shared map references
 
-Shared mapping entries live in `runtime_support/map_references/`. A workflow includes them with `"$include": ["drona_cancel_jobs"]` in its `map.json`. See [Map Files](./map#shared-mappings-with-include) for the rules.
+Shared mapping entries live in `runtime_support/maps/`. A workflow includes them with `"$include": ["drona_cancel_jobs"]` in its `map.json`. See [Map Files](./map#shared-mappings-with-include) for the rules.
 
 The functions these entries call live in `runtime_support/drona_runtime_utils/` and are available to every workflow without being copied into its `utils.py`:
 
@@ -59,11 +72,11 @@ The functions these entries call live in `runtime_support/drona_runtime_utils/` 
 | `drona_gpu_monitor_nvml` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start_nvml`, `retrieve_gpu_monitor_stop` | `drona_gpu`, `drona_gpu_monitor` |
 | `drona_slurm_params` | `DUMMY` | `retrieve_slurm_params` | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
 
-`retrieve_slurm_params` calls `cluster_slurm_checks` from `runtime_support/drona_runtime_utils/clusters/<cluster>.py`, chosen by the cluster name (with `defaultcluster.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the workflow needs no cluster files of its own.
+`retrieve_slurm_params` (code in `runtime_support/schedulers/slurm/params.py`) calls `cluster_slurm_checks` from `runtime_support/schedulers/slurm/clusters/<cluster>.py`, chosen by the cluster name (with `default.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the workflow needs no cluster files of its own.
 
 ## Shared HTML templates
 
-Widgets that render live HTML (a `staticText` field with `allowHtml: true`) typically pair a retriever script with a matching file in `html_templates/`. The script reads the template, replaces its `{{PLACEHOLDER}}` tokens, and prints the result — that's what ends up on the page.
+Widgets that render live HTML (a `staticText` field with `allowHtml: true`) typically pair a retriever script with a matching template file: `templates/` for scheduler-neutral widgets, `schedulers/slurm/templates/` for the Slurm ones. The script reads the template, replaces its `{{PLACEHOLDER}}` tokens, and prints the result — that's what ends up on the page.
 
 A few things make these fragments play well together, since several can be mounted on the same page at once:
 
@@ -77,8 +90,8 @@ A few things make these fragments play well together, since several can be mount
 
 | `WORKDIR_STYLE` | Template | Use it when |
 |---|---|---|
-| unset (default) | `html_templates/workdir-template.html` | the widget stands alone; the template carries its own label |
-| `inline` | `html_templates/workdir-inline-template.html` | the widget sits in a container that already shows the label, e.g. a `bar` layout titled "Workflow Directory:" |
+| unset (default) | `templates/workdir-template.html` | the widget stands alone; the template carries its own label |
+| `inline` | `templates/workdir-inline-template.html` | the widget sits in a container that already shows the label, e.g. a `bar` layout titled "Workflow Directory:" |
 
 `drona_info_jobdir_view.json` ships both versions, so an environment only needs a `$ref`:
 
@@ -89,7 +102,7 @@ A few things make these fragments play well together, since several can be mount
 
 ```json
 "workingDirectory": {
-  "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_jobdir_view.json#/drona_workingDirectoryBar"
+  "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_jobdir_view.json#/drona_workingDirectoryBar"
 }
 ```
 
@@ -107,14 +120,18 @@ These cost real debugging time when they were first hit, and none of them are ob
 ## Recipes
 
 **Add a new monitoring widget:**
-1. Write the retriever script in `runtime_support/retriever_scripts/`.
-2. Add a matching `runtime_support/html_templates/*.html` fragment with the `{{PLACEHOLDER}}` tokens the script fills in.
-3. Add a `runtime_support/form_components/*.json` entry: `"type": "staticText", "isDynamic": true, "allowHtml": true, "retriever": "your_script.sh"`.
-4. `$ref` that entry from any environment's schema.
+1. Write the retriever script in `runtime_support/retrievers/`, or in `runtime_support/schedulers/slurm/retrievers/` if it calls Slurm commands.
+2. Add a matching `.html` fragment next to it (`templates/` or `schedulers/slurm/templates/`) with the `{{PLACEHOLDER}}` tokens the script fills in.
+3. Add a `runtime_support/forms/*.json` entry: `"type": "staticText", "isDynamic": true, "allowHtml": true, "retriever": "your_script.sh"`.
+4. `$ref` that entry from any environment's schema, and add a row to `runtime_support/CATALOG.md`.
 
-**Add a shared field**: add it to a `form_components/*.json` file (existing or new), then `$ref` it — don't copy the field definition into an environment's own schema.
+**Add a shared field**: add it to a `forms/*.json` file (existing or new), then `$ref` it — don't copy the field definition into an environment's own schema.
 
 **Override a shared retriever for one environment**: place a same-named script directly in that environment's own directory.
+
+## Paths from older Drona versions
+
+Before 2.0 the directories were called `form_components/`, `map_references/`, `retriever_scripts/`, `html_templates/` and `driver_scripts/`. Environments that still use those paths keep working: `$ref`, `$include` and retriever lookups translate them through `runtime_support/aliases.json`, and `driver_scripts/drona_wf_driver_sbatch` is a symlink to `schedulers/slurm/drona_wf_driver_sbatch`. Use the new paths in new environments; the old ones are removed at environment API 2.1. `tests/test_env_references.py` lists the old paths an environment still uses.
 
 ---
 

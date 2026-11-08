@@ -8,12 +8,14 @@ import time
 import traceback
 from string import Template
 from urllib.request import urlopen
+from urllib.parse import urlparse, unquote
 from .error_handler import APIError, handle_api_error
 from copy import deepcopy
 from .utils import get_envs_dir, get_runtime_dir
 from .env_api import check_compatible, read_env_requirement
 from .logger import Logger
 from runtime_support.db_access.builtin_retrievers import BUILTIN_REGISTRY, BuiltinRetrieverError
+from runtime_support import drona_runtime_paths
 
 # Every retriever failure/timeout is appended here (one JSON object per line),
 # so intermittent problems such as a slow Slurm controller can be diagnosed
@@ -96,14 +98,16 @@ def execute_script(
         final_retriever_path = os.path.join(env_vars["DRONA_ENV_DIR"], retriever_path)
 
     if not os.path.exists(final_retriever_path):
-        fallback_path = os.path.join(get_runtime_dir(), "retriever_scripts", retriever_path)
-        if os.path.exists(fallback_path):
+        # Shared retrievers: schedulers/<scheduler>/retrievers -> retrievers -> legacy/retrievers
+        fallback_path = drona_runtime_paths.find_retriever(retriever_path)
+        if fallback_path:
             final_retriever_path = fallback_path
         else:
             raise APIError(
                 f"{script_type} script not found in any of the searched paths",
                 status_code=404,
-                details={"path 1": final_retriever_path, "path 2": fallback_path}
+                details={"path 1": final_retriever_path,
+                         "shared": [os.path.join(d, retriever_path) for d in drona_runtime_paths.retriever_dirs()]}
             )
     
     retriever_path = final_retriever_path
@@ -240,8 +244,14 @@ def _make_schema_loader(env_dir):
                            its fixed layout, e.g. $DRONA_ENV_DIR/schemas/create.schema.json
     """
     def loader(uri, **kwargs):
-        with urlopen(uri) as content:
-            raw = content.read().decode("utf-8")
+        parsed = urlparse(uri)
+        if parsed.scheme == "file":
+            # Old runtime_support locations (form_components/...) resolve via aliases.json
+            with open(drona_runtime_paths.resolve(unquote(parsed.path)), encoding="utf-8") as content:
+                raw = content.read()
+        else:
+            with urlopen(uri) as content:
+                raw = content.read().decode("utf-8")
         raw = Template(raw).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir(), DRONA_ENV_DIR=env_dir)
         return json.loads(raw, **kwargs)
     return loader

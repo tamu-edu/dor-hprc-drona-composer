@@ -166,15 +166,12 @@ class DbJobOptionsTest(unittest.TestCase):
 
 
 class JobStatesTest(unittest.TestCase):
-    def test_squeue_then_sacct_for_the_rest_and_failures_are_soft(self):
-        rows = {"squeue": [["111", "RUNNING", "1:00", "2"]],
-                "sacct": [["222", "CANCELLED by 5", "0:10", "1"]]}
-        with mock.patch.object(br, "_slurm_query", side_effect=lambda cmd: rows[cmd[0]]):
-            states = br._job_states(["111", "222"])
-        self.assertEqual(states["111"]["state"], "RUNNING")
-        self.assertEqual(states["222"], {"state": "CANCELLED", "elapsed": "0:10", "nodes": "1"})
-        with mock.patch.object(br.subprocess, "run", side_effect=OSError):
-            self.assertEqual(br._job_states(["111"]), {})
+    def test_job_states_come_from_the_configured_scheduler(self):
+        fake = mock.Mock()
+        fake.job_states.return_value = {"111": {"state": "RUNNING", "elapsed": "1:00", "nodes": "1"}}
+        with mock.patch.object(br.drona_scheduler, "current", return_value=fake):
+            self.assertEqual(br._job_states(["111"])["111"]["state"], "RUNNING")
+        fake.job_states.assert_called_once_with(["111"])
 
 
 if __name__ == "__main__":

@@ -20,9 +20,9 @@ def build_driver_command(driver_script_path):
     return f"bash {shlex.quote(driver_script_path)}"
 
 def extract_job_id(submit_response):
-    """Extract job ID from the sbatch submission response"""
-    match = re.search(r'Submitted batch job (\d+)', submit_response)
-    return match.group(1) if match else None
+    """Job ID from the submit command's output (format depends on the scheduler)"""
+    from runtime_support.drona_scheduler import current
+    return current().parse_submit_output(submit_response)
 
 @logger.log_route(
     extract_fields={

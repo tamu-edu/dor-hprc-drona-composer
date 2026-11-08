@@ -41,10 +41,12 @@ source /etc/profile
 
 cd [flocation]
  
-$DRONA_RUNTIME_DIR/driver_scripts/drona_wf_driver_sbatch [job-file-name]
+$DRONA_RUNTIME_DIR/schedulers/slurm/drona_wf_driver_sbatch [job-file-name]
 ```
 
 `[flocation]` resolves to the absolute path of the job's working directory. `[job-file-name]` resolves to the `.job` file generated from `template.txt`. `drona_wf_driver_sbatch` handles the actual Slurm submission — it submits the job file via `sbatch`, captures the returned job ID, and records it in the workflow history database so that monitoring retrievers can track it. 
+
+It submits several job files as a pipeline, each with `--dependency=afterok` on the previous one. A job file can name its stage with a line such as `#DRONA label: MSA (CPU)`; the label is stored with the job ID and shown in the manage page's job picker (`MSA (CPU) · Job 123`).
 
 See [Workflow History Database](./database) for details on that integration.
 
@@ -63,7 +65,7 @@ Here `[flocation]` has already been resolved to the absolute run directory path.
 
 **AlphaFold3 pipeline** (CPU database search followed by GPU structure prediction):
 ```bash
-$DRONA_RUNTIME_DIR/drivers/drona_wf_driver_sbatch alphafold3-cpu.job alphafold3-gpu.job
+$DRONA_RUNTIME_DIR/schedulers/slurm/drona_wf_driver_sbatch alphafold3-cpu.job alphafold3-gpu.job
 ```
 
 **Parafold pipeline** (submits the AlphaFold job first, then chains the Parafold GPU job on successful completion):

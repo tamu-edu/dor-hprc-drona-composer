@@ -46,12 +46,12 @@
         },
         "elements": {
           "drona_node_scope": {
-            "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_scopes.json#/drona_node_scope"
+            "$ref": "$DRONA_RUNTIME_DIR/forms/drona_scopes.json#/drona_node_scope"
           }
         }
       },
       "drona_resources_cpu_chart": {
-        "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_cpu_chart.json#/drona_cpu_chart",
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_cpu_chart.json#/drona_cpu_chart",
         "condition": "!drona_node_scope. && drona_cpu_monitor_active.ACTIVE",
         "layout": {
           "preset": "boxed",
@@ -63,7 +63,7 @@
         }
       },
       "drona_resources_gpu_chart": {
-        "$ref": "$DRONA_RUNTIME_DIR/form_components/drona_info_gpu_chart.json#/drona_gpu_chart",
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_gpu_chart.json#/drona_gpu_chart",
         "condition": "!drona_node_scope. && drona_gpu_monitor_active.ACTIVE",
         "layout": {
           "preset": "boxed",
