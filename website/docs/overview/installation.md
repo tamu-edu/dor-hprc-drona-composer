@@ -61,6 +61,7 @@ The main configuration file controls application behavior. Key settings:
 ```yaml
 development: &common_settings
   cluster_name: "Grace"                    # Your cluster name
+  scheduler: "slurm"                       # Optional: batch scheduler (default slurm)
   dashboard_url: "/pun/dev/drona-composer" # URL path for the app
   driver_scripts_path: "/path/to/machine_driver_scripts"
   env_repo_github: "https://github.com/..."  # Environment repository URL
@@ -83,7 +84,8 @@ local:
 
 The section chosen at runtime is whichever one matches `APP_ENV` (set in `.env` by `setup.sh`, or exported directly in your shell) — `development`, `production`, or `local`.
 
-- **`cluster_name`** — Display name for the cluster, used internally and in form titles
+- **`cluster_name`** — Display name for the cluster, used internally and in form titles. Lowercased, it also selects the Slurm cluster profile `runtime_support/schedulers/slurm/clusters/<name>.py` (`default.py` when there is none)
+- **`scheduler`** *(optional, default `slurm`)* — Selects `runtime_support/schedulers/<name>/`, which Drona uses for job states, cancelling jobs, reading the submit output and the scheduler-specific retrievers. Only `slurm` exists today; see `runtime_support/schedulers/README.md` for what another scheduler has to provide. Read once at startup (environment variable `DRONA_SCHEDULER` wins)
 - The module picker has no site-wide setting: each environment sets `module_db_root` on its module element (see [Form Components → Module](../frontend/form-components#module)). The old `modules_db_path` key is no longer read and can be removed.
 - **`driver_scripts_path`** — Absolute path to the `machine_driver_scripts/` directory
 - **`env_repo_github`** — GitHub repository URL from which users can import environments

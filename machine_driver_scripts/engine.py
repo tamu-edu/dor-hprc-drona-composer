@@ -608,10 +608,15 @@ class Engine():
         preview_dir = tempfile.mkdtemp(prefix="drona-preview-", dir=PREVIEW_TMP_ROOT)
         previous_dir = drona_utils.drona_get_preview_dir()
         drona_utils.drona_set_preview_dir(preview_dir)
+        # A run on an existing workflow (see views/workflow_runs.py): map functions can ask
+        # with drona_get_run_target()
+        target = str(params.get("drona_target_wf") or "").strip()
+        drona_utils.drona_set_run_target(target if target.isdigit() else None)
         try:
             return self._preview_script(params)
         finally:
             drona_utils.drona_set_preview_dir(previous_dir)
+            drona_utils.drona_set_run_target(None)
             shutil.rmtree(preview_dir, ignore_errors=True)
 
     def _preview_script(self, params):

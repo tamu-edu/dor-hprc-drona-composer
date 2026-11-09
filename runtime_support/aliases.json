@@ -1,0 +1,10 @@
+{
+  "_comment": "Old (Drona < 2.0) runtime_support paths and where their files live now. Used by drona_runtime_paths.resolve() for $ref, $include and retriever lookups when a path does not exist. Candidates are tried in order. Remove at DRONA_ENV_API 2.1. driver_scripts/drona_wf_driver_sbatch is a symlink instead, because environment drivers run it from the shell.",
+  "prefixes": {
+    "form_components/": ["forms/", "legacy/forms/"],
+    "map_references/": ["maps/"],
+    "retriever_scripts/": ["retrievers/", "schedulers/slurm/retrievers/", "legacy/retrievers/"],
+    "html_templates/": ["templates/", "schedulers/slurm/templates/", "legacy/templates/"],
+    "driver_scripts/": ["job_helpers/", "schedulers/slurm/"]
+  }
+}

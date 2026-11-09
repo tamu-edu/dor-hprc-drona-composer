@@ -46,7 +46,9 @@
  * @property {string|Object|Array} [layout] - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Workflows" }; Card layouts also accept `"collapsible"` / `"collapsed"`: the title pill toggles the table, and the retriever and polling are held back while folded; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
  * @property {boolean} [useLabel=true] - false hides the label row (handy with `layout`, which has its own title)
  * @property {boolean} [showRefreshButton=false] - Show a button next to the search box that re-fetches the rows
- * @property {boolean} [collapseOnSelect=false] - After the user clicks a row, fold the table down to its header row plus the selected row (a one-line summary if that row is not loaded) with a back-arrow button that brings the table back. Restored values do not collapse the table.
+ * @property {boolean} [collapseOnSelect=false] - After the user clicks a row, fold the table down to its header row plus the selected row (a one-line summary if that row is not loaded) with a back-arrow button that brings the table back. Restored values do not collapse the table (see collapseRestoredValue).
+ * @property {boolean} [collapseRestoredValue=false] - With collapseOnSelect: a value set from outside (a restored form, or a workflow opened from the start page) folds the table too. A value that is not among the loaded rows leaves the table open.
+ * @property {boolean} [hideLabelWhenCollapsed=false] - While the table is folded to the selected row, hide the label (the folded view's column headers still say what the row is).
  * @property {boolean} [pagination=false] - Use pages instead of scrolling
  * @property {string} [emptyMessage="No options available"] - Text shown when there are no rows
  * @property {string} [help] - Help text displayed below the table
@@ -85,18 +87,28 @@ const ROW_EVENTS = { "data-tag": "allowRowEvents" };
 
 // Shell: label wrapper and frame with the collapse state. The content (DynamicTableContent) holds the
 // retriever and polling hooks, so they sit under the collapse provider and are held back while folded.
+// The selected row's id, "" when nothing is selected
+const selectionKey = (v) => String((v && typeof v === "object" ? v.value : v) ?? "");
+const hasSelection = (v) => selectionKey(v) !== "";
+
 function DynamicTable(props) {
   const resolvedLayout = useMemo(() => resolveLayout(props.layout, { only: FRAME_PRESETS }), [props.layout]);
+  // With `collapseOnSelect` the table folds down to the selected row after the user clicks a row
+  // (and, with `collapseRestoredValue`, when a value is set from outside). Kept here so the label
+  // can be hidden while folded (`hideLabelWhenCollapsed`).
+  const foldsSetValues = !!(props.collapseOnSelect && props.collapseRestoredValue);
+  const [collapsed, setCollapsed] = useState(() => foldsSetValues && hasSelection(props.value));
+  const showLabel = props.useLabel !== false && !(collapsed && props.hideLabelWhenCollapsed);
   return (
     <FormElementWrapper
       labelOnTop={props.labelOnTop}
       name={props.name}
       label={props.label}
       help={props.help}
-      useLabel={props.useLabel}
+      useLabel={showLabel}
     >
       <CollapsibleFrame resolved={resolvedLayout}>
-        <DynamicTableContent {...props} />
+        <DynamicTableContent {...props} collapsed={collapsed} setCollapsed={setCollapsed} foldsSetValues={foldsSetValues} />
       </CollapsibleFrame>
     </FormElementWrapper>
   );
@@ -105,8 +117,7 @@ function DynamicTable(props) {
 function DynamicTableContent(props) {
   const [value, setValue] = useState(props.value || "");
   const [search, setSearch] = useState("");
-  // With `collapseOnSelect` the table folds down to the selected row after the user clicks a row
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, setCollapsed, foldsSetValues } = props;
   const changeButtonRef = useRef(null);
   const searchRef = useRef(null);
   const focusAfterToggle = useRef(null);
@@ -123,8 +134,17 @@ function DynamicTableContent(props) {
     onError: props.setError,
   });
 
+  // The selection last folded for: the form can hand the same selection back as a new object on any
+  // re-render, which must not fold the table again after the user opened it with "Back to table".
+  const foldedFor = useRef(selectionKey(props.value));
   useEffect(() => {
     setValue(props.value);
+    // A newly set value from outside folds the table like a click (collapseRestoredValue)
+    const key = selectionKey(props.value);
+    if (key !== foldedFor.current) {
+      foldedFor.current = key;
+      if (foldsSetValues && key) setCollapsed(true);
+    }
   }, [props.value]);
 
   useEffect(() => {
@@ -166,6 +186,11 @@ function DynamicTableContent(props) {
   const isValueInvalid = !!(
     isEvaluated && value && !rows.some(row => row.value === value.value)
   );
+
+  // A folded table whose value turns out not to be among the rows opens again (and so shows its label)
+  useEffect(() => {
+    if (collapsed && isValueInvalid) setCollapsed(false);
+  }, [collapsed, isValueInvalid]);
 
   const columns = useMemo(() => {
     let defs;
@@ -213,6 +238,7 @@ function DynamicTableContent(props) {
 
   const handleRowClicked = (row) => {
     const option = toOption(row);
+    foldedFor.current = selectionKey(option);
     setValue(option);
     if (props.onChange) {
       props.onChange(props.index, option);
@@ -243,7 +269,7 @@ function DynamicTableContent(props) {
   const conditionalRowStyles = [
     {
       when: row => !!value && row.value === value.value,
-      style: { backgroundColor: "#e7f1ff", fontWeight: 600, borderLeft: "3px solid #500000" },
+      style: { backgroundColor: "#e7f1ff", fontWeight: "var(--drona-weight-strong)", borderLeft: "3px solid #500000" },
     },
   ];
 
@@ -268,7 +294,7 @@ function DynamicTableContent(props) {
               boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <span className="text-truncate flex-grow-1" title={labelText(value.label)} style={{ fontWeight: 600 }}>
+            <span className="text-truncate flex-grow-1" title={labelText(value.label)} style={{ fontWeight: "var(--drona-weight-strong)" }}>
               {labelText(value.label)}
             </span>
             <button
@@ -363,7 +389,7 @@ function DynamicTableContent(props) {
         <input type="hidden" name={props.name} value={value?.value || ""} readOnly />
         <input type="hidden" name={`${props.name}_label`} value={labelText(value?.label)} />
         {isValueInvalid && (
-          <div className="text-danger" style={{ fontSize: "0.875em", marginTop: "0.25rem" }}>
+          <div className="text-danger" style={{ fontSize: "var(--drona-text-ui)", marginTop: "0.25rem" }}>
             The selected option ({labelText(value.label)}) may no longer be available
           </div>
         )}

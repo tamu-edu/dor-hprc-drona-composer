@@ -1,0 +1,67 @@
+{
+
+  "drona_ManageCreateContainer" : {
+    "type" : "container",
+    "layout": { "preset": "card", "title": "Select Workflow Mode", "dot": false, "accent": true },
+    "elements" : {
+
+      "drona_mode" : {
+        "type": "radioGroup",
+        "style": "button",
+        "label": "Mode",
+        "useLabel": false,
+        "name": "drona_create_manage_mode",
+        "options": [
+          { "label": "Create", "value": "create" },
+          { "label": "Manage", "value": "manage" }
+        ]
+      },
+
+      "drona_envSelect": {
+        "type": "dynamicTable",
+        "label": "Select Workflow",
+        "labelOnTop": true,
+        "name": "drona_create_manage_allworkflows",
+        "condition": "drona_create_manage_mode.manage",
+        "workflowTarget": true,
+        "retriever": "builtin:db_options",
+        "maxHeight": "250px",
+        "retrieverParams": {
+          "columns": {
+            "Name": "{name}",
+            "ID": "{drona_id}",
+            "Date": "{start_time:10}",
+            "Location": "{location}"
+          }
+        },
+        "pagination": true,
+        "columns": [
+          { "width": "28%" },
+          { "width": "90px" },
+          { "width": "120px" },
+          {}
+        ],
+        "collapseOnSelect": true,
+        "collapseRestoredValue": true,
+        "hideLabelWhenCollapsed": true
+      }
+
+    }
+  },
+
+  "drona_CreateContainer" : {
+    "type" : "container",
+    "elements" : {
+      "$ref" : "$DRONA_ENV_DIR/schemas/create.schema.json"
+    },
+    "condition" : "drona_create_manage_mode.create"
+  },
+
+  "drona_ManageContainer" : {
+    "type" : "container",
+    "elements" : {
+      "$ref" : "$DRONA_ENV_DIR/schemas/manage.schema.json"
+    },
+    "condition" : "drona_create_manage_mode.manage"
+  }
+}

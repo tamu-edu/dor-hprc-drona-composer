@@ -3,16 +3,12 @@ import { Text, Select, Picker } from "./schemaRendering/schemaElements/index";
 import Composer from "./schemaRendering/Composer";
 import MultiPaneTextArea from "./MultiPaneTextArea";
 import ErrorAlert from "./ErrorAlert";
-import EnvironmentModal from "./EnvironmentModal";
 import SplitScreenModal from "./SplitScreenModal";
 import ConfirmationModal from "./ConfirmationModal";
 import RequiredFieldsModal from "./RequiredFieldsModal";
 import { useJobSocket } from "./hooks/useJobSocket";
-import EnvironmentFilmstrip from "./EnvironmentFilmstrip";
 import { validateRequiredFields } from "./schemaRendering/utils/fieldUtils";
-import ConfigGate from "./ConfigGate";
 import { DEFAULT_BUTTON_LABELS } from "./schemaRendering/utils/buttonLabels";
-import Footer from "./Footer";
 import "./styles/JobComposerEnvSplitStyles.js";
 
 
@@ -21,7 +17,6 @@ function JobComposer({
   setError,
   formRef,
   previewRef,
-  envModalRef,
   multiPaneRef,
   showSplitScreenModal,
   setShowSplitScreenModal,
@@ -35,9 +30,7 @@ function JobComposer({
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showRequiredFieldsModal, setShowRequiredFieldsModal] = useState(false);
   const [missingRequiredFields, setMissingRequiredFields] = useState([]);
-  const [configBlocked, setConfigBlocked] = useState(true);
   const [hasSubmittedCurrentPreview, setHasSubmittedCurrentPreview] = useState(false);
-  const [showEnvironmentFilmstrip, setShowEnvironmentFilmstrip] = useState(true);
 
   const [workflowMode, setWorkflowmode] = useState(null)
   // Workflow button text; the schema's visible buttonLabels element sets it (see Composer)
@@ -289,7 +282,8 @@ function JobComposer({
   };
 
   return (
-    <div className="job-composer-container" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden', height: '100%', maxHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    // The workflow pane. The page frame around it (sidebar, footer, config gate) is AppShell.
+    <div className="workflow-pane">
       {error && <ErrorAlert error={error} onClose={() => setError(null)} />}
       {props.envWarning && (
         <div className="alert alert-warning alert-dismissible mb-2" role="alert">
@@ -299,130 +293,78 @@ function JobComposer({
           </button>
         </div>
       )}
-      <div className="card shadow" style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
-
-        <div className="card-body" style={{ overflowY: 'auto', flex: '1 1 auto' }}>
-
-          <ConfigGate onStatusChange={setConfigBlocked} />
-
-          {!configBlocked && (
-            <>
-              <form
-                ref={formRef}
-                className="form"
-                role="form"
-                id="slurm-config-form"
-                autoComplete="off"
-                method="POST"
-                encType="multipart/form-data"
-                onSubmit={handleSubmit}
-                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-                action={document.dashboard_url + "/jobs/composer/submit"}
-                style={{ width: '100%' }}
-              >
-                <div className="row">
-                  <div className="col-lg-12">
-                    <div id="job-content" style={{ maxWidth: '100%' }}>
-                      <div className="composer-multipane-layout">
-                          {showEnvironmentFilmstrip && (
-                          <aside className="composer-filmstrip-pane">
-                            <EnvironmentFilmstrip
-                              environments={props.environments}
-                              selectedEnvironment={props.environment}
-                              onSelectEnvironment={props.handleEnvChange}
-                              onAddEnvironment={props.handleAddEnv}
-                              onRemoveEnvironment={props.handleRemoveEnv}
-                              onExportEnvironment={props.handleExportEnv}
-                            />
-                          </aside>
-                          )}
+      <form
+        ref={formRef}
+        className="form"
+        role="form"
+        id="slurm-config-form"
+        autoComplete="off"
+        method="POST"
+        encType="multipart/form-data"
+        onSubmit={handleSubmit}
+        onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+        action={document.dashboard_url + "/jobs/composer/submit"}
+        style={{ width: '100%' }}
+      >
+        <div id="job-content" style={{ maxWidth: '100%' }}>
+                    {!props.environment || !props.environment.env ? (
+                      <div className="empty-form-pane">
+                        Pick an environment from the menu above to start.
+                      </div>
+                    ) : (
+                      <>
+                        <input
+                          type="hidden"
+                          name="runtime_label"
+                          value={props.environment.env}
+                        />
+                        <input
+                          type="hidden"
+                          name="runtime"
+                          value={props.environment.env}
+                        />
                         
-                          <main className="composer-form-pane">
-                            <div className="composer-filmstrip-toggle-row">
-                              <div className="custom-control custom-switch composer-filmstrip-toggle">
-                                <input
-                                  type="checkbox"
-                                  className="custom-control-input"
-                                  id="environment-filmstrip-toggle"
-                                  checked={showEnvironmentFilmstrip}
-                                  onChange={(event) => setShowEnvironmentFilmstrip(event.target.checked)}
-                                />
-                                <label
-                                  className="custom-control-label"
-                                  htmlFor="environment-filmstrip-toggle"
-                                >
-                                  Show Environment Selection Pane
-                                </label>
-                              </div>
+                        <Composer
+                          key={props.envInstanceId}
+                          environment={props.environment || {}}
+                          fields={props.fields}
+                          onFileChange={props.handleUploadedFiles}
+                          setError={setError}
+                          ref={props.composerRef}
+                          onButtonLabelsChange={setButtonLabels}
+                          sync_job_name={props.sync_job_name}
+                          runLocation={props.runLocation}
+                          setRunLocation={props.setRunLocation}
+                          customRunLocation={props.customRunLocation}
+                          setLocationPickedByUser={props.setLocationPickedByUser}
+                          locationPickedByUser={props.locationPickedByUser}
+                          handleRerun={props.handleRerun}
+                          handleForm={props.handleForm}
+                          pendingValues={props.pendingValues}
+                          onPendingApplied={props.onPendingApplied}
+                        />
+                        <div className="composer-actions">
+                          <div className="invisible">
+                            <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
+                          </div>
+                          {props.environment && props.environment.env !== "" && (
+                            <div>
+                              <button
+                                type="button"
+                                id="job-preview-button"
+                                className="btn composer-generate-button"
+                                onClick={handlePreview}
+                              >
+                                {buttonLabels.preview}
+                                <span className="composer-generate-arrow" aria-hidden="true">&rarr;</span>
+                              </button>
                             </div>
-                            {!props.environment || !props.environment.env ? (
-                              <div className="empty-form-pane">
-                                Select an environment to configure a job.
-                              </div>
-                            ) : (
-                              <>
-                                <input
-                                  type="hidden"
-                                  name="runtime_label"
-                                  value={props.environment.env}
-                                />
-                                <input
-                                  type="hidden"
-                                  name="runtime"
-                                  value={props.environment.env}
-                                />
-                        
-                                <Composer
-                                  key={props.envInstanceId}
-                                  environment={props.environment || {}}
-                                  fields={props.fields}
-                                  onFileChange={props.handleUploadedFiles}
-                                  setError={setError}
-                                  ref={props.composerRef}
-                                  onButtonLabelsChange={setButtonLabels}
-                                  sync_job_name={props.sync_job_name}
-                                  runLocation={props.runLocation}
-                                  setRunLocation={props.setRunLocation}
-                                  customRunLocation={props.customRunLocation}
-                                  setLocationPickedByUser={props.setLocationPickedByUser}
-                                  locationPickedByUser={props.locationPickedByUser}
-                                  handleRerun={props.handleRerun}
-                                  handleForm={props.handleForm}
-                                  pendingValues={props.pendingValues}
-                                  onPendingApplied={props.onPendingApplied}
-                                />
-                                <div className="composer-actions" >
-                                  <div className="invisible">
-                                    <button className="btn btn-primary" style={{ visibility: 'hidden' }}>Balance</button>
-                                  </div>
-                                  {props.environment && props.environment.env !== "" && (
-                                    <div>
-                                      <input
-                                        type="button"
-                                        id="job-preview-button"
-                                        className="btn btn-primary maroon-button"
-                                        value={buttonLabels.preview}
-                                        onClick={handlePreview}
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </main>
+                          )}
                         </div>
-                    </div>
-                  </div>
-                </div>
-
-              </form>
-              <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto' }}>
-                <Footer/>
-              </div>
-            </>
-          )}
+                      </>
+                    )}
         </div>
-      </div>
+      </form>
 
       <SplitScreenModal
         isOpen={showSplitScreenModal}
@@ -448,8 +390,6 @@ function JobComposer({
         submitLabel={buttonLabels.submit}
         title={buttonLabels.title}
       />
-
-      {document.env_import_enabled !== false && <EnvironmentModal envModalRef={envModalRef} />}
 
       <ConfirmationModal
         isOpen={showConfirmationModal}

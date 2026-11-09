@@ -75,7 +75,7 @@ function Checkbox(props) {
             border: "2px solid #500000",
             color: isChecked ? "#ffffff" : "#500000",
             backgroundColor: isChecked ? "#500000" : "#ffffff",
-            fontWeight: isChecked ? 600 : 400,
+            fontWeight: isChecked ? "var(--drona-weight-strong)" : "var(--drona-weight-normal)",
             transition: "background-color .15s, color .15s",
           }}
         >

@@ -19,11 +19,18 @@ Currently implemented:
 """
 
 import json
+import os
 import re
-import subprocess
+import sys
 from typing import Any, Dict, List, Optional, Tuple
 
 from .drona_db_retriever import get_record, list_all_records, list_records_by_env
+
+# runtime_support/ holds drona_scheduler.py (this file is runtime_support/db_access/).
+_RUNTIME_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _RUNTIME_DIR not in sys.path:
+    sys.path.append(_RUNTIME_DIR)
+import drona_scheduler  # noqa: E402
 
 
 class BuiltinRetrieverError(ValueError):
@@ -363,49 +370,25 @@ def db_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
     return options
 
 
-def _slurm_query(cmd: List[str]) -> List[List[str]]:
-    """Run a Slurm command that prints '|'-separated rows; [] on any failure."""
-    try:
-        out = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                             universal_newlines=True, timeout=5, check=True).stdout
-    except (OSError, subprocess.SubprocessError):
-        return []
-    return [line.split("|") for line in out.splitlines() if line.strip()]
-
-
 def _job_states(ids: List[str]) -> Dict[str, Dict[str, str]]:
-    """
-    {job id: {"state", "elapsed", "nodes"}} for the given jobs. squeue answers for jobs still
-    known to Slurm; sacct fills in the finished ones. Jobs neither knows are left out, and any
-    Slurm failure just yields fewer entries (the options still work without a state).
-    """
-    joined = ",".join(ids)
-    found: Dict[str, Dict[str, str]] = {}
-    for row in _slurm_query(["squeue", "-h", "-j", joined, "-o", "%i|%T|%M|%D"]):
-        if len(row) == 4:
-            found[row[0]] = {"state": row[1], "elapsed": row[2], "nodes": row[3]}
-    missing = [i for i in ids if i not in found]
-    if missing:
-        for row in _slurm_query(["sacct", "-X", "-n", "-P", "-j", ",".join(missing),
-                                 "-o", "JobID,State,Elapsed,NNodes"]):
-            if len(row) == 4:
-                # sacct reports e.g. "CANCELLED by 1234"; keep the first word
-                found[row[0]] = {"state": row[1].split()[0] if row[1] else "",
-                                 "elapsed": row[2], "nodes": row[3]}
-    return found
+    """{job id: {"state", "elapsed", "nodes"}} from the configured scheduler (schedulers/<name>/scheduler.py)."""
+    return drona_scheduler.current().job_states(ids)
 
 
 def db_job_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
     """
     Select options for the Slurm jobs of one workflow: one {"value": "<job id>",
     "label": "Job <job id>"} per entry of runtime_meta.jobinfo, in submission order.
+    An entry with a "label" (e.g. {"id": 111, "label": "MSA (CPU)"}, written by
+    drona_wf_driver_sbatch from a "#DRONA label:" line in the job file) gets
+    "<label> \u00b7 Job <job id>".
 
     Params:
       id (str)    - drona_id of the workflow. An empty/unresolved id (e.g. before a
                     workflow is picked in manage mode) or a workflow without jobs
                     returns [].
       state (str) - "true" adds "state" (Slurm state, lowercase) and "detail"
-                    ("2 nodes · 01:23:45") to each option, looked up with squeue/sacct.
+                    ("2 nodes · 01:23:45") to each option, looked up via the scheduler (drona_scheduler).
                     Off by default; options for jobs Slurm does not report stay plain.
     """
     if "id" not in params:
@@ -417,11 +400,14 @@ def db_job_options(params: Dict[str, Any]) -> List[Dict[str, str]]:
     jobinfo = _field_value(record, "runtime_meta", "jobinfo") if record else None
     if not isinstance(jobinfo, list):
         return []
-    ids = [str(job["id"]) for job in jobinfo if isinstance(job, dict) and job.get("id") is not None]
+    jobs = [job for job in jobinfo if isinstance(job, dict) and job.get("id") is not None]
+    ids = [str(job["id"]) for job in jobs]
     states = _job_states(ids) if ids and str(params.get("state", "")).lower() == "true" else {}
     options = []
-    for job_id in ids:
-        option = {"value": job_id, "label": f"Job {job_id}"}
+    for job, job_id in zip(jobs, ids):
+        stage = str(job.get("label") or "").strip()
+        label = f"{stage} \u00b7 Job {job_id}" if stage else f"Job {job_id}"
+        option = {"value": job_id, "label": label}
         info = states.get(job_id)
         if info and info["state"]:
             option["state"] = info["state"].lower()

@@ -83,10 +83,14 @@ app.config['user'] = os.environ['USER']
 app.config['drona_root'] = get_drona_root()
 
 # cluster_name (lowercased by drona_cluster_name()) picks
-# runtime_support/drona_runtime_utils/clusters/<name>.py. Empty means auto-detect
+# runtime_support/schedulers/slurm/clusters/<name>.py. Empty means auto-detect
 # from Slurm's ClusterName; an existing DRONA_CLUSTER wins.
 if app.config.get('cluster_name'):
     os.environ.setdefault('DRONA_CLUSTER', str(app.config['cluster_name']))
+
+# scheduler picks runtime_support/schedulers/<name>/ (job states, cancel, submit
+# output, scheduler-specific retrievers). Default slurm; an existing DRONA_SCHEDULER wins.
+os.environ.setdefault('DRONA_SCHEDULER', str(app.config.get('scheduler') or 'slurm').lower())
 
 
 @app.context_processor

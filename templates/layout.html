@@ -37,11 +37,6 @@
       href="{{ url_for('static', filename='jquery-ui-1.12.1/jquery-ui.min.css') }}"
     />
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script
@@ -81,8 +76,7 @@
         class="navbar navbar-dark"
         style="
           background-color: #500000;
-          font-family: 'Open Sans';
-          font-weight: 700;
+          font-weight: var(--drona-weight-strong, 600);
         "
       >
         <a class="navbar-brand" href="/">

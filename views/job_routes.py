@@ -10,6 +10,9 @@ from .history_manager import JobHistoryManager
 from .utils import create_folder_if_not_exist, get_drona_dir
 from machine_driver_scripts.engine import Engine
 from .file_utils import save_file
+from .error_handler import APIError
+from .workflow_dirs import strip_name_component, directory_owner, free_sibling_directory
+from .workflow_runs import TargetError, target_id, resolve_target, new_run_dir, run_id_for
 
 logger = Logger()
 socketio = None  # Will be initialized when passed from main app
@@ -20,9 +23,9 @@ def build_driver_command(driver_script_path):
     return f"bash {shlex.quote(driver_script_path)}"
 
 def extract_job_id(submit_response):
-    """Extract job ID from the sbatch submission response"""
-    match = re.search(r'Submitted batch job (\d+)', submit_response)
-    return match.group(1) if match else None
+    """Job ID from the submit command's output (format depends on the scheduler)"""
+    from runtime_support.drona_scheduler import current
+    return current().parse_submit_output(submit_response)
 
 @logger.log_route(
     extract_fields={
@@ -59,6 +62,21 @@ def submit_job_route():
     if not (params.get("name") or "").strip():
         params["name"] = drona_job_id
 
+    history_manager = JobHistoryManager()
+
+    # A run on an existing workflow: no new record or directory (see views/workflow_runs.py)
+    if target_id(params):
+        return submit_on_existing_workflow(params, files, history_manager)
+
+    # A preview's id is used for one workflow only. A second submit with the same id would
+    # overwrite the first run's run.sh and files and clash with its record, so refuse it
+    # before anything is written.
+    if drona_job_id and history_manager.job_exists(drona_job_id):
+        return jsonify({
+            "error": (f"Workflow {drona_job_id} was already submitted from this preview. "
+                      "Close the preview and open it again to start a new workflow.")
+        }), 409
+
     # Filesystem side effects use the preview-computed location
     create_folder_if_not_exist(location)
 
@@ -76,7 +94,6 @@ def submit_job_route():
 
     bash_cmd = build_driver_command(driver_script_path)
 
-    history_manager = JobHistoryManager()
     job_record = history_manager.save_job(
         params,
         files,
@@ -86,11 +103,54 @@ def submit_job_route():
         },
         job_id=drona_job_id
     )
+    if not job_record:
+        # Without a record the run would have no workflow to report its jobs to
+        # (and an id clash means another run already owns it), so don't start it.
+        return jsonify({
+            "error": f"Could not save the workflow record for {drona_job_id or 'this run'}; the run was not started."
+        }), 500
 
     return jsonify({
         "bash_cmd": bash_cmd,
         "drona_job_id": job_record["job_id"],
         "location": location,
+        "name": params.get("name"),
+        "env_name": params.get("env_name"),
+        "env_dir": params.get("env_dir")
+    })
+
+
+def submit_on_existing_workflow(params, files, history_manager):
+    """Submit for a run on the workflow named by drona_target_wf. The workflow's id, name and
+    directory come from its record; the script and extra files go to a new
+    <wfdir>/.drona/runs/<timestamp>/ folder, and no record is created."""
+    try:
+        target = resolve_target(history_manager, target_id(params))
+        run_dir = new_run_dir(target["location"])
+    except TargetError as e:
+        return jsonify({"error": str(e)}), e.status
+
+    run_params = dict(params)
+    run_params.update({"drona_job_id": target["id"], "name": target["name"], "location": run_dir})
+
+    for f in files.getlist("files[]"):
+        save_file(f, run_dir)
+
+    engine = Engine()
+    engine.set_environment(run_params.get("runtime"), run_params.get("env_dir"))
+    try:
+        engine.generate_script(run_params)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    driver_script_path = engine.generate_driver_script(run_params)
+
+    return jsonify({
+        "bash_cmd": build_driver_command(driver_script_path),
+        "drona_job_id": target["id"],
+        "location": target["location"],
+        "name": target["name"],
+        "run_id": run_id_for(target["id"], run_dir),
+        "run_dir": run_dir,
         "env_name": params.get("env_name"),
         "env_dir": params.get("env_dir")
     })
@@ -135,6 +195,26 @@ def preview_job_route():
             return base
         return os.path.join(base, component)
 
+    # A run on an existing workflow: evaluate the map with that workflow's id, name and
+    # directory. Nothing is sent back for the client to keep (no id, no location), so a
+    # later Create preview starts fresh.
+    wf_id = target_id(params)
+    if wf_id:
+        try:
+            target = resolve_target(JobHistoryManager(), wf_id)
+        except TargetError as e:
+            return jsonify({"error": str(e)}), e.status
+        params.update({"drona_job_id": target["id"], "name": target["name"],
+                       "location": target["location"]})
+        engine = Engine()
+        engine.set_environment(params.get("runtime"), params.get("env_dir"))
+        preview_job = engine.preview_script(params)
+        preview_job["drona_job_id"] = None
+        preview_job["target_workflow"] = target
+        preview_job["env_name"] = params.get("env_name")
+        preview_job["env_dir"] = params.get("env_dir")
+        return jsonify(preview_job)
+
     # 1) Inputs / flags
     user_picked_location = parse_bool(params.get("user_picked_location", False))
     old_id, is_deprecated = parse_deprecated_id(params.get("drona_job_id", ""))
@@ -172,7 +252,30 @@ def preview_job_route():
         if is_deprecated and old_id:
             location_effective = strip_trailing_component(location_effective, old_id)
 
+        # The client sends back the previous preview's location, which may already end in
+        # <name> or a <name>-N picked below; strip it so the directory is chosen afresh.
+        location_effective = strip_name_component(location_effective, effective_name)
         location_effective = ensure_component_appended(location_effective, effective_name)
+
+    # Never put a new workflow into a directory another workflow already uses: that would
+    # overwrite its run.sh and job files. Auto locations get a -2, -3, ... suffix; a picked
+    # location is the user's choice, so only warn.
+    location_messages = []
+    history_manager = JobHistoryManager()
+    owner = directory_owner(history_manager, location_effective, drona_job_id)
+    if owner:
+        if user_picked_location:
+            location_messages.append({"type": "warning", "text": (
+                f"{location_effective} is already used by {owner}. Submitting this workflow "
+                "there overwrites files with the same name (run.sh, job files).")})
+        else:
+            taken = location_effective
+            location_effective = free_sibling_directory(history_manager, taken, drona_job_id)
+            if location_effective is None:
+                raise APIError("No free workflow directory", status_code=409,
+                               details=f"{taken}-2, {taken}-3, ... are all in use; choose another name.")
+            location_messages.append({"type": "note", "text": (
+                f"{taken} is already used by {owner}, so this workflow goes to {location_effective}.")})
 
     params["location"] = location_effective
 
@@ -180,6 +283,8 @@ def preview_job_route():
     engine = Engine()
     engine.set_environment(params.get("runtime"), params.get("env_dir"))
     preview_job = engine.preview_script(params)
+    if location_messages:
+        preview_job["messages"] = location_messages + list(preview_job.get("messages") or [])
 
     # Return fields client injects back into form
     preview_job["drona_job_id"] = drona_job_id
@@ -191,6 +296,29 @@ def preview_job_route():
     return jsonify(preview_job)
 
 
+
+def recent_workflows_route():
+    """The newest workflows for the start page, each with one overall state from the scheduler
+    (one query for all their jobs)."""
+    from .workflow_state import workflow_state
+    try:
+        limit = max(1, min(int(request.args.get("limit", 8)), 50))
+    except ValueError:
+        limit = 8
+    # Only workflows whose environment is installed, so the list is full when enough exist
+    from .environments import installed_environment_names
+    recent = JobHistoryManager().get_recent(limit, environments=installed_environment_names())
+    ids = [i for wf in recent for i in wf["job_ids"]]
+    states = {}
+    if ids:
+        try:
+            from runtime_support.drona_scheduler import current
+            states = current().job_states(ids)
+        except Exception:
+            states = {}
+    for wf in recent:
+        wf["state"] = workflow_state(wf.pop("job_ids"), states)
+    return jsonify(recent)
 
 def get_history_route():
     """Get job history for the current user"""
@@ -224,5 +352,6 @@ def register_job_routes(blueprint, socketio_instance=None):
     blueprint.route('/submit', methods=['POST'])(submit_job_route)
     blueprint.route('/preview', methods=['POST'])(preview_job_route)
     blueprint.route('/history', methods=['GET'])(get_history_route)
+    blueprint.route('/history/recent', methods=['GET'])(recent_workflows_route)
     blueprint.route('/history/<int:job_id>', methods=['GET'])(get_job_from_history_route)
     blueprint.route('/history/<int:job_id>', methods=['DELETE'])(delete_job_from_history_route)

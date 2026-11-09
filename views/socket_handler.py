@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import json
 import subprocess
@@ -27,8 +28,17 @@ def get_jobs_dir():
     return jobs_dir
 
 # Python pty is necessary to handle things carriage returns
-def create_pty_wrapper_script(jobs_dir, bash_cmd, drona_job_id, job_location, runtime_dir, env_dir, env_name):
-    """Create a Python wrapper script that uses PTY for proper terminal emulation"""
+def create_pty_wrapper_script(jobs_dir, bash_cmd, drona_job_id, job_location, runtime_dir, env_dir, env_name,
+                              console_id=None, wf_name=None, run_dir=None):
+    """Create a Python wrapper script that uses PTY for proper terminal emulation.
+
+    console_id names the console files (.active_jobs/<console_id>.*); it defaults to the
+    workflow id. A run on an existing workflow passes its own run id and run_dir (the
+    <wfdir>/.drona/runs/<timestamp>/ folder), and gets one line in .drona/runs/actions.log.
+    The command starts in the workflow directory (job_location) when it exists."""
+    console_id = console_id or drona_job_id
+    actions_log = os.path.join(os.path.dirname(run_dir), "actions.log") if run_dir else None
+    start_cwd = job_location if job_location and os.path.isdir(job_location) else None
     wrapper_content = f'''#!/usr/bin/env python3
 import os
 import sys
@@ -38,10 +48,14 @@ import fcntl
 import json
 import signal
 import subprocess
+import time
 from datetime import datetime
 
 # Job configuration
-JOB_ID = {drona_job_id!r}
+JOB_ID = {console_id!r}
+ACTIONS_LOG = {actions_log!r}
+ACTION_LABEL = {(env_name or "")!r}
+STARTED = time.time()
 JOBS_DIR = {jobs_dir!r}
 STATUS_FILE = os.path.join(JOBS_DIR, f"{{JOB_ID}}.json")
 OUTPUT_FILE = os.path.join(JOBS_DIR, f"{{JOB_ID}}.out")
@@ -89,6 +103,8 @@ def run_command_with_pty():
         
         {f"env['DRONA_WF_ID'] = {drona_job_id!r}" if drona_job_id else ""}
         {f"env['DRONA_WF_DIR'] = {job_location!r}" if job_location else ""}
+        {f"env['DRONA_WF_NAME'] = {wf_name!r}" if wf_name else ""}
+        {f"env['DRONA_RUN_DIR'] = {run_dir!r}" if run_dir else ""}
         {f"env['DRONA_RUNTIME_DIR'] = {runtime_dir!r}" if runtime_dir else ""}
         {f"env['DRONA_ENV_DIR'] = {env_dir!r}" if env_dir else ""}
         {f"env['DRONA_ENV_NAME'] = {env_name!r}" if env_name else ""}
@@ -102,6 +118,7 @@ def run_command_with_pty():
             stdout=slave,
             stderr=slave,
             env=env,
+            cwd={start_cwd!r},
             preexec_fn=os.setsid
         )
         
@@ -158,6 +175,7 @@ def run_command_with_pty():
         # Update final status
         final_status = "completed" if exit_code == 0 else "failed"
         update_status(final_status, exit_code)
+        log_action(exit_code)
         
         return exit_code
         
@@ -167,6 +185,19 @@ def run_command_with_pty():
         with open(OUTPUT_FILE, 'a') as f:
             f.write(f"\\nError running command: {{e}}\\n")
         return 1
+
+def log_action(exit_code):
+    """One line per run on an existing workflow (skipped when the run removed the folder)."""
+    if not ACTIONS_LOG or not os.path.isdir(os.path.dirname(ACTIONS_LOG)):
+        return
+    fmt = "%Y-%m-%dT%H:%M:%S"
+    line = "\\t".join([time.strftime(fmt, time.localtime(STARTED)), time.strftime(fmt),
+                      JOB_ID, "exit=%s" % exit_code, ACTION_LABEL]) + "\\n"
+    try:
+        with open(ACTIONS_LOG, "a") as f:
+            f.write(line)
+    except OSError:
+        pass
 
 def cleanup_after_delay():
     """Auto-cleanup after 1 hour"""
@@ -205,10 +236,12 @@ if __name__ == "__main__":
 '''
     return wrapper_content
 
-def start_external_job(bash_cmd, drona_job_id, job_location, runtime_dir, env_dir, env_name):
+def start_external_job(bash_cmd, drona_job_id, job_location, runtime_dir, env_dir, env_name,
+                       console_id=None, wf_name=None, run_dir=None):
     """Start job as completely external process using PTY"""
     jobs_dir = get_jobs_dir()
-    
+    console_id = console_id or drona_job_id
+
     # Create Python wrapper script with PTY support
     wrapper_content = create_pty_wrapper_script(
         jobs_dir,
@@ -217,9 +250,12 @@ def start_external_job(bash_cmd, drona_job_id, job_location, runtime_dir, env_di
         job_location,
         runtime_dir,
         env_dir,
-        env_name
+        env_name,
+        console_id=console_id,
+        wf_name=wf_name,
+        run_dir=run_dir
     )
-    wrapper_path = os.path.join(jobs_dir, f"{drona_job_id}_wrapper.py")
+    wrapper_path = os.path.join(jobs_dir, f"{console_id}_wrapper.py")
     
     with open(wrapper_path, 'w') as f:
         f.write(wrapper_content)
@@ -280,6 +316,15 @@ def start_job_route():
     job_location = data.get('job_location')
     env_dir = data.get('env_dir')
     env_name = data.get('env_name')
+    wf_name = data.get('wf_name')
+    run_dir = data.get('run_dir')
+    # Console files are named after the run id (a run on an existing workflow) or the
+    # workflow id; both end up in file names, so only plain ids are accepted.
+    console_id = data.get('run_id') or drona_job_id
+    if not console_id or not re.match(r'^[A-Za-z0-9_-]+$', str(console_id)):
+        return jsonify({'error': 'Missing or invalid job id'}), 400
+    if run_dir and not os.path.isdir(run_dir):
+        return jsonify({'error': f'Run folder {run_dir} does not exist'}), 400
     if env_name:
         env_dir = os.path.join(env_dir, env_name)
     runtime_dir = get_runtime_dir()
@@ -289,10 +334,11 @@ def start_job_route():
 
 
     # Start external job (non-blocking)
-    start_external_job(bash_cmd, drona_job_id, job_location, runtime_dir, env_dir, env_name)
+    start_external_job(bash_cmd, drona_job_id, job_location, runtime_dir, env_dir, env_name,
+                       console_id=console_id, wf_name=wf_name, run_dir=run_dir)
 
     return jsonify({
-        'job_id': drona_job_id,
+        'job_id': console_id,
         'status': 'Job started externally',
         'message': 'Job queued successfully'
     })

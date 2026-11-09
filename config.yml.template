@@ -1,5 +1,6 @@
 development: &common_settings
-  cluster_name: "[cluster-name]"  # display name; lowercased it also selects runtime_support clusters/<name>.py
+  cluster_name: "[cluster-name]"  # display name; lowercased it also selects runtime_support/schedulers/slurm/clusters/<name>.py
+  scheduler: "slurm"  # selects runtime_support/schedulers/<name>/ (job states, cancel, scheduler retrievers)
   dashboard_url: "/pun/dev/[app-name]"
   file_app_url: "/pun/sys/files/fs"
   file_editor_url: "/pun/sys/file-editor/edit"

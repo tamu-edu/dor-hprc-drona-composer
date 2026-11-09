@@ -21,6 +21,18 @@ def drona_get_preview_dir():
     return getattr(_state, "preview_dir", None) or os.environ.get("DRONA_PREVIEW_DIR") or None
 
 
+def drona_set_run_target(wf_id):
+    """Set (or clear, with None) the existing workflow the current preview runs on. Used by the engine."""
+    _state.run_target = wf_id or None
+
+
+def drona_get_run_target():
+    """Id of the existing workflow this preview acts on (the form sent drona_target_wf), or
+    None when the run starts a new workflow. Lets map functions leave out steps that only
+    the old manage path needs."""
+    return getattr(_state, "run_target", None)
+
+
 def drona_state_path(kind):
     """Path of a preview state file: kind is "additional_files", "messages" or "map"."""
     preview_dir = drona_get_preview_dir()

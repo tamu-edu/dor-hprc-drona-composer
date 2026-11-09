@@ -136,7 +136,7 @@ export default function ConfigGate(props) {
             {reason}
           </div>
         )}
-        <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        <div style={{ fontWeight: "var(--drona-weight-strong)", marginBottom: 6 }}>
           Choose where Drona should create its <code>drona_wfe</code> folder.
         </div>
         <div style={{ marginBottom: 10 }}>

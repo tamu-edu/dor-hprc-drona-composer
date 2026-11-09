@@ -18,7 +18,7 @@ export const CHOICE_THEME = {
   maroon: "maroon",
   border: "1px solid #ced4da",
   radius: ".25rem",
-  // "card" look, same palette as html_templates/slurm-jobs-template.html
+  // "card" look, same palette as runtime_support/schedulers/slurm/templates/slurm-jobs-template.html
   cardBorder: "#e2e8f0",
   cardRadius: "12px",
   cardMuted: "#64748b",
@@ -52,7 +52,7 @@ export const LAYOUTS = {
   // Flat strip: optional badge pill, bold title, then the content, all on one line
   bar: {
     box: {
-      // Same box as the workdir strip (html_templates/workdir-template.html .dc-path-box)
+      // Same box as the workdir strip (runtime_support/templates/workdir-template.html .dc-path-box)
       background: "#f1f5f9",
       border: "1px solid #e2e8f0",
       borderRadius: "8px",

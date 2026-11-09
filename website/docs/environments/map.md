@@ -34,7 +34,7 @@ Values in a map can be defined in four ways:
 
 ## Shared Mappings with `$include`
 
-Mappings that many workflows need (for example the `CANCEL` entry used with the shared cancel-jobs form element) live in the shared library as **map references**: small JSON files in `runtime_support/map_references/`, in the same format as `map.json`. A workflow pulls them in with the reserved `$include` key:
+Mappings that many workflows need (for example the `CANCEL` entry used with the shared cancel-jobs form element) live in the shared library as **map references**: small JSON files in `runtime_support/maps/`, in the same format as `map.json`. A workflow pulls them in with the reserved `$include` key:
 
 ```json
 {
@@ -44,7 +44,7 @@ Mappings that many workflows need (for example the `CANCEL` entry used with the 
 }
 ```
 
-A bare name (with or without `.json`) is looked up in `map_references/`. A path containing `/` is used as given, and `$DRONA_RUNTIME_DIR` in it is replaced with the runtime support directory. Entries written directly in the workflow's `map.json` override included entries with the same key, and later includes override earlier ones. A name that can't be found raises an error that names the file and the directory searched.
+A bare name (with or without `.json`) is looked up in `runtime_support/maps/`. A path containing `/` is used as given, and `$DRONA_RUNTIME_DIR` in it is replaced with the runtime support directory. Entries written directly in the workflow's `map.json` override included entries with the same key, and later includes override earlier ones. A name that can't be found raises an error that names the file and the directory searched.
 
 The available fragments, the functions they call and the form fields they expect are listed in [Shared Environment Library](./shared-library#shared-map-references).
 

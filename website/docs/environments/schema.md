@@ -52,6 +52,10 @@ The two workflow buttons default to **Generate** (on the form) and **Run** (in t
 
 Put it at the top level of `schema.json` to change the labels for the whole environment. When several are visible, the most deeply nested one wins.
 
+## Acting on an Existing Workflow
+
+Add `"workflowTarget": true` to an element whose value is a workflow id (a `dynamicSelect` or `dynamicTable` filled by `builtin:db_options`). While that element is visible and has a selection, the form also sends the selection as the reserved field `drona_target_wf`, and the run acts on that workflow instead of creating a new one: no new record or directory, and the driver runs in the workflow's directory with its `DRONA_WF_*` variables. The shared Manage picker in `runtime_support/forms/drona_create_manage*.json` already sets it. See [Driver Scripts](./driver#runs-on-an-existing-workflow-manage-actions).
+
 ## Dynamic Content Integration
 
 Schema files integrate dynamic content through retriever scripts that populate field options or display real-time information. The script provided will be executed when the field loads and whenever user input triggers an update. For detailed information about creating and configuring retriever scripts, see [Retriever Scripts](./retriever-scripts).
@@ -150,7 +154,7 @@ To reference components from a fixed directory shared across environments (rathe
 
 `$DRONA_RUNTIME_DIR` is set automatically — no additional configuration is required. This works alongside the relative and absolute path conventions above — plain relative paths (e.g. `schema_components/training.json`) still resolve against the environment directory.
 
-In practice, shared fragments live under `runtime_support/form_components/`, alongside a matching set of shared retriever scripts and HTML templates. See [Shared Environment Library](./shared-library) for the full layout and conventions.
+In practice, shared fragments live under `runtime_support/forms/`, alongside a matching set of shared retriever scripts and HTML templates. See [Shared Environment Library](./shared-library) for the full layout and conventions.
 
 
 ---

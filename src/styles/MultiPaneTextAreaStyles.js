@@ -4,7 +4,6 @@ const integratedStyles = {
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     backgroundColor: 'white',
   },
   editorContainer: {
@@ -33,7 +32,6 @@ const standaloneStyles = {
   container: {
     border: '1px solid #dee2e6',
     borderRadius: '0.375rem',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     overflow: 'hidden',
     backgroundColor: 'white',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
@@ -53,8 +51,8 @@ const standaloneStyles = {
     border: '1px solid transparent',
     borderRadius: '0.375rem',
     cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
+    fontSize: "var(--drona-text-data)",
+    fontWeight: "var(--drona-weight-normal)",
     transition: 'all 0.2s ease',
     textAlign: 'center',
     outline: 'none',
@@ -67,8 +65,8 @@ const standaloneStyles = {
     border: '1px solid #dee2e6',
     borderRadius: '0.375rem',
     cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
+    fontSize: "var(--drona-text-data)",
+    fontWeight: "var(--drona-weight-strong)",
     transition: 'all 0.2s ease',
     textAlign: 'center',
     outline: 'none',
@@ -102,7 +100,7 @@ const commonStyles = {
   },
   emptyMessage: {
     color: '#6c757d',
-    fontSize: '14px',
+    fontSize: "var(--drona-text-ui)",
     fontStyle: 'italic',
   },
 };

@@ -1,0 +1,31 @@
+{
+  "drona_hidden_selected_job_status_check": {
+    "type": "hidden",
+    "name": "drona_status",
+    "label": "Status",
+    "failureNotice": "Job status cannot be updated right now",
+    "isDynamic": true,
+    "condition": "!drona_info_jobs.",
+    "refreshInterval": "27",
+    "refreshWhile": "!drona_status.DONE",
+    "retrieverParams": {
+      "JOBID": "$drona_job_scope",
+      "JOBS": "$drona_info_jobs"
+    },
+    "retriever": "drona_info_slurmstatus.sh"
+  },
+  "drona_hidden_workflow_status_check": {
+    "type": "hidden",
+    "name": "drona_workflow_status",
+    "label": "Workflow status",
+    "failureNotice": "Workflow status cannot be updated right now",
+    "isDynamic": true,
+    "condition": "!drona_info_jobs.",
+    "refreshInterval": "27",
+    "refreshWhile": "!drona_workflow_status.DONE",
+    "retrieverParams": {
+      "JOBS": "$drona_info_jobs"
+    },
+    "retriever": "drona_info_workflow_status.sh"
+  }
+}

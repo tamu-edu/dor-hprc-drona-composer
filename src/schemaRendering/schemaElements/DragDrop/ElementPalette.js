@@ -98,7 +98,7 @@ function DraggableElement({ elementType, template }) {
         {template?.label || elementType}
       </div>
       {template?.description && (
-        <div className="text-muted mb-1" style={{ fontSize: "0.75rem" }}>
+        <div className="text-muted mb-1" style={{ fontSize: "var(--drona-text-caption)" }}>
           {template.description}
         </div>
       )}
@@ -162,7 +162,7 @@ function ElementPalette({ availableElements, elementTemplates }) {
                 type="button"
                 className="btn btn-sm position-absolute top-100 end-0 translate-middle-y me-1 p-1 border-0 bg-transparent text-muted"
                 onClick={clearSearch}
-                style={{ fontSize: "0.8rem" }}
+                style={{ fontSize: "var(--drona-text-caption)" }}
                 title="Clear search"
               >
                 ✕

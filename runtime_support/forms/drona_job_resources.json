@@ -1,0 +1,79 @@
+{
+  "drona_job_resources": {
+    "type": "collapsibleColContainer",
+    "title": "Job Resources",
+    "default_state": "expanded",
+    "condition": "!drona_create_manage_allworkflows. && !drona_info_jobs. && !drona_job_scope. && (drona_status.RUNNING || drona_status.DONE)",
+    "layout": {
+      "preset": "card",
+      "title": "Job Resources · Job $drona_job_scope"
+    },
+    "elements": {
+      "drona_resources_sstat": {
+        "type": "staticText",
+        "name": "drona_resources_sstat",
+        "useLabel": false,
+        "isDynamic": true,
+        "allowHtml": true,
+        "condition": "drona_status.RUNNING",
+        "retriever": "drona_slurm_sstat.sh",
+        "retrieverParams": {
+          "JOBID": "$drona_job_scope",
+          "VIEW": "compact"
+        },
+        "refreshInterval": "60",
+        "refreshWhile": "!drona_status.DONE"
+      },
+      "drona_resources_seff": {
+        "type": "staticText",
+        "name": "drona_resources_seff",
+        "useLabel": false,
+        "isDynamic": true,
+        "allowHtml": true,
+        "condition": "drona_status.DONE",
+        "retriever": "drona_slurm_seff.sh",
+        "retrieverParams": {
+          "JOBIDS": "$drona_job_scope",
+          "VIEW": "compact"
+        }
+      },
+      "drona_resources_node": {
+        "type": "container",
+        "condition": "!drona_job_scope.",
+        "layout": {
+          "preset": "bar",
+          "title": "Node:"
+        },
+        "elements": {
+          "drona_node_scope": {
+            "$ref": "$DRONA_RUNTIME_DIR/forms/drona_scopes.json#/drona_node_scope"
+          }
+        }
+      },
+      "drona_resources_cpu_chart": {
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_cpu_chart.json#/drona_cpu_chart",
+        "condition": "!drona_node_scope. && drona_cpu_monitor_active.ACTIVE",
+        "layout": {
+          "preset": "boxed",
+          "title": "CPU & Memory · Node $drona_node_scope"
+        },
+        "enableZoom": "drona_status.DONE",
+        "zoomRetrieverParams": {
+          "MAX_POINTS": 0
+        }
+      },
+      "drona_resources_gpu_chart": {
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_gpu_chart.json#/drona_gpu_chart",
+        "condition": "!drona_node_scope. && drona_gpu_monitor_active.ACTIVE",
+        "layout": {
+          "preset": "boxed",
+          "title": "GPU · Node $drona_node_scope"
+        },
+        "enableZoom": "drona_status.DONE",
+        "zoomRetrieverParams": {
+          "MAX_POINTS": 0
+        }
+      }
+    }
+  }
+}

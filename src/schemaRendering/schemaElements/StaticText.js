@@ -227,7 +227,7 @@ function StaticTextContent(props) {
         {error && (
           <div
             className="text-muted mt-2"
-            style={{ fontSize: '0.875em' }}
+            style={{ fontSize: "var(--drona-text-ui)" }}
             title={[error.status_code ? `HTTP ${error.status_code}` : null, error.message].filter(Boolean).join(': ')}
             role="status"
           >

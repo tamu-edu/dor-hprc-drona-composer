@@ -1,6 +1,16 @@
 import React, { useMemo } from 'react';
 import { componentsMap, RowContainer, UnknownElement, Containers } from "./schemaElements/index.js"
 
+// Reserved field: the id of the existing workflow a run acts on. A visible element with
+// "workflowTarget": true (the Manage workflow picker) sends its value under this name;
+// the backend then runs on that workflow instead of starting a new one.
+export const WORKFLOW_TARGET_FIELD = "drona_target_wf";
+
+export const workflowTargetValue = (value) => {
+  const raw = value && typeof value === "object" ? value.value : value;
+  return raw === undefined || raw === null ? "" : String(raw).trim();
+};
+
 const FieldRenderer = ({
   fields,
   handleValueChange,
@@ -13,7 +23,11 @@ const FieldRenderer = ({
   const renderField = useMemo(() => (field) => {
     if (!field || !field.isVisible) return null;
 
-    const { type, name, condition, elements, value, ...attributes } = field;
+    const { type, name, condition, elements, value, workflowTarget, ...attributes } = field;
+    const targetValue = workflowTarget ? workflowTargetValue(value) : "";
+    const targetInput = targetValue
+      ? <input type="hidden" name={WORKFLOW_TARGET_FIELD} value={targetValue} readOnly />
+      : null;
     const Element = componentsMap[type];
 
     if (Containers.includes(type) && elements) {
@@ -94,6 +108,7 @@ const FieldRenderer = ({
             onChange={(_, val) => handleValueChange(name, val)}
             {...locationProps}
           />
+          {targetInput}
         </div>
       );
     }

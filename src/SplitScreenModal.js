@@ -27,28 +27,37 @@ const ModalHeader = ({ isFullscreen, onFullscreen, onClose, onMinimize, styles, 
 );
 
 // ── IDE title bar (fullscreen only, 36px) ───────────────────────────────────
-const ideHeaderBtn = {
-  background: 'rgba(255,255,255,0.12)',
-  border: '1px solid rgba(255,255,255,0.25)',
-  color: 'white',
-  borderRadius: '3px',
-  cursor: 'pointer',
-  fontSize: '12px',
-  padding: '3px 10px',
-  lineHeight: 1.4,
-};
-
 const ideIconBtn = {
   background: 'none',
   border: 'none',
   color: 'rgba(255,255,255,0.8)',
   cursor: 'pointer',
-  fontSize: '16px',
+  fontSize: "var(--drona-text-body)",
   padding: '0 4px',
   lineHeight: 1,
 };
 
-const IDEHeader = ({ onFullscreen, onMinimize, onClose, submitLabel, title }) => (
+// Run button text and tooltip. A preview runs once: after Run the button is disabled and
+// says what happened, so it's clear it can't be pressed again.
+const AGAIN_HINT = "Close this window and generate again to start a new run.";
+export const runButtonState = (submitLabel, status, disabled) => {
+  if (!disabled) return { label: submitLabel, title: "" };
+  switch (status) {
+    case 'submitting':
+    case 'running':
+      return { label: 'Running…', title: 'This run is in progress.' };
+    case 'completed':
+      return { label: 'Done ✓', title: `Already run from this preview. ${AGAIN_HINT}` };
+    case 'failed':
+      return { label: 'Finished with errors', title: `Already run from this preview; see the output. ${AGAIN_HINT}` };
+    case 'error':
+      return { label: 'Not started', title: `The run could not be started; see the output. ${AGAIN_HINT}` };
+    default:
+      return { label: 'Submitted', title: `Already run from this preview. ${AGAIN_HINT}` };
+  }
+};
+
+const IDEHeader = ({ onFullscreen, onMinimize, onClose, submitLabel, title, run }) => (
   <div style={{
     backgroundColor: '#500000',
     height: '36px',
@@ -59,13 +68,12 @@ const IDEHeader = ({ onFullscreen, onMinimize, onClose, submitLabel, title }) =>
     flexShrink: 0,
     userSelect: 'none',
   }}>
-    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: '500', flex: 1 }}>
+    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: "var(--drona-text-data)", fontWeight: "var(--drona-weight-normal)", flex: 1 }}>
       {title}
     </span>
-    <button type="submit" form="slurm-config-form" style={ideHeaderBtn}
-      onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
-      onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
-    >{submitLabel}</button>
+    <button type="submit" form="slurm-config-form" className="ide-run-button"
+      disabled={run.disabled} title={run.title}
+    >{run.label}</button>
     <button style={ideIconBtn} onClick={onMinimize} title="Minimize"
       onMouseOver={(e) => e.currentTarget.style.color = 'white'}
       onMouseOut={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
@@ -102,7 +110,7 @@ const IDEStatusBar = ({ status }) => {
       display: 'flex',
       alignItems: 'center',
       padding: '0 12px',
-      fontSize: '11px',
+      fontSize: "var(--drona-text-caption)",
       flexShrink: 0,
       gap: '16px',
     }}>
@@ -131,12 +139,14 @@ const ResizeHandle = ({ isResizing, onMouseDown, styles }) => (
 );
 
 // ── Normal footer ────────────────────────────────────────────────────────────
-const ModalFooter = ({ onClose, styles, submitLabel }) => (
+const ModalFooter = ({ onClose, styles, run }) => (
   <div style={styles.footer}>
-    <button type="submit" form="slurm-config-form" style={styles.button.primary}
-      onMouseOver={(e) => e.target.style.backgroundColor = '#500000'}
-      onMouseOut={(e) => e.target.style.backgroundColor = 'maroon'}
-    >{submitLabel}</button>
+    <button type="submit" form="slurm-config-form" className="btn composer-generate-button composer-run-button"
+      style={{ marginRight: '0.5rem' }} disabled={run.disabled} title={run.title}
+    >
+      {run.label}
+      {!run.disabled && <span className="composer-generate-arrow" aria-hidden="true">&rarr;</span>}
+    </button>
     <button onClick={onClose} style={styles.button.secondary}
       onMouseOver={(e) => e.target.style.backgroundColor = '#545b62'}
       onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
@@ -172,7 +182,9 @@ const SplitScreenModal = ({
   forceMinimized = null,
   submitLabel = DEFAULT_BUTTON_LABELS.submit,
   title = DEFAULT_BUTTON_LABELS.title,
+  isSubmitDisabled = false,
 }) => {
+  const run = { ...runButtonState(submitLabel, status, isSubmitDisabled), disabled: !!isSubmitDisabled };
   const contentRef = useRef(null);
   const modalRef = useRef(null);
   const [isMinimized, setIsMinimized] = React.useState(false);
@@ -224,7 +236,7 @@ const SplitScreenModal = ({
       <div style={modalStyle} onClick={(e) => e.stopPropagation()} ref={modalRef} data-modal-ref>
 
         {isFullscreen
-          ? <IDEHeader onFullscreen={() => setIsFullscreen(false)} onMinimize={handleMinimize} onClose={onClose} submitLabel={submitLabel} title={title} />
+          ? <IDEHeader onFullscreen={() => setIsFullscreen(false)} onMinimize={handleMinimize} onClose={onClose} submitLabel={submitLabel} title={title} run={run} />
           : <ModalHeader isFullscreen={false} onFullscreen={() => setIsFullscreen(true)} onMinimize={handleMinimize} onClose={onClose} styles={styles} title={title} />
         }
 
@@ -254,7 +266,7 @@ const SplitScreenModal = ({
 
         {isFullscreen
           ? <IDEStatusBar status={status} />
-          : <ModalFooter onClose={onClose} styles={styles} submitLabel={submitLabel} />
+          : <ModalFooter onClose={onClose} styles={styles} run={run} />
         }
 
       </div>

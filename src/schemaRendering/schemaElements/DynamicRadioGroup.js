@@ -2,7 +2,8 @@
  * @name DynamicRadioGroup
  * @description A radio button group that dynamically loads its options from a retriever script.
  * Allows single selection and automatically refreshes options when dependent form values change.
- * Warns when the previously selected option becomes unavailable.
+ * Warns when the previously selected option becomes unavailable (only while there are other
+ * options to choose from).
  *
  * @example
  * // Basic dynamic radio group
@@ -44,6 +45,9 @@
  * available once the options load: true/"single" selects the only option, "first" selects the first one
  * @property {boolean} [hideWhenSingle] - When the retriever returns exactly one option, show its label
  * as plain text instead of the radio group (the value is still set and submitted). Implies autoSelect.
+ * @property {boolean} [hideWhenEmpty] - When the retriever returns no options, render nothing (no
+ * "No options available" text) and clear the current value, so elements that depend on it hide too.
+ * E.g. the node picker while the selected job is still pending.
  * @property {string} [help] - Help text displayed below the radio buttons
  */
 
@@ -94,11 +98,12 @@ function DynamicRadioGroup(props) {
         refreshWhile: props.refreshWhile,
     });
 
-    // After options change, mark prior selection as invalid if missing (do NOT append it)
+    // After options change, mark prior selection as invalid if missing (do NOT append it).
+    // With no options at all there is nothing to switch to, so no warning.
     useEffect(() => {
         if (!isEvaluated) return;
         const optionValues = new Set(options.map((o) => o.value));
-        setIsValueInvalid(!!value && !optionValues.has(value));
+        setIsValueInvalid(!!value && options.length > 0 && !optionValues.has(value));
     }, [options, value, isEvaluated]);
 
     const selectValue = (newValue) => {
@@ -106,6 +111,13 @@ function DynamicRadioGroup(props) {
         setIsValueInvalid(false);
         props.onChange?.(props.index, newValue);
     };
+
+    const hideEmpty = !!props.hideWhenEmpty && isEvaluated && options.length === 0;
+
+    // hideWhenEmpty: a hidden, empty picker must not keep a value from an earlier option list
+    useEffect(() => {
+        if (hideEmpty && value) selectValue("");
+    }, [hideEmpty, value]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // User selects a new option -> clear invalid flag, emit value
     const handleValueChange = (event) => selectValue(event.target.value);
@@ -119,6 +131,8 @@ function DynamicRadioGroup(props) {
     });
 
     const showSingle = props.hideWhenSingle && isEvaluated && options.length === 1;
+
+    if (hideEmpty) return null;
 
     return (
         <FormElementWrapper
@@ -157,7 +171,7 @@ function DynamicRadioGroup(props) {
                 </>
             )}
             {isValueInvalid && (
-                <div className="text-danger" style={{ fontSize: "0.875em", marginTop: "0.25rem" }}>
+                <div className="text-danger" style={{ fontSize: "var(--drona-text-ui)", marginTop: "0.25rem" }}>
                     The previously selected option is no longer available
                 </div>
             )}

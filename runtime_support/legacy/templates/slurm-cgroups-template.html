@@ -1,0 +1,59 @@
+<div id="dc-cgroups" style="width: 100%; box-sizing: border-box;">
+    <style>
+        #dc-cgroups {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-live: #10b981;
+            color: var(--dc-text);
+        }
+
+        #dc-cgroups .dc-node-label { font-size: var(--drona-text-caption); color: var(--dc-text-muted); margin-bottom: 14px; text-align: right; }
+
+        #dc-cgroups .stat-grid { display: flex; flex-wrap: wrap; gap: 24px; }
+        #dc-cgroups .stat-box { flex: 1; min-width: 180px; padding-left: 12px; }
+        #dc-cgroups .stat-box.exec { border-left: 3px solid #3b82f6; }
+        #dc-cgroups .stat-box.mem { border-left: 3px solid #f59e0b; }
+
+        #dc-cgroups .stat-label { color: var(--dc-text-muted); font-size: var(--drona-text-caption); font-weight: var(--drona-weight-strong); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        #dc-cgroups .stat-row { font-size: var(--drona-text-data); margin-bottom: 6px; color: var(--dc-text-muted); }
+        #dc-cgroups .stat-row .val { font-family: var(--drona-font-mono); color: var(--dc-text); }
+        #dc-cgroups .stat-row .val.warn { color: #ef4444; }
+        #dc-cgroups .stat-sub { font-size: var(--drona-text-caption); color: var(--dc-text-muted); margin-top: 6px; }
+
+        #dc-cgroups .dc-footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid var(--dc-divider);
+            font-size: var(--drona-text-caption);
+            font-family: var(--drona-font-mono);
+            color: var(--dc-text-muted);
+            word-break: break-all;
+        }
+    </style>
+
+        <div class="dc-node-label">Node: {{NODE_NAME}}</div>
+
+        <div class="stat-grid">
+            <div class="stat-box exec">
+                <div class="stat-label">Execution &amp; Scheduling</div>
+                <div class="stat-row">CPU Time: <span class="val">{{CPU_TIME}}s</span></div>
+                <div class="stat-row">Throttled: <span class="val warn">{{CPU_THROTTLE}}ms</span></div>
+                <div class="stat-row">Threads: <span class="val">{{PID_COUNT}}</span></div>
+                <div class="stat-sub">Cores: {{CPU_SET}}</div>
+            </div>
+
+            <div class="stat-box mem">
+                <div class="stat-label">Memory Accounting</div>
+                <div class="stat-row">Current: <span class="val">{{CUR_MEM}}</span></div>
+                <div class="stat-row">Peak: <span class="val">{{MAX_MEM}}</span></div>
+                <div class="stat-row">Cache: <span class="val">{{MEM_CACHE}}</span></div>
+                <div class="stat-row">RSS: <span class="val">{{MEM_RSS}}</span></div>
+            </div>
+        </div>
+
+        <div class="dc-footer">Active tasks: {{PID_LIST}}</div>
+</div>

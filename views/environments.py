@@ -10,7 +10,7 @@ import shutil
 from .error_handler import APIError, handle_api_error
 from .utils import create_folder_if_not_exist, get_drona_dir, get_envs_dir
 from .env_repo_manager import EnvironmentRepoManager
-from .env_api import DRONA_ENV_API
+from .env_api import DRONA_ENV_API, env_summary
 
 
 ENV_ICON_DIR = os.path.abspath(os.path.join("static", "env-icons"))
@@ -69,61 +69,60 @@ def get_env_icon_url(env_root_path, env_name):
 
 
 def get_directories(path):
-    """Get list of directories in a given path"""
-    return sorted([d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))])
+    """Get list of directories in a given path. Hidden ones (.git of a checked-out environment
+    repository, editor folders) are not environments and are left out."""
+    return sorted([d for d in os.listdir(path)
+                   if not d.startswith(".") and os.path.isdir(os.path.join(path, d))])
 
-def _get_environments():
-    """Get list of all available environments (system and user)"""
-    system_environments = []
+def _environment_dirs():
+    """(name, root, is_user_env) of every installed environment: system ones first, then the
+    user's. No URLs are built here, so it also works outside the icon route's app context."""
+    found = []
     try:
         system_env_path = os.path.abspath("./environments")
-        system_environments = [
-            {
-                "env": env,
-                "src": system_env_path,
-                "is_user_env": False,
-                "icon": get_env_icon_url(
-                    system_env_path,
-                    env
-                ),
-            }
-            for env in get_directories(system_env_path)
-        ]
+        found += [(env, system_env_path, False) for env in get_directories(system_env_path)]
     except (PermissionError, FileNotFoundError, OSError):
-        system_environments = []
-    
+        pass
+
     dd = get_drona_dir()
     if not dd["ok"]:
-        return system_environments
+        return found
 
     user_envs_path = request.args.get("user_envs_path")
     if user_envs_path is None:
         eres = get_envs_dir()
         if not eres["ok"]:
-            return system_environments
+            return found
         user_envs_path = eres["path"]
         try:
             create_folder_if_not_exist(user_envs_path)
         except (PermissionError, OSError):
             pass
 
-    user_environments = []
     try:
-        user_environments = get_directories(user_envs_path)
-        user_environments = [
-            {
-                "env": env,
-                "src": user_envs_path,
-                "is_user_env": True,
-                "icon": get_env_icon_url(user_envs_path, env),
-            }
-            for env in user_environments
-        ]
+        found += [(env, user_envs_path, True) for env in get_directories(user_envs_path)]
     except (PermissionError, FileNotFoundError, OSError):
-        user_environments = []
+        pass
+    return found
 
-    environments = system_environments + user_environments
-    return environments
+
+def installed_environment_names():
+    """Names of all installed environments (system and user)."""
+    return {name for name, _root, _user in _environment_dirs()}
+
+
+def _get_environments():
+    """Get list of all available environments (system and user)"""
+    return [
+        {
+            "env": env,
+            "src": root,
+            "is_user_env": is_user,
+            "icon": get_env_icon_url(root, env),
+            **env_summary(os.path.join(root, env)),
+        }
+        for env, root, is_user in _environment_dirs()
+    ]
 
 
 def get_environment_icon_route(environment):

@@ -129,6 +129,14 @@ class DbJobOptionsTest(unittest.TestCase):
             [{"value": "111", "label": "Job 111"}, {"value": "222", "label": "Job 222"}],
         )
 
+    def test_stage_label_from_jobinfo(self):
+        record = {"drona_id": "30", "runtime_meta": {"jobinfo": [
+            {"id": 111, "label": "MSA (CPU)"}, {"id": 222, "label": "  "}, {"id": 333}]}}
+        self.assertEqual(
+            [o["label"] for o in self.options({"id": "30"}, record)],
+            ["MSA (CPU) \u00b7 Job 111", "Job 222", "Job 333"],
+        )
+
     def test_unresolved_id_is_empty(self):
         self.assertEqual(self.options({"id": ""}), [])
 
@@ -158,15 +166,12 @@ class DbJobOptionsTest(unittest.TestCase):
 
 
 class JobStatesTest(unittest.TestCase):
-    def test_squeue_then_sacct_for_the_rest_and_failures_are_soft(self):
-        rows = {"squeue": [["111", "RUNNING", "1:00", "2"]],
-                "sacct": [["222", "CANCELLED by 5", "0:10", "1"]]}
-        with mock.patch.object(br, "_slurm_query", side_effect=lambda cmd: rows[cmd[0]]):
-            states = br._job_states(["111", "222"])
-        self.assertEqual(states["111"]["state"], "RUNNING")
-        self.assertEqual(states["222"], {"state": "CANCELLED", "elapsed": "0:10", "nodes": "1"})
-        with mock.patch.object(br.subprocess, "run", side_effect=OSError):
-            self.assertEqual(br._job_states(["111"]), {})
+    def test_job_states_come_from_the_configured_scheduler(self):
+        fake = mock.Mock()
+        fake.job_states.return_value = {"111": {"state": "RUNNING", "elapsed": "1:00", "nodes": "1"}}
+        with mock.patch.object(br.drona_scheduler, "current", return_value=fake):
+            self.assertEqual(br._job_states(["111"])["111"]["state"], "RUNNING")
+        fake.job_states.assert_called_once_with(["111"])
 
 
 if __name__ == "__main__":

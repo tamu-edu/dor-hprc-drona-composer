@@ -114,7 +114,7 @@ const ChoiceOption = React.memo(function ChoiceOption({
           style={{
             margin: 0,
             padding: "1px 10px",
-            fontSize: "12px",
+            fontSize: "var(--drona-text-caption)",
             cursor: "pointer",
             borderRadius: "6px",
             border: `1px solid ${checked ? "#500000" : "#cbd5e1"}`,
@@ -156,7 +156,7 @@ const ChoiceOption = React.memo(function ChoiceOption({
             border: "2px solid #500000",
             color: checked ? "#ffffff" : "#500000",
             backgroundColor: checked ? "#500000" : "#ffffff",
-            fontWeight: checked ? 600 : 400,
+            fontWeight: checked ? "var(--drona-weight-strong)" : "var(--drona-weight-normal)",
             transition: "background-color .15s, color .15s",
           }}
         >

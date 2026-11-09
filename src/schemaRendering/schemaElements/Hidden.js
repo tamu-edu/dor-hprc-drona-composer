@@ -113,7 +113,7 @@ function Hidden(props) {
       {failure && (
         <div
           className="text-warning mt-1"
-          style={{ fontSize: "0.8em" }}
+          style={{ fontSize: "var(--drona-text-caption)" }}
           title={failure.message}
           role="status"
         >

@@ -14,7 +14,7 @@ _HELPER_DIR = ".drona"
 
 def _add_helper(script, preview_name):
     drona_add_additional_file(
-        os.path.join(_RUNTIME_DIR, "driver_scripts", script), preview_name,
+        os.path.join(_RUNTIME_DIR, "job_helpers", script), preview_name,
         preview_order=-1, name=_HELPER_DIR + "/" + script)
 
 

@@ -14,7 +14,7 @@ while true; do
 done
 
 # CLUSTERNAME is written exactly as entered (display name, e.g. "VISION");
-# drona_cluster_name() lowercases it to pick runtime_support clusters/<name>.py.
+# drona_cluster_name() lowercases it to pick runtime_support/schedulers/slurm/clusters/<name>.py.
 
 # Generate config.yml from its template, then replace cluster-name, app-name, user-name
 cp config.yml.template config.yml
@@ -70,12 +70,12 @@ mkdir -p environments
 
 
 #create the logs directory and log file
-mkdir -p logs
-touch logs/drona_log
-chmod uog+rw logs/drona_log
+#mkdir -p logs
+#touch logs/drona_log
+#chmod uog+rw logs/drona_log
 # retriever failures/timeouts, written by every user's app process
-touch logs/retriever_errors
-chmod uog+rw logs/retriever_errors
+#touch logs/retriever_errors
+#chmod uog+rw logs/retriever_errors
 
 python3 -m venv .venv
 source .venv/bin/activate

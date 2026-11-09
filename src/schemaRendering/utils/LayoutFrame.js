@@ -43,8 +43,8 @@ const CARD_TITLE_STYLE = {
   left: "20px",
   background: "#ffffff",
   padding: "2px 16px",
-  fontSize: "11px",
-  fontWeight: 900,
+  fontSize: "var(--drona-text-caption)",
+  fontWeight: "var(--drona-weight-strong)",
   color: CHOICE_THEME.cardMuted,
   textTransform: "uppercase",
   letterSpacing: "2px",
@@ -72,10 +72,10 @@ const BADGE_STYLE = { color: "#ffffff", background: "#500000", borderColor: "#50
 
 // Flat "bar" layout: one line, badge pill + bold title + content
 const BAR_ROW_STYLE = { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.25rem 0.6rem", marginBottom: "1rem" };
-const BAR_TITLE_STYLE = { fontSize: "14px", fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap" };
+const BAR_TITLE_STYLE = { fontSize: "var(--drona-text-ui)", fontWeight: "var(--drona-weight-strong)", color: "#1e293b", whiteSpace: "nowrap" };
 const BAR_BADGE_STYLE = {
-  fontSize: "10px",
-  fontWeight: 600,
+  fontSize: "var(--drona-text-caption)",
+  fontWeight: "var(--drona-weight-strong)",
   lineHeight: "16px",
   padding: "0 8px",
   color: "#500000",
@@ -118,13 +118,13 @@ const TOGGLE_TITLE_STYLE = {
   lineHeight: "inherit",
 };
 
-const CHEVRON_STYLE = { fontSize: "14px", lineHeight: 1, color: ACCENT };
+const CHEVRON_STYLE = { fontSize: "var(--drona-text-ui)", lineHeight: 1, color: ACCENT };
 
 const COLLAPSED_FRAME_PADDING = "14px 20px";
 
 // Folded strip with a "summary": the current settings in plain muted text, left-aligned under the title
 const COLLAPSED_SUMMARY_STYLE = {
-  fontSize: "12px",
+  fontSize: "var(--drona-text-caption)",
   color: CHOICE_THEME.cardMuted,
   lineHeight: "16px",
   paddingTop: "2px",
@@ -135,7 +135,7 @@ const COLLAPSED_SUMMARY_STYLE = {
 
 const COLLAPSED_HINT_STYLE = {
   textAlign: "right",
-  fontSize: "11px",
+  fontSize: "var(--drona-text-caption)",
   fontStyle: "italic",
   color: CHOICE_THEME.cardMuted,
   lineHeight: "16px",
@@ -257,7 +257,7 @@ function LayoutFrame({ resolved, title: titleProp, collapse, actionRef, children
   return (
     <div style={resolved.box || undefined}>
       {title && (
-        <div style={{ fontWeight: 500, marginBottom: "0.25rem" }}>{title}</div>
+        <div style={{ fontWeight: "var(--drona-weight-strong)", marginBottom: "0.25rem" }}>{title}</div>
       )}
       {children}
     </div>

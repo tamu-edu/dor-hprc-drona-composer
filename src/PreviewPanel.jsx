@@ -25,7 +25,7 @@ const AlertBlock = ({ messages, type, styles, isFullscreen }) => {
         <h6 className="alert-heading" style={styles.alertTitle}>{config.title}</h6>
         <button
           onClick={() => setIsVisible(false)}
-          style={{ background: 'none', border: 'none', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', padding: '0', marginLeft: '10px', opacity: 0.6, lineHeight: 1 }}
+          style={{ background: 'none', border: 'none', fontSize: '18px', fontWeight: "var(--drona-weight-strong)", cursor: 'pointer', padding: '0', marginLeft: '10px', opacity: 0.6, lineHeight: 1 }}
           onMouseOver={(e) => e.target.style.opacity = 1}
           onMouseOut={(e) => e.target.style.opacity = 0.6}
         >×</button>
@@ -53,8 +53,8 @@ const makeColumnHeaderStyle = (isFullscreen) => ({
 
 const makeTabStyle = (isActive) => ({
   padding: '3px 10px',
-  fontSize: '12px',
-  fontWeight: isActive ? '600' : '400',
+  fontSize: "var(--drona-text-caption)",
+  fontWeight: isActive ? "var(--drona-weight-strong)" : "var(--drona-weight-normal)",
   color: isActive ? '#500000' : '#6c757d',
   backgroundColor: isActive ? 'white' : 'transparent',
   border: `1px solid ${isActive ? '#dee2e6' : 'transparent'}`,
@@ -67,7 +67,7 @@ const makeTabStyle = (isActive) => ({
 
 const actionBtnStyle = {
   padding: '2px 7px',
-  fontSize: '13px',
+  fontSize: "var(--drona-text-data)",
   color: '#6c757d',
   backgroundColor: 'transparent',
   border: '1px solid transparent',
@@ -104,9 +104,9 @@ const SplitColumnHeader = ({ split, splits, sortedPanes, onSetActivePane, onAddS
                   style={{
                     position: 'absolute', right: '3px',
                     background: 'none', border: 'none', padding: '0 2px',
-                    fontSize: '11px', lineHeight: 1, cursor: 'pointer',
+                    fontSize: "var(--drona-text-caption)", lineHeight: 1, cursor: 'pointer',
                     color: isActive ? '#500000' : '#6c757d',
-                    fontWeight: '700',
+                    fontWeight: "var(--drona-weight-strong)",
                   }}
                   onClick={(e) => { e.stopPropagation(); onRemovePane(pane.name, idx, split.id); }}
                   title="Remove file"
@@ -117,7 +117,7 @@ const SplitColumnHeader = ({ split, splits, sortedPanes, onSetActivePane, onAddS
         })}
         {splitIndex === 0 && (
           <button
-            style={{ ...actionBtnStyle, fontSize: '16px', padding: '0 6px', color: '#888' }}
+            style={{ ...actionBtnStyle, fontSize: "var(--drona-text-body)", padding: '0 6px', color: '#888' }}
             onClick={onAddFile}
             title="Add file to job"
             onMouseOver={(e) => { e.currentTarget.style.color = '#500000'; e.currentTarget.style.backgroundColor = '#e2e2e2'; }}

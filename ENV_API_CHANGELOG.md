@@ -25,12 +25,21 @@ installed environment is opened.
 First versioned API (the `hprc-dev` line). Environments written for it need at least:
 
 - `runtime_support`: `$DRONA_RUNTIME_DIR` / `$DRONA_ENV_DIR` in schema `$ref`s, shared form components
-  (`form_components/*.json`), shared retriever scripts and `drona_runtime_utils`
+  (`forms/*.json`), map fragments (`maps/`), shared retriever scripts (`retrievers/`,
+  `schedulers/slurm/retrievers/`), `drona_runtime_utils`, and the submit tool
+  `schedulers/slurm/drona_wf_driver_sbatch` (with `#DRONA label:` stage labels). The pre-2.0 paths
+  (`form_components/`, `map_references/`, `retriever_scripts/`, `html_templates/`,
+  `driver_scripts/drona_wf_driver_sbatch`) still resolve through `runtime_support/aliases.json` and are
+  removed in 2.1. See `runtime_support/CATALOG.md`.
 - map.json `$include` and order-independent `[KEY]` substitution
 - built-in retrievers (`builtin:db_lookup`, `builtin:db_options`, `builtin:db_job_options`)
 - elements: `dynamicTable`, `chart` (incl. `enableZoom`), collapsible card layout, layout frame and shared choice options
 - retriever polling (`refreshInterval`), the retriever timeout, and paused retrievers in collapsed containers
 - hidden additional files (`preview_order: -1`)
 - shared workflow manage actions (rerun/recreate/cancel), job/node scope pickers, CPU/GPU monitoring
+- runs on an existing workflow: reserved field `drona_target_wf` (schema flag `"workflowTarget": true`),
+  no new record, script in `<wfdir>/.drona/runs/<timestamp>/`, run started in the workflow directory,
+  `DRONA_WF_NAME` and `DRONA_RUN_DIR`, jobinfo append in `drona_wf_driver_sbatch`. Env code that deletes
+  `$DRONA_WF_ID` as manage self-cleanup must skip it when `DRONA_RUN_DIR` is set.
 
 Environments from before 2.0 (no `requires_drona`) keep working.
