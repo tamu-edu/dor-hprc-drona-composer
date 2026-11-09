@@ -110,7 +110,7 @@ const darkCodeTheme = prismThemes.dracula;
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} <a href="http://www.tamu.edu/" style="color: #fff;">Texas A&M University</a>.`,
+        copyright: 'Copyright © 2024 Texas A&M University High Performance Research Computing. MIT License.',
       },
       colorMode: {
         defaultMode: 'light',
