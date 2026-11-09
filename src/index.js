@@ -3,22 +3,18 @@ import io from "socket.io-client";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
-import EnvironmentModal from "./EnvironmentModal";
+import AppShell from "./AppShell";
+import { EnvironmentProvider, useEnvironment } from "./environment/EnvironmentContext";
 import { GlobalFilesContext } from './GlobalFilesContext';
 
-// Installer setting (env_import_enabled in config.yml, set by layout.html); missing = enabled
-const envImportEnabled = document.env_import_enabled !== false;
-
-export function App() {
+// The workflow pane: form, Generate, preview, submit, rerun/recreate. It gets the selected
+// environment from the environment context (envInstanceId is bumped on every selection so
+// <Composer> gets a fresh mount even when the same environment is picked again; fields that
+// fetch only once on mount, e.g. Generic's "configured" check, then re-run). It does not know
+// about the environment sidebar.
+export function WorkflowPane() {
+  const { environment, envInstanceId, initialValues, selectEnvironment } = useEnvironment();
   const [globalFiles, setGlobalFiles] = useState([]);
-  const [environment, setEnvironment] = useState({ env: "", src: "" });
-  // Bumped on every environment (re)selection so <Composer> gets a fresh
-  // mount even when the same environment is picked again. Without this,
-  // React reuses the existing component tree (schema shape is identical),
-  // so dynamic hidden fields that only fetch once on mount (e.g. Generic's
-  // "configured" check) never re-run and can end up in a value that
-  // matches none of the schema's conditions, blanking the whole form.
-  const [envInstanceId, setEnvInstanceId] = useState(0);
   const [pendingValues, setPendingValues] = useState(null);
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
@@ -45,7 +41,6 @@ export function App() {
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
-  const envModalRef = useRef(null);
   const multiPaneRef = useRef(null);
 
   const defaultRunLocation = document.drona_dir + "/runs";
@@ -58,10 +53,21 @@ export function App() {
 
   const [pendingNewPreview, setPendingNewPreview] = useState(false);
 
-  const [environments, setEnvironments] = useState([]);
   const [error, setError] = useState(null);
   // Set when the selected environment needs a newer Drona (X-Drona-Env-Warning from the schema route)
   const [envWarning, setEnvWarning] = useState(null);
+
+  // A new selection drops the previous environment's schema until the new one arrives. Done while
+  // rendering (not in an effect), so the remounted form never sees the old fields: it would fire
+  // their retrievers (e.g. Generic's "configured" check) against the new environment.
+  const [fieldsEnvironment, setFieldsEnvironment] = useState(environment);
+  if (fieldsEnvironment !== environment) {
+    setFieldsEnvironment(environment);
+    setFields({});
+    setEnvWarning(null);
+    // Values the selection came with (e.g. a recent workflow: Manage + that workflow)
+    setPendingValues(initialValues || null);
+  }
 
   useEffect(() => {
     console.log("locationPickedByUser changed ->", locationPickedByUser);
@@ -90,27 +96,6 @@ export function App() {
     setPendingNewPreview(false);
     handlePreview();   // dronaJobId is guaranteed to generate new id
   }, [pendingNewPreview, dronaJobId]);
-
-  useEffect(() => {
-    fetch(document.dashboard_url + "/jobs/composer/environments")
-      .then((response) => response.json())
-      .then((data) => {
-
-        setEnvironments(
-          data.map((env) => ({
-            value: env.env,
-            label: env.env,
-            src: env.src,
-            is_user_env: env.is_user_env,
-            styles: { color: env.is_user_env ? "#3B71CA" : "" },
-            icon: env.icon,
-	  }))
-        );
-      })
-      .catch((error) => {
-        console.error("Error fetching JSON data");
-      });
-  }, []);
 
   function sync_job_name(name, customRunLocation, options = {}) {
     const { force = false } = options;
@@ -190,44 +175,6 @@ export function App() {
     fetchSchema();
   }, [environment]);
 
-
-  function handleEnvChange(key, option) {
-    setEnvironment({
-      env: option.value,
-      src: option.src,
-      icon: option.icon,
-      is_user_env: option.is_user_env,
-   });
-    // Drop the previous environment's schema until the new one arrives; otherwise the remounted form
-    // fires the old fields' retrievers (e.g. Generic's "configured" check) against the new environment
-    setFields({});
-    setEnvWarning(null);
-    setPendingValues(null);
-    setEnvInstanceId((id) => id + 1);
-
-  setEnvironmentInUrl(option.value);
-}
-
-  // Keep ?environment= in step with the selected environment, so a reload or shared link opens it
-  function setEnvironmentInUrl(envName) {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("environment") === envName) return;
-    params.set("environment", envName);
-    window.history.pushState({}, "", `${window.location.pathname}?${params.toString()}`);
-  }
-    
-  useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const envName = params.get("environment");
-
-  if (!envName || environments.length === 0) return;
-
-  const match = environments.find((env) => env.value === envName);
-
-  if (match) {
-    handleEnvChange("runtime", match);
-  }
-  }, [environments]);
 
   function generateDronaJobId() {
     return String(Math.floor(Math.random() * 68719476735));
@@ -453,8 +400,7 @@ export function App() {
           fieldsLoadedResolverRef.current = resolve;
         });
 
-        setEnvironment({ env: envName, src: envDir });
-        setEnvironmentInUrl(envName);
+        selectEnvironment({ env: envName, src: envDir }, { remount: false });
 
         // Wait for schema reload after changing environments.
         await fieldsPromise;
@@ -509,33 +455,6 @@ export function App() {
   }
   
 
-    const handleAddEnvironment = (newEnv) => {
-      const newName = newEnv.env || newEnv.value || newEnv.label;
-    
-      setEnvironments((prevEnvironments) => {
-        const alreadyExists = prevEnvironments.some((env) => {
-          const existingName = env.env || env.value || env.label;
-          return existingName === newName && env.src === newEnv.src;
-        });
-    
-        if (alreadyExists) {
-          return prevEnvironments;
-        }
-    
-        return [
-          ...prevEnvironments,
-          {
-            value: newName,
-            label: newName,
-            src: newEnv.src,
-            is_user_env: true,
-            styles: { color: "#3B71CA" },
-            icon: newEnv.icon,
-          },
-        ];
-      });
-    };
-  
   function handlePreview() {
     setJobStatus("new");
     const formData = new FormData(formRef.current);
@@ -638,60 +557,6 @@ export function App() {
     // }
   }
 
-  function handleAddEnv() {
-    const modal = new bootstrap.Modal(envModalRef.current);
-    modal.toggle();
-  }
-  async function handleRemoveEnv(env) {
-      const name = env.env || env.value || env.label;
-    
-      if (!env.is_user_env) {
-        alert("System environments cannot be removed.");
-        return;
-      }
-    
-      if (!window.confirm(`Remove environment "${name}"? This cannot be undone.`)) {
-        return;
-      }
-    
-      try {
-        const response = await fetch(
-          `${document.dashboard_url}/jobs/composer/environment`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              env: name,
-              src: env.src,
-            }),
-          }
-        );
-    
-        const data = await response.json();
-    
-        if (!response.ok) {
-          throw new Error(data.message || data.details?.error || "Failed to remove environment.");
-        }
-    
-        setEnvironments((prev) =>
-          prev.filter((item) => {
-            const itemName = item.env || item.value || item.label;
-            return !(itemName === name && item.src === env.src);
-          })
-        );
-    
-        if (environment.env === name && environment.src === env.src) {
-          setEnvironment({ env: "", src: "" });
-          setFields({});
-        }
-      } catch (error) {
-        console.error(error);
-        alert(error.message || "Failed to remove environment.");
-      }
-    }
-
   function add_submission_loading_indicator() {
     var submission_section = document.getElementById(
       "job-submit-button-section"
@@ -733,7 +598,6 @@ export function App() {
           envInstanceId={envInstanceId}
           pendingValues={pendingValues}
           onPendingApplied={() => setPendingValues(null)}
-          environments={environments}
           fields={fields}
           runLocation={runLocation}
           messages={messages}
@@ -743,13 +607,10 @@ export function App() {
           globalFiles={globalFiles}
           handlePreview={handlePreview}
           rerunInfo={rerunInfo}
-          handleEnvChange={handleEnvChange}
-          handleAddEnv={envImportEnabled ? handleAddEnv : undefined}
           handleUploadedFiles={handleUploadedFiles}
           sync_job_name={sync_job_name}
           formRef={formRef}
           previewRef={previewRef}
-          envModalRef={envModalRef}
           multiPaneRef={multiPaneRef}
           handleRerun={handleRerun}
           handleForm={handleForm}
@@ -763,7 +624,6 @@ export function App() {
           locationPickedByUser={locationPickedByUser}
           pendingNewPreview={pendingNewPreview}
           setPendingNewPreview={setPendingNewPreview}
-          handleRemoveEnv={handleRemoveEnv}
         />
         {showRerunModal && (
           <RerunPromptModal
@@ -774,16 +634,19 @@ export function App() {
             onCancel={handleRerunCancel}
           />
         )}
-        {envImportEnabled && (
-          <EnvironmentModal
-            envModalRef={envModalRef}
-            onAddEnvironment={handleAddEnvironment}
-            setError={setError}
-            installedEnvNames={environments.filter((e) => e.is_user_env).map((e) => e.value || e.env)}
-          />
-        )}
       </>
     </GlobalFilesContext.Provider>
+  );
+}
+
+// The app: environment selection (context) + page frame (sidebar, workflow pane)
+export function App() {
+  return (
+    <EnvironmentProvider>
+      <AppShell>
+        <WorkflowPane />
+      </AppShell>
+    </EnvironmentProvider>
   );
 }
 

@@ -659,6 +659,8 @@ A table that works like a `dynamicSelect`: its rows come from a retriever script
 - `useLabel=true` (boolean, optional) - false hides the label row (handy with `layout`, which has its own title)
 - `showRefreshButton=false` (boolean, optional) - Show a button next to the search box that re-fetches the rows
 - `collapseOnSelect=false` (boolean, optional) - After the user clicks a row, fold the table into a one-line summary of the selected row with a "Expand" button that brings the table back. Restored values do not collapse the table.
+- `collapseRestoredValue=false` (boolean, optional) - With `collapseOnSelect`: a value set from outside (a restored form, or a workflow opened from the start page) folds the table too. A value that is not among the loaded rows leaves the table open.
+- `hideLabelWhenCollapsed=false` (boolean, optional) - While the table is folded to the selected row, hide the label; the folded view's column headers still say what the row is.
 - `pagination=false` (boolean, optional) - Use pages instead of scrolling
 - `emptyMessage="No options available"` (string, optional) - Text shown when there are no rows
 - `help` (string, optional) - Help text displayed below the table

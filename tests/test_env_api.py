@@ -100,5 +100,22 @@ class ReadEnvRequirementTest(unittest.TestCase):
         self.assertIsNone(env_api.read_env_requirement(self.dir))
 
 
+class EnvSummaryTest(ReadEnvRequirementTest):
+    """description and category for the environment list (start page, switcher)."""
+
+    def test_present_and_whitespace_folded(self):
+        self.write_manifest('description: "Runs  LAMMPS\n jobs"\ncategory: Scientific\n')
+        self.assertEqual(env_api.env_summary(self.dir),
+                         {"description": "Runs LAMMPS jobs", "category": "Scientific"})
+
+    def test_missing_or_bad_manifest(self):
+        empty = {"description": "", "category": ""}
+        self.assertEqual(env_api.env_summary(self.dir), empty)
+        self.write_manifest("name: [unclosed\n")
+        self.assertEqual(env_api.env_summary(self.dir), empty)
+        self.write_manifest("category: 3\n")
+        self.assertEqual(env_api.env_summary(self.dir), {"description": "", "category": "3"})
+
+
 if __name__ == "__main__":
     unittest.main()

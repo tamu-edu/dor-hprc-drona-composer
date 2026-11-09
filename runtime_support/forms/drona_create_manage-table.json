@@ -41,7 +41,9 @@
           { "width": "120px" },
           {}
         ],
-        "collapseOnSelect": true
+        "collapseOnSelect": true,
+        "collapseRestoredValue": true,
+        "hideLabelWhenCollapsed": true
       }
 
     }

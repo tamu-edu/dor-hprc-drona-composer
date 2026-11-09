@@ -297,6 +297,29 @@ def preview_job_route():
 
 
 
+def recent_workflows_route():
+    """The newest workflows for the start page, each with one overall state from the scheduler
+    (one query for all their jobs)."""
+    from .workflow_state import workflow_state
+    try:
+        limit = max(1, min(int(request.args.get("limit", 8)), 50))
+    except ValueError:
+        limit = 8
+    # Only workflows whose environment is installed, so the list is full when enough exist
+    from .environments import installed_environment_names
+    recent = JobHistoryManager().get_recent(limit, environments=installed_environment_names())
+    ids = [i for wf in recent for i in wf["job_ids"]]
+    states = {}
+    if ids:
+        try:
+            from runtime_support.drona_scheduler import current
+            states = current().job_states(ids)
+        except Exception:
+            states = {}
+    for wf in recent:
+        wf["state"] = workflow_state(wf.pop("job_ids"), states)
+    return jsonify(recent)
+
 def get_history_route():
     """Get job history for the current user"""
     history_manager = JobHistoryManager()
@@ -329,5 +352,6 @@ def register_job_routes(blueprint, socketio_instance=None):
     blueprint.route('/submit', methods=['POST'])(submit_job_route)
     blueprint.route('/preview', methods=['POST'])(preview_job_route)
     blueprint.route('/history', methods=['GET'])(get_history_route)
+    blueprint.route('/history/recent', methods=['GET'])(recent_workflows_route)
     blueprint.route('/history/<int:job_id>', methods=['GET'])(get_job_from_history_route)
     blueprint.route('/history/<int:job_id>', methods=['DELETE'])(delete_job_from_history_route)

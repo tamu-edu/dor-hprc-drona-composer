@@ -67,18 +67,33 @@ def check_compatible(spec, api=DRONA_ENV_API):
     return True, None
 
 
-def read_env_requirement(env_path):
-    """requires_drona from <env_path>/manifest.yml, or None when absent or unreadable."""
+def read_env_manifest(env_path):
+    """<env_path>/manifest.yml as a dict; {} when absent, unreadable or not a mapping."""
     manifest_path = os.path.join(env_path, "manifest.yml")
     if not os.path.isfile(manifest_path):
-        return None
+        return {}
     try:
         import yaml
         with open(manifest_path) as f:
             manifest = yaml.safe_load(f) or {}
     except Exception:
-        return None
-    if not isinstance(manifest, dict):
-        return None
-    value = manifest.get("requires_drona")
+        return {}
+    return manifest if isinstance(manifest, dict) else {}
+
+
+def read_env_requirement(env_path):
+    """requires_drona from <env_path>/manifest.yml, or None when absent or unreadable."""
+    value = read_env_manifest(env_path).get("requires_drona")
     return None if value is None else str(value)
+
+
+def env_summary(env_path):
+    """What the environment list shows about an environment: {"description", "category"}
+    from its manifest.yml (empty strings when not given)."""
+    manifest = read_env_manifest(env_path)
+
+    def text(key):
+        value = manifest.get(key)
+        return " ".join(str(value).split()) if value is not None else ""
+
+    return {"description": text("description"), "category": text("category")}

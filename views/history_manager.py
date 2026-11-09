@@ -234,6 +234,42 @@ class JobHistoryManager:
         except (sqlite3.Error, PermissionError):
             return False
 
+    def get_recent(self, limit=8, environments=None):
+        """The newest workflows, light: [{"drona_id", "name", "environment", "location",
+        "start_time", "job_ids"}], newest first. job_ids come from runtime_meta.jobinfo.
+        environments: only workflows of these environment names (None = all)."""
+        if not self.db_path:
+            return []
+        where, args = "", []
+        if environments is not None:
+            names = sorted(set(environments))
+            if not names:
+                return []
+            where = " WHERE environment IN (%s)" % ",".join("?" * len(names))
+            args = names
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                rows = conn.execute(
+                    "SELECT drona_id, name, environment, location, start_time, runtime_meta "
+                    "FROM job_history" + where + " ORDER BY start_time DESC LIMIT ?",
+                    args + [int(limit)]
+                ).fetchall()
+        except (sqlite3.Error, PermissionError):
+            return []
+        recent = []
+        for drona_id, name, environment, location, start_time, runtime_meta in rows:
+            try:
+                meta = json.loads(runtime_meta) if runtime_meta else {}
+            except (ValueError, TypeError):
+                meta = {}
+            jobinfo = meta.get("jobinfo") if isinstance(meta, dict) else None
+            job_ids = [str(j["id"]) for j in (jobinfo or []) if isinstance(j, dict) and j.get("id") is not None]
+            recent.append({
+                "drona_id": str(drona_id), "name": name or str(drona_id), "environment": environment or "",
+                "location": location or "", "start_time": start_time or "", "job_ids": job_ids,
+            })
+        return recent
+
     def get_user_history(self):
         if not self.db_path:
             return []

@@ -13,10 +13,10 @@ const DynamicTable = (props) => (
 );
 
 jest.mock('../../utils/FormElementWrapper', () => {
-  return function MockWrapper({ children, label }) {
+  return function MockWrapper({ children, label, useLabel = true }) {
     return (
       <div data-testid="form-wrapper">
-        {label && <label>{label}</label>}
+        {label && useLabel && <label>{label}</label>}
         {children}
       </div>
     );
@@ -114,6 +114,47 @@ describe('DynamicTable Component', () => {
   test('a restored value does not collapse the table', async () => {
     await renderTable({ collapseOnSelect: true, value: { value: 'j1', label: 'sim-one' } });
     expect(screen.getByLabelText('Search table')).toBeInTheDocument();
+  });
+
+  test('collapseRestoredValue: a value set from outside folds the table too', async () => {
+    await renderTable({ collapseOnSelect: true, collapseRestoredValue: true, value: { value: 'j1', label: 'sim-one' } });
+    expect(screen.queryByLabelText('Search table')).not.toBeInTheDocument();
+    expect(screen.getByText('sim-one')).toBeInTheDocument();
+    expect(screen.queryByText('sim-two')).not.toBeInTheDocument();
+  });
+
+  test('collapseRestoredValue: Back to table stays open when the same value comes back as a new object', async () => {
+    const props = { ...defaultProps, collapseOnSelect: true, collapseRestoredValue: true };
+    global.fetch.mockResolvedValue({ ok: true, json: () => Promise.resolve(rows) });
+    let rerender;
+    await act(async () => {
+      ({ rerender } = render(<DynamicTable {...props} value={{ value: 'j1', label: 'sim-one' }} />));
+    });
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    expect(screen.queryByLabelText('Search table')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Back to table'));
+    expect(screen.getByLabelText('Search table')).toBeInTheDocument();
+    // the form re-renders and passes the same selection as a fresh object
+    await act(async () => { rerender(<DynamicTable {...props} value={{ value: 'j1', label: 'sim-one' }} />); });
+    expect(screen.getByLabelText('Search table')).toBeInTheDocument();
+    // a different selection set from outside folds again
+    await act(async () => { rerender(<DynamicTable {...props} value={{ value: 'j2', label: 'sim-two' }} />); });
+    expect(screen.queryByLabelText('Search table')).not.toBeInTheDocument();
+  });
+
+  test('collapseRestoredValue: a value that is not among the rows leaves the table open', async () => {
+    await renderTable({ collapseOnSelect: true, collapseRestoredValue: true, value: { value: 'gone', label: 'old' } });
+    expect(screen.getByLabelText('Search table')).toBeInTheDocument();
+  });
+
+  test('hideLabelWhenCollapsed hides the label only while folded', async () => {
+    await renderTable({ label: 'Select Workflow', collapseOnSelect: true, hideLabelWhenCollapsed: true });
+    expect(screen.getByText('Select Workflow')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('sim-two'));
+    expect(screen.queryByText('Select Workflow')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Back to table'));
+    expect(screen.getByText('Select Workflow')).toBeInTheDocument();
   });
 
   test('layout card frames the table with its title, useLabel hides the label', async () => {
