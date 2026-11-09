@@ -1,4 +1,4 @@
-<div id="dc-procs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+<div id="dc-procs" style="width: 100%; box-sizing: border-box;">
     <style>
         #dc-procs {
             --dc-text: #1e293b;
@@ -6,14 +6,14 @@
             --dc-divider: #f1f5f9;
             color: var(--dc-text);
         }
-        #dc-procs .dc-node-label { font-size: 11px; color: var(--dc-text-muted); margin-bottom: 8px; text-align: right; }
-        #dc-procs table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        #dc-procs th { text-align: left; color: var(--dc-text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 1px solid var(--dc-divider); }
-        #dc-procs td { padding: 4px 8px; border-bottom: 1px solid var(--dc-divider); font-family: 'JetBrains Mono', monospace; }
+        #dc-procs .dc-node-label { font-size: var(--drona-text-caption); color: var(--dc-text-muted); margin-bottom: 8px; text-align: right; }
+        #dc-procs table { width: 100%; border-collapse: collapse; font-size: var(--drona-text-data); }
+        #dc-procs th { text-align: left; color: var(--dc-text-muted); font-size: var(--drona-text-caption); font-weight: var(--drona-weight-strong); text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 8px; border-bottom: 1px solid var(--dc-divider); }
+        #dc-procs td { padding: 4px 8px; border-bottom: 1px solid var(--dc-divider); font-family: var(--drona-font-mono); }
         #dc-procs .num { text-align: right; }
         #dc-procs th.num { text-align: right; }
         #dc-procs .empty { text-align: center; color: var(--dc-text-muted); font-family: inherit; padding: 12px; }
-        #dc-procs .dc-footer { margin-top: 10px; font-size: 11px; color: var(--dc-text-muted); }
+        #dc-procs .dc-footer { margin-top: 10px; font-size: var(--drona-text-caption); color: var(--dc-text-muted); }
     </style>
 
     <div class="dc-node-label">Node: {{NODE_NAME}}</div>

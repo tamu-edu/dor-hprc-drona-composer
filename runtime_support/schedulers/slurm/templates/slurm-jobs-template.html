@@ -1,4 +1,4 @@
-<div id="dc-jobs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+<div id="dc-jobs" style="width: 100%; box-sizing: border-box;">
     <style>
         #dc-jobs {
             --dc-text: #1e293b;
@@ -19,26 +19,26 @@
 
         #dc-jobs .dc-updated {
             text-align: right;
-            font-size: 10px;
-            font-family: 'JetBrains Mono', monospace;
+            font-size: var(--drona-text-caption);
+            font-family: var(--drona-font-mono);
             color: var(--dc-text-muted);
             margin-top: 8px;
         }
 
         #dc-jobs table { width: 100%; border-collapse: collapse; table-layout: auto; margin-top: 6px; }
-        #dc-jobs th { text-align: left; background: var(--dc-divider); color: var(--dc-text-muted); text-transform: uppercase; font-size: 11px; padding: 12px; border-bottom: 2px solid var(--dc-divider); }
+        #dc-jobs th { text-align: left; background: var(--dc-divider); color: var(--dc-text-muted); text-transform: uppercase; font-size: var(--drona-text-caption); padding: 12px; border-bottom: 2px solid var(--dc-divider); }
         #dc-jobs td { padding: 12px; border-bottom: 1px solid var(--dc-divider); vertical-align: middle; }
 
-        #dc-jobs .job-id { font-family: 'JetBrains Mono', monospace; color: var(--dc-text-muted); font-size: 0.9em; }
-        #dc-jobs .job-name { font-weight: 600; color: var(--dc-text); }
+        #dc-jobs .job-id { font-family: var(--drona-font-mono); color: var(--dc-text-muted); font-size: var(--drona-text-ui); }
+        #dc-jobs .job-name { font-weight: var(--drona-weight-strong); color: var(--dc-text); }
 
         /* Walltime Progress Bar */
         #dc-jobs .progress-container { background: var(--dc-divider); border-radius: var(--dc-radius-pill); height: 8px; width: 100%; position: relative; overflow: hidden; }
         #dc-jobs .progress-bar { background: var(--dc-info); height: 100%; border-radius: var(--dc-radius-pill); transition: width 0.4s ease; }
-        #dc-jobs .time-labels { font-size: 10px; color: var(--dc-text-muted); margin-top: 4px; display: block; font-family: 'JetBrains Mono', monospace; }
+        #dc-jobs .time-labels { font-size: var(--drona-text-caption); color: var(--dc-text-muted); margin-top: 4px; display: block; font-family: var(--drona-font-mono); }
 
         /* Status Badges */
-        #dc-jobs .badge { padding: 4px 10px; border-radius: var(--dc-radius-sm); font-size: 11px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+        #dc-jobs .badge { padding: 4px 10px; border-radius: var(--dc-radius-sm); font-size: var(--drona-text-caption); font-weight: var(--drona-weight-strong); text-transform: uppercase; white-space: nowrap; }
         #dc-jobs .status-running { background: var(--dc-success-bg); color: var(--dc-success-text); }
         #dc-jobs .status-pending { background: var(--dc-warning-bg); color: var(--dc-warning-text); }
         #dc-jobs .status-failed { background: var(--dc-danger-bg); color: var(--dc-danger-text); }

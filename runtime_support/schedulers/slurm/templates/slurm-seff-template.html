@@ -1,4 +1,4 @@
-<div id="dc-seff" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+<div id="dc-seff" style="width: 100%; box-sizing: border-box;">
     <style>
         #dc-seff {
             --dc-text: #1e293b;
@@ -12,7 +12,7 @@
         }
 
         #dc-seff .seff-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-        #dc-seff th { text-align: left; font-size: 11px; color: var(--dc-text-muted); text-transform: uppercase; padding: 8px; }
+        #dc-seff th { text-align: left; font-size: var(--drona-text-caption); color: var(--dc-text-muted); text-transform: uppercase; padding: 8px; }
         #dc-seff td { padding: 12px 8px; border-top: 1px solid var(--dc-divider); }
 
         /* Efficiency Bar Styling */
@@ -24,8 +24,8 @@
         #dc-seff .eff-warn { background: #f59e0b; } /* Over-requested resources */
         #dc-seff .eff-poor { background: #ef4444; } /* Extremely wasteful */
 
-        #dc-seff .label-text { font-size: 12px; font-weight: 600; color: var(--dc-text); }
-        #dc-seff .val-text { font-size: 11px; color: var(--dc-text-muted); font-family: 'JetBrains Mono', monospace; }
+        #dc-seff .label-text { font-size: var(--drona-text-caption); font-weight: var(--drona-weight-strong); color: var(--dc-text); }
+        #dc-seff .val-text { font-size: var(--drona-text-caption); color: var(--dc-text-muted); font-family: var(--drona-font-mono); }
     </style>
 
         <table class="seff-table">

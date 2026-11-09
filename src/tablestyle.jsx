@@ -1,8 +1,8 @@
 const tableCustomStyles = {
     headCells: {
         style: {
-            fontSize: '16px',
-            fontWeight: 'bold',
+            fontSize: "var(--drona-text-body)",
+            fontWeight: "var(--drona-weight-strong)",
             paddingLeft: '0 8px',
             justifyContent: 'center',
             color: 'maroon',
@@ -18,7 +18,7 @@ const tableCustomStyles = {
     rows: {
         style: {
 	    overflow: 'visible',
-            fontSize: '16px',
+            fontSize: "var(--drona-text-body)",
             marginBottom: '15px',
         },
     },
@@ -64,7 +64,7 @@ const compactTableStyles = {
     headCells: {
         style: {
             ...tableCustomStyles.headCells.style,
-            fontSize: '14px',
+            fontSize: "var(--drona-text-data)",
             paddingLeft: '12px',
             paddingRight: '12px',
             justifyContent: 'flex-start',
@@ -72,7 +72,7 @@ const compactTableStyles = {
     },
     rows: {
         style: {
-            fontSize: '14px',
+            fontSize: "var(--drona-text-data)",
             minHeight: '40px',
             cursor: 'pointer',
             '&:not(:last-of-type)': {

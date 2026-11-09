@@ -95,7 +95,7 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
           <div className="text-truncate" style={{ maxWidth: '280px' }}>
             <a
               target="_blank"
-              style={{ color: '#003C71', fontWeight: 'bold', textDecoration: 'underline' }}
+              style={{ color: '#003C71', fontWeight: "var(--drona-weight-strong)", textDecoration: 'underline' }}
               href={document.file_app_url + row.location}
               title={location}
             >
@@ -222,7 +222,7 @@ const SubmissionHistory = ({ isExpanded, handleRerun, handleForm }) => {
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
     }}
     >
-    <h5 className="mb-3" style={{ fontWeight: '600' }}>Job Submission History</h5>
+    <h5 className="mb-3" style={{ fontWeight: "var(--drona-weight-strong)" }}>Job Submission History</h5>
       <div className="date-inputs mb-3">
         <label htmlFor="startDate">From</label>
         <input

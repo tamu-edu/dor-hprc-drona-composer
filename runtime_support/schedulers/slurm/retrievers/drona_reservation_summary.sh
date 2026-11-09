@@ -33,7 +33,7 @@ if [ -z "$RESERVATION" ]; then
     # Same list as the Reservation dropdown; say why it is empty instead of leaving a bare select
     LIST=$(bash "$(dirname "${BASH_SOURCE[0]}")/drona_reservations.sh" 2>/dev/null)
     if [ "$LIST" = "[]" ]; then
-        echo "<div style=\"$STYLE_INFO;font-size:0.9em\">&#9432; No active or upcoming reservations found for you." \
+        echo "<div style=\"$STYLE_INFO;font-size:var(--drona-text-ui)\">&#9432; No active or upcoming reservations found for you." \
              "If you are taking a course or training, ask the instructor which reservation to use and" \
              "whether you have been added to it.</div>"
     fi
@@ -238,5 +238,5 @@ if accounts and not user_named and account and not account.startswith("$"):
 for w in warnings:
     out.append("<div style=\"%s\">&#9888; %s</div>" % (STYLE_WARN, w))
 
-print("<div style=\"font-size:0.9em\">%s</div>" % "".join(out))
+print("<div style=\"font-size:var(--drona-text-ui)\">%s</div>" % "".join(out))
 '

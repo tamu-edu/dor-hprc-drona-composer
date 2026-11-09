@@ -32,7 +32,7 @@ const ideIconBtn = {
   border: 'none',
   color: 'rgba(255,255,255,0.8)',
   cursor: 'pointer',
-  fontSize: '16px',
+  fontSize: "var(--drona-text-body)",
   padding: '0 4px',
   lineHeight: 1,
 };
@@ -68,7 +68,7 @@ const IDEHeader = ({ onFullscreen, onMinimize, onClose, submitLabel, title, run 
     flexShrink: 0,
     userSelect: 'none',
   }}>
-    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', fontWeight: '500', flex: 1 }}>
+    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: "var(--drona-text-data)", fontWeight: "var(--drona-weight-normal)", flex: 1 }}>
       {title}
     </span>
     <button type="submit" form="slurm-config-form" className="ide-run-button"
@@ -110,7 +110,7 @@ const IDEStatusBar = ({ status }) => {
       display: 'flex',
       alignItems: 'center',
       padding: '0 12px',
-      fontSize: '11px',
+      fontSize: "var(--drona-text-caption)",
       flexShrink: 0,
       gap: '16px',
     }}>

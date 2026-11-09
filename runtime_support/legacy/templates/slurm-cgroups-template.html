@@ -1,4 +1,4 @@
-<div id="dc-cgroups" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+<div id="dc-cgroups" style="width: 100%; box-sizing: border-box;">
     <style>
         #dc-cgroups {
             --dc-text: #1e293b;
@@ -11,25 +11,25 @@
             color: var(--dc-text);
         }
 
-        #dc-cgroups .dc-node-label { font-size: 11px; color: var(--dc-text-muted); margin-bottom: 14px; text-align: right; }
+        #dc-cgroups .dc-node-label { font-size: var(--drona-text-caption); color: var(--dc-text-muted); margin-bottom: 14px; text-align: right; }
 
         #dc-cgroups .stat-grid { display: flex; flex-wrap: wrap; gap: 24px; }
         #dc-cgroups .stat-box { flex: 1; min-width: 180px; padding-left: 12px; }
         #dc-cgroups .stat-box.exec { border-left: 3px solid #3b82f6; }
         #dc-cgroups .stat-box.mem { border-left: 3px solid #f59e0b; }
 
-        #dc-cgroups .stat-label { color: var(--dc-text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-        #dc-cgroups .stat-row { font-size: 13px; margin-bottom: 6px; color: var(--dc-text-muted); }
-        #dc-cgroups .stat-row .val { font-family: 'JetBrains Mono', monospace; color: var(--dc-text); }
+        #dc-cgroups .stat-label { color: var(--dc-text-muted); font-size: var(--drona-text-caption); font-weight: var(--drona-weight-strong); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        #dc-cgroups .stat-row { font-size: var(--drona-text-data); margin-bottom: 6px; color: var(--dc-text-muted); }
+        #dc-cgroups .stat-row .val { font-family: var(--drona-font-mono); color: var(--dc-text); }
         #dc-cgroups .stat-row .val.warn { color: #ef4444; }
-        #dc-cgroups .stat-sub { font-size: 11px; color: var(--dc-text-muted); margin-top: 6px; }
+        #dc-cgroups .stat-sub { font-size: var(--drona-text-caption); color: var(--dc-text-muted); margin-top: 6px; }
 
         #dc-cgroups .dc-footer {
             margin-top: 16px;
             padding-top: 12px;
             border-top: 1px solid var(--dc-divider);
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
+            font-size: var(--drona-text-caption);
+            font-family: var(--drona-font-mono);
             color: var(--dc-text-muted);
             word-break: break-all;
         }

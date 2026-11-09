@@ -63,7 +63,7 @@ function CollapsibleHeader({ title, isCollapsed, onToggle }) {
       paddingBottom: "0.75rem",
       borderBottom: "1px solid #dee2e6"
     }}>
-      <span style={{ fontSize: "1.25rem", fontWeight: "600" }}>{title}</span>
+      <span style={{ fontSize: "var(--drona-text-heading)", fontWeight: "var(--drona-weight-strong)" }}>{title}</span>
       <button
         onClick={onToggle}
         style={{
@@ -78,7 +78,7 @@ function CollapsibleHeader({ title, isCollapsed, onToggle }) {
           cursor: "pointer"
         }}
       >
-        <span style={{ fontSize: "0.875rem" }}>
+        <span style={{ fontSize: "var(--drona-text-ui)" }}>
           {isCollapsed ? '▼' : '▲'}
         </span>
         <span>{isCollapsed ? 'Show' : 'Hide'} {title}</span>

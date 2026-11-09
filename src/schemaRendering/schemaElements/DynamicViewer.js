@@ -49,6 +49,7 @@ import FormElementWrapper from "../utils/FormElementWrapper";
 import { useRetriever } from "../hooks";
 import { fetchFileContent } from "../utils/utils";
 import { FormValuesContext } from "../FormValuesContext";
+import { TOKENS_CSS } from "../../styles/tokens";
 
 const SECURITY_CONFIG = {
   MAX_MEMORY_MB: 150,
@@ -317,7 +318,8 @@ function DynamicViewer(props) {
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="${csp}">
   <style>
-    body { margin: 0; padding: 0; width: 100%; height: 100vh; overflow: hidden; }
+    ${TOKENS_CSS}
+    body { margin: 0; padding: 0; width: 100%; height: 100vh; overflow: hidden; font-family: var(--drona-font-sans); }
     #viewer-container { width: 100%; height: 100%; }
     .security-block {
       color: #721c24;
@@ -439,7 +441,7 @@ function DynamicViewer(props) {
                 <i className="bi bi-shield-exclamation"></i> Security Block
               </h5>
               <hr />
-              <pre className="mb-0" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.9em' }}>
+              <pre className="mb-0" style={{ whiteSpace: 'pre-wrap', fontFamily: 'var(--drona-font-mono)', fontSize: '0.9em' }}>
                 {securityBlock}
               </pre>
             </div>

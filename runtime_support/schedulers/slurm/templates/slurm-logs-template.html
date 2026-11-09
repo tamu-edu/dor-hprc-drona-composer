@@ -1,4 +1,4 @@
-<div id="dc-logs" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+<div id="dc-logs" style="width: 100%; box-sizing: border-box;">
     <style>
         #dc-logs {
             --dc-text: #1e293b;
@@ -40,8 +40,8 @@
 
         #dc-logs .tab-label {
             padding: 10px 18px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: var(--drona-text-caption);
+            font-weight: var(--drona-weight-strong);
             color: var(--dc-text-muted);
             cursor: pointer;
             border-bottom: 2px solid transparent;
@@ -66,8 +66,8 @@
             padding: 16px 20px;
             overflow-y: auto;
             display: none;
-            font-size: 12.5px;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: var(--drona-text-data);
+            font-family: var(--drona-font-mono);
             line-height: 1.6;
             white-space: pre-wrap;
             background: #f8fafc;
@@ -79,11 +79,11 @@
             justify-content: space-between;
             align-items: center;
             padding: 6px 20px;
-            font-size: 11px;
+            font-size: var(--drona-text-caption);
             color: var(--dc-text-muted);
             border-top: 1px solid var(--dc-divider);
         }
-        #dc-logs .pane-footer a { color: #500000; font-weight: 600; text-decoration: none; }
+        #dc-logs .pane-footer a { color: #500000; font-weight: var(--drona-weight-strong); text-decoration: none; }
         #dc-logs .pane-footer a:hover { text-decoration: underline; }
         #dc-logs #tab-out:checked ~ #stdout-footer { display: flex; }
         #dc-logs #tab-err:checked ~ #stderr-footer { display: flex; }

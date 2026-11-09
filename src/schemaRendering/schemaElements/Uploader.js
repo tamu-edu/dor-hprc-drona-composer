@@ -320,7 +320,7 @@ function Uploader(props) {
               onClick={() => handleSelectMode("file")}
               style={{
                 display: "block", width: "100%", textAlign: "left",
-                padding: "10px 16px", fontSize: "14px",
+                padding: "10px 16px", fontSize: "var(--drona-text-ui)",
                 background: uploadMode === "file" ? "#f5f5f5" : "none",
                 border: "none", cursor: "pointer", color: "#333",
               }}
@@ -332,7 +332,7 @@ function Uploader(props) {
               onClick={() => handleSelectMode("folder")}
               style={{
                 display: "block", width: "100%", textAlign: "left",
-                padding: "10px 16px", fontSize: "14px",
+                padding: "10px 16px", fontSize: "var(--drona-text-ui)",
                 background: uploadMode === "folder" ? "#f5f5f5" : "none",
                 border: "none", cursor: "pointer", color: "#333",
               }}

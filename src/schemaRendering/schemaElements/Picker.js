@@ -64,7 +64,7 @@ const S = {
   }),
   entryName: (isDir) => ({
     flex: 1, minWidth: 0, color: isDir ? COLORS.text : COLORS.textSecondary,
-    fontWeight: isDir ? "600" : "400",
+    fontWeight: isDir ? "var(--drona-weight-strong)" : "var(--drona-weight-normal)",
     ...M.ellipsis,
   }),
   entryChevron: M.rowChevron,
@@ -82,8 +82,8 @@ const S = {
   },
   multiRow: {
     display: "flex", alignItems: "center", gap: "8px",
-    padding: "6px 10px", fontSize: "13px", color: COLORS.textSecondary,
-    fontFamily: "monospace", borderBottom: `1px solid ${COLORS.rowDivider}`,
+    padding: "6px 10px", fontSize: "var(--drona-text-data)", color: COLORS.textSecondary,
+    fontFamily: "var(--drona-font-mono)", borderBottom: `1px solid ${COLORS.rowDivider}`,
   },
   multiRowPath: {
     flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -96,7 +96,7 @@ const S = {
     flexShrink: 0, border: "none", background: "transparent", color: COLORS.muted,
     cursor: "pointer", width: "22px", height: "22px", borderRadius: "50%",
     display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: "16px", fontWeight: "600", lineHeight: 1, padding: 0,
+    fontSize: "var(--drona-text-body)", fontWeight: "var(--drona-weight-strong)", lineHeight: 1, padding: 0,
   },
   pillEmpty: { ...M.hint, fontStyle: "italic" },
   // Circle border follows the button's own text color (maroon normally,
@@ -104,13 +104,13 @@ const S = {
   plusBadge: {
     display: "inline-flex", alignItems: "center", justifyContent: "center",
     width: "16px", height: "16px", borderRadius: "50%",
-    border: "1.5px solid currentColor", fontSize: "11px", fontWeight: "700",
+    border: "1.5px solid currentColor", fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-strong)",
     marginRight: "6px", lineHeight: 1, flexShrink: 0,
   },
   countBadge: {
     display: "inline-flex", alignItems: "center", justifyContent: "center",
     minWidth: "18px", height: "18px", padding: "0 5px",
-    borderRadius: "9px", fontSize: "11px", fontWeight: "700",
+    borderRadius: "9px", fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-strong)",
     marginLeft: "8px", backgroundColor: "white", color: COLORS.maroon,
   },
 };
@@ -470,7 +470,7 @@ function Picker(props) {
                   onClick={() => handleSelectMode("local")}
                   style={{
                     display: "block", width: "100%", textAlign: "left",
-                    padding: "10px 16px", fontSize: "14px",
+                    padding: "10px 16px", fontSize: "var(--drona-text-ui)",
                     background: pickerMode === "local" ? "#f5f5f5" : "none",
                     border: "none", cursor: "pointer", color: "#333",
                   }}
@@ -482,7 +482,7 @@ function Picker(props) {
                   onClick={() => handleSelectMode("remote")}
                   style={{
                     display: "block", width: "100%", textAlign: "left",
-                    padding: "10px 16px", fontSize: "14px",
+                    padding: "10px 16px", fontSize: "var(--drona-text-ui)",
                     background: pickerMode === "remote" ? "#f5f5f5" : "none",
                     border: "none", cursor: "pointer", color: "#333",
                   }}

@@ -160,7 +160,7 @@ function DynamicCheckboxGroup(props) {
             )}
 
             {invalidSelections.length > 0 && (
-                <div className="text-danger" style={{ fontSize: "0.875em", marginTop: "0.25rem" }}>
+                <div className="text-danger" style={{ fontSize: "var(--drona-text-ui)", marginTop: "0.25rem" }}>
                     The previously selected option is no longer available
                 </div>
             )}

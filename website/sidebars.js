@@ -61,6 +61,7 @@ const sidebars = {
             'environments/retriever-scripts',
             'environments/conditionals',
             'environments/live-charts',
+            'environments/styling',
           ],
         },
       ],

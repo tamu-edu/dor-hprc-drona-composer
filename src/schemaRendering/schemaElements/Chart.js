@@ -460,7 +460,7 @@ function ChartPanel({ instance, buffer, xKey, xAxisLabel, xTickFormatter, zoom }
   const panelTitle = substituteFieldRefs(instance.title, formValues)?.trim();
   return (
     <div style={{ flex: "1 1 320px", minWidth: "280px" }}>
-      {panelTitle && <div className="text-muted mb-1" style={{ fontSize: "0.85em" }}>{panelTitle}</div>}
+      {panelTitle && <div className="text-muted mb-1" style={{ fontSize: "var(--drona-text-data)" }}>{panelTitle}</div>}
       <div style={{ height: `${instance.height}px` }}>
         <ChartPane
           instance={instance}
@@ -791,7 +791,7 @@ function ChartContent(props) {
           )}
 
           {!isLoading && isEvaluated && !error && (
-            <div className="d-flex align-items-center justify-content-center h-100 text-muted" style={{ fontSize: "0.9em" }}>
+            <div className="d-flex align-items-center justify-content-center h-100 text-muted" style={{ fontSize: "var(--drona-text-ui)" }}>
               {emptyMessage}
             </div>
           )}
@@ -799,7 +799,7 @@ function ChartContent(props) {
       )}
 
       {hasData && (expandable || zoom) && (
-        <div className="d-flex justify-content-between align-items-center mb-1" style={{ fontSize: "0.85em" }}>
+        <div className="d-flex justify-content-between align-items-center mb-1" style={{ fontSize: "var(--drona-text-data)" }}>
           <span className="text-muted">
             {zoom && (zoomDomain
               ? `Zoomed: ${xTickFormatter(zoomDomain[0])} – ${xTickFormatter(zoomDomain[1])}`
@@ -831,7 +831,7 @@ function ChartContent(props) {
       )}
 
       {error && (
-        <div className="text-danger mt-2" style={{ fontSize: "0.875em" }}>
+        <div className="text-danger mt-2" style={{ fontSize: "var(--drona-text-ui)" }}>
           Error: {error.message || "Failed to load chart data"}
         </div>
       )}
@@ -850,7 +850,7 @@ function ChartContent(props) {
 
           {showDataTable && (
             <div className="table-responsive mt-2" style={{ maxHeight: "240px", overflowY: "auto" }}>
-              <table className="table table-sm table-striped mb-0" style={{ fontSize: "0.85em" }}>
+              <table className="table table-sm table-striped mb-0" style={{ fontSize: "var(--drona-text-data)" }}>
                 <thead>
                   <tr>
                     <th>{xAxis.label || xKey}</th>

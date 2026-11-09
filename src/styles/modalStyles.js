@@ -23,13 +23,13 @@ export const COLORS = {
 
 // Header buttons: secondary (white, maroon outline) and primary (maroon fill)
 export const cancelBtn = {
-  padding: "5px 14px", fontSize: "12px", fontWeight: "500",
+  padding: "5px 14px", fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-normal)",
   backgroundColor: "white", color: COLORS.maroon,
   border: `1px solid ${COLORS.maroon}`, borderRadius: "4px", cursor: "pointer",
 };
 
 export const primaryBtn = (disabled) => ({
-  padding: "5px 14px", fontSize: "12px", fontWeight: "500",
+  padding: "5px 14px", fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-normal)",
   backgroundColor: disabled ? COLORS.disabled : COLORS.maroon,
   border: `1px solid ${disabled ? COLORS.disabled : COLORS.maroon}`,
   borderRadius: "4px", color: "white",
@@ -42,7 +42,7 @@ export const headerBtnRow = { display: "flex", gap: "8px" };
 export const pillRow = { display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" };
 
 export const pillBtn = (active = false) => ({
-  padding: "4px 12px", fontSize: "12px", fontWeight: "500",
+  padding: "4px 12px", fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-normal)",
   backgroundColor: active ? COLORS.maroon : "white",
   color: active ? "white" : COLORS.maroon,
   border: `1px solid ${COLORS.maroon}`, borderRadius: "14px", cursor: "pointer",
@@ -53,14 +53,14 @@ export const bar = {
   display: "flex", alignItems: "center", flexWrap: "wrap", gap: "2px",
   padding: "6px 10px", backgroundColor: COLORS.barBg,
   border: `1px solid ${COLORS.border}`, borderRadius: "4px", marginBottom: "10px",
-  fontSize: "13px", minHeight: "32px",
+  fontSize: "var(--drona-text-data)", minHeight: "32px",
 };
 
 export const crumbBtn = (isLast) => ({
   background: "none", border: "none", padding: "2px 4px",
-  fontSize: "13px", cursor: isLast ? "default" : "pointer",
+  fontSize: "var(--drona-text-data)", cursor: isLast ? "default" : "pointer",
   color: isLast ? COLORS.textSecondary : COLORS.maroon,
-  fontWeight: isLast ? "600" : "400",
+  fontWeight: isLast ? "var(--drona-weight-strong)" : "var(--drona-weight-normal)",
   borderRadius: "3px",
 });
 
@@ -73,21 +73,21 @@ export const list = {
 
 export const row = (selected = false) => ({
   display: "flex", alignItems: "center", gap: "10px",
-  padding: "6px 12px", fontSize: "13px", cursor: "pointer",
+  padding: "6px 12px", fontSize: "var(--drona-text-data)", cursor: "pointer",
   backgroundColor: selected ? COLORS.rowHover : "transparent",
   borderBottom: `1px solid ${COLORS.rowDivider}`,
 });
 
-export const rowChevron = { fontSize: "11px", color: COLORS.faint, flexShrink: 0 };
+export const rowChevron = { fontSize: "var(--drona-text-caption)", color: COLORS.faint, flexShrink: 0 };
 
 export const ellipsis = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
 
 // Centered grey text inside a list (loading, empty, "select something")
-export const emptyState = { padding: "24px 16px", textAlign: "center", fontSize: "13px", color: COLORS.muted };
+export const emptyState = { padding: "24px 16px", textAlign: "center", fontSize: "var(--drona-text-data)", color: COLORS.muted };
 
 export const loadingRow = {
   display: "flex", alignItems: "center", gap: "8px",
-  padding: "4px 0 12px", fontSize: "13px", color: COLORS.maroon,
+  padding: "4px 0 12px", fontSize: "var(--drona-text-data)", color: COLORS.maroon,
 };
 
 export const spinner = { color: COLORS.maroon };
@@ -100,18 +100,18 @@ export const selectedBar = {
 };
 
 export const monoText = {
-  fontSize: "13px", color: COLORS.textSecondary, flex: 1,
+  fontSize: "var(--drona-text-data)", color: COLORS.textSecondary, flex: 1,
   ...ellipsis,
-  fontFamily: "monospace",
+  fontFamily: "var(--drona-font-mono)",
 };
 
-export const hint = { fontSize: "12px", color: COLORS.muted };
+export const hint = { fontSize: "var(--drona-text-caption)", color: COLORS.muted };
 
 // Use with className="alert alert-<kind> py-1 px-2" for compact inline notices
-export const inlineAlert = { fontSize: "13px" };
+export const inlineAlert = { fontSize: "var(--drona-text-data)" };
 
 export const textInput = {
-  width: "100%", padding: "6px 10px", fontSize: "13px",
+  width: "100%", padding: "6px 10px", fontSize: "var(--drona-text-data)",
   border: `1px solid ${COLORS.inputBorder}`, borderRadius: "4px",
   outline: "none", boxSizing: "border-box",
 };

@@ -191,7 +191,7 @@ const EnvironmentModal = ({ envModalRef, onAddEnvironment, setError, installedEn
                   <div style={{ ...M.list, ...S.listBox }}>
                     <div style={M.emptyState}>
                       No environments match these filters.{" "}
-                      <button type="button" className="btn btn-link p-0 align-baseline" style={{ fontSize: "13px", color: COLORS.maroon }} onClick={resetFilters}>
+                      <button type="button" className="btn btn-link p-0 align-baseline" style={{ fontSize: "var(--drona-text-data)", color: COLORS.maroon }} onClick={resetFilters}>
                         Reset filters
                       </button>
                     </div>
@@ -272,45 +272,45 @@ const S = {
   row: { ...M.row(false), cursor: "default", alignItems: "flex-start", gap: "12px", padding: "8px 12px" },
   rowMain: { flex: 1, minWidth: 0 },
   titleLine: { display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: "8px" },
-  name: { fontWeight: "600", color: COLORS.text, fontSize: "13px" },
+  name: { fontWeight: "var(--drona-weight-strong)", color: COLORS.text, fontSize: "var(--drona-text-data)" },
   versionPill: {
-    fontSize: "11px", padding: "0 6px", borderRadius: "9px",
+    fontSize: "var(--drona-text-caption)", padding: "0 6px", borderRadius: "9px",
     border: `1px solid ${COLORS.border}`, color: COLORS.muted, lineHeight: "16px",
   },
-  meta: { fontSize: "12px", color: COLORS.muted },
+  meta: { fontSize: "var(--drona-text-caption)", color: COLORS.muted },
   description: {
-    fontSize: "12px", color: COLORS.textSecondary, marginTop: "2px",
+    fontSize: "var(--drona-text-caption)", color: COLORS.textSecondary, marginTop: "2px",
     display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
   },
-  reason: { fontSize: "12px", color: COLORS.folder, marginTop: "4px" },
+  reason: { fontSize: "var(--drona-text-caption)", color: COLORS.folder, marginTop: "4px" },
   action: { flexShrink: 0, display: "flex", alignItems: "center", minHeight: "26px" },
-  installed: { fontSize: "12px", color: COLORS.muted, fontWeight: "500" },
-  rowError: { fontSize: "12px", marginTop: "6px", marginBottom: 0 },
-  detailsToggle: { fontSize: "12px", color: COLORS.maroon, padding: 0, marginLeft: "6px", verticalAlign: "baseline" },
-  details: { fontSize: "11px", marginTop: "4px", marginBottom: 0, maxHeight: "160px", overflow: "auto", whiteSpace: "pre-wrap" },
+  installed: { fontSize: "var(--drona-text-caption)", color: COLORS.muted, fontWeight: "var(--drona-weight-normal)" },
+  rowError: { fontSize: "var(--drona-text-caption)", marginTop: "6px", marginBottom: 0 },
+  detailsToggle: { fontSize: "var(--drona-text-caption)", color: COLORS.maroon, padding: 0, marginLeft: "6px", verticalAlign: "baseline" },
+  details: { fontSize: "var(--drona-text-caption)", marginTop: "4px", marginBottom: 0, maxHeight: "160px", overflow: "auto", whiteSpace: "pre-wrap" },
   // Colors come from Bootstrap's alert-info (same as the Preview and Rerun/Recreate notes); compact layout here
-  notice: { display: "flex", alignItems: "flex-start", fontSize: "12px", marginBottom: "10px" },
+  notice: { display: "flex", alignItems: "flex-start", fontSize: "var(--drona-text-caption)", marginBottom: "10px" },
   noticeIcon: { marginTop: "2px" },
   groupHeader: {
     position: "sticky", top: 0, zIndex: 1,
     backgroundColor: COLORS.barBg, borderBottom: `1px solid ${COLORS.border}`,
-    padding: "4px 12px", fontSize: "11px", fontWeight: "600", letterSpacing: "0.03em",
+    padding: "4px 12px", fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-strong)", letterSpacing: "0.03em",
     textTransform: "uppercase", color: COLORS.textSecondary,
   },
-  groupCount: { fontWeight: "400", color: COLORS.muted },
+  groupCount: { fontWeight: "var(--drona-weight-normal)", color: COLORS.muted },
   // Section toggle: maroon and white (not a grey bar) so it doesn't read as a static heading like the category headers
   groupToggle: (hover) => ({
     display: "flex", alignItems: "center", gap: "8px", width: "100%", textAlign: "left", cursor: "pointer",
-    padding: "6px 10px", marginBottom: "8px", fontSize: "13px", fontWeight: "600", color: COLORS.maroon,
+    padding: "6px 10px", marginBottom: "8px", fontSize: "var(--drona-text-data)", fontWeight: "var(--drona-weight-strong)", color: COLORS.maroon,
     backgroundColor: hover ? COLORS.rowHover : "white",
     border: "none", borderTop: `1px solid ${COLORS.border}`, borderRadius: 0,
   }),
-  groupChevron: { fontSize: "12px", color: COLORS.maroon, width: "12px", flexShrink: 0 },
+  groupChevron: { fontSize: "var(--drona-text-caption)", color: COLORS.maroon, width: "12px", flexShrink: 0 },
   groupToggleCount: {
-    fontSize: "11px", fontWeight: "400", padding: "0 6px", borderRadius: "9px",
+    fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-normal)", padding: "0 6px", borderRadius: "9px",
     border: `1px solid ${COLORS.border}`, color: COLORS.muted, lineHeight: "16px",
   },
-  groupToggleAction: { marginLeft: "auto", fontSize: "12px", fontWeight: "400", color: COLORS.maroon },
+  groupToggleAction: { marginLeft: "auto", fontSize: "var(--drona-text-caption)", fontWeight: "var(--drona-weight-normal)", color: COLORS.maroon },
 };
 
 // Collapsed-by-default section below the main list (Installed, Requires a newer Drona); hidden when empty.

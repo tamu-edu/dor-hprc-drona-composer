@@ -269,7 +269,7 @@ function DynamicTableContent(props) {
   const conditionalRowStyles = [
     {
       when: row => !!value && row.value === value.value,
-      style: { backgroundColor: "#e7f1ff", fontWeight: 600, borderLeft: "3px solid #500000" },
+      style: { backgroundColor: "#e7f1ff", fontWeight: "var(--drona-weight-strong)", borderLeft: "3px solid #500000" },
     },
   ];
 
@@ -294,7 +294,7 @@ function DynamicTableContent(props) {
               boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <span className="text-truncate flex-grow-1" title={labelText(value.label)} style={{ fontWeight: 600 }}>
+            <span className="text-truncate flex-grow-1" title={labelText(value.label)} style={{ fontWeight: "var(--drona-weight-strong)" }}>
               {labelText(value.label)}
             </span>
             <button
@@ -389,7 +389,7 @@ function DynamicTableContent(props) {
         <input type="hidden" name={props.name} value={value?.value || ""} readOnly />
         <input type="hidden" name={`${props.name}_label`} value={labelText(value?.label)} />
         {isValueInvalid && (
-          <div className="text-danger" style={{ fontSize: "0.875em", marginTop: "0.25rem" }}>
+          <div className="text-danger" style={{ fontSize: "var(--drona-text-ui)", marginTop: "0.25rem" }}>
             The selected option ({labelText(value.label)}) may no longer be available
           </div>
         )}

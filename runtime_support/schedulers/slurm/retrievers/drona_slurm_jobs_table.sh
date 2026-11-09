@@ -48,7 +48,7 @@ for JID in "${JOB_LIST[@]}"; do
 done
 
 if [[ -z "$ROWS" ]]; then
-    echo "<div style='font-size:0.83em;color:#6c757d;padding:4px 2px'>No Slurm jobs yet.</div>"
+    echo "<div style='font-size:var(--drona-text-data);color:#6c757d;padding:4px 2px'>No Slurm jobs yet.</div>"
     exit 0
 fi
 
@@ -66,10 +66,10 @@ else
     DOT="#adb5bd"; LABEL="Status unavailable"
 fi
 
-echo "<div style='display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:0.83em;color:#495057'>"
+echo "<div style='display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:var(--drona-text-data);color:#495057'>"
 echo "  <span style='width:8px;height:8px;border-radius:50%;background:${DOT};flex-shrink:0;display:inline-block'></span>"
 echo "  ${LABEL}"
 echo "</div>"
-echo "<table class='table table-sm table-bordered mb-0' style='font-size:0.85em'>"
+echo "<table class='table table-sm table-bordered mb-0' style='font-size:var(--drona-text-data)'>"
 echo "<thead class='table-light'><tr><th>Job ID</th><th>Name</th><th>Status</th><th>Elapsed</th><th>Node(s)</th></tr></thead>"
 echo "<tbody>${ROWS}</tbody></table>"

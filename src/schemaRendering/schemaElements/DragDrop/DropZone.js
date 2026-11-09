@@ -74,7 +74,7 @@ function SortableElement({
             className="text-muted d-flex align-items-center p-1"
             style={{
               cursor: "grab",
-              fontSize: "1rem"
+              fontSize: "var(--drona-text-body)"
             }}
             title="Drag to reorder"
           >
@@ -83,10 +83,10 @@ function SortableElement({
 
           <div className="d-flex align-items-center gap-2 flex-grow-1">
             <div>
-              <div className="fw-semibold text-dark" style={{ fontSize: "0.9rem" }}>
+              <div className="fw-semibold text-dark" style={{ fontSize: "var(--drona-text-ui)" }}>
                 {element.label}
               </div>
-              <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+              <div className="text-muted" style={{ fontSize: "var(--drona-text-caption)" }}>
                 {element.type}
                 {element.config && Object.keys(element.config).length > 0 && (
                   <span> • {Object.keys(element.config).length} properties</span>
@@ -106,7 +106,7 @@ function SortableElement({
      }}
     className="btn btn-sm"
     style={{
-      fontSize: "0.75rem",
+      fontSize: "var(--drona-text-caption)",
       backgroundColor: "#6c757d",
       color: "white",
       border: "none",
@@ -123,7 +123,7 @@ function SortableElement({
     onClick={() => onRemoveElement(element.id)}
     className="btn btn-sm"
     style={{
-      fontSize: "0.75rem",
+      fontSize: "var(--drona-text-caption)",
       backgroundColor: "maroon",
       color: "white",
       border: "none"
@@ -165,7 +165,7 @@ function DropZone({
         <h5 className="mb-0 fw-semibold" style={{ color: "maroon" }}>
           Selected Elements: 
         </h5>
-        <span className="text-muted" style={{ fontSize: "0.8rem" }}>
+        <span className="text-muted" style={{ fontSize: "var(--drona-text-caption)" }}>
           {elements.length} element{elements.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -177,7 +177,7 @@ function DropZone({
           <div className="mb-2" style={{ fontSize: "1.1rem" }}>
             Drop elements here
           </div>
-          <div style={{ fontSize: "0.9rem" }}>
+          <div style={{ fontSize: "var(--drona-text-ui)" }}>
             Drag elements from the palette to start building
           </div>
         </div>

@@ -71,7 +71,7 @@ const EDITOR_THEME_EXTENSION = EditorView.theme({
     backgroundColor: "rgba(80, 0, 0, 0.03)"
   },
   ".cm-editor": {
-    fontSize: "13px"
+    fontSize: "var(--drona-text-data)"
   },
   ".cm-gutters": {
     backgroundColor: "#f8f9fa",

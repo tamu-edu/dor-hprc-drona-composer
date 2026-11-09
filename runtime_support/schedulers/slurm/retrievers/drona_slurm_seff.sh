@@ -47,8 +47,8 @@ if [[ "$VIEW" == "compact" ]]; then
         MEM_EFF=$(echo "$SEFF_OUT" | awk '/^Memory Efficiency/ {gsub("%","",$3); print $3}')
         MEM_REQ=$(echo "$SEFF_OUT" | awk '/^Memory Efficiency/ {print $5" "$6}')
 
-        LINE="<div style=\"font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#1e293b;margin:2px 0\">"
-        [[ $N_JOBS -gt 1 ]] && LINE+="<span style=\"font-family:monospace;font-weight:600\">#$(escape_html "$JID")</span>$SEP"
+        LINE="<div style=\"font-size:var(--drona-text-data);color:#1e293b;margin:2px 0\">"
+        [[ $N_JOBS -gt 1 ]] && LINE+="<span style=\"font-family:var(--drona-font-mono);font-weight:var(--drona-weight-strong)\">#$(escape_html "$JID")</span>$SEP"
         LINE+="<span style=\"color:#64748b\">Efficiency</span>$SEP"
         if [[ -n "$CPU_EFF" ]]; then
             LINE+="CPU <b>$(printf '%.0f' "$CPU_EFF")%</b>$(mini_bar "$CPU_EFF")"
@@ -73,12 +73,12 @@ if [[ "$VIEW" == "compact" ]]; then
             if (e < 10 && gb >= 4) print "yes"
         }')
         if [[ "$HINT" == "yes" ]]; then
-            LINE+="<div style=\"font-size:12px;color:#92400e;background:#fffbeb;border-left:3px solid #f59e0b;padding:3px 8px;margin:2px 0 4px;border-radius:0 6px 6px 0\">"
+            LINE+="<div style=\"font-size:var(--drona-text-caption);color:#92400e;background:#fffbeb;border-left:3px solid #f59e0b;padding:3px 8px;margin:2px 0 4px;border-radius:0 6px 6px 0\">"
             LINE+="Used under 10% of the requested memory. A smaller --mem request may start sooner; keep some margin for larger inputs.</div>"
         fi
         OUT+="$LINE"
     done
-    [[ -z "$OUT" ]] && OUT="<div style=\"font-size:12px;color:#64748b\">No efficiency data (seff) for this job.</div>"
+    [[ -z "$OUT" ]] && OUT="<div style=\"font-size:var(--drona-text-caption);color:#64748b\">No efficiency data (seff) for this job.</div>"
     printf '%s\n' "$OUT"
     exit 0
 fi
@@ -109,7 +109,7 @@ for JID in "${JOBIDS[@]}"; do
         MEM_COLOR=$(get_color_class "$MEM_EFF")
 
         ROWS+="<tr>"
-        ROWS+="<td style='font-family:monospace; font-weight:bold;'>#$JID</td>"
+        ROWS+="<td style='font-family:var(--drona-font-mono); font-weight:var(--drona-weight-strong);'>#$JID</td>"
         # CPU Column
         ROWS+="<td>
                 <span class='label-text'>$CPU_EFF%</span> <span class='val-text'>Utilization</span>

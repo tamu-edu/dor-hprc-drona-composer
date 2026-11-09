@@ -1,4 +1,4 @@
-<div id="dc-workdir" style="width: 100%; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif;">
+<div id="dc-workdir" style="width: 100%; box-sizing: border-box;">
     <style>
         #dc-workdir {
             --dc-text: #1e293b;
@@ -24,8 +24,8 @@
         }
 
         #dc-workdir .dc-path-label {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: var(--drona-text-ui);
+            font-weight: var(--drona-weight-strong);
             white-space: nowrap;
         }
 
@@ -42,10 +42,10 @@
         }
 
         #dc-workdir .dc-path-box a {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-family: var(--drona-font-mono);
+            font-size: var(--drona-text-caption);
             color: var(--dc-link);
-            font-weight: 700;
+            font-weight: var(--drona-weight-strong);
             text-decoration: none;
             word-break: break-all;
         }

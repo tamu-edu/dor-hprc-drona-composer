@@ -1,3 +1,5 @@
+import "./tokens";
+
 const styles = `
 #main-container.container,
 .job-composer-container,
@@ -37,17 +39,17 @@ const styles = `
   background: none;
   padding: 0.25rem 0.45rem;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: var(--drona-weight-strong);
+  font-size: var(--drona-text-ui);
   color: #500000;
   cursor: pointer;
 }
 
-.drona-appbar-home-icon { font-size: 1.05rem; line-height: 1; }
+.drona-appbar-home-icon { font-size: var(--drona-text-body); line-height: 1; }
 
 .drona-appbar-home:hover { background: #fff1f1; }
 
-.drona-appbar-sep { color: #9ca3af; font-size: 1.1rem; }
+.drona-appbar-sep { color: #9ca3af; font-size: var(--drona-text-body); }
 
 .drona-appbar-spacer { flex: 1; }
 
@@ -56,8 +58,8 @@ const styles = `
   background: none;
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: var(--drona-text-ui);
+  font-weight: var(--drona-weight-strong);
   color: #4b5563;
   cursor: pointer;
   text-decoration: none;
@@ -82,8 +84,8 @@ const styles = `
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background: #fff;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: var(--drona-weight-strong);
+  font-size: var(--drona-text-ui);
   color: #111827;
   cursor: pointer;
 }
@@ -95,7 +97,7 @@ const styles = `
 }
 
 
-.env-switch-caret { color: #6b7280; font-size: 0.8rem; }
+.env-switch-caret { color: #6b7280; font-size: var(--drona-text-caption); }
 
 .env-switch-icon {
   width: 26px;
@@ -126,7 +128,7 @@ const styles = `
   padding: 0.4rem 0.6rem;
   border: 1px solid #cbd5e1;
   border-radius: 7px;
-  font-size: 0.88rem;
+  font-size: var(--drona-text-ui);
 }
 
 .env-switch-search:focus {
@@ -142,8 +144,8 @@ const styles = `
 
 .env-switch-group {
   padding: 0.45rem 0.4rem 0.2rem;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: var(--drona-text-caption);
+  font-weight: var(--drona-weight-strong);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: #6b7280;
@@ -155,33 +157,33 @@ const styles = `
   gap: 0.55rem;
   padding: 0.35rem 0.45rem;
   border-radius: 7px;
-  font-size: 0.92rem;
+  font-size: var(--drona-text-ui);
   cursor: pointer;
 }
 
 .env-switch-item.active { background: #f3f4f6; }
-.env-switch-item.selected { font-weight: 700; }
+.env-switch-item.selected { font-weight: var(--drona-weight-strong); }
 .env-switch-item.selected.active,
 .env-switch-item.selected { background: #fff1f1; }
 
 .env-switch-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .env-switch-tag {
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: var(--drona-text-caption);
+  font-weight: var(--drona-weight-strong);
   color: #337ab7;
   border: 1px solid #bfd3ea;
   border-radius: 999px;
   padding: 0 0.4rem;
 }
 
-.env-switch-check { color: #500000; font-weight: 700; }
+.env-switch-check { color: #500000; font-weight: var(--drona-weight-strong); }
 
 .env-switch-remove {
   border: none;
   background: none;
   padding: 0 0.25rem;
-  font-size: 0.75rem;
+  font-size: var(--drona-text-caption);
   color: #9f1239;
   cursor: pointer;
   visibility: hidden;
@@ -191,11 +193,11 @@ const styles = `
 .env-switch-item.active .env-switch-remove,
 .env-switch-remove:focus-visible { visibility: visible; }
 
-.env-switch-empty { padding: 0.6rem 0.45rem; font-size: 0.85rem; color: #6b7280; }
+.env-switch-empty { padding: 0.6rem 0.45rem; font-size: var(--drona-text-data); color: #6b7280; }
 
 .env-switch-foot + .env-switch-foot { border-top: none; padding-top: 0.2rem; }
 
-.env-switch-foot.secondary { font-weight: 500; color: #4b5563; }
+.env-switch-foot.secondary { font-weight: var(--drona-weight-normal); color: #4b5563; }
 
 .env-switch-foot {
   border: none;
@@ -203,8 +205,8 @@ const styles = `
   background: none;
   text-align: left;
   padding: 0.5rem 0.45rem 0.2rem;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: var(--drona-text-ui);
+  font-weight: var(--drona-weight-strong);
   color: #500000;
   cursor: pointer;
 }
@@ -232,8 +234,8 @@ const styles = `
 
 .start-title {
   margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: var(--drona-text-heading);
+  font-weight: var(--drona-weight-strong);
   color: #111827;
   flex: 1 1 auto;
 }
@@ -244,7 +246,7 @@ const styles = `
   padding: 0.5rem 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 0.92rem;
+  font-size: var(--drona-text-ui);
 }
 
 .start-search:focus {
@@ -304,8 +306,8 @@ const styles = `
 .start-card-icon { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
 
 .start-card-name {
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: var(--drona-weight-strong);
+  font-size: var(--drona-text-body);
   color: #111827;
   overflow-wrap: anywhere;
 }
@@ -313,8 +315,8 @@ const styles = `
 .start-card-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; min-height: 1.1rem; }
 
 .start-tag {
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: var(--drona-text-caption);
+  font-weight: var(--drona-weight-strong);
   color: #500000;
   background: #fff1f1;
   border-radius: 999px;
@@ -324,7 +326,7 @@ const styles = `
 .start-tag.user { color: #337ab7; background: #eef4fb; }
 
 .start-card-desc {
-  font-size: 0.82rem;
+  font-size: var(--drona-text-data);
   line-height: 1.4;
   color: #4b5563;
   display: -webkit-box;
@@ -341,7 +343,7 @@ const styles = `
   right: 0.5rem;
   border: none;
   background: none;
-  font-size: 0.72rem;
+  font-size: var(--drona-text-caption);
   color: #9f1239;
   cursor: pointer;
   opacity: 0;
@@ -374,8 +376,8 @@ const styles = `
 
 .start-section-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--drona-text-body);
+  font-weight: var(--drona-weight-strong);
   color: #111827;
 }
 
@@ -392,7 +394,7 @@ const styles = `
   border-radius: 8px;
   background: #fff;
   text-align: left;
-  font-size: 0.88rem;
+  font-size: var(--drona-text-data);
   cursor: pointer;
 }
 
@@ -407,8 +409,8 @@ const styles = `
   border: none;
   background: none;
   padding: 0.2rem 0.25rem;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: var(--drona-text-ui);
+  font-weight: var(--drona-weight-strong);
   color: #500000;
   cursor: pointer;
   border-radius: 6px;
@@ -418,7 +420,7 @@ const styles = `
 
 .start-wf-all:focus-visible { outline: 2px solid #500000; outline-offset: 2px; }
 
-.start-wf-name { font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.start-wf-name { font-weight: var(--drona-weight-strong); color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .start-wf-env { color: #4b5563; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -426,8 +428,8 @@ const styles = `
 
 .start-wf-state {
   justify-self: start;
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: var(--drona-text-caption);
+  font-weight: var(--drona-weight-strong);
   letter-spacing: 0.03em;
   text-transform: uppercase;
   border-radius: 999px;
@@ -475,8 +477,8 @@ const styles = `
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1.4rem;
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: var(--drona-text-body);
+  font-weight: var(--drona-weight-strong);
   color: #fff;
   background-color: #500000;
   border: 1px solid #500000;
@@ -515,7 +517,7 @@ const styles = `
 /* Run in the preview window: same look as Generate; when the preview was already run it is
    greyed out and its text says why (SplitScreenModal runButtonState). */
 .composer-run-button {
-  font-size: 0.95rem;
+  font-size: var(--drona-text-ui);
   padding: 0.35rem 1.1rem;
 }
 
@@ -537,8 +539,8 @@ const styles = `
   color: #500000;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--drona-text-caption);
+  font-weight: var(--drona-weight-strong);
   padding: 3px 12px;
   line-height: 1.4;
 }
@@ -570,7 +572,7 @@ html {
   background: transparent;
 
   color: #64748b;
-  font-size: 0.8rem;
+  font-size: var(--drona-text-caption);
 }
 
 .drona-footer-caution {

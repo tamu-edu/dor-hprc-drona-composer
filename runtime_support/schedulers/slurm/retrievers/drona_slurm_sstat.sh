@@ -75,11 +75,11 @@ STEP_LABEL="${STEP:-n/a}"
 
 if [[ "$VIEW" == "compact" ]]; then
     if [[ -z "$SSTAT_RAW" ]]; then
-        echo "<div style=\"font-size:12px;color:#64748b\">No live usage yet (sstat has no running step).</div>"
+        echo "<div style=\"font-size:var(--drona-text-caption);color:#64748b\">No live usage yet (sstat has no running step).</div>"
         exit 0
     fi
     SEP="<span style=\"color:#cbd5e1\"> &middot; </span>"
-    printf '%s' "<div style=\"font-family:'Inter',system-ui,sans-serif;font-size:13px;color:#1e293b\">"
+    printf '%s' "<div style=\"font-size:var(--drona-text-data);color:#1e293b\">"
     printf '%s' "<span style=\"color:#64748b\">Live usage</span>$SEP"
     printf '%s' "Mem max <b>$(escape_html "${MAX_RSS:-0K}")</b>$SEP"
     printf '%s' "CPU time <b>$(escape_html "${AVE_CPU:-00:00}")</b> <span style=\"color:#64748b\">avg/task &times; $(escape_html "${N_TASKS:-0}")</span>$SEP"

@@ -29,7 +29,7 @@ const modalStyle = {
 };
 
 const contentStyle = {
-  fontFamily: "monospace",
+  fontFamily: "var(--drona-font-mono)",
   whiteSpace: "pre-wrap",
   padding: "1rem",
   overflowY: "auto",
@@ -39,7 +39,7 @@ const contentStyle = {
 
 const preStyle = {
   margin: 0,
-  fontFamily: "monospace",
+  fontFamily: "var(--drona-font-mono)",
   color: "white",
   width: "100%",
 };
@@ -92,7 +92,7 @@ function StreamingModal({ isOpen, onClose, outputLines, htmlOutput, status }) {
           <div>
             {status && (
               <span style={{
-                fontWeight: 'bold',
+                fontWeight: "var(--drona-weight-strong)",
                 color: status === 'completed' ? '#8eff8e' :
                       status === 'failed' ? '#ff8e8e' :
                       status === 'running' ? '#8ee6ff' : 'white'

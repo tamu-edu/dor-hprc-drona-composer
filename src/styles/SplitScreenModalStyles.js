@@ -35,8 +35,8 @@ const styles = {
   },
 
   title: {
-    fontSize: "1.25rem",
-    fontWeight: "600",
+    fontSize: "var(--drona-text-heading)",
+    fontWeight: "var(--drona-weight-strong)",
     margin: 0,
     color: "white",
   },
@@ -79,8 +79,8 @@ const styles = {
     padding: "0.75rem 1rem",
     backgroundColor: "#f8f9fa",
     borderBottom: "1px solid #dee2e6",
-    fontSize: "13px",
-    fontWeight: "600",
+    fontSize: "var(--drona-text-data)",
+    fontWeight: "var(--drona-weight-strong)",
     color: "#495057",
     display: "flex",
     alignItems: "center",
@@ -119,7 +119,7 @@ const styles = {
 
   configLabel: {
     marginRight: "1rem",
-    fontWeight: "600",
+    fontWeight: "var(--drona-weight-strong)",
   },
 
   tab: {
@@ -129,8 +129,8 @@ const styles = {
       border: "1px solid transparent",
       borderRadius: "0.25rem",
       cursor: "pointer",
-      fontSize: "12px",
-      fontWeight: "500",
+      fontSize: "var(--drona-text-caption)",
+      fontWeight: "var(--drona-weight-normal)",
       color: "#6c757d",
       transition: "all 0.2s ease",
       lineHeight: "1.2",
@@ -141,8 +141,8 @@ const styles = {
       border: "1px solid #dee2e6",
       borderRadius: "0.25rem",
       cursor: "pointer",
-      fontSize: "12px",
-      fontWeight: "600",
+      fontSize: "var(--drona-text-caption)",
+      fontWeight: "var(--drona-weight-strong)",
       color: "#500000",
       transition: "all 0.2s ease",
       lineHeight: "1.2",
@@ -151,7 +151,7 @@ const styles = {
   },
 
   subtitle: {
-    fontSize: '12px',
+    fontSize: "var(--drona-text-caption)",
     color: '#6c757d',
   },
 
@@ -166,11 +166,11 @@ const styles = {
 
   messageAlert: {
     marginBottom: '1rem',
-    fontSize: '13px',
+    fontSize: "var(--drona-text-data)",
   },
 
   alertTitle: {
-    fontSize: '14px',
+    fontSize: "var(--drona-text-ui)",
   },
 
   alertList: {
@@ -230,28 +230,28 @@ const styles = {
     backgroundColor: "#400000",
     color: "white",
     borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-    fontSize: "13px",
-    fontWeight: "600",
+    fontSize: "var(--drona-text-data)",
+    fontWeight: "var(--drona-weight-strong)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
   },
 
   streamingContent: {
-    fontFamily: "monospace",
+    fontFamily: "var(--drona-font-mono)",
     whiteSpace: "pre-wrap",
     padding: "1rem",
     overflowY: "auto",
     flexGrow: 1,
     backgroundColor: "#400000",
     color: "white",
-    fontSize: "14px",
+    fontSize: "var(--drona-text-ui)",
     lineHeight: "1.6",
   },
 
   streamingPre: {
     margin: 0,
-    fontFamily: "monospace",
+    fontFamily: "var(--drona-font-mono)",
     color: "white",
     width: "100%",
   },
@@ -260,18 +260,18 @@ const styles = {
     padding: "2rem",
     textAlign: "center",
     color: "rgba(255, 255, 255, 0.7)",
-    fontSize: "14px",
+    fontSize: "var(--drona-text-ui)",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     flexGrow: 1,
     title: {
-      fontWeight: '600',
+      fontWeight: "var(--drona-weight-strong)",
       marginBottom: '0.5rem',
     },
     subtitle: {
-      fontSize: '13px',
+      fontSize: "var(--drona-text-data)",
       lineHeight: '1.5',
       maxWidth: '250px',
     },
@@ -281,8 +281,8 @@ const styles = {
     base: {
       padding: "0.25rem 0.5rem",
       borderRadius: "0.25rem",
-      fontSize: "0.75rem",
-      fontWeight: "600",
+      fontSize: "var(--drona-text-caption)",
+      fontWeight: "var(--drona-weight-strong)",
       textTransform: "uppercase",
       display: "inline-flex",
       alignItems: "center",
@@ -291,8 +291,8 @@ const styles = {
     ready: {
       padding: "0.25rem 0.5rem",
       borderRadius: "0.25rem",
-      fontSize: "0.75rem",
-      fontWeight: "600",
+      fontSize: "var(--drona-text-caption)",
+      fontWeight: "var(--drona-weight-strong)",
       textTransform: "uppercase",
       display: "inline-flex",
       alignItems: "center",
@@ -320,8 +320,8 @@ const styles = {
       borderRadius: "0.25rem",
       cursor: "pointer",
       marginLeft: "0.5rem",
-      fontWeight: "500",
-      fontSize: "14px",
+      fontWeight: "var(--drona-weight-normal)",
+      fontSize: "var(--drona-text-ui)",
       transition: "all 0.2s ease",
     },
     primary: {
@@ -330,8 +330,8 @@ const styles = {
       borderRadius: "0.25rem",
       cursor: "pointer",
       marginRight: "0.5rem",
-      fontWeight: "500",
-      fontSize: "14px",
+      fontWeight: "var(--drona-weight-normal)",
+      fontSize: "var(--drona-text-ui)",
       transition: "all 0.2s ease",
       backgroundColor: "maroon",
       color: "white",
@@ -342,8 +342,8 @@ const styles = {
       borderRadius: "0.25rem",
       cursor: "pointer",
       marginLeft: "0.5rem",
-      fontWeight: "500",
-      fontSize: "14px",
+      fontWeight: "var(--drona-weight-normal)",
+      fontSize: "var(--drona-text-ui)",
       transition: "all 0.2s ease",
       backgroundColor: "#6c757d",
       color: "white",
@@ -374,8 +374,8 @@ const styles = {
 
   minimizedText: {
     color: "white",
-    fontSize: "16px",
-    fontWeight: "600",
+    fontSize: "var(--drona-text-body)",
+    fontWeight: "var(--drona-weight-strong)",
   },
 };
 

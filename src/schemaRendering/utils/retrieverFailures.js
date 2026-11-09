@@ -50,7 +50,7 @@ export function RefreshFailedNotice({ error, lastSuccessAt }) {
   return (
     <div
       className="text-warning mt-1"
-      style={{ fontSize: '0.8em' }}
+      style={{ fontSize: "var(--drona-text-caption)" }}
       title={tooltip}
       role="status"
       data-testid="refresh-failed-notice"
