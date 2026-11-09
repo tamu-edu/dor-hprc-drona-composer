@@ -8,14 +8,14 @@ So far, users have to find `results.txt` themselves. In this part you add a Mana
 
 ## Split the Form
 
-The shared `drona_create_manage.json` component adds the **Create** and **Manage** buttons. It loads the two pages below from fixed locations in your environment.
+The shared `drona_create_manage-table.json` component adds the **Create** and **Manage** buttons, and a table for picking a workflow in Manage. It loads the two pages below from fixed locations in your environment.
 
 ```json title="part-5/schema.json"
 {
   "CreateManageContainer": {
     "type": "container",
     "elements": {
-      "$ref": "$DRONA_RUNTIME_DIR/forms/drona_create_manage.json"
+      "$ref": "$DRONA_RUNTIME_DIR/forms/drona_create_manage-table.json"
     }
   }
 }
