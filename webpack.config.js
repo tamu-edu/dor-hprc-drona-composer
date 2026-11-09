@@ -12,7 +12,11 @@ module.exports = (env, argv) => {
     entry: "./src/index.js",
     output: {
       filename: "[name].bundle.js",
+      // Lazy chunks are hashed so a browser never pairs a new main bundle with a cached chunk;
+      // clean removes the previous build's hashed chunks and any stale .gz/.br files.
+      chunkFilename: "[name].[contenthash:8].chunk.js",
       path: path.resolve(__dirname, "static/dist"),
+      clean: true,
     },
     optimization: {
       minimize: isProduction,
@@ -35,6 +39,10 @@ module.exports = (env, argv) => {
       splitChunks: {
         chunks: 'all',
         cacheGroups: {
+          // templates/layout*.html hardcode the react, vendors and main bundles, so no other
+          // initial chunk may appear; lazy chunks keep their own dependencies.
+          defaultVendors: false,
+          default: false,
           react: {
             test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
             name: 'react',
@@ -44,7 +52,8 @@ module.exports = (env, argv) => {
           vendors: {
             test: /[\\/]node_modules[\\/](?!(react|react-dom)[\\/])/,
             name: 'vendors',
-            chunks: 'all',
+            // 'initial', not 'all': a fixed name would merge lazy-only libraries back in here.
+            chunks: 'initial',
             priority: -10
           },
         },

@@ -83,5 +83,5 @@ pip install -r requirements.txt
 # pip install -r requirements.txt.Python2.6.8
 
 
-npm install -D babel-loader @babel/core @babel/preset-react
+npm ci --no-audit --no-fund
 npm run build:prod:compress
