@@ -408,6 +408,3 @@ test('loads and displays schema data', async () => {
 ## Next Steps
 
 - [Form Components](./form-components) - Detailed component documentation
-- [Custom Hooks](./hooks) - Hook implementation guides
-- [Modal System](./modals) - Modal component usage
-- [Context Providers](./context) - State management patterns

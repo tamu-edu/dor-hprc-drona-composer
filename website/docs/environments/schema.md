@@ -72,7 +72,7 @@ Schema files integrate dynamic content through retriever scripts that populate f
 
 ## Conditional Logic
 
-Schema files support conditional field display based on user selections, allowing workflows to show relevant options while hiding unnecessary complexity. Conditional logic is evaluated when the form loads and whenever referenced field values change. For more detailed information about conditional expressions and advanced patterns, see [Conditional Logic](./conditional-logic).
+Schema files support conditional field display based on user selections, allowing workflows to show relevant options while hiding unnecessary complexity. Conditional logic is evaluated when the form loads and whenever referenced field values change. For more detailed information about conditional expressions and advanced patterns, see [Conditional Logic](./conditionals).
 
 ```json
 {

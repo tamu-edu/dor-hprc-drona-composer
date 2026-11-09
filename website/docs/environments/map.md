@@ -58,9 +58,9 @@ Once merged, an included entry is evaluated exactly like one written in `map.jso
 
 ## Variable Processing
 
-The output variables from mappings will be used in template files to replace placeholders as described in [Template Files](./template-files). This enables dynamic script generation where user inputs and processed values are substituted into execution templates during job creation.
+The output variables from mappings will be used in template files to replace placeholders as described in [Template Syntax](./driver#template-syntax). This enables dynamic script generation where user inputs and processed values are substituted into execution templates during job creation.
 
-For detailed information about advanced mapping techniques and transformation functions, see [Variable Mapping](./variable-mapping).
+For detailed information about advanced mapping techniques and transformation functions, see [Utility Functions](./utils).
 
 ---
 
