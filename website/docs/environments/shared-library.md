@@ -61,9 +61,9 @@ This lookup order is what lets one environment override a shared script — drop
 
 ## Shared map references
 
-Shared mapping entries live in `runtime_support/maps/`. A workflow includes them with `"$include": ["drona_cancel_jobs"]` in its `map.json`. See [Map Files](./map#shared-mappings-with-include) for the rules.
+Shared mapping entries live in `runtime_support/maps/`. An environment includes them with `"$include": ["drona_cancel_jobs"]` in its `map.json`. See [Map Files](./map#shared-mappings-with-include) for the rules.
 
-The functions these entries call live in `runtime_support/drona_runtime_utils/` and are available to every workflow without being copied into its `utils.py`:
+The functions these entries call live in `runtime_support/drona_runtime_utils/` and are available to every environment without being copied into its `utils.py`:
 
 | Fragment | Keys | Function | Form fields it expects |
 |---|---|---|---|
@@ -72,7 +72,7 @@ The functions these entries call live in `runtime_support/drona_runtime_utils/` 
 | `drona_gpu_monitor_nvml` | `GPU_MONITOR_START`, `GPU_MONITOR_STOP` | `retrieve_gpu_monitor_start_nvml`, `retrieve_gpu_monitor_stop` | `drona_gpu`, `drona_gpu_monitor` |
 | `drona_slurm_params` | `DUMMY` | `retrieve_slurm_params` | `drona_nodes`, `drona_tasks`, `drona_cpus`, `drona_memory`, `drona_gpu`, `drona_numgpu`, `drona_walltime`, `drona_account`, `drona_extra_slurm` |
 
-`retrieve_slurm_params` (code in `runtime_support/schedulers/slurm/params.py`) calls `cluster_slurm_checks` from `runtime_support/schedulers/slurm/clusters/<cluster>.py`, chosen by the cluster name (with `default.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the workflow needs no cluster files of its own.
+`retrieve_slurm_params` (code in `runtime_support/schedulers/slurm/params.py`) calls `cluster_slurm_checks` from `runtime_support/schedulers/slurm/clusters/<cluster>.py`, chosen by the cluster name (with `default.py` as the fallback). That function adds the Slurm placeholders (`TASKS`, `NODES`, `CPUS`, `MEM`, `TIME`, `PARTITION`, `EXTRA`) through `drona_add_mapping`. To support a new cluster, add one file to that `clusters/` folder; the environment needs no cluster files of its own.
 
 ## Shared HTML templates
 
@@ -132,7 +132,3 @@ These cost real debugging time when they were first hit, and none of them are ob
 ## Paths from older Drona versions
 
 Before 2.0 the directories were called `form_components/`, `map_references/`, `retriever_scripts/`, `html_templates/` and `driver_scripts/`. Environments that still use those paths keep working: `$ref`, `$include` and retriever lookups translate them through `runtime_support/aliases.json`, and `driver_scripts/drona_wf_driver_sbatch` is a symlink to `schedulers/slurm/drona_wf_driver_sbatch`. Use the new paths in new environments; the old ones are removed at environment API 2.1. `tests/test_env_references.py` lists the old paths an environment still uses.
-
----
-
-**Texas A&M University High Performance Research Computing**

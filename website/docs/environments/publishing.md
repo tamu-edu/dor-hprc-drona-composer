@@ -2,25 +2,11 @@
 sidebar_position: 5
 ---
 
-# Publishing Workflows
+# Publishing Environments
 
-*This section will provide guidelines for contributing Drona Workflows to the public repository, including quality standards, documentation requirements, and submission processes.*
+An environment repository lets a site or community share Drona Environments, which users then add with **Import environment**. A site chooses its repository and branch with [`env_repo_github` and `env_repo_ref`](../overview/installation#configyml).
 
-## Overview
-
-The public Drona Workflows repository allows the community to share and contribute workflows for various research domains and computational frameworks.
-
-## Contribution Guidelines
-
-*Detailed guidelines for contributing workflows to the public repository will be provided here, including code quality standards and documentation requirements.*
-
-## Workflow Quality Standards
-
-*Standards for workflow design, testing, and documentation that must be met before public submission will be outlined in this section.*
-
-## Submission Process
-
-*Step-by-step instructions for submitting workflows to the public repository, including review processes and approval workflows.*
+The repository lists its environments in a `metadata.json` file at its root, with one directory per environment.
 
 ## Declaring the Drona version
 
@@ -58,11 +44,3 @@ What Drona does with it:
 
 An environment without `requires_drona` is treated as compatible, so environments written before this
 setting keep working. Set it whenever an environment uses something listed in `ENV_API_CHANGELOG.md`.
-
-## Maintenance and Updates
-
-*Information on maintaining published workflows and handling updates or bug fixes will be covered here.*
-
----
-
-**Texas A&M University High Performance Research Computing**

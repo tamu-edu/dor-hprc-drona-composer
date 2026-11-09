@@ -14,10 +14,14 @@ function HomepageHeader() {
         <h1 className="hero__title">{siteConfig.title}</h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/overview/intro">
-            Get Started with Drona
+          <Link className="button button--secondary button--lg" to="/docs/user-guide/using-drona">
+            Run jobs
+          </Link>
+          <Link className="button button--secondary button--lg" to="/docs/tutorial">
+            Build an environment
+          </Link>
+          <Link className="button button--secondary button--lg" to="/docs/setup">
+            Set up Drona
           </Link>
         </div>
       </div>
@@ -29,8 +33,8 @@ export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      title={siteConfig.title}
+      description="Documentation for Drona Workflow Engine, a framework for running scientific workflows on HPC clusters through a web interface.">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

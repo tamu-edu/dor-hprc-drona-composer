@@ -15,7 +15,7 @@ const darkCodeTheme = prismThemes.dracula;
   baseUrl: '/dor-hprc-drona-composer/',
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/hprc_tungsten.png',
+  favicon: 'img/drona-icon.png',
   organizationName: 'tamu-edu',
   projectName: 'dor-hprc-drona-composer',
   deploymentBranch: 'master',
@@ -49,6 +49,8 @@ const darkCodeTheme = prismThemes.dracula;
       '@easyops-cn/docusaurus-search-local',
       {
         hashed: true,
+        // The old docs repeat the current pages; keep them out of search results
+        ignoreFiles: [/^docs\/old-docs\//],
       },
     ],
   ],
@@ -64,8 +66,8 @@ const darkCodeTheme = prismThemes.dracula;
       navbar: {
         title: 'Drona Workflow Engine',
         logo: {
-          alt: 'Texas A&M University Logo',
-          src: 'img/tamu-icon.png',
+          alt: 'Drona Workflow Engine',
+          src: 'img/drona-icon.png',
         },
         items: [
           {
@@ -86,30 +88,12 @@ const darkCodeTheme = prismThemes.dracula;
           {
             title: 'Documentation',
             items: [
-              {
-                label: 'Getting Started',
-                to: '/docs/overview/intro',
-              },
-              {
-                label: 'Using Drona',
-                to: '/docs/user-guide/using-drona',
-              },
-              {
-                label: 'Environment Development',
-                to: '/docs/environments/overview',
-              },
-              {
-                label: 'Integrations',
-                to: '/docs/integrations/open-ondemand',
-              },
-              {
-                label: 'Tutorials',
-                to: '/docs/tutorials',
-              },
-              {
-                label: 'Citations',
-                to: '/docs/citations',
-              },
+              { label: 'Overview', to: '/docs/overview/intro' },
+              { label: 'Setup', to: '/docs/setup' },
+              { label: 'User Guide', to: '/docs/user-guide/using-drona' },
+              { label: 'Tutorial', to: '/docs/tutorial' },
+              { label: 'Technical Reference', to: '/docs/overview/architecture' },
+              { label: 'Citations', to: '/docs/citations' },
             ],
           },
           {
@@ -122,19 +106,6 @@ const darkCodeTheme = prismThemes.dracula;
               {
                 label: 'Issues & Bug Reports',
                 href: 'https://github.com/tamu-edu/dor-hprc-drona-composer/issues',
-              },
-            ],
-          },
-          {
-            title: 'Texas A&M HPRC',
-            items: [
-              {
-                label: 'User Guide',
-                href: 'https://hprc.tamu.edu/kb/User-Guides/Portal/Drona_wfe/',
-              },
-              {
-                label: 'Contact Us',
-                href: 'https://hprc.tamu.edu/about/contact.html',
               },
             ],
           },

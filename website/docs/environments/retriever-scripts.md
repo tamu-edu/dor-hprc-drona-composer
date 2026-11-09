@@ -8,7 +8,7 @@ Retriever scripts dynamically populate form fields or display real-time informat
 
 ## Overview
 
-Retriever scripts enable workflows to present dynamic content based on user input, available resources, or system conditions. Scripts execute when fields initially render and re-execute automatically when referenced form values change or at scheduled intervals via `refreshInterval`.
+Retriever scripts enable Drona Environments to present dynamic content based on user input, available resources, or system conditions. Scripts execute when fields initially render and re-execute automatically when referenced form values change or at scheduled intervals via `refreshInterval`.
 
 While environment creators can implement custom retrievers for any use case, Drona also provides a curated set of [pre-built retriever functions](#pre-built-retriever-functions) for common HPC workflows. These live in a shared directory and can be overridden per-environment; see [Shared Environment Library](./shared-library) for the lookup order and conventions. For a retriever that's just a database lookup with no other logic, a [declarative built-in](#declarative-built-ins) can replace a script entirely.
 

@@ -1,0 +1,7 @@
+{
+  "JOBNAME": "$name",
+  "flocation": "$location",
+  "INPUT_FILE": "!check_input($input_file)",
+  "TOP_N": "!check_top_n($top_n)",
+  "FILTER": "!build_filter($filter_short, $min_length)"
+}

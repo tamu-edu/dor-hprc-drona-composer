@@ -20,7 +20,7 @@ Drona's monitoring capabilities provide:
 - **Job status and metadata** — job ID, state, elapsed time, and walltime usage
 - **Live output logs** — real-time stdout and stderr, streamed directly in the interface
 - **Resource utilization** — per-node CPU and memory metrics, Slurm `sstat` statistics, and cgroup data
-- **Workflow actions** — cancel a job or request a walltime extension without leaving the interface
+- **Workflow actions** — cancel a job without leaving the interface
 - **Domain-specific visualizations** — workflow-aware panels such as protein structure viewers for AlphaFold
 
 ---
@@ -32,7 +32,7 @@ Each Drona environment that supports monitoring exposes a **Manage** tab alongsi
 | Phase | In Create mode | In Manage mode |
 |---|---|---|
 | **Form** | Collects job parameters from the user | Displays current workflow metadata and offers action selection |
-| **Generate** | Generates the batch script | Generates the management command (e.g., `scancel`, walltime extension) |
+| **Generate** | Generates the batch script | Generates the management command (e.g., `scancel`) |
 | **Run** | Submits the job | Executes the selected action and shows immediate feedback |
 
 To start monitoring a workflow:
@@ -60,7 +60,6 @@ This panel also includes an **Action** selector where you can choose to:
 
 - **Do Nothing** — view-only mode, no changes made
 - **Cancel Job** — generates and executes a `scancel` command
-- **Request Walltime Extension** — submits a walltime extension request through the scheduler
 
 Once an action is selected, click **Generate** and then **Run** to carry it out (an environment may label these buttons for actions, e.g. **Run action**). Drona will display immediate feedback confirming the outcome.
 

@@ -4,12 +4,11 @@ sidebar_position: 1
 
 # Using Drona Workflow Engine
 
-Drona Workflow Engine (or just Drona) provides a 100% graphical interface to create and run any workflow without the need to write a Slurm script or even be aware of Slurm syntax. It guides you to provide the relevant information to generate and submit a job for many different workflows and environments.
+Drona Workflow Engine (or just Drona) provides a 100% graphical interface to create and run scientific workflows without the need to write a Slurm script or even be aware of Slurm syntax. It guides you to provide the relevant information to generate and submit jobs for many different Drona Environments.
 
 ## Accessing Drona Workflow Engine
 
-Drona is available on all HPRC Portals. Once you log in to your favorite portal, go to the **Jobs** tab and select **Drona Workflow Engine**. This will open a new window showing the Drona Workflow Engine interface.
-
+Drona runs as an app in your site's [Open OnDemand](https://openondemand.org/) portal. Log in to the portal, go to the **Jobs** menu and select **Drona Workflow Engine**. If you can't find it there, ask your site's support team.
 
 ## First-Time Initialization
 
@@ -23,11 +22,11 @@ This file tells Drona where to find and store all of your data. Here is an examp
 
 ```json
 {
-  "drona_dir": "/scratch/user/<username>/drona_wfe"
+  "drona_dir": "/path/to/scratch/<username>/drona_wfe"
 }
 ```
 
-The `drona_dir` path is where Drona will store your environments, workflows, and job outputs. You can point this to any directory you have access to, such as your `$SCRATCH` directory on HPC systems.
+The `drona_dir` path is where Drona will store your environments, workflows, and job outputs. You can point this to any directory you have access to. On most HPC systems, a scratch directory is a good choice.
 
 :::note
 
@@ -36,22 +35,22 @@ If you ever need to change your storage location, simply update the `drona_dir` 
 If `~/.drona/config.json` is missing or the specified directory does not exist, Drona will prompt you to reconfigure on next launch.
 :::
 
-## Drona Environments
+## Choosing a Drona Environment
 
-Drona provides a number of environments to choose from. To select an environment, use the **Environments Dropdown**.
+Each Drona Environment implements a scientific workflow. The **start page** shows every environment available to you as a card with its category and description. Use the search box to filter by name, category or description, and click a card to open it.
 
-![Drona Environments Dropdown](/img/user-guide/environments-dropdown.png)
+Drona checks for environments in two locations:
 
-Drona Workflow Engine checks for environments in the following two locations:
+1. **Drona system directory** - Environments installed by your site's administrators, available to all users
+2. **`<drona_dir>/environments`** - Your personal environments, marked with a **User** tag
 
-1. **Drona system directory** - System-wide environments maintained by HPRC
-2. **`$SCRATCH/drona_composer/environments`** - Your personal environments
+Below the cards, **Recent Workflows** lists your latest workflows with their state. Clicking one opens it in its environment's Manage view.
 
-System environments appear in **black** and environments in your SCRATCH directory appear in **blue**. HPRC provides environments for numerous research areas. Later, we will show how to [import additional environments](#importing-drona-environments) to your SCRATCH directory.
+Once an environment is open, the **app bar** at the top lets you go back to **All environments**, switch directly to another environment, or import a new one.
 
 ## Drona Input Form
 
-Once you select an environment, additional fields relevant to the selected environment will become visible. The following screenshot shows the **Generic** environment, which is the most flexible and allows you to create any job script.
+Once you select an environment, its form appears. The following screenshot shows the **Generic** environment, which is the most flexible and allows you to create any job script.
 
 ![Drona Input Form](/img/user-guide/input-form.png)
 
@@ -88,31 +87,24 @@ The window contains the following components:
 
 Drona analyzes the provided input values to make sure there are no mistakes or inconsistencies. The message pane can also show environment-specific messages to assist you.
 
-For example, a warning might indicate that a GPU was requested for 4 days, but the maximum wall time to request a GPU on ACES is two days.
+For example, a warning might indicate that a GPU was requested for 4 days, but the maximum wall time to request a GPU on your cluster is two days.
 
 ### Generated Script Tabs
 
 Drona generates job scripts based on your input. It will insert code for requested modules and changes to the correct directory. For most environments, it will also set up and execute that environment.
 
-All the job script windows are **fully editable**. For the Generic profile, this is the place where you enter the commands you want to execute in the job.
+All the job script windows are **fully editable**. For the Generic environment, this is the place where you enter the commands you want to execute in the job.
 
 ## Importing Drona Environments
 
-HPRC provides environments from a variety of research areas. These environments are available in a repository where you can import from.
-
-Next to the Environments dropdown, you will find a **+** button. Clicking this button will open a new window with available environments you can import.
+Your site may offer more environments in an environment repository. To browse them, click **Import environment** in the app bar, or the **Import an environment** card on the start page. If neither appears, your site has turned import off.
 
 ![Import Environments Window](/img/user-guide/import-environments.png)
 
-To import an environment, simply click the **Add** button and Drona will copy the environment to `$SCRATCH/drona_composer/environments`.
+To import an environment, click its **Add** button and Drona will copy it to `<drona_dir>/environments`. To remove it later, click **Remove** on its card.
 
 ## Demo of Drona Workflow Engine
 
-To see Drona Workflow Engine in action, check out the YouTube video below. Note that this is an older version of Drona and some newer features may not be shown.
+To see Drona Workflow Engine in action, check out the YouTube video below. Note that this is an older version of Drona and the interface looks different today.
 
-<!-- TODO: Replace with actual YouTube video embed -->
 <iframe width="100%" height="500" src="https://www.youtube.com/embed/tgpP9LPGlYQ" title="Drona Workflow Engine Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
----
-
-**Texas A&M University High Performance Research Computing**

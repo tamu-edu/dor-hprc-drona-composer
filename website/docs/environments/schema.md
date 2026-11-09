@@ -4,13 +4,13 @@ sidebar_position: 2
 
 # Schema Files
 
-Schema files (`schema.json`) define the user interface for Drona Workflows through JSON configurations that generate dynamic forms. These files control what users see, how they interact with the workflow, and what data gets collected for job execution.
+Schema files (`schema.json`) define the user interface for Drona Environments through JSON configurations that generate dynamic forms. These files control what users see, how they interact with the workflow, and what data gets collected for job execution.
 
 ![Schema Structure](/img/docusaurus.png)
 
 ## Schema File Organization
 
-Every Drona Workflow must contain a file called `schema.json` in its root directory. This file defines the complete user interface for the workflow and serves as the entry point for form generation. Schema can be described via multiple files as described in the [Schema Decomposition](#schema-decomposition) section.
+Every Drona Environment must contain a file called `schema.json` in its root directory. This file defines the complete user interface for the environment and serves as the entry point for form generation. Schema can be described via multiple files as described in the [Schema Decomposition](#schema-decomposition) section.
 
 ## Standard Field Structure
 
@@ -33,7 +33,7 @@ The `type` property determines which form component will be rendered, while `nam
 
 Schema files can utilize all available [Frontend Form Components](../frontend/form-components), including text inputs, selectors, file pickers, and specialized components like module selectors and time inputs. Each component type has specific properties and behaviors documented in the frontend components section.
 
-Components can be organized using containers such as `rowContainer` and `collapsibleRowContainer` that group elements together for conditional display or stylistic purposes to control layout. Containers enable better organization of related fields and create intuitive user interfaces that guide users through workflow configuration.
+Components can be organized using containers such as `rowContainer` and `collapsibleRowContainer` that group elements together for conditional display or stylistic purposes to control layout. Containers enable better organization of related fields and create intuitive user interfaces that guide users through the configuration.
 
 ## Workflow Button Labels
 
@@ -72,7 +72,7 @@ Schema files integrate dynamic content through retriever scripts that populate f
 
 ## Conditional Logic
 
-Schema files support conditional field display based on user selections, allowing workflows to show relevant options while hiding unnecessary complexity. Conditional logic is evaluated when the form loads and whenever referenced field values change. For more detailed information about conditional expressions and advanced patterns, see [Conditional Logic](./conditionals).
+Schema files support conditional field display based on user selections, allowing environments to show relevant options while hiding unnecessary complexity. Conditional logic is evaluated when the form loads and whenever referenced field values change. For more detailed information about conditional expressions and advanced patterns, see [Conditional Logic](./conditionals).
 
 ```json
 {
@@ -93,11 +93,11 @@ Schema files support conditional field display based on user selections, allowin
 }
 ```
 
-This creates adaptive interfaces that respond to user choices and provide contextual configuration options through sophisticated workflow branching.
+This creates adaptive interfaces that respond to user choices and provide contextual configuration options through form branching.
 
 ## Schema Decomposition
 
-For complex workflows, schema files can be decomposed into multiple files using JSON references. This approach allows for better organization and reusability of form components across different workflow sections.
+For complex environments, schema files can be decomposed into multiple files using JSON references. This approach allows for better organization and reusability of form components across different sections.
 
 ```json
 {
@@ -133,7 +133,7 @@ For complex workflows, schema files can be decomposed into multiple files using 
 
 A reference element can either reference an entire json file such as `inference.json`, or a specific element as in the `modelContainer` following the standard conventions of `jsonref`. The path used for references is relative to the environment directory, but can also be an absolute path. Current limitation involves that if an element is a reference element, it cannot include additonal fields such as condition.
 
-This modular approach enables component reuse and maintainable schema organization for workflows with multiple execution paths or complex configuration requirements. 
+This modular approach enables component reuse and maintainable schema organization for environments with multiple execution paths or complex configuration requirements. 
 
 ### Referencing a shared/curated component directory
 
@@ -155,8 +155,3 @@ To reference components from a fixed directory shared across environments (rathe
 `$DRONA_RUNTIME_DIR` is set automatically — no additional configuration is required. This works alongside the relative and absolute path conventions above — plain relative paths (e.g. `schema_components/training.json`) still resolve against the environment directory.
 
 In practice, shared fragments live under `runtime_support/forms/`, alongside a matching set of shared retriever scripts and HTML templates. See [Shared Environment Library](./shared-library) for the full layout and conventions.
-
-
----
-
-**Texas A&M University High Performance Research Computing**

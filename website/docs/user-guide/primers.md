@@ -4,64 +4,46 @@ sidebar_position: 2
 
 # Primers
 
-A collection of video tutorials, primers, and resources to help you get up to speed with Drona Workflow Engine.
+A demonstration video and quick references to help you get up to speed with Drona Workflow Engine.
 
-## Video Tutorials
+## Demo Video
 
-### Getting Started with Drona
+A demonstration of Drona in action, from choosing an environment to job submission. This video shows an older version of Drona, so the interface looks different today.
 
-An introductory walkthrough of Drona Workflow Engine covering the basics of accessing Drona, selecting environments, filling out forms, and submitting jobs.
-
-<!-- TODO: Replace with actual YouTube video embed -->
-<iframe width="100%" height="500" src="https://www.youtube.com/embed/VIDEO_ID_HERE" title="Getting Started with Drona" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
----
-
-### Drona Workflow Engine Demo
-
-A demonstration of Drona Workflow Engine in action, showing the complete workflow from environment selection to job submission.
-
-<!-- TODO: Replace with actual YouTube video embed -->
 <iframe width="100%" height="500" src="https://www.youtube.com/embed/tgpP9LPGlYQ?si=IybXuFSU2gMkDuRj"  title="Drona Workflow Engine Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ---
 
-## Quick Reference Primers
+## Quick Reference
 
 ### Navigating the Interface
 
 | Area | Description |
 |------|-------------|
-| **Jobs Tab** | Access Drona from the HPRC Portal Jobs menu |
-| **Environments Dropdown** | Select from system and user environments |
-| **Input Form** | Fill in workflow-specific fields |
-| **Generated Scripts Window** | Opened with **Generate**; review and edit the generated job script, then click **Run** |
-| **Message Pane** | View form validation warnings such as resource allocation constraints and environment-specific guidance |
+| **Start page** | Lists all available environments and your recent workflows |
+| **App bar** | Return to all environments, switch environment, import an environment, or open the help |
+| **Input form** | Fill in the fields of the selected environment |
+| **Generated Scripts window** | Opened with **Generate**; review and edit the generated job script, then click **Run** |
+| **Message pane** | View validation warnings such as resource allocation constraints and environment-specific guidance |
 
 ### Environment Types
 
 | Environment | Use Case |
 |-------------|----------|
 | **Generic** | Flexible environment for creating any job script |
-| **Research-Specific** | Pre-configured environments for specific research workflows such as LAMMPS and AlphaFold |
-| **Custom** | User-created environments in `$SCRATCH/drona_composer/environments` |
-
-Explore and add existing Drona environments using the + icon next to the environments dropdown.
+| **Research-specific** | Pre-configured environments for specific scientific workflows such as LAMMPS and AlphaFold |
+| **User** | Environments you created or imported, in `<drona_dir>/environments` |
 
 ### Key Concepts
 
-- **Environments** define the workflow type and determine which form fields are available
-- **Form Fields** are dynamically generated based on the selected environment
+- **Drona Environments** implement a scientific workflow and determine which form fields are available
+- **Form fields** are dynamically generated based on the selected environment
 - **Generated Scripts window** shows the generated Slurm scripts, which are fully editable before you click **Run**
-- **Message Pane** provides validation feedback and environment-specific guidance
-- **Importing** environments allows you to add new environments from the HPRC repository to your personal directory
+- **Message pane** provides validation feedback and environment-specific guidance
+- **Importing** adds environments from your site's environment repository to your personal directory
+
+For the full list of terms, see [Key Concepts](../overview/key-concepts).
 
 ## Additional Resources
 
 - [Using Drona Workflow Engine](./using-drona) - Detailed usage guide
-- [HPRC Knowledge Base](https://hprc.tamu.edu/wiki/Main_Page) - General HPRC documentation and user guides
-- [HPRC Portal](https://portal.hprc.tamu.edu/) - Access the HPRC Portal
-
----
-
-**Texas A&M University High Performance Research Computing**

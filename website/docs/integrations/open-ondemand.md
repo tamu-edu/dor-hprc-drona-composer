@@ -24,7 +24,7 @@ Clone the repository into this location and run the setup script:
 cd /var/www/ood/apps/dev/$USER/gateway/
 git clone https://github.com/tamu-edu/dor-hprc-drona-composer.git
 cd dor-hprc-drona-composer
-./setup
+./setup.sh
 ```
 
 The app will be accessible from the OOD dashboard under the **Jobs** category. Development apps are only visible to you.
@@ -55,7 +55,7 @@ The `config.yml` file uses YAML anchors to share common settings between environ
 
 ```yaml
 development: &common_settings
-  cluster_name: "Grace"
+  cluster_name: "MyCluster"
   dashboard_url: "/pun/dev/dor-hprc-drona-composer"
   driver_scripts_path: "/var/www/ood/apps/dev/<user>/gateway/dor-hprc-drona-composer/machine_driver_scripts"
 
@@ -112,7 +112,3 @@ Drona uses several OOD features beyond basic app hosting:
 ### Wrong Configuration Loading
 
 Drona detects the environment by checking if the current working directory contains `dev` or `sys`. If neither is found, it defaults to `unknown`. Ensure the app is installed in a standard OOD directory structure.
-
----
-
-**Texas A&M University High Performance Research Computing**

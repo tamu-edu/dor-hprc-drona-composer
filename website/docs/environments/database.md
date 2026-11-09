@@ -166,7 +166,3 @@ If a form field only needs a single column (or a JSON key inside `runtime_meta`/
 ```
 
 Reach for a script instead once you need anything the built-in doesn't cover - editing records, combining the lookup with other commands or files, or custom HTML output.
-
----
-
-**Texas A&M University High Performance Research Computing**

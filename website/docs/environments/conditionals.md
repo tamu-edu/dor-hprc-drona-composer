@@ -4,7 +4,7 @@ sidebar_position: 8
 
 # Conditional Logic
 
-Schema files support conditional field display based on user selections, allowing workflows to show relevant options while hiding unnecessary complexity. Conditions are evaluated when the form loads and whenever referenced field values change.
+Schema files support conditional field display based on user selections, allowing environments to show relevant options while hiding unnecessary complexity. Conditions are evaluated when the form loads and whenever referenced field values change.
 
 ## Basic Syntax
 
@@ -134,7 +134,3 @@ Show a field when any condition is true:
 ## Using Conditions with Containers
 
 Conditions are commonly applied to `container`, `rowContainer`, and `collapsibleRowContainer` elements to show or hide entire sections of the form at once, rather than individual fields.
-
----
-
-**Texas A&M University High Performance Research Computing**

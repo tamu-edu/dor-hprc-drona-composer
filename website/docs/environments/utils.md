@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Utility Functions
 
-Utility functions let you add Python logic to a workflow. They are defined in `utils.py` and are primarily used by `map.json` to compute values that cannot be expressed as simple string substitutions.
+Utility functions let you add Python logic to a Drona Environment. They are defined in `utils.py` and are primarily used by `map.json` to compute values that cannot be expressed as simple string substitutions.
 
 ## How Utility Functions Work
 
@@ -132,7 +132,3 @@ text are replaced at preview; what the user sees in the preview, including their
 - **Use `drona_add_mapping()` sparingly** - When one function needs to set multiple placeholders, it's cleaner than returning complex strings
 - **Validate user input** - Check for invalid values and provide helpful error messages
 - **Document your functions** - Add docstrings explaining parameters and return values
-
----
-
-**Texas A&M University High Performance Research Computing**

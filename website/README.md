@@ -4,7 +4,7 @@ This documentation site is built with [Docusaurus 3](https://docusaurus.io/) and
 
 ## Prerequisites
 
-- **Node.js** >= 18
+- **Node.js** >= 20
 - **npm** (comes with Node.js)
 
 ## Quick Start

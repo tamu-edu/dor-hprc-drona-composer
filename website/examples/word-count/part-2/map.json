@@ -1,0 +1,7 @@
+{
+  "JOBNAME": "$name",
+  "flocation": "$location",
+  "INPUT_FILE": "$input_file",
+  "TOP_N": "$top_n",
+  "MIN_LENGTH": "$min_length"
+}

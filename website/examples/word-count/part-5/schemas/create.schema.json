@@ -1,0 +1,54 @@
+{
+  "destination": {
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_job_destination.json#/drona_runDestinationFinal"
+  },
+  "input_file": {
+    "type": "picker",
+    "name": "input_file",
+    "label": "Text file",
+    "localLabel": "Browse",
+    "showFiles": "true",
+    "help": "The text file to analyze."
+  },
+  "top_n": {
+    "type": "number",
+    "name": "top_n",
+    "label": "Words to report",
+    "value": 10,
+    "min": 1,
+    "help": "How many of the most common words to report."
+  },
+  "filter_short": {
+    "type": "checkbox",
+    "name": "filter_short",
+    "label": "Ignore short words",
+    "value": "Yes"
+  },
+  "min_length": {
+    "type": "number",
+    "name": "min_length",
+    "label": "Minimum word length",
+    "value": 4,
+    "min": 1,
+    "condition": "filter_short.Yes",
+    "help": "Words shorter than this are not counted."
+  },
+  "resources": {
+    "type": "rowContainer",
+    "label": "Resources",
+    "layout": {
+      "preset": "card",
+      "title": "Resources",
+      "dot": false
+    },
+    "elements": {
+      "drona_memory": {
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_slurm_resources.json#/drona_slurmCollapse/elements/drona_ContainerAdditional/elements/drona_memory",
+        "value": "2G"
+      },
+      "drona_walltime": {
+        "$ref": "$DRONA_RUNTIME_DIR/forms/drona_slurm_resources.json#/drona_slurmCollapse/elements/drona_ContainerAdditional/elements/drona_Walltime"
+      }
+    }
+  }
+}
