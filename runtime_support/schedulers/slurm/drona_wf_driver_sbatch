@@ -20,10 +20,10 @@ ALL_LABELS=()
 for JOB_FILE in "${JOB_FILES[@]}"; do
     if [ -z "$PREV_JOBID" ]; then
         # First job: submit normally
-        SUBMIT_OUTPUT=$(/sw/local/bin/sbatch "$JOB_FILE")
+        SUBMIT_OUTPUT=$(sbatch "$JOB_FILE")
     else
         # Subsequent jobs: submit with dependency on the previous job
-        SUBMIT_OUTPUT=$(/sw/local/bin/sbatch --dependency=afterok:"$PREV_JOBID" "$JOB_FILE")
+        SUBMIT_OUTPUT=$(sbatch --dependency=afterok:"$PREV_JOBID" "$JOB_FILE")
     fi
 
     # Extract Job ID
