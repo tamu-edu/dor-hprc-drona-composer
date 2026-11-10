@@ -19,7 +19,7 @@ The Generic Environment is ideal for:
 
 The Generic Environment provides a straightforward interface to:
 
-- Upload input files and data to your job workspace
+- Upload input files and data to your workflow directory
 - Select and load software modules from the HPC environment
 - Configure resource allocation (CPU cores, memory, compute time)
 - Request GPU accelerators if available on your cluster
@@ -28,7 +28,7 @@ The Generic Environment provides a straightforward interface to:
 
 ## Form Fields and Options
 
-When creating a job with the Generic Environment, you'll encounter the following sections:
+When creating a workflow with the Generic Environment, you'll encounter the following sections:
 
 ### File Upload
 

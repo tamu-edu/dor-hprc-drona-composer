@@ -19,4 +19,4 @@ sidebar_position: 2
 | **Generate and Run** | **Generate** builds the scripts and shows them for review and editing. **Run** submits them. |
 | **System and user environments** | System environments are installed for everyone by an administrator. User environments are in your own Drona directory. |
 | **Retriever** | A script that supplies live data to the form, such as a list of options or a job's status. |
-| **Runtime support** | The library of form parts, map fragments and retrievers that ships with Drona and that any environment can reuse. |
+| **Drona Runtime Library** | The collection of ready-made form parts, map fragments, retrievers and helper functions that ships with Drona (in `runtime_support/`) and that any environment can reuse. |

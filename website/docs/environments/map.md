@@ -32,7 +32,7 @@ Values in a map can be defined in four ways:
 
 ## Shared Mappings with `$include`
 
-Mappings that many environments need (for example the `CANCEL` entry used with the shared cancel-jobs form element) live in the shared library as **map references**: small JSON files in `runtime_support/maps/`, in the same format as `map.json`. An environment pulls them in with the reserved `$include` key:
+Mappings that many environments need (for example the `CANCEL` entry used with the shared cancel-jobs form element) live in the Drona Runtime Library as **map references**: small JSON files in `runtime_support/maps/`, in the same format as `map.json`. An environment pulls them in with the reserved `$include` key:
 
 ```json
 {
@@ -44,13 +44,13 @@ Mappings that many environments need (for example the `CANCEL` entry used with t
 
 A bare name (with or without `.json`) is looked up in `runtime_support/maps/`. A path containing `/` is used as given, and `$DRONA_RUNTIME_DIR` in it is replaced with the runtime support directory. Entries written directly in the environment's `map.json` override included entries with the same key, and later includes override earlier ones. A name that can't be found raises an error that names the file and the directory searched.
 
-The available fragments, the functions they call and the form fields they expect are listed in [Shared Environment Library](./shared-library#shared-map-references).
+The available fragments, the functions they call and the form fields they expect are listed in [Map References and Functions](../runtime-library/maps-and-functions.md#map-references).
 
 Once merged, an included entry is evaluated exactly like one written in `map.json`. A few things differ because the entry is shared:
 
 - **Placeholders inside values.** The template is scanned once for `[KEY]` and each match is replaced with that key's value, so the order of the entries in the merged map does not matter. A value may itself contain `[OTHER]` placeholders, including ones that come from another fragment or from your `map.json`; they are expanded recursively. A key that refers to itself, directly or through other keys, is left as literal `[KEY]` text. Bracketed text that is not a map key (for example a shell test like `[ -f file ]`) is never touched. Prefer `$field` references and function calls in shared entries over `[KEY]` references, since they make a fragment depend less on the environment it is used in.
 - **Functions.** A function is looked up in the environment's own `utils.py` first, then in the global utils. Shared entries should only call global functions. Otherwise the value becomes `Function X not found...` in environments that don't have the function, and a local function with the same name silently takes over.
-- **Field names.** A shared entry refers to form fields by name (the cancel entry needs the `drona_cancel_jobs` form element and the fields `mode` and `jobs`). A missing field gives `""` with no error, so pull in the form element that goes with the entry.
+- **Field names.** A shared entry refers to form fields by name (the cancel entry reads `drona_create_manage_mode`, `drona_cancel_jobs` and `drona_info_jobs`). A missing field gives `""` with no error, so pull in the form element that goes with the entry.
 - **Key clashes.** An entry in your `map.json` silently replaces a shared entry with the same key. Pick distinctive key names, especially for entries whose functions call `drona_add_mapping`.
 - **Dynamic mappings.** A value added with `drona_add_mapping` can contain `[KEY]` placeholders from included entries and from `map.json`, and the other way around. See [Utils](./utils).
 

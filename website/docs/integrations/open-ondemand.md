@@ -4,11 +4,21 @@ sidebar_position: 1
 
 # Open OnDemand
 
-Drona Workflow Engine is designed to run as a [Passenger](https://www.phusionpassenger.com/) app within [Open OnDemand](https://openondemand.org/) (OOD). This page covers how to deploy Drona as both a development and production OOD application.
+Drona Workflow Engine is a standalone web application: a React frontend and a Flask backend that generates scripts and submits jobs on behalf of the user who is logged in. It doesn't depend on [Open OnDemand](https://openondemand.org/) (OOD), but OOD is the recommended way to offer it to the users of a cluster, and the way Drona is deployed at Texas A&M.
+
+## What Open OnDemand Provides
+
+Drona relies on the portal it runs in for a few things it doesn't do itself:
+
+- **Login and a process per user.** OOD authenticates users and starts a separate web server for each of them (the per-user Nginx, or PUN). Drona runs inside it through [Phusion Passenger](https://www.phusionpassenger.com/), so it runs as the user, and the jobs it submits belong to them.
+- **A place in the portal.** `manifest.yml` adds Drona to the portal's menu, under **Jobs** by default.
+- **Files.** Drona links to OOD's file browser and file editor, for example to open a run's directory.
+
+Without OOD, Drona can run directly with Flask in the `local` configuration. That is meant for development and testing, where Drona runs as the person who started it. See [Installation](../overview/installation).
 
 ## How It Works
 
-Open OnDemand serves Drona through Phusion Passenger, which acts as the application server for the Flask backend. The entry point is `passenger_wsgi.py`, which exposes the Flask app to Passenger. Drona automatically detects whether it's running in a `dev` or `sys` (production) directory and loads the corresponding configuration from `config.yml`.
+Passenger serves the Flask backend through `passenger_wsgi.py`, which exposes the Flask app. Drona detects whether it is installed as an OOD development app (`dev`) or a system app (`sys`) and loads the matching block of `config.yml`.
 
 ## Development Deployment
 
@@ -88,9 +98,9 @@ The `category` field determines which tab the app appears under in the OOD navig
 
 ## OOD Integration Points
 
-Drona uses several OOD features beyond basic app hosting:
+These are the OOD features Drona uses, and the settings that connect them:
 
-- **File Browser** — Links to the OOD file browser for navigating job output directories, configured via `file_app_url`
+- **File Browser** — Links to the OOD file browser for navigating workflow directories, configured via `file_app_url`
 - **File Editor** — Links to the OOD file editor for viewing and editing scripts, configured via `file_editor_url`
 - **User Identity** — Reads the `$USER` environment variable provided by OOD's per-user Nginx (PUN) to determine user-specific paths and permissions
 

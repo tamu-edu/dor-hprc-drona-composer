@@ -58,7 +58,7 @@ The backend is a Flask application served through Passenger (in OOD deployments)
 - **`socket_handler.py`** — WebSocket support via Flask-SocketIO for real-time communication.
 - **`environments.py`** — Environment discovery and management (system and user environments).
 - **`env_repo_manager.py`** — Handles cloning and managing the environment import repository.
-- **`history_manager.py`** — Tracks job submission history.
+- **`history_manager.py`** — Tracks workflow history: each submitted workflow and its jobs.
 - **`job_routes.py`** — Job status and management endpoints.
 
 ### Script Generation

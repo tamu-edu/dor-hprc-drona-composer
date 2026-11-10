@@ -1,113 +1,92 @@
 ---
-title: "Part 1: Hello Drona"
+title: "Part 1: The Form"
 ---
 
-# Part 1: Hello Drona
+import Snippet from '@site/src/components/Snippet';
 
-In this part you create the smallest useful environment: a form with two questions, and a job that uses the answers.
+# Part 1: The Form
 
-Create the directory `<drona_dir>/environments/WordCount/` and add the four files below.
+The form is what the user sees first. It asks the questions the workflow needs, and nothing about Slurm unless you want it to.
 
-## The Form: `schema.json`
+![The WordCount form](/img/tutorial/wc-form.png)
 
-Each entry is one form element. Its `name` is how the rest of the environment refers to the value.
+A form is described in JSON. Each top-level key is one element: a field, a piece of text, or a container that holds other elements. Drona draws the elements in the order they appear.
 
-```json title="part-1/schema.json"
-{
-  "destination": {
-    "type": "jobNameLocation",
-    "label": "Job Name and Location",
-    "showName": true,
-    "showLocation": true,
-    "pickerLabel": "Location"
-  },
-  "input_file": {
-    "type": "picker",
-    "name": "input_file",
-    "label": "Text file",
-    "localLabel": "Browse",
-    "showFiles": "true",
-    "help": "The text file to analyze."
-  },
-  "top_n": {
-    "type": "number",
-    "name": "top_n",
-    "label": "Words to report",
-    "value": 10,
-    "min": 1,
-    "help": "How many of the most common words to report."
-  }
-}
-```
+## Create and Manage: `schema.json`
 
-`jobNameLocation` is special: it provides the job name and working directory, which reach the map as `$name` and `$location`.
+WordCount has two pages: **Create**, to start a new run, and **Manage**, to follow runs that were already submitted. The top-level `schema.json` only sets up that switch:
 
-## The Map: `map.json`
+<Snippet file="schema.json" />
 
-The map connects the form to your scripts. A value such as `$top_n` is replaced with what the user entered in that field, and the key on the left becomes a placeholder you can use as `[TOP_N]`.
+`$ref` inserts elements from another file instead of writing them here. `$DRONA_RUNTIME_DIR` is the location of the [Drona Runtime Library](../runtime-library/index.md), Drona's collection of ready-made parts, so this reuses its `drona_create_manage-table.json`, which adds:
 
-```json title="part-1/map.json"
-{
-  "JOBNAME": "$name",
-  "flocation": "$location",
-  "INPUT_FILE": "$input_file",
-  "TOP_N": "$top_n"
-}
-```
+- the **Select Workflow Mode** card with the **Create** and **Manage** buttons. The choice is available to the rest of the environment as `$drona_create_manage_mode`, with the value `create` or `manage`.
+- in Manage mode, a table of this environment's earlier runs to choose from.
+- the page itself: `schemas/create.schema.json` in Create mode and `schemas/manage.schema.json` in Manage mode, both loaded from your environment's directory.
 
-## The Job Script: `template.txt`
+So the questions for a new run live in `schemas/create.schema.json`. The rest of this page goes through it one element at a time.
 
-This is the job that will run. Drona replaces each placeholder with its value from the map.
+## Job Name and Location
 
-```bash title="part-1/template.txt"
-#!/bin/bash
-#SBATCH --job-name=[JOBNAME]
-#SBATCH --time=00:10:00 --mem=1G
-#SBATCH --ntasks=1 --cpus-per-task=1
-#SBATCH --output=out.%j --error=error.%j
+<Snippet file="schemas/create.schema.json" json="destination" />
 
-cd [flocation]
+Every environment needs a name for the run and a directory to run it in, so this element comes from the runtime library too. It's a `jobNameLocation` element: a name field and a directory picker. The user can leave both empty; Drona then uses the run's ID as the name and a new directory under the default location.
 
-tr -cs '[:alpha:]' '\n' < "[INPUT_FILE]" \
-  | tr '[:upper:]' '[:lower:]' \
-  | grep . \
-  | sort | uniq -c | sort -rn \
-  | head -n [TOP_N] > results.txt
-```
+The values reach the rest of the environment as `$name` and `$location`.
 
-Text in brackets that isn't a map key, such as `[:alpha:]`, is left alone, so normal shell syntax is safe.
+## The Text File
 
-## The Driver: `driver.sh`
+<Snippet file="schemas/create.schema.json" json="input_file" />
 
-The driver is what **Run** executes. It goes to the working directory and submits the job. Drona saves the job script from `template.txt` under the job's name, and `[job-file-name]` gives that name.
+This is WordCount's own question.
 
-```bash title="part-1/driver.sh"
-#!/bin/bash
-source /etc/profile
+- **`type`**: `picker` opens a file browser on the cluster.
+- **`name`**: the name the value goes by in the rest of the environment, here `$input_file`. Every field that holds a value needs one.
+- **`label`** is the text above the field, and **`localLabel`** the text on the button.
+- **`showFiles`**: the picker shows files as well as directories, so the user can pick a file.
+- **`help`**: the text shown when the user hovers over the question mark next to the label.
 
-cd [flocation]
+## Words to Report
 
-$DRONA_RUNTIME_DIR/schedulers/slurm/drona_wf_driver_sbatch [job-file-name]
-```
+<Snippet file="schemas/create.schema.json" json="top_n" />
+
+A `number` field. **`value`** is the default the form starts with, and **`min`** the lowest number the field accepts.
+
+## Ignoring Short Words
+
+Common short words such as "a" and "of" crowd the top of the list, so the user can leave them out. The length only matters when that option is on, so it is shown only then:
+
+<Snippet file="schemas/create.schema.json" json={["filter_short", "min_length"]} />
+
+- The checkbox sends its **`value`**, `Yes`, when it's checked, and nothing when it isn't.
+- **`condition`** decides whether an element is shown. `filter_short.Yes` reads *show this when `filter_short` has the value `Yes`*. A hidden field still keeps its value, which is why the code that uses `min_length` checks `filter_short` first (see [Part 2](./part-2.md#utilspy-checks-messages-and-choices)).
+
+Conditions can also combine fields with `&&` and `||`. See [Conditionals](../environments/conditionals).
+
+## Resources
+
+The job needs memory and time. Rather than building those fields, WordCount takes two from the shared Slurm resources form:
+
+<Snippet file="schemas/create.schema.json" json="resources" />
+
+- **`rowContainer`** places its elements side by side. **`layout`** with the [`card` preset](../frontend/form-components.md#choice-element-styling) draws the box with the **Resources** title.
+- Each `$ref` points into a shared file with a path after `#`: `drona_slurm_resources.json` has a whole resources section, and this takes just its memory and run time fields.
+- Keys next to a `$ref` override the shared element. `"value": "2G"` changes the default memory to 2 GB.
+
+The shared fields bring their labels, help text and units with them. They also have fixed names, `drona_memory` and `drona_walltime`, which a shared part of the map reads in [Part 2](./part-2.md#shared-slurm-settings). If the user leaves the run time empty, Drona uses a default of two hours.
 
 ## Try It
 
-1. Reload Drona. **WordCount** appears on the start page with a **User** tag.
-2. Open it, enter a job name, choose a location and pick your text file.
-3. Click **Generate**. The **Generated Scripts** window shows your job with the placeholders filled in. You can edit the script here.
-4. Click **Run**. The output appears in the same window, and the job is submitted.
-5. When the job has finished, open `results.txt` in the location you chose:
+1. Open **WordCount**. The form appears in Create mode.
+2. Check and uncheck **Ignore short words**: **Minimum word length** appears and disappears.
+3. Hover over a question mark to see the help text.
 
-```
-    210 the
-    118 and
-     96 of
+You can change the JSON and reload the page to see the effect. If the form doesn't load, check that the file is valid JSON:
+
+```bash
+python3 -m json.tool schemas/create.schema.json
 ```
 
-## If Something Goes Wrong
+All element types and their options are listed in [Form Components](../frontend/form-components).
 
-- **WordCount isn't listed:** check the directory name and location, then reload the page.
-- **The form is empty or shows an error:** check that the JSON is valid with `python3 -m json.tool schema.json`.
-- **You see a literal `[SOMETHING]` in the script:** that placeholder has no entry in `map.json`. Names are case-sensitive.
-
-Next: [Part 2: A better form](./part-2).
+Next: [Part 2: From Form to Job Script](./part-2.md).

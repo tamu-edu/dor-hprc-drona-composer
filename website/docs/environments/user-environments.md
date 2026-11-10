@@ -40,14 +40,17 @@ There are two ways to add a user environment to your personal workspace.
 
 ### Option 1: Import from the Environment Repository
 
-The import window lets you browse and add environments from the repository your site has configured, without any manual file management. It is not available if your site has turned import off.
+Your site may offer more environments in an environment repository. The import window lets you browse and add them without any manual file management. To open it, click **Import environment** in the app bar, or the **Import an environment** card on the environments page. If neither appears, your site has turned import off.
 
-1. Click **Import environment** in the app bar.
-2. Browse the available environments, which are grouped by category.
-3. Click **Add** next to the environment you want.
-4. The environment is copied into your `environments/` directory and appears with a **User** tag.
+![Import Environments Window](/img/user-guide/import-environments-window.png)
+
+1. Browse or search the available environments, which are grouped by category.
+2. Click **Add** next to the environment you want.
+3. The environment is copied into your `environments/` directory and appears on the environments page with a **User** tag.
 
 Environments are imported using a git sparse-checkout, so only the requested environment directory is downloaded — not the entire repository.
+
+To remove an imported environment later, click **Remove** on its card on the environments page.
 
 ### Option 2: Create an Environment Manually
 
@@ -59,3 +62,7 @@ Environments are imported using a git sparse-checkout, so only the requested env
 3. Reload Drona. The new environment appears with a **User** tag.
 
 Refer to the [schema](./schema), [map](./map), [driver](./driver), and [utils](./utils) documentation for guidance on writing each file.
+
+## Sharing Your Environment
+
+If you built an environment that other researchers could use, you can contribute it to Drona's environment repository, so it appears in the import window for everyone. See [Contributing to the Drona Environment Repository](./publishing#contributing-to-the-drona-environment-repository).

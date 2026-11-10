@@ -35,7 +35,13 @@ Show a field when another field equals a specific value:
 
 ### Empty Check
 
-Show a field when another field is empty (has no value):
+A condition with nothing after the dot compares against an empty value. Show a field when another field is empty (has no value):
+
+```json
+"condition": "fieldName."
+```
+
+Add `!` to show it when the other field is **not** empty, for example once a value has been loaded:
 
 ```json
 "condition": "!fieldName."

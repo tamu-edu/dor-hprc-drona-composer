@@ -21,7 +21,7 @@ These files work together to define the environment:
 | `manifest.yml` | No | Name, description, category, version and required Drona version |
 | `icon.png` | No | Icon shown on the start page |
 
-Larger environments usually add subdirectories for the parts of the form and scripts, for example separate Create and Manage pages:
+Larger environments usually add subdirectories for the parts of the form and scripts. Apart from the files above, the layout is up to you, with one exception: the shared Create/Manage switch (`drona_create_manage-table.json`, or `drona_create_manage.json` without the workflow table) loads the two pages from `schemas/create.schema.json` and `schemas/manage.schema.json`, so an environment that uses it must have those two files at exactly those paths.
 
 ```
 MyEnvironment/
@@ -31,12 +31,12 @@ MyEnvironment/
 ├── utils.py
 ├── manifest.yml
 ├── icon.png
-├── schemas/      # create.schema.json, manage.schema.json
-├── drivers/      # driver-create.sh, driver-manage.sh
-└── jobscripts/   # job script templates
+├── schemas/      # create.schema.json, manage.schema.json (fixed paths with the Create/Manage switch)
+├── drivers/      # for example driver-create.sh, driver-manage.sh (any layout)
+└── jobscripts/   # job script templates (any layout)
 ```
 
-New to this? Start with the [tutorial](../tutorial). Supporting infrastructure includes [retriever scripts](./retriever-scripts) for dynamic content, and a [shared library](./shared-library) of form components, map fragments, retrievers and HTML templates that any environment can reuse.
+New to this? Start with the [tutorial](../tutorial). Supporting infrastructure includes [retriever scripts](./retriever-scripts) for dynamic content, and the [Drona Runtime Library](../runtime-library/index.md) of form components, map fragments, retrievers and HTML templates that any environment can reuse.
 
 ```mermaid
 graph LR

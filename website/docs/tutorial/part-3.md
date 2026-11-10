@@ -1,83 +1,68 @@
 ---
-title: "Part 3: Logic and Validation"
+title: "Part 3: Submit the Workflow"
 ---
 
-# Part 3: Logic and Validation
+import Snippet from '@site/src/components/Snippet';
 
-A map value can call a Python function. This lets you compute values, and show warnings and errors in the **Generated Scripts** window before anything is submitted.
+# Part 3: Submit the Workflow
 
-## Add `utils.py`
+When the user clicks **Run**, Drona runs the environment's **driver**: a shell script that submits the job. Its output streams into the **Live Output** pane, as on the right of this screenshot:
 
-Each function receives form values as strings and returns the text for its placeholder.
+![Submitting the WordCount workflow](/img/tutorial/wc-preview.png)
 
-```python title="part-3/utils.py"
-from drona_utils import drona_add_error, drona_add_warning
+## One Driver, Two Modes: `driver.sh`
 
+Drona always runs `driver.sh`. WordCount needs it to do something different in each mode: in Create mode it submits a new job, and in Manage mode it carries out the actions the user chose for an existing run.
 
-def check_input(input_file):
-    if not input_file:
-        drona_add_error("Choose a text file to analyze.")
-    return input_file
+There is more than one way to do that. An environment with only a Create mode can write its submit commands straight into `driver.sh`, and one with both modes could branch on the mode inside a single script. WordCount uses the approach we recommend for environments with both modes: each mode gets its own driver file, and `driver.sh` is just one placeholder that the map fills with the right one. That keeps each driver short and easy to read:
 
+<Snippet file="driver.sh" />
 
-def check_top_n(top_n):
-    count = int(top_n) if top_n else 10
-    if count > 100:
-        drona_add_warning(f"You asked for {count} words. The report may be long.")
-    return str(count)
+The map fills `[DRIVER]` by calling a function with the mode from [Part 1](./part-1.md#create-and-manage-schemajson):
 
+<Snippet file="map.json" json="DRIVER" />
 
-def build_filter(filter_short, min_length):
-    if filter_short != "Yes":
-        return ""
-    length = int(min_length) if min_length else 4
-    return f"| awk 'length($0) >= {length}'"
-```
+## Choosing the Driver
 
-- `drona_add_error` and `drona_add_warning` show a message in the message pane. See [Utility Functions](../environments/utils) for the others.
-- An unset field arrives as an empty string, so handle that case.
+<Snippet file="utils.py" fn="select_driver" />
 
-## Call the Functions from the Map
+- `base` is the environment's own directory, so the drivers are found wherever the environment is installed.
+- In Create mode, `drona_add_additional_file` adds the job script to the run. Drona fills its placeholders, writes it to the run's directory under its own name, `word-count.slurm`, and shows it in the **Job Script** tab. The function then returns the Create driver.
+- In Manage mode no job script is added, and the function returns the Manage driver.
+- Without a mode, it shows an error and returns nothing.
 
-A value that starts with `!` is a function call:
+Because the driver's text is the value of a placeholder, Drona fills the placeholders inside it too, such as `[flocation]`.
 
-```json title="part-3/map.json"
-{
-  "JOBNAME": "$name",
-  "flocation": "$location",
-  "INPUT_FILE": "!check_input($input_file)",
-  "TOP_N": "!check_top_n($top_n)",
-  "FILTER": "!build_filter($filter_short, $min_length)"
-}
-```
+## The Create Driver
 
-## Update the Job Script
+<Snippet file="drivers/driver-create.sh" />
 
-The whole filter now comes from one placeholder. When the box is unchecked, `build_filter` returns nothing, so a left-over length has no effect.
+- `source /etc/profile` sets up the same environment as a login shell, so commands such as `sbatch` and `module` are available.
+- `cd [flocation]` moves to the run's directory, where the job script was written.
+- `drona_wf_driver_sbatch` is Drona's shared submit command. It submits the job with `sbatch`, prints the job ID, and records the ID with the run, which is how the Manage page finds the run's jobs in [Part 4](./part-4.md). Given several job scripts, it submits them in order, each one waiting for the previous one to succeed.
 
-```bash title="part-3/template.txt"
-#!/bin/bash
-#SBATCH --job-name=[JOBNAME]
-#SBATCH --time=00:10:00 --mem=1G
-#SBATCH --ntasks=1 --cpus-per-task=1
-#SBATCH --output=out.%j --error=error.%j
+## The Manage Driver
 
-cd [flocation]
+<Snippet file="drivers/driver-manage.sh" />
 
-tr -cs '[:alpha:]' '\n' < "[INPUT_FILE]" \
-  | tr '[:upper:]' '[:lower:]' \
-  | grep . \
-  [FILTER] \
-  | sort | uniq -c | sort -rn \
-  | head -n [TOP_N] > results.txt
-```
+In Manage mode, Run carries out the workflow actions chosen on the Manage page, such as **Remove from history**. The commands come from a runtime library function:
+
+<Snippet file="map.json" json="MANAGE" />
+
+`retrieve_workflow_actions` isn't in WordCount's `utils.py`: it is one of the helper functions of the [Drona Runtime Library](../runtime-library/maps-and-functions.md#functions), which every environment's map can call. It returns the commands for the actions the user selected, or a command that just prints `No action taken.`
 
 ## Try It
 
-1. Click **Generate** without choosing a file. An error appears in the message pane.
-2. Ask for 500 words. A warning appears.
-3. Check and uncheck **Ignore short words**, and compare the generated scripts.
+1. In Create mode, pick a file and click **Generate**, then **Run**.
+2. The **Live Output** pane shows the `sbatch` output and `Job submitted successfully: ID …`, and the status badge changes to **Completed** once the driver has finished.
+3. When the job has run, `results.txt` in the run's directory lists the top words, for example:
 
-You don't need to restart anything: Drona reloads `utils.py` for each preview.
+```
+     12 drona
+      9 workflow
+      7 environment
+```
 
-Next: [Part 4: Reuse shared parts](./part-4).
+If the submission fails, the error is in the Live Output pane. The job's own output and errors are in `out.<job ID>` and `error.<job ID>` in the run's directory.
+
+Next: [Part 4: The Manage Page](./part-4.md).

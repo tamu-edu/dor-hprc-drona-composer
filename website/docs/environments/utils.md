@@ -116,7 +116,7 @@ drona_add_additional_file(content=render_train_script(params), name="train.py", 
 drona_add_additional_file("helpers/compat.py", name=".drona/compat.py", preview_order=-1)
 ```
 
-The files are shown in the preview and written to the workflow directory only when the job is submitted. **Don't write
+The files are shown in the preview and written to the workflow directory only when the workflow is submitted. **Don't write
 files into the workflow directory from a map function:** that happens at every preview and overwrites what the user
 edited there.
 

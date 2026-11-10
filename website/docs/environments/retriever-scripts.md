@@ -10,7 +10,7 @@ Retriever scripts dynamically populate form fields or display real-time informat
 
 Retriever scripts enable Drona Environments to present dynamic content based on user input, available resources, or system conditions. Scripts execute when fields initially render and re-execute automatically when referenced form values change or at scheduled intervals via `refreshInterval`.
 
-While environment creators can implement custom retrievers for any use case, Drona also provides a curated set of [pre-built retriever functions](#pre-built-retriever-functions) for common HPC workflows. These live in a shared directory and can be overridden per-environment; see [Shared Environment Library](./shared-library) for the lookup order and conventions. For a retriever that's just a database lookup with no other logic, a [declarative built-in](#declarative-built-ins) can replace a script entirely.
+While environment creators can implement custom retrievers for any use case, the Drona Runtime Library provides [shared retrievers](../runtime-library/retrievers-and-templates.md) for common HPC workflows, which an environment can override with its own script of the same name. For a retriever that's just a database lookup with no other logic, a [declarative built-in](#declarative-built-ins) can replace a script entirely.
 
 ## Schema Configuration
 
@@ -283,41 +283,9 @@ A table of every workflow in the database, with a column per attribute:
 }
 ```
 
-## Pre-Built Retriever Functions
+## Shared Retrievers
 
-Drona provides a curated set of pre-built retriever functions for common HPC workflows. These are grouped into three categories based on their output type and purpose.
-
-### Selection Retrievers
-
-Selection retrievers populate dropdown menus, checkboxes, and radio groups with available options. All functions return a JSON array of `{"label": "display_text", "value": "internal_id"}` objects.
-
-| Retriever Name | Return Value |
-|----------------|--------------|
-| `drona_select_wf.sh` | Workflows with names, drona_ids, and submission dates. The shared `drona_create_manage.json` component uses [`builtin:db_options`](#builtindb_options) instead; this script remains available for custom environments. |
-| `drona_select_nodes.sh` | Allocated nodes via `squeue` (`sacct` for finished jobs) |
-
-### Monitoring Retrievers
-
-Monitoring retrievers generate formatted HTML displays for real-time job and system metrics, rendered using the `staticText` element. Each function combines an HTML template with a bash script that queries system state, replaces template placeholders with current values, and returns the rendered HTML output. All HTML output is sanitized before rendering to prevent security vulnerabilities.
-
-| Retriever Name | Return Value |
-|----------------|--------------|
-| `drona_slurm_jobs.sh` | Overview table with job ID, name, walltime, and state information |
-| `drona_slurm_logs.sh` | Last lines from stdout and stderr log files |
-| `drona_slurm_sstat.sh` | Real-time statistics such as CPU time, disk I/O, MaxRSS, MaxVM |
-| `drona_slurm_nodeutil.sh` | Per-node CPU usage and memory consumption with progress bars |
-| `drona_slurm_cgroups.sh` | Cgroup data such as memory limits, CPU time, throttling, cpuset, PIDs |
-| `drona_slurm_processes.sh` | User's processes on one node with CPU%, MEM%, RSS and elapsed time |
-| `drona_slurm_seff.sh` | Post-job CPU and memory efficiency information |
-
-### Metadata Retrievers
-
-Metadata retrievers return structured JSON data used by `hidden` form elements to enable conditional logic and dynamic workflow behavior. Unlike monitoring retrievers that produce visual output, these functions provide machine-readable information for programmatic decision-making within the interface, such as enabling or disabling actions based on job states.
-
-| Retriever Name | Return Value |
-|----------------|--------------|
-| `drona_info_jobs.sh` | Workflow metadata such as Slurm job IDs. The shared `drona_info_jobs.json` component uses [`builtin:db_lookup`](#builtindb_lookup) instead; this script remains available for custom environments. |
-| `drona_info_slurmstatus.sh` | Current job state from `squeue` (`PENDING`, `RUNNING`, or `DONE`); fails rather than reporting `DONE` if `squeue` itself errors |
+The Drona Runtime Library ships ready-made retrievers for job status, job tables, logs, resource usage, charts and more. They are listed, with the order in which Drona looks for a retriever, in [Retrievers and Templates](../runtime-library/retrievers-and-templates.md).
 
 ## Code Example
 

@@ -32,7 +32,7 @@ The database contains a single `job_history` table:
 | `runtime_meta` | TEXT (JSON) | Runtime metadata, including associated Slurm job IDs |
 | `start_time` | TEXT (Indexed, ISO 8601) | Workflow submission timestamp |
 | `status` | TEXT | Workflow status (`created`, `running`, `completed`, `failed`, `killed`) |
-| `env_params` | TEXT (JSON) | Complete job record including form data and generated scripts |
+| `env_params` | TEXT (JSON) | Complete workflow record including form data and generated scripts |
 
 The `environment` and `start_time` columns are indexed for efficient filtering.
 

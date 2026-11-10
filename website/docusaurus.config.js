@@ -13,8 +13,7 @@ const darkCodeTheme = prismThemes.dracula;
   tagline: 'High Performance Computing Workflow Composer Documentation',
   url: 'https://tamu-edu.github.io',
   baseUrl: '/dor-hprc-drona-composer/',
-  onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: 'throw',
   favicon: 'img/drona-icon.png',
   organizationName: 'tamu-edu',
   projectName: 'dor-hprc-drona-composer',
@@ -28,19 +27,21 @@ const darkCodeTheme = prismThemes.dracula;
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/tamu-edu/dor-hprc-drona-composer/edit/master/website/',
         },
-        blog: {
-          showReadingTime: true,
-          editUrl:
-            'https://github.com/tamu-edu/dor-hprc-drona-composer/edit/master/website/blog/',
-        },
+        // There is no blog/ directory; leaving the plugin on only produces a build warning
+        blog: false,
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [
+            require.resolve('./src/css/custom.css'),
+            // The colour schemes readers can pick in the navbar (src/components/SchemePicker.js)
+            require.resolve('./src/css/color-schemes.css'),
+          ],
         },
       }),
     ],
   ],
+
+  plugins: [require.resolve('./plugins/raw-examples')],
 
   themes: [
     '@docusaurus/theme-mermaid',
@@ -49,14 +50,28 @@ const darkCodeTheme = prismThemes.dracula;
       '@easyops-cn/docusaurus-search-local',
       {
         hashed: true,
-        // The old docs repeat the current pages; keep them out of search results
-        ignoreFiles: [/^docs\/old-docs\//],
+        indexBlog: false,
       },
     ],
   ],
 
+  // Applies the colour scheme saved by the navbar picker (src/components/SchemePicker.js) before
+  // the page is drawn, so it doesn't flash the default colours first
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: {},
+      innerHTML:
+        "(function(){try{var s=localStorage.getItem('drona-color-scheme');" +
+        "if(s&&s!=='maroon'&&/^[a-z]+$/.test(s))document.documentElement.setAttribute('data-scheme',s);}catch(e){}})();",
+    },
+  ],
+
   markdown: {
     mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
   },
 
 
@@ -77,41 +92,29 @@ const darkCodeTheme = prismThemes.dracula;
             label: 'Documentation',
           },
           {
-            href: 'https://github.com/tamu-edu/dor-hprc-drona-composer',
-            label: 'GitHub',
+            to: '/#environments',
+            position: 'left',
+            label: 'Environments',
+          },
+          {
+            type: 'custom-schemePicker',
             position: 'right',
           },
-        ],
-      },
-      footer: {
-        links: [
           {
-            title: 'Documentation',
-            items: [
-              { label: 'Overview', to: '/docs/overview/intro' },
-              { label: 'Setup', to: '/docs/setup' },
-              { label: 'User Guide', to: '/docs/user-guide/using-drona' },
-              { label: 'Tutorial', to: '/docs/tutorial' },
-              { label: 'Technical Reference', to: '/docs/overview/architecture' },
-              { label: 'Citations', to: '/docs/citations' },
-            ],
+            href: 'https://github.com/tamu-edu/dor-hprc-drona-composer',
+            position: 'right',
+            className: 'header-icon-link header-github-link',
+            'aria-label': 'Drona on GitHub',
           },
           {
-            title: 'Development',
-            items: [
-              {
-                label: 'GitHub Repository',
-                href: 'https://github.com/tamu-edu/dor-hprc-drona-composer',
-              },
-              {
-                label: 'Issues & Bug Reports',
-                href: 'https://github.com/tamu-edu/dor-hprc-drona-composer/issues',
-              },
-            ],
+            href: 'https://www.youtube.com/playlist?list=PLet85jxf-0Pk',
+            position: 'right',
+            className: 'header-icon-link header-youtube-link',
+            'aria-label': 'Drona demo videos on YouTube',
           },
         ],
-        copyright: 'Copyright © 2024 Texas A&M University High Performance Research Computing. MIT License.',
       },
+      // The footer is src/theme/Footer (a custom component), so it has no settings here
       colorMode: {
         defaultMode: 'light',
         disableSwitch: false,
