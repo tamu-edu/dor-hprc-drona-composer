@@ -9,6 +9,7 @@ development: &common_settings
   env_repo_github: "https://github.com/tamu-edu/dor-hprc-drona-environments.git"
   retriever_timeout: 10  # seconds before a retriever script is killed (HTTP 504)
   env_import_enabled: true  # false: hide Import; users can't import environments from env_repo_github
+  recent_workflows: 8  # how many recent workflows the start page lists (1-50)
   env_repo_ref: "drona-v2"  # branch of env_repo_github to import from; falls back to main if missing
 
 production:
@@ -28,3 +29,4 @@ local:
   env_repo_github: "https://github.com/tamu-edu/dor-hprc-drona-environments.git"
   retriever_timeout: 10
   env_import_enabled: true
+  recent_workflows: 8

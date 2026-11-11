@@ -23,17 +23,18 @@ export function whenText(iso, now = new Date()) {
   return t.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-// The newest workflows (all environments) with one state each; [] while loading or on error
-function useRecentWorkflows(limit = 8) {
+// The newest workflows (all environments) with one state each; [] while loading or on error.
+// How many: recent_workflows in config.yml (the server's default when no limit is given).
+function useRecentWorkflows() {
   const [workflows, setWorkflows] = useState([]);
   useEffect(() => {
     let alive = true;
-    fetch(`${document.dashboard_url}/jobs/composer/history/recent?limit=${limit}`)
+    fetch(`${document.dashboard_url}/jobs/composer/history/recent`)
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => { if (alive && Array.isArray(data)) setWorkflows(data); })
       .catch(() => {});
     return () => { alive = false; };
-  }, [limit]);
+  }, []);
   return workflows;
 }
 
