@@ -278,6 +278,11 @@ shared major number is a coincidence: the two versions change independently from
 - A duplicate `read_file_content_route` shadowed the first definition. A `groups` shell-out was replaced with
   `pwd`/`grp`.
 - The documentation site did not build (MDX errors). Broken links and the Pages deploy workflow were fixed.
+  Pushes to `hprc-dev` no longer try to deploy GitHub Pages; only master deploys.
+- The React tests workflow never ran:
+  - it listened only to a `testing` branch that doesn't exist
+  - it used Node 16 and the retired `actions/cache@v2`
+  - it now runs on pushes to `master` and `hprc-dev` and on PRs to master, with Node 22 and `npm ci`
 
 ### Removed
 - The nvidia-smi GPU monitor. The NVML monitor replaces it.
