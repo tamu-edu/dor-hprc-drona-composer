@@ -15,6 +15,13 @@ from .env_api import check_compatible
 DEFAULT_ENV_REPO_REF = "drona-v2"
 FALLBACK_ENV_REPO_REF = "main"
 
+def user_repo_dir():
+    """
+    Per-user clone of the environment repo's metadata. Not a path in the app directory:
+    that is shared by all users, so one user's clone can't be updated or removed by another.
+    """
+    return os.path.join(os.path.expanduser("~"), ".drona", "environments-repo")
+
 def create_folder_if_not_exist(dir_path):
     if not os.path.isdir(dir_path):
         os.makedirs(dir_path)
@@ -59,6 +66,7 @@ class EnvironmentRepoManager:
         if os.path.isdir(self.repo_dir) and (not os.path.exists(metadata_path) or self._current_branch() != ref):
             shutil.rmtree(self.repo_dir)
         if not os.path.exists(metadata_path):
+            os.makedirs(os.path.dirname(os.path.abspath(self.repo_dir)), exist_ok=True)
             subprocess.run([self.git_path, 'clone', '--depth=1', '--no-checkout', '--branch', ref,
                             self.repo_url, self.repo_dir])
             subprocess.run([self.git_path, 'sparse-checkout', 'set', "metadata.json"], cwd=self.repo_dir)
