@@ -2,13 +2,13 @@
 sidebar_position: 3
 ---
 
-# Installation
+# Installation and Configuration Reference
 
-This guide covers the full installation process and configuration details for Drona Workflow Engine.
+This page covers the full installation process and configuration details for Drona Workflow Engine.
 
 ## Prerequisites
 
-- **Python 3.8+**
+- **Python 3.9+**
 - **Node.js** and **npm**
 - **Git**
 
@@ -21,9 +21,9 @@ The setup script automates the following steps:
 3. **Asks for the retriever script timeout** in seconds (press Enter for the default, `10`) and writes it to `config.yml` as `retriever_timeout` (see the Configuration section below)
 4. **Asks whether users may import environments** from the environment repository (press Enter for the default, yes) and writes it to `config.yml` as `env_import_enabled`
 5. **Asks for a deployment target** — `OOD (production)`, `OOD (development)`, or `Local (debug)` — and writes the corresponding value (`production`, `development`, or `local`) to a `.env` file as `APP_ENV`. This must match one of the top-level sections in `config.yml` (see the Configuration section below); `app.py` reads `APP_ENV` at startup to pick which section to use.
-6. **Creates directories** — `environments/` for workflow definitions and `logs/` for application logging, including the shared `logs/drona_log` and `logs/retriever_errors` files
+6. **Creates directories** — `environments/` for system Drona Environments and `logs/` for application logging, including the shared `logs/drona_log` and `logs/retriever_errors` files
 7. **Sets up a Python virtual environment** in `.venv` and installs dependencies from `requirements.txt`
-8. **Installs frontend dependencies** (`babel-loader`, `@babel/core`, `@babel/preset-react`) and builds the React frontend
+8. **Installs frontend dependencies** (`npm ci`) and builds the React frontend
 
 ## Manual Installation
 
@@ -48,8 +48,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # Frontend setup
-npm install -D babel-loader @babel/core @babel/preset-react
-npm run build
+npm ci --no-audit --no-fund
+npm run build:prod:compress
 ```
 
 ## Configuration
@@ -60,7 +60,7 @@ The main configuration file controls application behavior. Key settings:
 
 ```yaml
 development: &common_settings
-  cluster_name: "Grace"                    # Your cluster name
+  cluster_name: "MyCluster"                # Your cluster name
   scheduler: "slurm"                       # Optional: batch scheduler (default slurm)
   dashboard_url: "/pun/dev/drona-composer" # URL path for the app
   driver_scripts_path: "/path/to/machine_driver_scripts"
@@ -88,8 +88,8 @@ The section chosen at runtime is whichever one matches `APP_ENV` (set in `.env` 
 - **`scheduler`** *(optional, default `slurm`)* — Selects `runtime_support/schedulers/<name>/`, which Drona uses for job states, cancelling jobs, reading the submit output and the scheduler-specific retrievers. Only `slurm` exists today; see `runtime_support/schedulers/README.md` for what another scheduler has to provide. Read once at startup (environment variable `DRONA_SCHEDULER` wins)
 - The module picker has no site-wide setting: each environment sets `module_db_root` on its module element (see [Form Components → Module](../frontend/form-components#module)). The old `modules_db_path` key is no longer read and can be removed.
 - **`driver_scripts_path`** — Absolute path to the `machine_driver_scripts/` directory
-- **`env_repo_github`** — GitHub repository URL from which users can import environments
-- **`env_repo_ref`** *(optional, default `drona-v2`)* — Branch of `env_repo_github` to list and import environments from. If the repository doesn't have that branch, `main` is used. `main` of the TAMU environment repository is kept for Drona versions from before this setting, which always read `main`; environments for this Drona are on `drona-v2`. See [Publishing Workflows](../environments/publishing#declaring-the-drona-version) for how environments declare the Drona version they need.
+- **`env_repo_github`** — GitHub repository URL from which users can import environments. It can be Drona's default repository, your own fork of it, or a new repository with the same layout (see [Publishing Environments](../environments/publishing)).
+- **`env_repo_ref`** *(optional, default `drona-v2`)* — Branch of `env_repo_github` to list and import environments from. If the repository doesn't have that branch, `main` is used. `main` of the default environment repository is kept for Drona versions from before this setting, which always read `main`; environments for this Drona are on `drona-v2`. See [Publishing Workflows](../environments/publishing#declaring-the-drona-version) for how environments declare the Drona version they need.
 - **`retriever_timeout`** *(optional, default `10`)* — Maximum run time in seconds for a [retriever script](../environments/retriever-scripts). A script still running after this is killed along with any processes it started (e.g. a stuck `squeue`), and the element gets a "timed out" error (HTTP 504) naming the script. This stops a slow Slurm controller from tying up the app while periodic refreshes queue up behind it. `setup.sh` asks for this value. If the key is missing (e.g. a `config.yml` created before this setting existed), the `DRONA_RETRIEVER_TIMEOUT` environment variable is used, then `10`. The value is read once when the app starts, so restart the app after changing it; a value that isn't a positive whole number (e.g. `30s`) stops the app at startup with an error naming the setting. The `local` section doesn't inherit from `common_settings`, so set it there separately if needed.
 - **`env_import_enabled`** *(optional, default `true`)* — Whether users can import environments from `env_repo_github`. With `false`, the **Import** tile is not shown, and the import requests (`/get_more_envs_info`, `/add_environment`) are refused with HTTP 403 without contacting the repository. Users still have the system environments and any environments they imported earlier, which they can still remove. An empty `env_repo_github` also turns import off. `setup.sh` asks for this value; if the key is missing, import is enabled. Accepts `true`/`false` (also `yes`/`no`); any other value stops the app at startup with an error naming the setting. Read once at startup, so restart the app after changing it.
 
@@ -99,11 +99,7 @@ Every retriever failure (timeout, non-zero exit, or invalid JSON) is appended to
 
 #### User Environment Directory
 
-Drona checks a user-specific directory for personal environments. By default this is set to `/scratch/user/$USER/drona_composer/environments`. If your cluster uses a different path, update the `user_envs_path` in `views/job_composer.py`:
-
-```python
-user_envs_path = f"/scratch/user/{os.getenv('USER')}/drona_composer/environments"
-```
+Each user chooses their own Drona directory at first launch, and it is saved as `drona_dir` in `~/.drona/config.json`. Personal environments are kept in `<drona_dir>/environments`, so nothing has to be configured per cluster.
 
 #### Temporary Directory
 
@@ -111,7 +107,3 @@ During a preview, the files, messages and mappings that environment functions ad
 `packages/drona_utils/core.py`) are kept in a private directory created for that preview only
 (`/tmp/drona-preview-XXXXXX`, mode 0700, removed afterwards). `/tmp` is used, not `$TMPDIR`, because it should be fast local
 disk. To use a different location, change `PREVIEW_TMP_ROOT` in `machine_driver_scripts/engine.py`.
-
-
-
-**Texas A&M University High Performance Research Computing**

@@ -18,7 +18,7 @@
     "ansi_up": "^6.0.6",
     "bootstrap": "^5.3.3",
     "react": "^18.2.0",
-    "react-data-table-component": "^7.6.2",
+    "react-data-table-component": "^8.12.0",
     "react-dom": "^18.2.0",
     "react-select": "^5.8.0",
     "recharts": "^3.10.1",
@@ -52,6 +52,12 @@
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^6.0.1",
     "yaml-loader": "^0.8.1"
+  },
+  "overrides": {
+    "glob": "^14.0.4",
+    "jsdom": "^29.1.1",
+    "minimatch": "^11.0.5",
+    "test-exclude": "^8.0.0"
   },
   "scripts": {
     "demo": "node scripts/generate-demo-env.js",
@@ -90,5 +96,9 @@
   "bugs": {
     "url": "https://github.com/tamu-edu/dor-hprc-drona-composer/issues"
   },
-  "homepage": "https://github.com/tamu-edu/dor-hprc-drona-composer#readme"
+  "homepage": "https://github.com/tamu-edu/dor-hprc-drona-composer#readme",
+  "allowScripts": {
+    "@parcel/watcher": false,
+    "core-js": false
+  }
 }

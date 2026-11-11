@@ -1,0 +1,101 @@
+/* Compact footer: dark maroon with the hexagon pattern used in the homepage hero */
+
+.footer {
+  position: relative;
+  padding: 1.1rem 0 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 32L0 82V50l28 16 28-16v32L28 98z' fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1.5'/%3E%3C/svg%3E"),
+    var(--drona-footer-band);
+}
+
+/* Thin gradient line along the top edge */
+.footer::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--drona-accent-line);
+  opacity: 0.8;
+}
+
+[data-theme='dark'] .footer {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 32L0 82V50l28 16 28-16v32L28 98z' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1.5'/%3E%3C/svg%3E"),
+    var(--drona-footer-band);
+}
+
+.footer a {
+  color: rgba(255, 255, 255, 0.85);
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1.5rem;
+}
+
+.small {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff !important;
+}
+
+.brand img {
+  transition: transform 0.4s ease;
+}
+
+.brand:hover img {
+  transform: rotate(60deg);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.4rem;
+  font-weight: 600;
+}
+
+.icons {
+  display: flex;
+  gap: 0.9rem;
+}
+
+.icons a {
+  display: inline-flex;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.icons a:hover {
+  transform: translateY(-2px) scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .links {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,6 @@
+name: "WordCount"
+description: "Counts the most common words in a text file. Example from the Drona tutorial."
+category: "Examples"
+version: "1.0.0"
+author: "Your Name"
+requires_drona: ">=2.0"

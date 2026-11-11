@@ -23,11 +23,11 @@ A value can itself contain `[KEY]` placeholders. A common case is `[DRIVER]` in 
 
 ### Built-in Placeholders
 
-Two placeholders are always available regardless of what is defined in `map.json`:
+`[job-file-name]` is always available, and `[flocation]` is a map key with special handling:
 
 | Placeholder | Description |
 |---|---|
-| `[flocation]` | The absolute path to the job's working directory. Used to `cd` into the correct location before submitting, ensuring all relative file paths in the job script resolve correctly. |
+| `[flocation]` | The job's working directory. Define it in `map.json` as `"flocation": "$location"`; Drona quotes the value so that paths with spaces work. Used to `cd` into the correct location before submitting, ensuring all relative file paths in the job script resolve correctly. |
 | `[job-file-name]` | The name of the generated `.job` file. Derived from the user's job name, with spaces and hyphens replaced by underscores (e.g., `my_analysis.job`). Defaults to `template.txt` if the job is unnamed. |
 
 
@@ -124,10 +124,6 @@ A form that doesn't send `drona_target_wf` keeps the old behavior: every submit 
 
 ## Relationship with `map.json`
 
-`driver.sh` consumes the output of `map.json`. Any key defined under `"mappings"` becomes a valid `[PLACEHOLDER]` in `driver.sh`. For simple workflows this is typically just `[flocation]` and `[job-file-name]`. For more complex workflows like AlphaFold3, `map.json` can resolve an entire submission command into a single `[runcommand]` placeholder, keeping `driver.sh` generic and reusable across execution modes.
+`driver.sh` consumes the output of `map.json`. Any key defined in it becomes a valid `[PLACEHOLDER]` in `driver.sh`. For simple environments this is typically just `[flocation]` and `[job-file-name]`. For more complex environments like AlphaFold3, `map.json` can resolve an entire submission command into a single `[runcommand]` placeholder, keeping `driver.sh` generic and reusable across execution modes.
 
 See [Map Files](./map) for details on how variables are defined and resolved.
-
----
-
-**Texas A&M University High Performance Research Computing**

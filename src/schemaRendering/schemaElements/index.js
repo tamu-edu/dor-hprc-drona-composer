@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import Text from "./Text";
 import Select from "./Select";
 import Number from "./Number";
@@ -25,8 +26,16 @@ import DynamicCheckboxGroup from "./DynamicCheckboxGroup";
 import DynamicViewer from "./DynamicViewer";
 import Container from "./Container";
 import WorkflowRerunRecreate from "./WorkflowRerunRecreate";
-import Chart from "./Chart";
 import ButtonLabels from "./ButtonLabels";
+import lazyChunk from "../../utils/lazyChunk";
+
+// Recharts is large and only some workflows draw charts, so it loads on first use.
+const LazyChart = lazyChunk(() => import(/* webpackChunkName: "chart" */ "./Chart"), "chart");
+const Chart = (props) => (
+	<Suspense fallback={<div className="text-muted">Loading chart…</div>}>
+		<LazyChart {...props} />
+	</Suspense>
+);
 
 export {
 	Text,

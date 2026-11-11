@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # Architecture
 
-Drona Workflow Engine is a React/Flask application that transforms JSON-based workflow definitions into dynamic forms for HPC job submission. This page describes how the major components fit together.
+Drona Workflow Engine is a React/Flask application that turns Drona Environments, which are defined in JSON, into dynamic forms for HPC job submission. This page describes how the major components fit together.
 
 ## High-Level Overview
 
@@ -12,7 +12,7 @@ Drona Workflow Engine is a React/Flask application that transforms JSON-based wo
 graph LR
     A[Browser] <--> B[React Frontend]
     B <--> C[Flask Backend]
-    C <--> D[Workflow Files]
+    C <--> D[Drona Environment Files]
     C <--> E[Retriever Scripts]
     C --> F[Job Scheduler]
 
@@ -30,22 +30,23 @@ The frontend renders dynamic forms from `schema.json`, the backend processes for
 
 The frontend is a React application built with Webpack and Babel. Key components:
 
-- **`JobComposer.js`** — Main application component. Manages environment selection, form state, and job submission flow.
+- **`AppShell.js`** — Page frame: app bar, start page or workflow pane, and the import dialog. The start page and environment switcher are in `environment/`.
+- **`JobComposer.js`** — The workflow pane. Manages form state and the job submission flow.
 - **`schemaRendering/Composer.js`** — Reads `schema.json` and orchestrates form rendering.
 - **`schemaRendering/FieldRenderer.js`** — Takes a field definition from the schema and renders the appropriate form component (text, select, checkbox, etc.).
 - **`schemaRendering/schemaElements/`** — Individual form components (Text, Select, DynamicSelect, Module, Time, Uploader, etc.). See [Form Components](../frontend/form-components) for the full reference.
-- **`PreviewModal.js`** — Displays generated job scripts in an editable preview window before submission.
+- **`PreviewPanel.jsx`** — Displays generated job scripts in an editable preview window before submission.
 - **`EnvironmentModal.js`** — Handles environment import from the configured repository.
 - **`FormValuesContext.js`** — React context that provides form state to all components, enabling conditional visibility and dynamic field updates.
 
 ### Data Flow
 
-1. User selects an environment from the dropdown
+1. User selects an environment on the start page or in the environment switcher
 2. Frontend fetches the environment's `schema.json` from the backend
 3. `Composer` parses the schema and `FieldRenderer` renders each field
 4. Dynamic fields (e.g., `dynamicSelect`) call retriever scripts via the backend to populate options
 5. On preview, form values are sent to the backend for script generation
-6. Generated scripts are displayed in `PreviewModal` for review and editing
+6. Generated scripts are displayed in `PreviewPanel` for review and editing
 
 ## Backend
 
@@ -57,7 +58,7 @@ The backend is a Flask application served through Passenger (in OOD deployments)
 - **`socket_handler.py`** — WebSocket support via Flask-SocketIO for real-time communication.
 - **`environments.py`** — Environment discovery and management (system and user environments).
 - **`env_repo_manager.py`** — Handles cloning and managing the environment import repository.
-- **`history_manager.py`** — Tracks job submission history.
+- **`history_manager.py`** — Tracks workflow history: each submitted workflow and its jobs.
 - **`job_routes.py`** — Job status and management endpoints.
 
 ### Script Generation
@@ -71,16 +72,16 @@ When a user submits a form, the backend:
 
 This processing is handled by `machine_driver_scripts/engine.py` and `machine_driver_scripts/utils.py`.
 
-## Workflow Files
+## Drona Environment Files
 
-Each workflow environment is a self-contained directory with these core files:
+Each Drona Environment is a self-contained directory. These are its main files; only `schema.json`, `map.json` and `driver.sh` are required:
 
 ```
-MyWorkflow/
+MyEnvironment/
 ├── schema.json       # Form definition
 ├── map.json          # Variable mapping
 ├── driver.sh         # Job script template
-├── metadata.json     # Name, version, description
+├── manifest.yml      # Name, version, description, required Drona version
 ├── utils.py          # Custom processing functions
 └── retrievers/       # Dynamic data scripts
 ```
@@ -89,10 +90,10 @@ For details on each file, see the [Environment Development](../environments/over
 
 ## Environment Discovery
 
-Drona loads environments from the **Drona root** directory configured during first-time setup. 
+Drona loads system environments from `environments/` in its installation directory, and user environments from the **Drona root** directory configured during first-time setup.
 See [First-Time Initialization](../user-guide/using-drona#first-time-initialization) for details.
 
-Drona scans the `environments/` subdirectory within that configured `drona_dir` for available Drona environments such as Generic, Python, AlphaFold, LAMMPS, and more:
+Drona scans the `environments/` subdirectory within that configured `drona_dir` for available user environments:
 ```
 <drona_dir>/
 └── environments/ 
@@ -110,7 +111,7 @@ sequenceDiagram
     participant E as Engine
     participant H as Job Scheduler
 
-    R->>D: Select Workflow
+    R->>D: Select Drona Environment
     D->>E: Load schema.json
     E->>D: Generate Dynamic Form
     D->>R: Present Form
@@ -142,7 +143,3 @@ Application configuration lives in `config.yml` at the project root, with separa
 | Real-time | WebSockets (eventlet) |
 | App Server | Phusion Passenger (OOD) or standalone Flask |
 | Job Scheduler | Slurm (via shell commands) |
-
----
-
-**Texas A&M University High Performance Research Computing**

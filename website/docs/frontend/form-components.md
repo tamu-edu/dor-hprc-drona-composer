@@ -184,7 +184,7 @@ A declarative, self-contained live chart backed by Recharts. Polls a retriever s
 - `showGrid=true` (boolean, optional) - Show gridlines
 - `showTable=false` (boolean, optional) - Show a "view as table" toggle below the chart (accessibility fallback). With `panels`/`seriesPerPanel`, one combined table covers every series across all panels.
 - `emptyMessage="No data yet"` (string, optional) - Message shown before the first sample arrives
-- `panels` (Array<Object>, optional) - Explicit, manual panel split from one shared poll: `{title, series, seriesLabelMap, colors, chartType, yAxis, stacked, showLegend, showGrid, height}` per panel. `series` is required per panel (usually an explicit `{key,label,color}` array, since the point is hand-grouping known keys by meaning). Omitted per-panel options fall back to the top-level prop of the same name. Takes precedence over `seriesPerPanel` if both are set.
+- `panels` (`Array<Object>`, optional) - Explicit, manual panel split from one shared poll: `{title, series, seriesLabelMap, colors, chartType, yAxis, stacked, showLegend, showGrid, height}` per panel. `series` is required per panel (usually an explicit `{key,label,color}` array, since the point is hand-grouping known keys by meaning). Omitted per-panel options fall back to the top-level prop of the same name. Takes precedence over `seriesPerPanel` if both are set.
 - `seriesPerPanel` (number, optional) - Automatic split: chunks the series derived from the top-level `series` prop (auto or explicit) into groups of this size, one panel per group, in first-seen order. Panel count adjusts as new keys appear in the data. Ignored if `panels` is set.
 
 ### Examples
@@ -653,7 +653,7 @@ A table that works like a `dynamicSelect`: its rows come from a retriever script
 - `searchable=true` (boolean, optional) - Show a search box that filters rows across all columns
 - `searchPlaceholder` (string, optional) - Placeholder text for the search box
 - `maxHeight="300px"` (string, optional) - Height at which the table body starts scrolling
-- `layout` (string|Object|Array, optional) - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. { "preset": "card", "title": "Workflows" }; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
+- `layout` (string|Object|Array, optional) - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. `{ "preset": "card", "title": "Workflows" }`; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
 - `layout.collapsible` / `layout.collapsed` (boolean, optional, card only) - `"collapsible": true` makes the title pill a toggle (chevron before the title) so the card can be folded; `"collapsed": true` sets the initial state to folded and implies `collapsible`. While folded, the retriever and polling are held back. Example: `{ "preset": "card", "title": "Job Logs", "collapsible": true, "collapsed": true }`
 - `showRefreshButton` on a card layout puts the button on the top border at the right corner, opposite the title pill
 - `useLabel=true` (boolean, optional) - false hides the label row (handy with `layout`, which has its own title)

@@ -2,27 +2,41 @@
 sidebar_position: 1
 ---
 
-# Workflow Development Overview
+# Environment Development Overview
 
-Drona Workflow Engine workflows are self-contained workflow definitions that transform user input forms into executable computational jobs. Each Drona Workflow defines the complete user experience, from form interface to job execution, enabling specialized workflows for different research domains and computational frameworks.
+A **Drona Environment** is a collection of schema, mapping, and driver files that define and implement a scientific workflow within the Drona Workflow Engine. It defines the complete user experience, from the form to job execution, so that each research domain or computational framework can have its own specialized interface.
 
-<!-- TODO: Potential image here -->
-<!-- ![Workflow Architecture Overview](/img/docusaurus.png) -->
+Each submission of a Drona Environment creates a *workflow instance*, with its own directory and database record. See [Key Concepts](../overview/key-concepts).
 
-## What are Drona Workflows?
+## Files in a Drona Environment
 
-A Drona Workflow is a collection of configuration files, scripts, and templates that define user interfaces through JSON schemas, process form data into executable job scripts, manage dynamic content through retriever scripts, and execute workflows on HPC systems via batch schedulers. Each Drona Workflow represents a complete workflow system tailored to specific research needs, computational frameworks, or hardware platforms.
+These files work together to define the environment:
 
-## Workflow Architecture
+| File | Required | Purpose |
+|---|---|---|
+| `schema.json` | Yes | Defines the form: its fields, validation, conditional visibility and dynamic content |
+| `map.json` | Yes | Maps form fields to the variables used in scripts, and calls Python functions to compute values |
+| `driver.sh` | Yes | Template for the script that submits the jobs |
+| `utils.py` | No | Environment-specific Python logic and validation |
+| `manifest.yml` | No | Name, description, category, version and required Drona version |
+| `icon.png` | No | Icon shown on the start page |
 
-Every Drona Workflow consists of core files that work together to define the complete workflow experience:
+Larger environments usually add subdirectories for the parts of the form and scripts. Apart from the files above, the layout is up to you, with one exception: the shared Create/Manage switch (`drona_create_manage-table.json`, or `drona_create_manage.json` without the workflow table) loads the two pages from `schemas/create.schema.json` and `schemas/manage.schema.json`, so an environment that uses it must have those two files at exactly those paths.
 
-- **Schema Definition (`schema.json`)** - Defines the user interface and form structure, specifies validation rules and field relationships, controls conditional field visibility, and integrates dynamic content sources
-- **Execution Driver (`driver.sh`)** - Template script for job execution that processes form variables into commands while managing execution setup and multi-platform execution
-- **Variable Mapping (`map.json`)** - Maps form fields to job variables, defines resource allocation logic, specifies file handling rules, and controls job scheduler parameters  
-- **Utility Functions (`utils.py`)** - Provides workflow-specific logic, handles complex data processing, implements custom validation, and manages API integrations
+```
+MyEnvironment/
+├── schema.json
+├── map.json
+├── driver.sh
+├── utils.py
+├── manifest.yml
+├── icon.png
+├── schemas/      # create.schema.json, manage.schema.json (fixed paths with the Create/Manage switch)
+├── drivers/      # for example driver-create.sh, driver-manage.sh (any layout)
+└── jobscripts/   # job script templates (any layout)
+```
 
-Supporting infrastructure includes retriever scripts for dynamic content and API integration, and a [shared library](./shared-library) of modular schema components, retrievers, and HTML templates for reuse across workflows.
+New to this? Start with the [tutorial](../tutorial). Supporting infrastructure includes [retriever scripts](./retriever-scripts) for dynamic content, and the [Drona Runtime Library](../runtime-library/index.md) of form components, map fragments, retrievers and HTML templates that any environment can reuse.
 
 ```mermaid
 graph LR
@@ -42,12 +56,8 @@ graph LR
     style G fill:#ffebee
 ```
 
-## Workflow Sources
+## Where Drona Environments Come From
 
-We provide publicly available Drona Workflows in our GitHub repository where anyone can contribute new workflows or improvements to existing ones. See the [Publishing Workflows](./publishing) section for guidelines on contributing workflows to the community repository.
-
-Locally created workflows are stored as user workflows in your personal workspace, allowing for custom workflows and experimental development without affecting system-wide workflows.
-
----
-
-**Texas A&M University High Performance Research Computing**
+- **Environment repository.** A site can point Drona at a repository of shareable environments, which users add with **Import environment**. See [Publishing Environments](./publishing).
+- **System environments.** Administrators install these for all users.
+- **User environments.** Created or imported into your personal workspace, so you can customize and experiment without affecting anyone else. See [User Environments](./user-environments).

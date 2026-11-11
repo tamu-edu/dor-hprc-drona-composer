@@ -2,15 +2,30 @@
 sidebar_position: 2
 ---
 
+import Snippet from '@site/src/components/Snippet';
+
 # Schema Files
 
-Schema files (`schema.json`) define the user interface for Drona Workflows through JSON configurations that generate dynamic forms. These files control what users see, how they interact with the workflow, and what data gets collected for job execution.
+Schema files (`schema.json`) define the user interface for Drona Environments through JSON configurations that generate dynamic forms. These files control what users see, how they interact with the workflow, and what data gets collected for job execution.
 
-![Schema Structure](/img/docusaurus.png)
+Each element in the JSON becomes one part of the form. Here is part of the schema of the [tutorial's](../tutorial/index.md) WordCount environment, next to the form Drona draws from it: **Text file** through **Minimum word length**.
+
+<div className="schema-to-form">
+<div>
+
+<Snippet file="schemas/create.schema.json" json={["input_file", "top_n", "filter_short", "min_length"]} />
+
+</div>
+<div>
+
+![The WordCount form drawn from this schema](/img/tutorial/wc-form.png)
+
+</div>
+</div>
 
 ## Schema File Organization
 
-Every Drona Workflow must contain a file called `schema.json` in its root directory. This file defines the complete user interface for the workflow and serves as the entry point for form generation. Schema can be described via multiple files as described in the [Schema Decomposition](#schema-decomposition) section.
+Every Drona Environment must contain a file called `schema.json` in its root directory. This file defines the complete user interface for the environment and serves as the entry point for form generation. Schema can be described via multiple files as described in the [Schema Decomposition](#schema-decomposition) section.
 
 ## Standard Field Structure
 
@@ -33,7 +48,7 @@ The `type` property determines which form component will be rendered, while `nam
 
 Schema files can utilize all available [Frontend Form Components](../frontend/form-components), including text inputs, selectors, file pickers, and specialized components like module selectors and time inputs. Each component type has specific properties and behaviors documented in the frontend components section.
 
-Components can be organized using containers such as `rowContainer` and `collapsibleRowContainer` that group elements together for conditional display or stylistic purposes to control layout. Containers enable better organization of related fields and create intuitive user interfaces that guide users through workflow configuration.
+Components can be organized using containers such as `rowContainer` and `collapsibleRowContainer` that group elements together for conditional display or stylistic purposes to control layout. Containers enable better organization of related fields and create intuitive user interfaces that guide users through the configuration.
 
 ## Workflow Button Labels
 
@@ -72,7 +87,7 @@ Schema files integrate dynamic content through retriever scripts that populate f
 
 ## Conditional Logic
 
-Schema files support conditional field display based on user selections, allowing workflows to show relevant options while hiding unnecessary complexity. Conditional logic is evaluated when the form loads and whenever referenced field values change. For more detailed information about conditional expressions and advanced patterns, see [Conditional Logic](./conditional-logic).
+Schema files support conditional field display based on user selections, allowing environments to show relevant options while hiding unnecessary complexity. Conditional logic is evaluated when the form loads and whenever referenced field values change. For more detailed information about conditional expressions and advanced patterns, see [Conditional Logic](./conditionals).
 
 ```json
 {
@@ -93,47 +108,50 @@ Schema files support conditional field display based on user selections, allowin
 }
 ```
 
-This creates adaptive interfaces that respond to user choices and provide contextual configuration options through sophisticated workflow branching.
+This creates adaptive interfaces that respond to user choices and provide contextual configuration options through form branching.
 
 ## Schema Decomposition
 
-For complex workflows, schema files can be decomposed into multiple files using JSON references. This approach allows for better organization and reusability of form components across different workflow sections.
+For complex environments, a schema can be split over several files with JSON references (`$ref`). This keeps each file small, and lets environments share parts instead of copying them.
+
+The WordCount environment from the tutorial shows how the pieces fit together. Its `schema.json` is only a `$ref` to the Runtime Library's Create/Manage switch, which loads a schema file of the environment for each mode. Those files mix the environment's own fields with more shared parts:
+
+```mermaid
+flowchart LR
+    S["schema.json"] -->|$ref| CM["Create/Manage switch<br/>(Runtime Library)"]
+    CM -->|Create mode| C["schemas/create.schema.json"]
+    CM -->|Manage mode| M["schemas/manage.schema.json"]
+    C -->|$ref| L1["Job name and location,<br/>memory, run time<br/>(Runtime Library)"]
+    C --> O1["Text file, words to report,<br/>short words (own fields)"]
+    M -->|$ref| L2["Workflow lookups, actions,<br/>directory, jobs table<br/>(Runtime Library)"]
+    M --> O2["Top Words card<br/>(own field)"]
+```
+
+A reference replaces the element that contains it. It can point to a whole file, or to one element in a file with a path after `#`:
 
 ```json
 {
-  "workflowSelector": {
+  "mode": {
     "type": "select",
     "name": "operationType",
+    "label": "Operation",
     "options": [
-      {"value": "inference", "label": "Inference"},
-      {"value": "training", "label": "Training"}
+      { "value": "inference", "label": "Inference" },
+      { "value": "training", "label": "Training" }
     ]
   },
-
-  "inferenceContainer: {
-    "elements": {
-      "inferenceSection": {
-        "$ref": "/absolute/path/schema_components/inference.json",
-      }
-   },
-   "condition": "operationType.inference"
-
+  "inferenceSection": {
+    "$ref": "schema_components/inference.json",
+    "condition": "operationType.inference"
   },
-
-  "inferenceContainer: {
-    "elements": {
-      "trainingSection": {
-        "$ref": "schema_components/training.json#/modelContainer", 
-      } 
-    },
+  "trainingSection": {
+    "$ref": "schema_components/training.json#/modelContainer",
     "condition": "operationType.training"
   }
 }
 ```
 
-A reference element can either reference an entire json file such as `inference.json`, or a specific element as in the `modelContainer` following the standard conventions of `jsonref`. The path used for references is relative to the environment directory, but can also be an absolute path. Current limitation involves that if an element is a reference element, it cannot include additonal fields such as condition.
-
-This modular approach enables component reuse and maintainable schema organization for workflows with multiple execution paths or complex configuration requirements. 
+Paths are relative to the environment's directory, or absolute. Keys written next to `$ref`, such as the `condition`s above, are added to the referenced element and override its own values.
 
 ### Referencing a shared/curated component directory
 
@@ -154,9 +172,4 @@ To reference components from a fixed directory shared across environments (rathe
 
 `$DRONA_RUNTIME_DIR` is set automatically — no additional configuration is required. This works alongside the relative and absolute path conventions above — plain relative paths (e.g. `schema_components/training.json`) still resolve against the environment directory.
 
-In practice, shared fragments live under `runtime_support/forms/`, alongside a matching set of shared retriever scripts and HTML templates. See [Shared Environment Library](./shared-library) for the full layout and conventions.
-
-
----
-
-**Texas A&M University High Performance Research Computing**
+In practice, shared fragments live under `runtime_support/forms/`, alongside a matching set of shared retriever scripts and HTML templates. See [Drona Runtime Library](../runtime-library/index.md) for the full layout and conventions.

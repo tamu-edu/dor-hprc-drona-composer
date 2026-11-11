@@ -387,9 +387,20 @@ export function WorkflowPane() {
       // User can click Preview to open the script pane.
       setShowSplitScreenModal(false);
 
+      // A saved location ending in <name> or <name>-N was chosen by Drona, not the user: restore
+      // it as an automatic location, so Generate gives the new workflow a free <name>-2, ...
+      // instead of reusing (and overwriting) the original's directory. Any other location was
+      // picked by hand and is kept; the preview then warns that the directory is in use.
+      const trimmedLocation = savedLocation.replace(/\/+$/, "");
+      const lastSlash = trimmedLocation.lastIndexOf("/");
+      const lastPart = trimmedLocation.slice(lastSlash + 1);
+      const escapedName = savedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const automaticLocation =
+        lastSlash > 0 && new RegExp(`^${escapedName}(-\\d+)?$`).test(lastPart);
+
       setRunLocation(savedLocation);
-      setBaseRunLocation(savedLocation);
-      setLocationPickedByUser(true);
+      setBaseRunLocation(automaticLocation ? trimmedLocation.slice(0, lastSlash) : savedLocation);
+      setLocationPickedByUser(!automaticLocation);
 
       const sameEnvironment =
         environment.env === envName &&
@@ -629,6 +640,7 @@ export function WorkflowPane() {
           <RerunPromptModal
             modalRef={rerunPromptModalRef}
             originalName={rerunOriginalName}
+            originalLocation={pendingRerunRow?.location}
             defaultLocation={defaultRunLocation}
             onConfirm={processRerun}
             onCancel={handleRerunCancel}

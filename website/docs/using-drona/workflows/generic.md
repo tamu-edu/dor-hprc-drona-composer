@@ -2,24 +2,24 @@
 sidebar_position: 0
 ---
 
-# Generic Workflow
+# Generic Environment
 
-The Generic Workflow is a flexible, customizable environment that allows you to submit arbitrary computational jobs to HPC clusters. Unlike specialized workflows tailored to specific applications or frameworks, the Generic Workflow provides a streamlined interface for running any job that can be executed via a Bash script on a SLURM-managed cluster.
+The Generic Environment is a flexible, customizable environment that allows you to submit arbitrary computational jobs to HPC clusters. Unlike specialized environments tailored to specific applications or frameworks, the Generic Environment provides a streamlined interface for running any job that can be executed via a Bash script on a SLURM-managed cluster.
 
 ## Overview
 
-The Generic Workflow is ideal for:
+The Generic Environment is ideal for:
 
-- **Custom computational tasks** — Running unique codes or scripts not covered by specialized workflows
+- **Custom computational tasks** — Running unique codes or scripts not covered by specialized environments
 - **Simple batch jobs** — Executing shell commands, Python scripts, or other executables
-- **Prototyping and testing** — Quick iteration on new computational approaches before creating specialized workflows
-- **One-off analyses** — Running standalone analyses without needing a dedicated workflow
+- **Prototyping and testing** — Quick iteration on new computational approaches before creating specialized environments
+- **One-off analyses** — Running standalone analyses without needing a dedicated environment
 
 ## Key Features
 
-The Generic Workflow provides a straightforward interface to:
+The Generic Environment provides a straightforward interface to:
 
-- Upload input files and data to your job workspace
+- Upload input files and data to your workflow directory
 - Select and load software modules from the HPC environment
 - Configure resource allocation (CPU cores, memory, compute time)
 - Request GPU accelerators if available on your cluster
@@ -28,7 +28,7 @@ The Generic Workflow provides a straightforward interface to:
 
 ## Form Fields and Options
 
-When creating a job with the Generic Workflow, you'll encounter the following sections:
+When creating a workflow with the Generic Environment, you'll encounter the following sections:
 
 ### File Upload
 
@@ -66,7 +66,7 @@ When you check the "Advanced task options" box, additional fields become availab
 
 
 
-## Using the Generic Workflow
+## Using the Generic Environment
 
 ### Basic Steps
 

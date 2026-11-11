@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Text, Picker } from "./schemaRendering/schemaElements/index";
+import * as M from "./styles/modalStyles";
 
 const Portal = ({ children }) => {
   const el = React.useMemo(() => document.createElement('div'), []);
@@ -15,7 +16,7 @@ const Portal = ({ children }) => {
   return ReactDOM.createPortal(children, el);
 };
 
-const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, onCancel }) => {
+const RerunPromptModal = ({ modalRef, defaultLocation, originalName, originalLocation, onConfirm, onCancel }) => {
   const [jobName, setJobName] = useState(originalName);
   const [location, setLocation] = useState(defaultLocation);
 
@@ -24,6 +25,10 @@ const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, 
     setLocation(defaultLocation);
     sync_job_name(originalName);
   }, [originalName, defaultLocation]);
+
+  // Rerunning in the original directory is allowed (e.g. to run again in place), but say so.
+  const normalize = (path) => (path || "").replace(/\/+$/, "");
+  const sameDirectory = !!originalLocation && normalize(location) === normalize(originalLocation);
 
   const handleSubmit = () => {
     if (!jobName.trim()) {
@@ -70,24 +75,20 @@ const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, 
           zIndex: 1050
         }}
       >
-        <div className="modal-dialog modal-lg">
+        <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
-            <div className="modal-header">
+            <div className="modal-header" style={{ alignItems: "center" }}>
               <h5 className="modal-title">Rerun {originalName}</h5>
-              <button
-                type="button"
-                className="close"
-                onClick={handleCancel}
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
+              <div style={M.headerBtnRow}>
+                <button type="button" style={M.cancelBtn} onClick={handleCancel}>
+                  Cancel
+                </button>
+                <button type="button" style={M.primaryBtn(false)} onClick={handleSubmit}>
+                  Continue
+                </button>
+              </div>
             </div>
             <div className="modal-body">
-              <div className="alert alert-warning mb-4" role="alert">
-                <i className="fas fa-exclamation-triangle me-2"></i>
-                <b>Warning:</b> This action will not change the contents of the scripts.
-              </div>
               <form>
                 <Text
                   name="rerun-name"
@@ -103,23 +104,14 @@ const RerunPromptModal = ({ modalRef, defaultLocation, originalName, onConfirm, 
                   onChange={(index, value) => setLocation(value)}
                   defaultLocation={location}
                 />
+                {sameDirectory && (
+                  <div className="alert alert-warning py-1 px-2 mt-2 mb-0" style={M.inlineAlert} role="note">
+                    <i className="fas fa-exclamation-triangle mr-2" aria-hidden="true"></i>
+                    This is the directory of the original workflow. The rerun writes its files
+                    there and may overwrite the original's files and output.
+                  </div>
+                )}
               </form>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary maroon-button-secondary"
-                onClick={handleCancel}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary maroon-button"
-                onClick={handleSubmit}
-              >
-                Continue
-              </button>
             </div>
           </div>
         </div>
