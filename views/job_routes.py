@@ -1,4 +1,4 @@
-from flask import Response, stream_with_context, Blueprint, send_file, render_template, request, jsonify
+from flask import Response, stream_with_context, Blueprint, send_file, render_template, request, jsonify, current_app
 import os
 import re
 import shlex
@@ -301,9 +301,11 @@ def recent_workflows_route():
     """The newest workflows for the start page, each with one overall state from the scheduler
     (one query for all their jobs)."""
     from .workflow_state import workflow_state
+    # ?limit= overrides recent_workflows from config.yml; both capped at 1-50
+    default = current_app.config.get("recent_workflows", 8)
     try:
-        limit = max(1, min(int(request.args.get("limit", 8)), 50))
-    except ValueError:
+        limit = max(1, min(int(request.args.get("limit", default)), 50))
+    except (TypeError, ValueError):
         limit = 8
     # Only workflows whose environment is installed, so the list is full when enough exist
     from .environments import installed_environment_names
