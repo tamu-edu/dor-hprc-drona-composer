@@ -3,7 +3,6 @@
     "drona_slurm_params"
   ],
   "JOBNAME": "$name",
-  "flocation": "$location",
   "DRIVER": "!select_driver($drona_create_manage_mode)",
   "INPUT_FILE": "!check_input($input_file, $drona_create_manage_mode)",
   "TOP_N": "!check_top_n($top_n)",

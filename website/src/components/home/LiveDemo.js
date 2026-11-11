@@ -7,7 +7,6 @@ import CodeBlock from '@theme/CodeBlock';
 import template from '@site/examples/word-count/jobscripts/word-count.slurm';
 import styles from './home.module.css';
 
-const RUNS = '/scratch/user/you/drona_wfe/runs';
 const CODE_URL =
   'https://github.com/tamu-edu/dor-hprc-drona-composer/tree/master/website/examples/word-count';
 
@@ -29,7 +28,6 @@ function generate({ jobName, inputFile, topN, filterShort, minLength, memory, ho
     CPUS: '1',
     PARTITION: '',
     EXTRA: '',
-    flocation: `${RUNS}/${name}`,
     INPUT_FILE: inputFile,
     FILTER: filterShort ? `| awk 'length($0) >= ${length}'` : '',
     TOP_N: String(count),

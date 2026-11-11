@@ -18,11 +18,11 @@ Each key on the left becomes a placeholder: `"TOP_N"` fills every `[TOP_N]` in y
 
 ### Form Values
 
-<Snippet file="map.json" json={["JOBNAME", "flocation"]} />
+<Snippet file="map.json" json="JOBNAME" />
 
-A `$` followed by a field name is that field's value as the user entered it. `$name` and `$location` come from the job name and location element of [Part 1](./part-1.md#job-name-and-location).
+A `$` followed by a field name is that field's value as the user entered it. `$name` comes from the job name and location element of [Part 1](./part-1.md#job-name-and-location).
 
-`flocation` is special: it is the run's directory, where Drona writes the scripts and where the job runs. Drona quotes it for the shell, so a directory with spaces in its name still works.
+The location needs no map entry: Drona writes the scripts to the run's directory and starts the driver there, and Slurm starts the job in the same directory. If a script does need the absolute path, add `"flocation": "$location"`; Drona quotes it for the shell, so a directory with spaces in its name still works.
 
 ### Function Calls
 
@@ -89,17 +89,16 @@ The `#SBATCH` lines are Slurm's settings for the job (lines 2–7):
 - The job name, time, memory and CPUs all come from the map. In the screenshot, `[PARTITION]` became `#SBATCH --partition=cpu` and `[EXTRA]` an empty line.
 - `out.%j` and `error.%j` collect the job's output and errors, with `%j` replaced by the job ID.
 
-The work itself is one pipeline (lines 9–16):
+The work itself is one pipeline (lines 9–14). It runs in the run's directory, where Slurm starts the job, so `results.txt` is written there:
 
-<Snippet file="jobscripts/word-count.slurm" lines="9-16" />
+<Snippet file="jobscripts/word-count.slurm" lines="9-14" />
 
-1. `cd [flocation]` moves into the run's directory, so the results are written there.
-2. The first `tr` splits the text into one word per line, treating anything that isn't a letter as a separator.
-3. The second `tr` lowercases every word, so "The" and "the" count as one.
-4. `grep .` drops empty lines.
-5. `[FILTER]` is either nothing or the `awk` filter from `build_filter`.
-6. `sort | uniq -c | sort -rn` counts each word and sorts by count, highest first.
-7. `head -n [TOP_N]` keeps the top words and writes them to `results.txt`.
+1. The first `tr` splits the text into one word per line, treating anything that isn't a letter as a separator.
+2. The second `tr` lowercases every word, so "The" and "the" count as one.
+3. `grep .` drops empty lines.
+4. `[FILTER]` is either nothing or the `awk` filter from `build_filter`.
+5. `sort | uniq -c | sort -rn` counts each word and sorts by count, highest first.
+6. `head -n [TOP_N]` keeps the top words and writes them to `results.txt`.
 
 Text in brackets that isn't a map key, such as `[:alpha:]`, is left alone, so normal shell syntax is safe.
 

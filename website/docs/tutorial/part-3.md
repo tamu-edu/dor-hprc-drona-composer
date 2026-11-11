@@ -31,14 +31,14 @@ The map fills `[DRIVER]` by calling a function with the mode from [Part 1](./par
 - In Manage mode no job script is added, and the function returns the Manage driver.
 - Without a mode, it shows an error and returns nothing.
 
-Because the driver's text is the value of a placeholder, Drona fills the placeholders inside it too, such as `[flocation]`.
+Because the driver's text is the value of a placeholder, Drona fills the placeholders inside it too, such as `[MANAGE]` in the Manage driver below.
 
 ## The Create Driver
 
 <Snippet file="drivers/driver-create.sh" />
 
 - `source /etc/profile` sets up the same environment as a login shell, so commands such as `sbatch` and `module` are available.
-- `cd [flocation]` moves to the run's directory, where the job script was written.
+- There is no `cd`: Drona starts the driver in the run's directory, where the job script was written. Don't add one with the directory filled in: the driver is saved with the run as generated, and a rerun reuses it.
 - `drona_wf_driver_sbatch` is Drona's shared submit command. It submits the job with `sbatch`, prints the job ID, and records the ID with the run, which is how the Manage page finds the run's jobs in [Part 4](./part-4.md). Given several job scripts, it submits them in order, each one waiting for the previous one to succeed.
 
 ## The Manage Driver
