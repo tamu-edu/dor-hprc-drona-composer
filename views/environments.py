@@ -9,7 +9,7 @@ import os
 import shutil
 from .error_handler import APIError, handle_api_error
 from .utils import create_folder_if_not_exist, get_drona_dir, get_envs_dir
-from .env_repo_manager import EnvironmentRepoManager
+from .env_repo_manager import EnvironmentRepoManager, user_repo_dir
 from .env_api import DRONA_ENV_API, env_summary
 
 
@@ -185,7 +185,7 @@ def add_environment_route():
 
     repo_manager = EnvironmentRepoManager(
             repo_url=app.config['env_repo_github'],
-            repo_dir="./environments-repo"
+            repo_dir=user_repo_dir()
     )
     eres = get_envs_dir()
     if not eres["ok"]:
@@ -308,7 +308,7 @@ def get_more_envs_info_route():
     cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
         repo_url=app.config["env_repo_github"],
-        repo_dir="./environments-repo"
+        repo_dir=user_repo_dir()
     )
 
     environments_info = repo_manager.get_environments_info(cluster_name)
