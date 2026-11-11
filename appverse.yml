@@ -1,0 +1,16 @@
+title: "Drona Workflow Engine"
+description: "Graphical workflow engine for HPC clusters. Researchers fill in a form, Drona generates all job and workflow files, submits them to the scheduler on the user's behalf, and monitors and manages the resulting workflows. Workflows are defined by site- or user-provided environments."
+software: "Drona Workflow Engine"
+app_type: "dashboard"
+implementation_tags:
+  - "passenger"
+  - "modules"
+tags:
+  - "slurm"
+  - "workflows"
+  - "job submission"
+maintainer:
+  name: "High Performance Research Computing (HPRC), Texas A&M University"
+  support_url: "https://github.com/tamu-edu/dor-hprc-drona-composer/issues"
+website: "https://hprc.tamu.edu"
+docs: "https://tamu-edu.github.io/dor-hprc-drona-composer/"

@@ -1,6 +1,6 @@
 {
   "name": "drona_composer",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Tool to create and submit batch jobs",
   "main": "webpack.config.js",
   "dependencies": {
@@ -82,7 +82,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "sideEffects": [
     "./src/styles/JobComposerEnvSplitStyles.js"
   ],

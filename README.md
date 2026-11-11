@@ -89,7 +89,7 @@ If you use Drona Workflow Engine, please cite our paper:
 
 ## License
 
-MIT (see [LICENSE](https://github.com/tamu-edu/dor-hprc-drona-composer/LICENSE.md) file)
+MIT (see [LICENSE](https://github.com/tamu-edu/dor-hprc-drona-composer/blob/master/LICENSE) file)
 
 ## Acknowledgments
 
