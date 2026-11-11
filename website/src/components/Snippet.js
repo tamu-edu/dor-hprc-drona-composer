@@ -4,9 +4,9 @@
 //
 //   <Snippet file="map.json" />                                   the whole file
 //   <Snippet file="schemas/create.schema.json" json="top_n" />    one top-level JSON key
-//   <Snippet file="map.json" json={["JOBNAME", "flocation"]} />   several keys, in this order
+//   <Snippet file="map.json" json={["JOBNAME", "DRIVER"]} />      several keys, in this order
 //   <Snippet file="utils.py" fn="check_top_n" />                  one Python function
-//   <Snippet file="jobscripts/word-count.slurm" lines="9-16" />   a line range (1-based, inclusive)
+//   <Snippet file="jobscripts/word-count.slurm" lines="9-14" />   a line range (1-based, inclusive)
 import React from 'react';
 import CodeBlock from '@theme/CodeBlock';
 import Link from '@docusaurus/Link';

@@ -89,7 +89,8 @@ class TutorialParts(unittest.TestCase):
         job, location = self.preview()
         text = self.job_text(job) + job["driver"]
         self.assertIn("#SBATCH --job-name=my-count", text)
-        self.assertIn("cd " + location, text)
+        # No absolute paths: the driver and job run in the workflow directory (a rerun reuses them)
+        self.assertNotIn(location, text)
         # Only the shell's own bracket expressions are left
         self.assertEqual(set(re.findall(r"\[[^\]]+\]", text)) - {"[:alpha:]", "[:upper:]", "[:lower:]"}, set())
 

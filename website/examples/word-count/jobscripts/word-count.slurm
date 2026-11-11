@@ -6,8 +6,6 @@
 [PARTITION]
 [EXTRA]
 
-cd [flocation]
-
 tr -cs '[:alpha:]' '\n' < "[INPUT_FILE]" \
   | tr '[:upper:]' '[:lower:]' \
   | grep . \
