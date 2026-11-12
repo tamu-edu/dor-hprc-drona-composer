@@ -1,0 +1,92 @@
+name: Release package
+
+# On a v* tag: builds the frontend and attaches drona-workflow-engine-<version>-prebuilt.tar.gz
+# (source + prebuilt static/dist/, so no Node is needed to install) and its SHA-256 checksum to the
+# GitHub Release, with the version's CHANGELOG.md section as release notes.
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to package (e.g. v2.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      APP_DIR: dor-hprc-drona-composer   # fixed folder name: it sets the OOD URL
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      # jsdom 29 (Jest 30) and the build need Node ^20.19, ^22.13 or >=24.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Build frontend
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build:prod:compress
+
+      # git archive takes tracked files only, so config.yml, .env, .venv and node_modules can never
+      # end up in the package. Development-only paths are excluded here (not with export-ignore in
+      # .gitattributes, which would also strip GitHub's own "Source code" downloads).
+      - name: Package
+        run: |
+          VERSION="${TAG#v}"
+          ASSET="drona-workflow-engine-${VERSION}-prebuilt.tar.gz"
+          mkdir -p "pkg/$APP_DIR"
+          git archive HEAD -- . \
+            ':!website' ':!tests' ':!.github' ':!scripts' \
+            ':!jest.config.js' ':!jest.yamlTransform.js' ':!jsdoc.conf.json' ':!appverse.yml' \
+            | tar -x -C "pkg/$APP_DIR"
+          cp -r static/dist "pkg/$APP_DIR/static/dist"
+          # Owner root/0 in the archive: whoever extracts it owns the files (not the runner's uid).
+          tar -czf "$ASSET" --owner=0 --group=0 --numeric-owner -C pkg "$APP_DIR"
+          sha256sum "$ASSET" > "$ASSET.sha256"
+          echo "ASSET=$ASSET" >> "$GITHUB_ENV"
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          VERSION="${TAG#v}"
+          {
+            echo "**Install:** download \`$ASSET\`. It includes the built frontend, so no Node is needed:"
+            echo
+            echo '```bash'
+            echo "tar -xzf $ASSET          # creates $APP_DIR/"
+            echo "cd $APP_DIR && ./setup.sh"
+            echo '```'
+            echo
+            echo "The \"Source code\" downloads are the plain repository; building them needs Node."
+            echo
+            # The "## [VERSION]" section of CHANGELOG.md, up to the next "## " heading.
+            awk -v v="$VERSION" '
+              index($0, "## [" v "]") == 1 { on = 1; next }
+              on && /^## /                 { exit }
+              on                           { print }
+            ' CHANGELOG.md
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: Attach to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Drona Workflow Engine ${{ env.TAG }}
+          body_path: release-notes.md
+          files: |
+            ${{ env.ASSET }}
+            ${{ env.ASSET }}.sha256

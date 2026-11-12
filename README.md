@@ -42,6 +42,26 @@ To set up/install Drona Workflow Engine, see the instructions below. If you have
 
 For setup instructions, see the [Installation](https://tamu-edu.github.io/dor-hprc-drona-composer/docs/overview/installation) section on the Drona Workflow Engine site.
 
+### Install from a release (no Node needed)
+
+Each [release](https://github.com/tamu-edu/dor-hprc-drona-composer/releases) has a
+`drona-workflow-engine-<version>-prebuilt.tar.gz` with the frontend already built, so the host needs only
+Python, not Node. Unpack it in the Open OnDemand apps directory and run the setup script:
+
+```bash
+cd /var/www/ood/apps/sys
+tar -xzf drona-workflow-engine-<version>-prebuilt.tar.gz    # creates dor-hprc-drona-composer/
+cd dor-hprc-drona-composer && ./setup.sh
+```
+
+The directory name sets the app's URL (`/pun/sys/dor-hprc-drona-composer`); rename the directory before
+running `setup.sh` if you want a different one.
+
+### Install from git
+
+A git clone builds the frontend during `setup.sh`, which needs Node `^20.19`, `^22.13` or `>=24`.
+After changing frontend code, rebuild with `npm run build:prod:compress`.
+
 ## Troubleshooting
 
 

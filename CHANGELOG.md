@@ -13,6 +13,17 @@ says what environments can rely on and has its own changelog in [ENV_API_CHANGEL
 
 ## [Unreleased]
 
+### Added
+- Release packages: pushing a `v*` tag builds `drona-workflow-engine-<version>-prebuilt.tar.gz` (source plus the
+  built frontend in `static/dist/`) with a SHA-256 checksum, and attaches both to the GitHub Release with the
+  version's changelog section as release notes. Installing from it needs no Node: unpack it (it creates
+  `dor-hprc-drona-composer/`) and run `setup.sh`. See "Install from a release" in the README.
+
+### Changed
+- `setup.sh` skips the npm build when `static/dist/` already holds a built frontend, as in a release package.
+  In a git clone, rebuild after frontend changes with `npm run build:prod:compress`.
+- `setup.sh` prints the app's URL when it finishes.
+
 ### Fixed
 - The frontend build no longer reads `config.yml`. The bundle embedded the `dashboard_url` of whoever built it,
   and a clean checkout without `config.yml` could not be built. The URL now always comes from the page at
