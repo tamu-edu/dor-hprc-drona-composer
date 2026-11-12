@@ -1,10 +1,11 @@
-name: Run React Tests
+name: CI
 
 on:
   push:
     branches: [ master, hprc-dev ]
   pull_request:
-    branches: [ master ]
+    # hprc-dev too: Dependabot's update PRs target hprc-dev.
+    branches: [ master, hprc-dev ]
 
 permissions:
   contents: read
@@ -32,3 +33,32 @@ jobs:
         run: npx jest --ci
         env:
           CI: true
+
+  # Python backend tests (tests/) on an older and the newest Python. Python 3.8 (end of life, still
+  # supported by requirements.txt) is not tested here; it was checked by hand for 2.1.0.
+  python-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ '3.9', '3.13' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest
+
+      - name: Check dependencies
+        run: pip check
+
+      - name: Run tests
+        run: python -m pytest -q tests

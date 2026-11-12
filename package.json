@@ -1,8 +1,7 @@
 {
-  "name": "drona_composer",
+  "name": "dor-hprc-drona-composer",
   "version": "2.1.0",
-  "description": "Tool to create and submit batch jobs",
-  "main": "webpack.config.js",
+  "description": "Drona Workflow Engine: an Open OnDemand app to create, submit and monitor HPC workflows through a graphical interface",
   "dependencies": {
     "@codemirror/commands": "^6.11.0",
     "@codemirror/lang-json": "^6.0.1",
@@ -80,8 +79,13 @@
     "type": "git",
     "url": "git+https://github.com/tamu-edu/dor-hprc-drona-composer"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "open-ondemand",
+    "hpc",
+    "slurm",
+    "workflow"
+  ],
+  "author": "High Performance Research Computing (HPRC), Texas A&M University",
   "license": "MIT",
   "sideEffects": [
     "./src/styles/JobComposerEnvSplitStyles.js"
@@ -96,9 +100,10 @@
   "bugs": {
     "url": "https://github.com/tamu-edu/dor-hprc-drona-composer/issues"
   },
-  "homepage": "https://github.com/tamu-edu/dor-hprc-drona-composer#readme",
+  "homepage": "https://tamu-edu.github.io/dor-hprc-drona-composer/",
   "allowScripts": {
     "@parcel/watcher": false,
     "core-js": false
-  }
+  },
+  "private": true
 }
