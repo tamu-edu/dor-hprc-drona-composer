@@ -11,7 +11,7 @@ Flask>=3.0,<4
 Flask-Cors>=4.0.2,<7
 jsonref>=1.1,<2
 PyYAML>=6.0.1,<7
-requests>=2.32,<3
+requests>=2.34.2,<3
 
 # Security floors for packages Flask pulls in.
 Werkzeug>=3.0.3,<4
