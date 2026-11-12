@@ -8,7 +8,7 @@
 # kept for them: removing a package here can break environments that import it.
 
 Flask>=3.0,<4
-Flask-Cors>=4.0.2,<7
+Flask-Cors>=6.0.5,<7
 jsonref>=1.1,<2
 PyYAML>=6.0.1,<7
 requests>=2.32,<3
