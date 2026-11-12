@@ -35,6 +35,13 @@ says what environments can rely on and has its own changelog in [ENV_API_CHANGEL
 
   To update an existing install, run `.venv/bin/pip install -r requirements.txt` and restart the app.
 
+### Removed
+- Stray files committed by accident: two editor swap files (`views/.socket_handler.py.swo`,
+  `src/schemaRendering/schemaElements/.StaticText.js.swp`) and two macOS `.DS_Store` files. `.gitignore` now
+  ignores these.
+- A dead `socketio.run(...)` block in `passenger_wsgi.py`. It referenced an undefined name; Passenger never ran
+  it. Use `python app.py` for a local debug server.
+
 ### Fixed
 - The frontend build no longer reads `config.yml`. The bundle embedded the `dashboard_url` of whoever built it,
   and a clean checkout without `config.yml` could not be built. The URL now always comes from the page at
