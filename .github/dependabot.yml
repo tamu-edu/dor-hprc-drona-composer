@@ -1,0 +1,45 @@
+# Dependabot version updates: monthly PRs against hprc-dev, so updates go through the normal
+# hprc-dev -> master flow and CI. Minor and patch updates are grouped into one PR per area; major
+# upgrades come as separate PRs. Security updates (enabled in the repo settings) target master.
+#
+# Not covered on purpose: static/jquery-ui-1.12.1/ (vendored third-party code) and
+# packages/drona_utils (no dependencies).
+
+version: 2
+updates:
+  # App frontend (package.json + package-lock.json)
+  - package-ecosystem: npm
+    directory: /
+    target-branch: hprc-dev
+    schedule:
+      interval: monthly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Documentation site
+  - package-ecosystem: npm
+    directory: /website
+    target-branch: hprc-dev
+    schedule:
+      interval: monthly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Python backend (requirements.txt)
+  - package-ecosystem: pip
+    directory: /
+    target-branch: hprc-dev
+    schedule:
+      interval: monthly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Actions used in .github/workflows/
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: hprc-dev
+    schedule:
+      interval: monthly
