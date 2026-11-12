@@ -1,10 +1,15 @@
 # Drona Workflow Engine
 
+[![CI](https://github.com/tamu-edu/dor-hprc-drona-composer/actions/workflows/nodejs.yml/badge.svg?branch=master)](https://github.com/tamu-edu/dor-hprc-drona-composer/actions/workflows/nodejs.yml)
+[![Latest release](https://img.shields.io/github/v/release/tamu-edu/dor-hprc-drona-composer)](https://github.com/tamu-edu/dor-hprc-drona-composer/releases/latest)
+[![Docs](https://img.shields.io/badge/docs-website-blue)](https://tamu-edu.github.io/dor-hprc-drona-composer/)
+[![License: MIT](https://img.shields.io/github/license/tamu-edu/dor-hprc-drona-composer)](LICENSE)
+
 ## Overview
 
 [Drona Workflow Engine](https://tamu-edu.github.io/dor-hprc-drona-composer/), developed by High Performance Research Computing (HPRC) at Texas A&M University, assists researchers in creating, submitting, and monitoring any type of workflow (including complex multi-stage jobs) using a 100% graphical interface. It guides the researcher in providing workflow-specific information, generating all necessary job files, and submitting the job on the user's behalf.
 
-- **App type:** Passenger Phusion app (React/Flask), categorized under "Jobs"
+- **App type:** Passenger Phusion app (React/Flask), categorized under "Jobs" → "Workflows" in the Open OnDemand menu
 - **License:** MIT
 
 ## Screenshots
