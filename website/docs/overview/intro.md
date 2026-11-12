@@ -4,77 +4,55 @@ sidebar_position: 1
 
 # Introduction
 
-**Drona Workflow Engine** is an HPC workflow assistant and framework developed by [Texas A&M University HPRC](https://hprc.tamu.edu). It provides a 100% graphical interface for creating and submitting computational jobs — researchers provide workflow-specific information through dynamic forms, and Drona generates all necessary scripts, validates the configuration, and submits the job on their behalf.
+**Drona Workflow Engine** (Drona for short) lets researchers run scientific workflows on HPC clusters through a web interface. They fill in a form made for their workflow, and Drona generates the scripts, submits the jobs and helps them follow the results.
 
-## The Problem
+Drona is a standalone web application that can be deployed at any site, for example through an [Open OnDemand](../integrations/open-ondemand) portal, which handles login and runs Drona as each user. It is designed to be scheduler-agnostic and supports Slurm. Drona was developed by High Performance Research Computing at Texas A&M University.
 
-HPC resources are becoming increasingly complex while simultaneously growing more popular among researchers who may lack traditional HPC skills. Writing Slurm scripts, managing modules, configuring multi-stage pipelines — these tasks create a steep learning curve that leads to frustration, inefficient resource usage, and increased burden on HPC support teams.
+## Why Drona
 
-## How Drona Solves It
+More and more HPC users come from fields where batch scripts, software modules and job pipelines aren't part of the training. The learning curve leads to failed jobs, wasted resources and a heavy load on support teams. Drona lets researchers work in terms of their own field, while still showing everything it runs on their behalf.
 
-Drona abstracts HPC complexity behind intuitive, workflow-specific forms while keeping the researcher in full control.
+For experienced users, Drona is a productivity tool. It takes care of the boilerplate every run needs, checks resource requests against the cluster, and keeps the generated scripts fully editable. A workflow that worked once can be rerun or recreated with new settings in a few clicks.
 
-### Guided Workflow Configuration
+After submission, Drona's monitoring shows each job's state, output and files, resource utilization graphs, and domain-specific results such as plots or structures, with actions such as cancel and rerun. A searchable history lists all your workflows in one place.
 
-Researchers select a workflow environment and fill out a dynamic form tailored to that specific use case. The form adapts based on user selections — fields appear, hide, and validate in real time. No Slurm syntax or HPC knowledge required.
+## How It Works
 
-![Drona Input Form](/img/user-guide/input-form.png)
+Every scientific workflow in Drona is packaged as a **Drona Environment**. Working with one follows the same path:
 
-### Full Transparency
+1. **Choose an environment.** The start page lists every environment available to you, from those your site installs for everyone to the ones you add yourself.
+2. **Fill in the form.** Each environment has its own form, written for its domain. Forms can adapt as you go and fill their options from the live state of the cluster, such as available software versions or GPU types.
+3. **Review and run.** Drona generates all the scripts and shows them in an editable preview before anything is submitted, with warnings when a request doesn't fit the cluster. You decide when to run it.
+4. **Monitor.** After submission, an environment can show how the workflow is doing and what it produced, from job status and resource usage to domain-specific results.
 
-Before submission, Drona displays all generated scripts in a fully editable preview window. Researchers can review exactly what will run, make adjustments, and catch issues before they reach the scheduler. A message pane provides validation warnings and environment-specific guidance.
+See [Generate and Submit Workflows](../user-guide/using-drona) and [Monitor Workflows](../using-drona/monitoring) for the details.
 
-![Drona Preview Window](/img/user-guide/preview-window.png)
+## Not Just an Assistant, Also a Framework
 
-### Extensible Framework
+A Drona Environment is a small set of declarative files, entirely separate from the Drona Workflow Engine itself, so adding or changing a workflow never means changing Drona. The files describe the form, how its values map into the scripts, and how the job is submitted.
 
-Drona is not just an assistant — it's a framework. Workflows are defined declaratively through a small set of configuration files:
+That makes environments easy to create, adapt and share. Administrators install them for all users, environment developers publish them in a repository that others can import from, and researchers can build and test their own in a personal workspace. See the [Environment Development Overview](../environments/overview) for what an environment contains.
 
-- **`schema.json`** — Defines the form interface and field behavior
-- **`map.json`** — Maps form values to job script variables
-- **`driver.sh`** — Template for the generated job script
-- **`utils.py`** — Optional custom processing logic
+## Batteries Included: The Drona Runtime Library
 
-Anyone can create, customize, and share workflows. System administrators deploy workflows for all users, while researchers can develop and test their own in a personal workspace.
+Most workflows need the same things: a job name and location, memory and run time, the right Slurm settings for the cluster, a list of the run's jobs, logs, rerun and cancel. Drona ships all of these as the **Drona Runtime Library**, a collection of ready-made form parts, map fragments, retrievers and helper functions.
 
-```mermaid
-graph LR
-    A[User Input Form] <--> B[schema.json]
-    B <--> C[Retriever Scripts]
-    B --> D[map.json]
-    D <--> E[utils.py]
-    D --> F[driver.sh]
-    F --> G[Job Submission]
+An environment pulls a part in with a single line instead of building it, and gets the part's checks and later fixes with it. That's why a complete environment, with a form, cluster-aware resource settings and a monitoring page, can be a few short files: the environment author writes only what is specific to their science. Sites tailor the library to their clusters, for example with the limits Drona checks resource requests against.
 
-    style A fill:#e8f5e8
-    style B fill:#e1f5fe
-    style C fill:#e1f5fe
-    style D fill:#fff3e0
-    style E fill:#fff3e0
-    style F fill:#fce4ec
-    style G fill:#ffebee
-```
-
-### Dynamic Content
-
-Workflows can include retriever scripts that fetch live data — available GPU types, module versions, running job statuses — and populate form fields dynamically. This enables workflows that respond to the current state of the cluster.
-
-### Validation and Feedback
-
-Drona analyzes input values and provides warnings before submission. For example, it might flag that a GPU was requested for longer than the cluster's maximum GPU wall time, or that a required module is not available on the selected cluster.
+See the [Drona Runtime Library](../runtime-library/index.md) for what it contains, and the [tutorial](../tutorial) for an environment built on it.
 
 ## Who Is Drona For?
 
-- **Researchers** who want to run scientific workflows on HPC without learning Slurm
-- **HPC administrators** who want to provide guided, validated job submission for their users
-- **Workflow developers** who want to build shareable, reusable computational environments
+- **Researchers** who want to run scientific workflows on HPC without learning the scheduler
+- **Experienced HPC users** who want to skip the boilerplate and keep track of their runs
+- **HPC sites** that want to offer guided, validated workflows to their users
+- **Environment developers** who want to build workflows others can reuse
+- **Science gateway builders** who want to give a research community a web portal for its applications, without writing a web app from scratch
 
-## Next Steps
+## Where to Go Next
 
-- [Quick Start](../quick-start) — Install Drona and get it running
-- [Environment Development](../environments/overview) — Learn how workflows are built
-- [Schema Files](../environments/schema) — Understand the form definition system
+- **I want to run workflows:** [Generate and Submit Workflows](../user-guide/using-drona)
+- **I want to build an environment:** [Build Your First Environment](../tutorial)
+- **I run a cluster:** [Setup](../setup)
 
----
-
-**Texas A&M University High Performance Research Computing**
+Some terms, such as *Drona Environment* and *workflow instance*, have a specific meaning in these docs. See [Key Concepts](./key-concepts).

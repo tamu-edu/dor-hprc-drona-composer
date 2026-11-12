@@ -47,7 +47,7 @@ const ErrorAlert = ({ error, onClose }) => {
           marginBottom: '15px',
           paddingBottom: '10px',
           borderBottom: '1px solid #eee',
-          fontSize: '20px',
+          fontSize: "var(--drona-text-heading)",
           display: 'flex',
           alignItems: 'center',
           gap: '8px'
@@ -78,7 +78,7 @@ const ErrorAlert = ({ error, onClose }) => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                  fontSize: '12px'
+                  fontSize: "var(--drona-text-caption)"
                 }}
               >
                 <span style={{
@@ -94,7 +94,7 @@ const ErrorAlert = ({ error, onClose }) => {
                   backgroundColor: '#f8f9fa',
                   padding: '10px',
                   borderRadius: '4px',
-                  fontSize: '14px',
+                  fontSize: "var(--drona-text-ui)",
                   marginTop: '8px'
                 }}>
                   <pre style={{ margin: 0, 

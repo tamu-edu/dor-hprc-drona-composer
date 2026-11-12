@@ -5,6 +5,7 @@ import { FormValuesContext } from './FormValuesContext';
 import { evaluateCondition } from './utils/conditionEvaluator';
 
 import { Containers } from "./schemaElements/index"
+import { resolveButtonLabels } from './utils/buttonLabels';
 
 const Composer = forwardRef((props, ref) => {
   const [fields, setFields] = useState([]);
@@ -43,7 +44,7 @@ const Composer = forwardRef((props, ref) => {
 
           if (dictionary[field.name] !== undefined) {
             updatedField.value = dictionary[field.name];
-            if (field.type === "dynamicSelect") {
+            if (field.type === "dynamicSelect" || field.type === "dynamicTable") {
               updatedField.isEvaluated = true;
               updatedField.isShown = true;
             }
@@ -87,6 +88,42 @@ const Composer = forwardRef((props, ref) => {
 
 
 
+
+  // Values to apply as soon as their fields become visible (props.pendingValues). Unlike
+  // setValues, which sets values once, this survives a schema reload and fields that only
+  // appear after retrievers/conditions resolve (e.g. `mode` after `configured`, and
+  // `allworkflows` after mode=manage), which would otherwise be cleared while hidden.
+  const pendingRef = useRef(null);
+  useEffect(() => {
+    pendingRef.current = props.pendingValues ? { ...props.pendingValues } : null;
+  }, [props.pendingValues]);
+
+  useEffect(() => {
+    const pending = pendingRef.current;
+    if (!pending || fields.length === 0) return;
+
+    let applied = false;
+    const apply = (list) => list.map(field => {
+      let next = field;
+      if (field.isVisible !== false && Object.prototype.hasOwnProperty.call(pending, field.name)) {
+        next = { ...field, value: pending[field.name] };
+        delete pending[field.name];
+        applied = true;
+      }
+      if (field.elements) {
+        const elements = apply(field.elements);
+        if (elements !== field.elements) next = { ...next, elements };
+      }
+      return next;
+    });
+
+    const updated = apply(fields);
+    if (applied) setFields(updateVisibilityAndClearHidden(updated));
+    if (Object.keys(pending).length === 0) {
+      pendingRef.current = null;
+      props.onPendingApplied?.();
+    }
+  }, [fields, props.pendingValues]);
 
   // Handle value changes
   const handleValueChange = (fieldName, value, { silent } = {}) => {
@@ -181,7 +218,7 @@ const Composer = forwardRef((props, ref) => {
             const updatedField = {
               ...field,
               value: dictionary[field.name] !== undefined ? dictionary[field.name] : field.value,
-              ...(field.type === "dynamicSelect" ? {
+              ...(field.type === "dynamicSelect" || field.type === "dynamicTable" ? {
                 isEvaluated: true,
                 isShown: true
               } : {})
@@ -212,6 +249,13 @@ const Composer = forwardRef((props, ref) => {
       return fields;
     }
   }));
+  // Report the workflow button labels; they follow whichever buttonLabels element is visible
+  const { onButtonLabelsChange } = props;
+  const buttonLabels = resolveButtonLabels(fields);
+  useEffect(() => {
+    onButtonLabelsChange?.(buttonLabels);
+  }, [buttonLabels.preview, buttonLabels.submit, buttonLabels.title, onButtonLabelsChange]);
+
   const contextValue = {
     values: fields,
     updateValue: handleValueChange,
@@ -220,6 +264,7 @@ const Composer = forwardRef((props, ref) => {
 
   return (
     <FormValuesContext.Provider value={contextValue}>
+      <div className="drona-schema-form" style={{ display: "contents" }}>
       <FieldRenderer
         fields={fields}
         handleValueChange={handleValueChange}
@@ -234,8 +279,11 @@ const Composer = forwardRef((props, ref) => {
           setLocationPickedByUser: props.setLocationPickedByUser,
           environment: props.environment,
           setFieldValue: handleValueChange,
+          handleRerun: props.handleRerun,
+          handleForm: props.handleForm,
         }}
       />
+      </div>
     </FormValuesContext.Provider>
   );
 });

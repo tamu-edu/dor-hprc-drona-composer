@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import Text from "./Text";
 import Select from "./Select";
 import Number from "./Number";
@@ -12,6 +13,7 @@ import Module from "./Module";
 import Unit from "./Unit";
 import UnknownElement from "./UnknownElement";
 import DynamicSelect from "./DynamicSelect";
+import DynamicTable from "./DynamicTable";
 import TextArea from "./TextArea";
 import StaticText from "./StaticText";
 import Hidden from "./Hidden";
@@ -23,6 +25,17 @@ import CheckboxGroup from "./CheckboxGroup";
 import DynamicCheckboxGroup from "./DynamicCheckboxGroup";
 import DynamicViewer from "./DynamicViewer";
 import Container from "./Container";
+import WorkflowRerunRecreate from "./WorkflowRerunRecreate";
+import ButtonLabels from "./ButtonLabels";
+import lazyChunk from "../../utils/lazyChunk";
+
+// Recharts is large and only some workflows draw charts, so it loads on first use.
+const LazyChart = lazyChunk(() => import(/* webpackChunkName: "chart" */ "./Chart"), "chart");
+const Chart = (props) => (
+	<Suspense fallback={<div className="text-muted">Loading chart…</div>}>
+		<LazyChart {...props} />
+	</Suspense>
+);
 
 export {
 	Text,
@@ -38,6 +51,7 @@ export {
 	Unit,
 	UnknownElement,
 	DynamicSelect,
+	DynamicTable,
 	TextArea,
 	StaticText,
 	Hidden,
@@ -50,7 +64,10 @@ export {
 	CheckboxGroup,
 	DynamicCheckboxGroup,
 	Container,
-	DynamicViewer
+	DynamicViewer,
+	WorkflowRerunRecreate,
+	Chart,
+	ButtonLabels
 }
 
 export const componentsMap = {
@@ -66,6 +83,7 @@ export const componentsMap = {
 	module: Module,
 	unit: Unit,
 	dynamicSelect: DynamicSelect,
+	dynamicTable: DynamicTable,
 	textarea: TextArea,
 	staticText: StaticText,
 	autocompleteSelect: AutocompleteSelect,
@@ -78,7 +96,10 @@ export const componentsMap = {
 	dynamicCheckboxGroup: DynamicCheckboxGroup,
 	dynamicViewer: DynamicViewer,
 	container: Container,
-	hidden: Hidden
+	workflowRerunRecreate: WorkflowRerunRecreate,
+	hidden: Hidden,
+	chart: Chart,
+	buttonLabels: ButtonLabels
 
 };
 

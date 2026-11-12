@@ -1,0 +1,23 @@
+{
+  "drona_utilization_section": {
+    "type": "rowContainer",
+    "condition": "!drona_create_manage_allworkflows. &&  !drona_status. && drona_status.RUNNING && !drona_info_jobs. ",
+    "title": "Resource Utilization",
+    "elements": {
+      "drona_node_utiliztion": {
+        "type": "staticText",
+        "name": "drona_nodeutil",
+        "label": "",
+        "refreshInterval": "120",
+        "isDynamic": true,
+        "retrieverParams": {
+          "JOBID": "$drona_info_jobs"
+        },
+        "retriever": "drona_slurm_nodeutil.sh",
+        "showRefreshButton": true,
+        "allowHtml": true,
+        "layout": { "preset": "card", "title": "Node Utilization" }
+      }
+    }
+  }
+}

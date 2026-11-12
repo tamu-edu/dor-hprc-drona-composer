@@ -58,6 +58,62 @@ class JobHistoryManager:
         except (sqlite3.Error, PermissionError):
             pass
 
+    def job_exists(self, job_id):
+        """True when a workflow record with this drona id exists. False when there is no
+        database (nothing can clash then) or it can't be read."""
+        if not self.db_path or not job_id:
+            return False
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute(
+                    "SELECT 1 FROM job_history WHERE drona_id = ?", (str(job_id),)
+                ).fetchone()
+                return row is not None
+        except (sqlite3.Error, PermissionError):
+            return False
+
+    def get_record(self, job_id):
+        """Core columns of a workflow record ({"drona_id", "name", "location"}), or None
+        when there is no such record or the database can't be read."""
+        if not self.db_path or not job_id:
+            return None
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute(
+                    "SELECT drona_id, name, location FROM job_history WHERE drona_id = ?",
+                    (str(job_id),)
+                ).fetchone()
+        except (sqlite3.Error, PermissionError):
+            return None
+        if row is None:
+            return None
+        return {"drona_id": str(row[0]), "name": row[1] or "", "location": row[2] or ""}
+
+    def workflow_at_location(self, location, exclude_id=None):
+        """Drona id of a workflow record whose directory is location (compared after
+        normalizing, and through symlinks), other than exclude_id; None if there is none."""
+        if not self.db_path or not location:
+            return None
+
+        def forms(path):
+            path = os.path.normpath(os.path.expanduser(str(path)))
+            return {path, os.path.realpath(path)}
+
+        wanted = forms(location)
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                rows = conn.execute(
+                    "SELECT drona_id, location FROM job_history WHERE location IS NOT NULL AND location != ''"
+                ).fetchall()
+        except (sqlite3.Error, PermissionError):
+            return None
+        for drona_id, row_location in rows:
+            if exclude_id is not None and str(drona_id) == str(exclude_id):
+                continue
+            if forms(row_location) & wanted:
+                return str(drona_id)
+        return None
+
     def get_job(self, job_id):
         if not self.db_path:
             return None
@@ -177,6 +233,42 @@ class JobHistoryManager:
                 return job_record
         except (sqlite3.Error, PermissionError):
             return False
+
+    def get_recent(self, limit=8, environments=None):
+        """The newest workflows, light: [{"drona_id", "name", "environment", "location",
+        "start_time", "job_ids"}], newest first. job_ids come from runtime_meta.jobinfo.
+        environments: only workflows of these environment names (None = all)."""
+        if not self.db_path:
+            return []
+        where, args = "", []
+        if environments is not None:
+            names = sorted(set(environments))
+            if not names:
+                return []
+            where = " WHERE environment IN (%s)" % ",".join("?" * len(names))
+            args = names
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                rows = conn.execute(
+                    "SELECT drona_id, name, environment, location, start_time, runtime_meta "
+                    "FROM job_history" + where + " ORDER BY start_time DESC LIMIT ?",
+                    args + [int(limit)]
+                ).fetchall()
+        except (sqlite3.Error, PermissionError):
+            return []
+        recent = []
+        for drona_id, name, environment, location, start_time, runtime_meta in rows:
+            try:
+                meta = json.loads(runtime_meta) if runtime_meta else {}
+            except (ValueError, TypeError):
+                meta = {}
+            jobinfo = meta.get("jobinfo") if isinstance(meta, dict) else None
+            job_ids = [str(j["id"]) for j in (jobinfo or []) if isinstance(j, dict) and j.get("id") is not None]
+            recent.append({
+                "drona_id": str(drona_id), "name": name or str(drona_id), "environment": environment or "",
+                "location": location or "", "start_time": start_time or "", "job_ids": job_ids,
+            })
+        return recent
 
     def get_user_history(self):
         if not self.db_path:

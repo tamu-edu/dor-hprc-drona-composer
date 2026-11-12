@@ -4,7 +4,7 @@ This documentation site is built with [Docusaurus 3](https://docusaurus.io/) and
 
 ## Prerequisites
 
-- **Node.js** >= 18
+- **Node.js** >= 20
 - **npm** (comes with Node.js)
 
 ## Quick Start
@@ -51,7 +51,7 @@ Current, we can pivot to other.
 ```
 website/
 ├── docs/                        # All documentation pages (Markdown / MDX)
-│   ├── user-guide/              #   Using Drona, primers & videos
+│   ├── user-guide/              #   Generating and submitting workflows
 │   ├── overview/                #   Introduction, architecture, getting started
 │   ├── frontend/                #   Frontend components & form elements
 │   ├── environments/            #   Environment development (schema, map, etc.)
@@ -298,7 +298,7 @@ Other flags: `-d` for dry run, `-f` to skip confirmation, `-u <user>` to specify
 
 ## Troubleshooting
 
-**Broken links warning during build** — The site is configured with `onBrokenLinks: 'warn'`. Fix any reported broken links before deploying.
+**Build fails on a broken link** — `onBrokenLinks` and `markdown.hooks.onBrokenMarkdownLinks` are set to `'throw'`, so a link to a missing page stops the build. Fix the link the error names (check the path and the page's id in `sidebars.js`).
 
 **Port already in use** — If port 3000 is taken, Docusaurus will prompt to use another port, or you can specify one:
 

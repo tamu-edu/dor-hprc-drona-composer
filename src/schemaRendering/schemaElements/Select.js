@@ -23,6 +23,9 @@
  * @property {Array} options - Array of option objects, each with value and label properties
  * @property {Object} [value] - Default/initial selected option (object with value and label)
  * @property {string} [help] - Help text displayed below the input
+ * @property {boolean} [useLabel=true] - false hides the label row
+ * @property {boolean} [compact=false] - Smaller gap below the element (0.25rem instead of the form-group 1rem)
+ * @property {string} [width] - CSS width for the dropdown (e.g. "9rem"); default fills the row
  * @property {boolean} [showAddMore=false] - Whether to show an add more button
  */
 
@@ -52,6 +55,8 @@ function CustomSelect(props) {
       name={props.name}
       label={props.label}
       help={props.help}
+      useLabel={props.useLabel}
+      compact={props.compact}
     >
       <div style={{display: "flex"}}>
         <Select
@@ -63,7 +68,7 @@ function CustomSelect(props) {
           name={props.name}
           styles={{
             ...customSelectStyles,
-	    container: (base) => ({ ...base, flexGrow: 1 }),
+	    container: (base) => ({ ...base, ...(props.width ? { width: props.width } : { flexGrow: 1 }) }),
           }}
           placeholder="-- Choose an option --"
         />

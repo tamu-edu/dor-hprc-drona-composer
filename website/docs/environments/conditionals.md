@@ -4,7 +4,7 @@ sidebar_position: 8
 
 # Conditional Logic
 
-Schema files support conditional field display based on user selections, allowing workflows to show relevant options while hiding unnecessary complexity. Conditions are evaluated when the form loads and whenever referenced field values change.
+Schema files support conditional field display based on user selections, allowing environments to show relevant options while hiding unnecessary complexity. Conditions are evaluated when the form loads and whenever referenced field values change.
 
 ## Basic Syntax
 
@@ -35,7 +35,13 @@ Show a field when another field equals a specific value:
 
 ### Empty Check
 
-Show a field when another field is empty (has no value):
+A condition with nothing after the dot compares against an empty value. Show a field when another field is empty (has no value):
+
+```json
+"condition": "fieldName."
+```
+
+Add `!` to show it when the other field is **not** empty, for example once a value has been loaded:
 
 ```json
 "condition": "!fieldName."
@@ -134,7 +140,3 @@ Show a field when any condition is true:
 ## Using Conditions with Containers
 
 Conditions are commonly applied to `container`, `rowContainer`, and `collapsibleRowContainer` elements to show or hide entire sections of the form at once, rather than individual fields.
-
----
-
-**Texas A&M University High Performance Research Computing**

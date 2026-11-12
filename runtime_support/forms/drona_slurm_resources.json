@@ -1,0 +1,208 @@
+{
+  "drona_slurmCollapse": {
+    "type": "collapsibleRowContainer",
+    "title": "SLURM OPTIONS",
+    "default_state": "expanded",
+    "elements": {
+      "drona_ContainerTasks": {
+        "type": "rowContainer",
+        "label": "GPU",
+        "elements": {
+          "drona_tasks": {
+            "type": "number",
+            "label": "Number of tasks",
+            "help": "This is the number of tasks your code can utilize. This is mainly for codes that use MPI. If you are not sure, just leave this as 1",
+            "name": "drona_tasks",
+            "value": "1"
+          },
+
+          "drona_nodes": {
+            "type": "text",
+            "label": "Number of nodes (optional)",
+            "help": "Only set this field if you requested multiple tasks above and you want to distribute these tasks over multiple nodes. This is most common for MPI codes.",
+            "name": "drona_nodes",
+            "value": ""
+          },
+
+          "drona_cpus": {
+            "type": "number",
+            "label": "Number of cpus per tasks",
+            "help": "Mostly used for hybrid codes that use multiple threads per task.",
+            "name": "drona_cpus",
+            "value": "1"
+          }
+        }
+      },
+
+      "drona_ContainerGPU": {
+        "type": "rowContainer",
+        "label": "GPU",
+        "condition": "drona_training.",
+        "elements": {
+          "drona_gpuDropdown": {
+            "type": "dynamicSelect",
+            "label": "Use Accelerator",
+            "help": "Only select an accelerator if your job will utilize them. You might need to setup the environment for the accelerator you selected in the job script.",
+            "name": "drona_gpu",
+            "retriever": "retrieve_gpus",
+            "hideWhenSingle": true
+          },
+
+          "drona_numgpus": {
+            "type": "number",
+            "label": "#GPUs",
+            "help": "Number of accelerators you want to use.",
+            "name": "drona_numgpu",
+            "value": "1",
+            "condition": " !drona_gpu.none && !drona_gpu. "
+          }
+        }
+      },
+
+      "drona_ContainerAdditional": {
+        "type": "rowContainer",
+        "label": "Additional",
+        "elements": {
+          "drona_memory": {
+            "type": "unit",
+            "label": "TOTAL Memory",
+            "name": "drona_memory",
+            "help": "OPTIONAL: Provide the total amount of memory you need to estimate the job needs.",
+            "units": [
+              { "label": "GB", "value": "G" }
+            ]
+          },
+
+          "drona_Walltime": {
+            "type": "time",
+            "label": "Expected run time",
+            "help": "OPTIONAL: Provide the time you estimate the job will need.",
+            "name": "drona_walltime",
+            "value": ""
+          },
+
+          "drona_account": {
+            "type": "dynamicSelect",
+            "label": "Project Account",
+            "help": "OPTIONAL: Use a different project account than your default.",
+            "name": "drona_account",
+            "retriever": "list_accounts"
+          },
+
+          "drona_extraText": {
+            "type": "text",
+            "label": "Additional Slurm parameters",
+            "help": "OPTIONAL: Provide Slurm-specific parameters (advanced).",
+            "name": "drona_extra_slurm",
+            "value": ""
+          }
+        }
+      }
+    }
+  },
+
+  "_comment_training": "Opt-in reservation block (toggle button, then a boxed panel with reservation, GPU/MIG slice, count and partition, plus a summary line that warns when the run time passes the reservation's end or the account is not accepted, and says so when no reservations are found). Reservation lists active ones plus ones starting within UPCOMING_DAYS; PATTERN/UPCOMING_DAYS must match on the Reservation dropdown and the summary, worded generically so it fits training and non-training uses. Include it with $ref as the last element of an env-defined SLURM card; sibling keys next to the $ref override the block's top-level keys. The regular GPU row hides while drona_training is checked. Needs retrieve_slurm_params_training in the env map.",
+  "drona_ContainerTraining": {
+    "type": "container",
+    "elements": {
+      "drona_trainingToggleRow": {
+        "type": "rowContainer",
+        "alignItems": "center",
+        "elements": {
+          "drona_trainingEnable": {
+            "type": "checkbox",
+            "name": "drona_training",
+            "label": "Use a reservation",
+            "help": "Run this job in a Slurm reservation you belong to (for example a course or training session). You can then pick the reservation and the GPUs or MIG slices on its nodes; the regular GPU selection is not used.",
+            "value": "yes",
+            "style": "button"
+          }
+        }
+      },
+      "drona_trainingDetails": {
+        "type": "container",
+        "layout": {
+          "preset": "boxed",
+          "title": "Reservation"
+        },
+        "condition": "!drona_training.",
+        "elements": {
+          "drona_trainingFields": {
+            "type": "rowContainer",
+            "elements": {
+              "drona_trainingReservation": {
+                "type": "dynamicSelect",
+                "label": "Reservation",
+                "help": "Active reservations you have access to, then ones starting within a week (with their start time). A job in an upcoming reservation waits until it starts.",
+                "name": "drona_reservation",
+                "retriever": "drona_reservations.sh",
+                "retrieverParams": {
+                  "PATTERN": "",
+                  "UPCOMING_DAYS": "7"
+                },
+                "hideWhenSingle": true,
+                "condition": "!drona_training."
+              },
+              "drona_trainingGpu": {
+                "type": "dynamicSelect",
+                "label": "GPU / MIG slice",
+                "help": "Accelerators available on the reservation's nodes, including MIG slices.",
+                "name": "drona_training_gpu",
+                "retriever": "drona_reservation_gpus.sh",
+                "retrieverParams": {
+                  "RESERVATION": "$drona_reservation",
+                  "MODE": "gpus"
+                },
+                "autoSelect": "first",
+                "condition": "!drona_training. && !drona_reservation."
+              },
+              "drona_trainingNumGpu": {
+                "type": "number",
+                "label": "#GPUs / slices",
+                "help": "Number of accelerators (slices) you want to use.",
+                "name": "drona_training_numgpu",
+                "value": "1",
+                "condition": "!drona_training. && !drona_reservation. && !drona_training_gpu.none && !drona_training_gpu."
+              },
+              "drona_trainingPartition": {
+                "type": "dynamicSelect",
+                "label": "Partition",
+                "help": "Partition to submit to. Only shown when the reservation's nodes are in more than one partition.",
+                "name": "drona_training_partition",
+                "retriever": "drona_reservation_gpus.sh",
+                "retrieverParams": {
+                  "RESERVATION": "$drona_reservation",
+                  "MODE": "partitions",
+                  "SLICE": "$drona_training_gpu"
+                },
+                "hideWhenSingle": true,
+                "autoSelect": "first",
+                "condition": "!drona_training. && !drona_reservation."
+              }
+            }
+          },
+          "drona_trainingSummary": {
+            "type": "staticText",
+            "name": "drona_training_summary",
+            "useLabel": false,
+            "isDynamic": true,
+            "allowHtml": true,
+            "retriever": "drona_reservation_summary.sh",
+            "retrieverParams": {
+              "RESERVATION": "$drona_reservation",
+              "GPU": "$drona_training_gpu",
+              "NUMGPU": "$drona_training_numgpu",
+              "PARTITION": "$drona_training_partition",
+              "WALLTIME": "$drona_walltime",
+              "ACCOUNT": "$drona_account",
+              "PATTERN": "",
+              "UPCOMING_DAYS": "7"
+            },
+            "refreshInterval": "120",
+            "condition": "!drona_training."
+          }
+        }
+      }
+    }
+  }
+}

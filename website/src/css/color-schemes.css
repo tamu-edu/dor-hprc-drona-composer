@@ -1,0 +1,251 @@
+/* Colour schemes the reader can pick in the navbar (src/components/SchemePicker.js). Maroon is the
+   default and lives in custom.css; each scheme here only redefines colour variables, and applies
+   when <html> has its data-scheme attribute. A scheme's dark variant needs both attributes, so it
+   wins over the dark defaults in custom.css. Keep SCHEMES in SchemePicker.js in step. */
+
+/* ── Supercomputer: midnight indigo, electric cyan ───────────────── */
+
+[data-scheme='indigo'] {
+  --ifm-background-color: #f4f5fa;
+  --ifm-background-surface-color: #ffffff;
+  --drona-tint: #e6e8f8;
+  --ifm-color-primary: #3b3fb6;
+  --ifm-color-primary-dark: #3539a4;
+  --ifm-color-primary-darker: #32369b;
+  --ifm-color-primary-darkest: #292c7f;
+  --ifm-color-primary-light: #4a4ec4;
+  --ifm-color-primary-lighter: #5357c7;
+  --ifm-color-primary-lightest: #6b6ed0;
+
+  --tamu-maroon: #1f2263;
+  --tamu-navy: #0e2a3a;
+
+  --drona-band: linear-gradient(135deg, #14163a, #1f2263 45%, #26297a);
+  --drona-footer-band: linear-gradient(135deg, #14163a, #1f2263 50%, #26297a);
+  --drona-accent-line: linear-gradient(90deg, #6366f1, #22d3ee 50%, #6366f1);
+  --drona-solid: #1f2263;
+  --drona-tint-border: rgba(59, 63, 182, 0.12);
+  --drona-shadow-rgb: 59, 63, 182;
+}
+
+[data-scheme='indigo'][data-theme='dark'] {
+  --ifm-background-color: #0f1126;
+  --ifm-background-surface-color: #171a36;
+  --ifm-footer-background-color: #171a36;
+  --ifm-code-background: #1d2142;
+  --ifm-toc-border-color: #2a2e55;
+  --ifm-link-color: #a7aaf8;
+  --ifm-link-hover-color: #c3c5fb;
+  --tamu-dark-bg: #0b0d1f;
+  --tamu-dark-bg-secondary: #171a36;
+  --tamu-dark-border: #2a2e55;
+  --ifm-color-primary: #8c8ff5;
+  --ifm-color-primary-dark: #7a7ef2;
+  --ifm-color-primary-darker: #7175f1;
+  --ifm-color-primary-darkest: #5459ec;
+  --ifm-color-primary-light: #9ea1f7;
+  --ifm-color-primary-lighter: #a7aaf8;
+  --ifm-color-primary-lightest: #c3c5fb;
+
+  --tamu-maroon-light: #8c8ff5;
+  --tamu-maroon-lighter: #a7aaf8;
+
+  --drona-footer-band: linear-gradient(135deg, #1b1b1d, #161838);
+  --drona-tint: #161935;
+  --drona-tint-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Lab Notebook: deep teal, amber ──────────────────────────────── */
+
+[data-scheme='teal'] {
+  --ifm-background-color: #fbf9f3;
+  --ifm-background-surface-color: #fffdf8;
+  --drona-tint: #e3f0ef;
+  --ifm-color-primary: #0f5e66;
+  --ifm-color-primary-dark: #0e555c;
+  --ifm-color-primary-darker: #0d5057;
+  --ifm-color-primary-darkest: #0a4248;
+  --ifm-color-primary-light: #116771;
+  --ifm-color-primary-lighter: #126c76;
+  --ifm-color-primary-lightest: #157a85;
+
+  --tamu-maroon: #0b3c42;
+  --tamu-navy: #12303a;
+
+  --drona-band: linear-gradient(135deg, #082c31, #0b3c42 45%, #17707a);
+  --drona-footer-band: linear-gradient(135deg, #082c31, #0b3c42 50%, #145f68);
+  --drona-accent-line: linear-gradient(90deg, #2a9d8f, #f2a93b 50%, #2a9d8f);
+  --drona-solid: #0b3c42;
+  --drona-tint-border: rgba(15, 94, 102, 0.12);
+  --drona-shadow-rgb: 15, 94, 102;
+}
+
+[data-scheme='teal'][data-theme='dark'] {
+  --ifm-background-color: #0f1a1c;
+  --ifm-background-surface-color: #162426;
+  --ifm-footer-background-color: #162426;
+  --ifm-code-background: #1b2b2d;
+  --ifm-toc-border-color: #253a3d;
+  --ifm-link-color: #70c2cc;
+  --ifm-link-hover-color: #92d1d9;
+  --tamu-dark-bg: #0b1416;
+  --tamu-dark-bg-secondary: #162426;
+  --tamu-dark-border: #253a3d;
+  --ifm-color-primary: #4fb3bf;
+  --ifm-color-primary-dark: #42a9b6;
+  --ifm-color-primary-darker: #3ea0ac;
+  --ifm-color-primary-darkest: #33838d;
+  --ifm-color-primary-light: #64bdc8;
+  --ifm-color-primary-lighter: #70c2cc;
+  --ifm-color-primary-lightest: #92d1d9;
+
+  --tamu-maroon-light: #4fb3bf;
+  --tamu-maroon-lighter: #70c2cc;
+
+  --drona-footer-band: linear-gradient(135deg, #1b1b1d, #0d2e33);
+  --drona-tint: #142224;
+  --drona-tint-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Drona: saffron, charcoal ────────────────────────────────────── */
+
+[data-scheme='saffron'] {
+  --ifm-background-color: #fcf8f2;
+  --ifm-background-surface-color: #fffcf8;
+  --drona-tint: #fbefe4;
+  --ifm-color-primary: #c2410c;
+  --ifm-color-primary-dark: #af3b0b;
+  --ifm-color-primary-darker: #a5370a;
+  --ifm-color-primary-darkest: #882d08;
+  --ifm-color-primary-light: #d5470d;
+  --ifm-color-primary-lighter: #df4b0e;
+  --ifm-color-primary-lightest: #f05f22;
+
+  --tamu-maroon: #2b2f36;
+  --tamu-navy: #3a2a22;
+
+  --drona-band: linear-gradient(135deg, #1f2328, #2b2f36 60%, #3d2b21);
+  --drona-footer-band: linear-gradient(135deg, #1f2328, #2b2f36 60%, #3d2b21);
+  --drona-accent-line: linear-gradient(90deg, #c2410c, #f59e0b 50%, #c2410c);
+  --drona-solid: #2b2f36;
+  --drona-tint-border: rgba(194, 65, 12, 0.12);
+  --drona-shadow-rgb: 120, 60, 20;
+}
+
+[data-scheme='saffron'][data-theme='dark'] {
+  --ifm-background-color: #1c1a18;
+  --ifm-background-surface-color: #262320;
+  --ifm-footer-background-color: #262320;
+  --ifm-code-background: #2c2824;
+  --ifm-toc-border-color: #3a3530;
+  --ifm-link-color: #f3a26d;
+  --ifm-link-hover-color: #f6ba93;
+  --tamu-dark-bg: #161412;
+  --tamu-dark-bg-secondary: #262320;
+  --tamu-dark-border: #3a3530;
+  --ifm-color-primary: #f08a4b;
+  --ifm-color-primary-dark: #ee7a34;
+  --ifm-color-primary-darker: #ed7229;
+  --ifm-color-primary-darkest: #d85c12;
+  --ifm-color-primary-light: #f29a62;
+  --ifm-color-primary-lighter: #f3a26d;
+  --ifm-color-primary-lightest: #f6ba93;
+
+  --tamu-maroon-light: #f08a4b;
+  --tamu-maroon-lighter: #f3a26d;
+
+  --drona-footer-band: linear-gradient(135deg, #1b1b1d, #2b2f36);
+  --drona-tint: #24201c;
+  --drona-tint-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ── The picker ──────────────────────────────────────────────────── */
+
+.scheme-picker {
+  position: relative;
+}
+
+.scheme-picker__button {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.scheme-picker__button:hover,
+.scheme-picker__button[aria-expanded='true'] {
+  opacity: 1;
+}
+
+.scheme-picker__menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 100;
+  min-width: 13rem;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  border-radius: 10px;
+  background: var(--ifm-background-surface-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.scheme-picker__heading {
+  padding: 0.3rem 0.6rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.scheme-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  text-align: left;
+  color: var(--ifm-font-color-base);
+}
+
+.scheme-picker__option:hover {
+  background: var(--ifm-color-emphasis-100);
+}
+
+.scheme-picker__option[aria-checked='true'] {
+  font-weight: 700;
+}
+
+.scheme-picker__option[aria-checked='true']::after {
+  content: '✓';
+  margin-left: auto;
+  color: var(--ifm-color-primary);
+}
+
+.scheme-picker__swatch {
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+/* In the mobile menu the options are listed inline instead of in a dropdown */
+.scheme-picker--mobile {
+  padding: 0.5rem var(--ifm-menu-link-padding-horizontal);
+}
+
+.scheme-picker--mobile .scheme-picker__heading {
+  padding-left: 0;
+}
+
+.scheme-picker--mobile ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

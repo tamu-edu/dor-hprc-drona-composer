@@ -9,7 +9,8 @@ import os
 import shutil
 from .error_handler import APIError, handle_api_error
 from .utils import create_folder_if_not_exist, get_drona_dir, get_envs_dir
-from .env_repo_manager import EnvironmentRepoManager
+from .env_repo_manager import EnvironmentRepoManager, user_repo_dir
+from .env_api import DRONA_ENV_API, env_summary
 
 
 ENV_ICON_DIR = os.path.abspath(os.path.join("static", "env-icons"))
@@ -68,61 +69,60 @@ def get_env_icon_url(env_root_path, env_name):
 
 
 def get_directories(path):
-    """Get list of directories in a given path"""
-    return sorted([d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))])
+    """Get list of directories in a given path. Hidden ones (.git of a checked-out environment
+    repository, editor folders) are not environments and are left out."""
+    return sorted([d for d in os.listdir(path)
+                   if not d.startswith(".") and os.path.isdir(os.path.join(path, d))])
 
-def _get_environments():
-    """Get list of all available environments (system and user)"""
-    system_environments = []
+def _environment_dirs():
+    """(name, root, is_user_env) of every installed environment: system ones first, then the
+    user's. No URLs are built here, so it also works outside the icon route's app context."""
+    found = []
     try:
         system_env_path = os.path.abspath("./environments")
-        system_environments = [
-            {
-                "env": env,
-                "src": system_env_path,
-                "is_user_env": False,
-                "icon": get_env_icon_url(
-                    system_env_path,
-                    env
-                ),
-            }
-            for env in get_directories(system_env_path)
-        ]
+        found += [(env, system_env_path, False) for env in get_directories(system_env_path)]
     except (PermissionError, FileNotFoundError, OSError):
-        system_environments = []
-    
+        pass
+
     dd = get_drona_dir()
     if not dd["ok"]:
-        return system_environments
+        return found
 
     user_envs_path = request.args.get("user_envs_path")
     if user_envs_path is None:
         eres = get_envs_dir()
         if not eres["ok"]:
-            return system_environments
+            return found
         user_envs_path = eres["path"]
         try:
             create_folder_if_not_exist(user_envs_path)
         except (PermissionError, OSError):
             pass
 
-    user_environments = []
     try:
-        user_environments = get_directories(user_envs_path)
-        user_environments = [
-            {
-                "env": env,
-                "src": user_envs_path,
-                "is_user_env": True,
-                "icon": get_env_icon_url(user_envs_path, env),
-            }
-            for env in user_environments
-        ]
+        found += [(env, user_envs_path, True) for env in get_directories(user_envs_path)]
     except (PermissionError, FileNotFoundError, OSError):
-        user_environments = []
+        pass
+    return found
 
-    environments = system_environments + user_environments
-    return environments
+
+def installed_environment_names():
+    """Names of all installed environments (system and user)."""
+    return {name for name, _root, _user in _environment_dirs()}
+
+
+def _get_environments():
+    """Get list of all available environments (system and user)"""
+    return [
+        {
+            "env": env,
+            "src": root,
+            "is_user_env": is_user,
+            "icon": get_env_icon_url(root, env),
+            **env_summary(os.path.join(root, env)),
+        }
+        for env, root, is_user in _environment_dirs()
+    ]
 
 
 def get_environment_icon_route(environment):
@@ -159,9 +159,21 @@ def get_environment_route(environment):
 
     return template_data
 
+def require_env_import_enabled():
+    """Refuse import requests when the installer turned import off (env_import_enabled
+    in config.yml). The UI hides Import then; this stops direct calls and pages opened
+    before the setting changed. Checked before the env repo is touched."""
+    if not app.config.get('env_import_enabled', True):
+        raise APIError(
+            "Importing environments is disabled",
+            status_code=403,
+            details={'error': 'Importing environments is turned off on this installation.'}
+        )
+
 @handle_api_error
 def add_environment_route():
     """Add a new environment from the repository"""
+    require_env_import_enabled()
     env = request.form.get("env")
 
     if not env:
@@ -173,13 +185,26 @@ def add_environment_route():
 
     repo_manager = EnvironmentRepoManager(
             repo_url=app.config['env_repo_github'],
-            repo_dir="./environments-repo"
+            repo_dir=user_repo_dir()
     )
     eres = get_envs_dir()
     if not eres["ok"]:
         return jsonify({"message": eres["reason"]}), 400
     user_envs_dir = eres["path"]
 
+    # Refuse environments that need a newer Drona before copying: the copy replaces an existing one.
+    # The Import dialog already disables them; this covers direct requests and stale dialogs.
+    env_info = repo_manager.get_environment_info(env)
+    if env_info is not None and not env_info["compatible"]:
+        raise APIError(
+            "Environment needs a newer Drona",
+            status_code=409,
+            details={
+                'error': env_info["incompatible_reason"],
+                'requires_drona': env_info["requires_drona"],
+                'drona_env_api': DRONA_ENV_API,
+            }
+        )
 
     try:
         repo_manager.copy_environment_to_user(env, user_envs_dir)
@@ -276,12 +301,14 @@ def delete_environment_route():
         "env": env
     })
 
+@handle_api_error
 def get_more_envs_info_route():
     """Get additional information about available environments from the repository"""
+    require_env_import_enabled()
     cluster_name = app.config['cluster_name']
     repo_manager = EnvironmentRepoManager(
         repo_url=app.config["env_repo_github"],
-        repo_dir="./environments-repo"
+        repo_dir=user_repo_dir()
     )
 
     environments_info = repo_manager.get_environments_info(cluster_name)

@@ -1,0 +1,4 @@
+{
+  "CPU_MONITOR_START": "!retrieve_cpu_monitor_start($drona_cpu_monitor)",
+  "CPU_MONITOR_STOP": "!retrieve_cpu_monitor_stop($drona_cpu_monitor)"
+}

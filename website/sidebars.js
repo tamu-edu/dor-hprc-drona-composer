@@ -1,84 +1,76 @@
-/**
- * Creating a sidebar enables you to:
- - create an ordered group of docs
- - render a sidebar for each doc of that group
- - provide next/previous navigation
-
- The sidebars can be generated from the filesystem, or explicitly defined here.
-
- Create as many sidebars as you want.
- */
-
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
   tutorialSidebar: [
     {
       type: 'category',
-      label: 'Getting Started',
-      items: [
-        'overview/intro',
-        'quick-start',
-        'overview/installation',
-        'overview/architecture',
-      ],
+      label: 'Overview',
+      items: ['overview/intro', 'overview/key-concepts'],
     },
+    'setup',
     {
       type: 'category',
-      label: 'Using Drona',
+      label: 'User Guide',
       items: [
         'user-guide/using-drona',
-        'environments/user-workflows',
-        {
-          type: 'category',
-          label: 'Existing Workflows',
-          items: [
-            'using-drona/workflows/generic',
-            'using-drona/workflows/alphafold',
-            'using-drona/workflows/huggingface',
-            'using-drona/workflows/lammps',
-          ],
-        },
         'using-drona/monitoring',
+        'environments/user-environments',
       ],
     },
     {
       type: 'category',
-      label: 'Environment Development',
+      label: 'Build an Environment',
       items: [
+        {
+          type: 'category',
+          label: 'Tutorial',
+          link: { type: 'doc', id: 'tutorial/index' },
+          items: [
+            'tutorial/part-1',
+            'tutorial/part-2',
+            'tutorial/part-3',
+            'tutorial/part-4',
+            'tutorial/part-5',
+          ],
+        },
         'environments/overview',
+        'environments/publishing',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Drona Runtime Library',
+      link: { type: 'doc', id: 'runtime-library/index' },
+      items: [
+        'runtime-library/form-parts',
+        'runtime-library/maps-and-functions',
+        'runtime-library/retrievers-and-templates',
+        'runtime-library/site-tailoring',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Technical Reference',
+      items: [
+        'overview/architecture',
         'environments/schema',
         'frontend/form-components',
+        'environments/conditionals',
         'environments/map',
         'environments/driver',
         'environments/utils',
-        'environments/publishing',
+        'environments/retriever-scripts',
+        'environments/live-charts',
+        'environments/styling',
         'environments/database',
-        {
-          type: 'category',
-          label: 'Advanced Features',
-          items: [
-            'environments/retriever-scripts',
-            'environments/conditionals',
-          ],
-        },
+        'overview/installation',
       ],
     },
     {
       type: 'category',
       label: 'Integrations',
-      items: [
-        'integrations/open-ondemand',
-      ],
+      items: ['integrations/open-ondemand'],
     },
-    {
-      type: 'category',
-      label: 'Tutorials',
-      items: [
-        'tutorials',
-        'user-guide/primers',
-      ],
-    },
-    'citations',
+    'papers-and-talks',
   ],
 };
 

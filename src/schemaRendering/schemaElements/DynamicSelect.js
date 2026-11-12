@@ -32,161 +32,105 @@
  * @property {Object} [value] - Default/initial selected option (object with value and label)
  * @property {Array} [options] - Initial options array, may be overridden by retriever
  * @property {string} [help] - Help text displayed below the input
+ * @property {number} [refreshInterval] - Re-fetch the options every this many seconds. Omit/0 to
+ * fetch only when shown and when a `$field` in `retrieverParams` changes. Paused while the browser
+ * tab is hidden; a poll is skipped if the previous one is still running, and a failed poll keeps
+ * the current options.
+ * @property {string} [refreshWhile] - Condition (same syntax as `condition`); polling only runs while
+ * it is true, with one final fetch when it turns false, e.g. "!drona_status.DONE"
+ * @property {boolean|"single"|"first"} [autoSelect] - When the current value is empty or no longer
+ * available once the options load: true/"single" selects the only option, "first" selects the first one
+ * @property {boolean} [hideWhenSingle] - When the retriever returns exactly one option, show its label
+ * as plain text instead of the dropdown (the value is still set and submitted). Implies autoSelect.
  * @property {boolean} [showAddMore=false] - Whether to show an add more button
  */
 
-import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import FormElementWrapper from "../utils/FormElementWrapper";
 import { customSelectStyles } from "../utils/selectStyles";
 import Select from "react-select";
-import { FormValuesContext } from "../FormValuesContext";
-import { getFieldValue } from "../utils/fieldUtils";
-import { executeScript } from "../utils/utils";
+import SingleOptionValue from "../utils/SingleOptionValue";
+import { useRetriever, usePolling, useAutoSelect } from "../hooks";
 
 function DynamicSelect(props) {
   const [value, setValue] = useState(props.value || "");
-  const [isEvaluated, setIsEvaluated] = useState(false);
-  const [options, setOptions] = useState(props.options || []);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isValueInvalid, setIsValueInvalid] = useState(false);
 
-  const { values: formValues, updateValue, environment } = useContext(FormValuesContext);
-  const formValuesRef = useRef(formValues);
+  const retrieverPath = props.retrieverPath || props.retriever;
 
-  useEffect(() => {
-    formValuesRef.current = formValues;
-  }, [formValues]);
-
-  const relevantFieldNames = useMemo(() => {
-    if (!props.retrieverParams) return [];
-
-    return Object.values(props.retrieverParams)
-      .filter(value => typeof value === 'string' && value.startsWith('$'))
-      .map(value => value.substring(1));
-  }, [props.retrieverParams]);
+  const { data, isLoading, isRefreshing, isEvaluated, refetch } = useRetriever({
+    retrieverPath,
+    retrieverParams: props.retrieverParams,
+    initialData: props.options || [],
+    parseJSON: true,
+    isShown: props.isShown,
+    onError: props.setError,
+  });
 
   useEffect(() => {
     setValue(props.value);
   }, [props.value]);
 
-  // Validate value against options
   useEffect(() => {
-    if (isEvaluated && value) {
-      const isValueValid = options.some(option => option.value === value.value);
-      setIsValueInvalid(!isValueValid);
-
-      if (!isValueValid) {
-        // Add the current value to options with an indicator
-        setOptions(prevOptions => [
-          ...prevOptions,
-          {
-            ...value,
-            label: `${value.label} (Unavailable)`,
-            isDeprecated: true,
-            styles: {
-              color: '#dc3545',  // Bootstrap danger color
-              fontStyle: 'italic'
-            }
-          }
-        ]);
-      }
-    }
-  }, [options, value, isEvaluated]);
-
-  const fetchOptions = useCallback(async () => {
-    const retrieverPath = props.retrieverPath || props.retriever;
-
-    if (retrieverPath == undefined) {
+    if (props.isShown && retrieverPath == undefined) {
       props.setError({
         message: "Retriever path is not set",
         status_code: 400,
         details: ""
       });
-      return;
     }
+  }, [props.isShown, retrieverPath]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    setIsLoading(true);
+  // Periodic refresh. A failed poll keeps the previous options.
+  usePolling(() => refetch({ background: true }), props.refreshInterval, {
+    enabled: !!retrieverPath,
+    refreshWhile: props.refreshWhile,
+  });
 
-    try {
-      const data = await executeScript({
-        retrieverPath: retrieverPath,
-        retrieverParams: props.retrieverParams,
-        formValues: formValuesRef.current,
-        parseJSON: true,
-	environment: environment,
-        onError: props.setError
-      });
+  // Background polls update the options quietly; only other fetches show the busy state
+  const showLoading = isLoading && !isRefreshing;
 
-      setOptions(data);
-      setIsEvaluated(true);
-    } catch (error) {
-      // Error already handled by executeScript
-    } finally {
-      setIsLoading(false);
-    }
-  }, [props.retrieverPath, props.retriever, props.retrieverParams, props.setError]);
+  const fetchedOptions = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
-  const debouncedFetchOptions = useCallback(
-    (() => {
-      let timeout = null;
-
-      return () => {
-        if (timeout) clearTimeout(timeout);
-
-        timeout = setTimeout(() => {
-          fetchOptions();
-          timeout = null;
-        }, 300);
-      };
-    })(),
-    [fetchOptions]
+  // A value that is no longer among the fetched options stays selectable, flagged as unavailable
+  const isValueInvalid = !!(
+    isEvaluated && value && !fetchedOptions.some(option => option.value === value.value)
   );
 
-  // Initial fetch when component is shown
-  useEffect(() => {
-    if (props.isShown && !isEvaluated) {
-      fetchOptions();
-    }
-  }, [props.isShown, isEvaluated, fetchOptions]);
-
-  // Track changes to relevant form values and refetch options
-  const prevRelevantValuesRef = useRef({});
-
-  useEffect(() => {
-    if (!props.isShown || !props.retrieverParams || relevantFieldNames.length === 0) {
-      return;
-    }
-
-    let hasRelevantValueChanged = false;
-
-    for (const fieldName of relevantFieldNames) {
-      const currentValue = getFieldValue(formValues, fieldName);
-      const previousValue = prevRelevantValuesRef.current[fieldName];
-
-      if (currentValue !== previousValue) {
-        hasRelevantValueChanged = true;
-        prevRelevantValuesRef.current[fieldName] = currentValue;
+  const options = useMemo(() => {
+    if (!isValueInvalid) return fetchedOptions;
+    return [
+      ...fetchedOptions,
+      {
+        ...value,
+        label: `${value.label} (Unavailable)`,
+        isDeprecated: true,
+        styles: {
+          color: '#dc3545',  // Bootstrap danger color
+          fontStyle: 'italic'
+        }
       }
-    }
-
-    if (hasRelevantValueChanged && isEvaluated) {
-      // Reset evaluation state to trigger refetch
-      setIsEvaluated(false);
-      setOptions([]);
-      debouncedFetchOptions();
-    }
-  }, [formValues, props.isShown, props.retrieverParams, relevantFieldNames, debouncedFetchOptions, isEvaluated]);
+    ];
+  }, [fetchedOptions, isValueInvalid, value]);
 
   const handleValueChange = (option) => {
     setValue(option);
-    setIsValueInvalid(false); // Reset invalid state on user change
     if (props.onChange) {
       props.onChange(props.index, option);
     }
   };
 
+  useAutoSelect({
+    options: fetchedOptions,
+    isEvaluated,
+    mode: props.autoSelect || (props.hideWhenSingle ? "single" : false),
+    current: value?.value,
+    select: handleValueChange,
+  });
+
+  const showSingle = props.hideWhenSingle && isEvaluated && fetchedOptions.length === 1;
+
   const getNoOptionsMessage = () => {
-    if (isLoading) return "Loading options...";
+    if (showLoading) return "Loading options...";
     if (isEvaluated && options.length === 0) return "No options available";
     return "No options found";
   };
@@ -198,6 +142,9 @@ function DynamicSelect(props) {
       label={props.label}
       help={props.help}
     >
+      {showSingle ? (
+        <SingleOptionValue name={props.name} option={fetchedOptions[0]} withLabelInput />
+      ) : (
       <div style={{ display: "flex" }}>
         <Select
           menuPortalTarget={document.body}
@@ -206,7 +153,7 @@ function DynamicSelect(props) {
           onChange={handleValueChange}
           options={options}
           name={props.name}
-          isLoading={isLoading}
+          isLoading={showLoading}
           styles={{
             ...customSelectStyles,
             control: (base, state) => ({
@@ -221,7 +168,7 @@ function DynamicSelect(props) {
             container: (base) => ({ ...base, flexGrow: 1 }),
           }}
           noOptionsMessage={getNoOptionsMessage}
-          placeholder={isLoading ? "Loading options..." : "-- Choose an option --"}
+          placeholder={showLoading ? "Loading options..." : "-- Choose an option --"}
         />
         <input
           type="hidden"
@@ -239,8 +186,9 @@ function DynamicSelect(props) {
           </button>
         )}
       </div>
-      {isValueInvalid && (
-        <div className="text-danger" style={{ fontSize: '0.875em', marginTop: '0.25rem' }}>
+      )}
+      {isValueInvalid && !showSingle && (
+        <div className="text-danger" style={{ fontSize: "var(--drona-text-ui)", marginTop: '0.25rem' }}>
           This option may no longer be available
         </div>
       )}

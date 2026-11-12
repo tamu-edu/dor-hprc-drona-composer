@@ -6,8 +6,64 @@ import ast
 import shutil
 import os
 import sys
+import tempfile
 from machine_driver_scripts.utils import *
 import importlib.util
+
+# drona_utils lives in <repo>/packages. Import it here so the engine and the
+# environment functions share one module (and so one preview directory).
+_PACKAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'packages')
+if _PACKAGES_DIR not in sys.path:
+    sys.path.append(_PACKAGES_DIR)
+import drona_utils
+
+# Preview state files go to a private directory on local disk (fast even when
+# the shared file systems are slow). Not $TMPDIR: a site may point it at scratch.
+PREVIEW_TMP_ROOT = "/tmp"
+
+
+# Environment directories seen by this process (see forget_env_modules).
+_ENV_ROOTS = set()
+_APP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def forget_env_modules(env_dir):
+    """Drop cached modules that were imported from an environment directory.
+
+    The app is one long-running process, and Python caches imports by name in
+    sys.modules. Without this, a helper package of an environment (e.g.
+    `generators`) stays cached: another environment with a package of the same
+    name gets the first one's code, and edits only take effect after a restart.
+    Called once per preview; the environment's helpers are imported fresh.
+    """
+    if env_dir:
+        root = os.path.abspath(env_dir)
+        # never the app's own tree (drona_utils, runtime support, the engine)
+        if not (_APP_ROOT + os.sep).startswith(root + os.sep):
+            _ENV_ROOTS.add(root + os.sep)
+    if not _ENV_ROOTS:
+        return
+    roots = tuple(_ENV_ROOTS)
+    for name, module in list(sys.modules.items()):
+        location = getattr(module, "__file__", None)
+        if not location:
+            paths = list(getattr(module, "__path__", None) or [])  # namespace packages
+            location = paths[0] if paths else None
+        if location and os.path.abspath(location).startswith(roots):
+            sys.modules.pop(name, None)
+
+
+def safe_relative_name(name):
+    """Return name as a clean relative path ("a/b.py"), or None if it is absolute or uses "..", "." or empty parts."""
+    if not isinstance(name, str):
+        return None
+    name = name.strip().replace("\\", "/")
+    if not name or name.startswith("/") or "\0" in name:
+        return None
+    parts = name.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        return None
+    return "/".join(parts)
 
 def load_module_with_imports(module_name, file_path):
     if not os.path.exists(file_path):
@@ -200,9 +256,18 @@ def process_function(value, environment, env_dir):
                 # Remove outer quotes if present
                 if (var.startswith('"') and var.endswith('"')) or (var.startswith("'") and var.endswith("'")):
                     var = var[1:-1]
-                # Remove variable tags
+                    processed_variables.append(var)
+                    continue
+                # Remove variable tags (mapped form values)
                 if var.startswith('<var>') and var.endswith('</var>'):
                     var = var[5:-6]
+                    processed_variables.append(var)
+                    continue
+                # Unmapped $param (e.g. a field hidden by a condition): pass an empty
+                # string instead of the literal "$name", like an empty form field
+                if var.startswith('$'):
+                    processed_variables.append("")
+                    continue
                 processed_variables.append(var)
             
             # Get the function, prioritizing the local module
@@ -212,6 +277,7 @@ def process_function(value, environment, env_dir):
             elif global_module and hasattr(global_module, function_name) and callable(getattr(global_module, function_name)):
                 dynamic_function = getattr(global_module, function_name)
             else:
+                drona_utils.drona_add_error(f"Function {function_name} not found (neither in the environment's utils.py nor in the shared utils).")
                 return f"Function {function_name} not found in local or global utils."
 
             # Execute the function
@@ -219,6 +285,10 @@ def process_function(value, environment, env_dir):
                 result = dynamic_function(*processed_variables)
             except Exception as e:
                 result = f"Error: {e}"
+                # Also show it in the preview: the value alone is easy to miss
+                # (e.g. a map key that isn't used in any template).
+                kind = "" if isinstance(e, ValueError) else f"{type(e).__name__}: "
+                drona_utils.drona_add_error(f"{function_name}(): {kind}{e}")
             if result is None:
                 result = ""
             print(result)
@@ -262,6 +332,7 @@ class Engine():
         self.drona_job_name = None
         self.drona_job_location = None
         self.additional_files=None
+        self.preview_messages = []
     
     def set_schema(self, schema_path):
         with open(schema_path) as json_file:
@@ -303,7 +374,7 @@ class Engine():
 
     def set_map(self, map_path):
         with open(map_path) as json_file:
-            self.map = json.load(json_file)
+            self.map = resolve_map_includes(json.load(json_file))
     
     def set_driver(self, driver_path):
         with open(driver_path) as shell_script:
@@ -347,43 +418,58 @@ class Engine():
 
 
     def set_dynamic_additional_files(self, env_path, params):
-        user_id = os.getenv('USER')
-
+        """Files added by environment functions with drona_add_additional_file()."""
         self.dynamic_additional_files = {}
-        files_path = env_path
-        additional_files_path = os.path.join("/tmp", f"{user_id}.additional_files")
-        
+        additional_files_path = drona_utils.drona_state_path("additional_files")
+
         if not os.path.exists(additional_files_path):
-            return 
+            return
 
-        with open(additional_files_path, 'r') as file: 
+        with open(additional_files_path, 'r') as file:
             additional_files = json.load(file)
- 
-        for additional_file in additional_files:
-                file_name  = additional_file["file_name"].strip()
-            
-                preview_name = additional_file["preview_name"].strip()
-                preview_name = file_name if preview_name == "" else preview_name 
-
-                preview_order = additional_file["preview_order"]
-                preview_order = 0 if preview_order < -1 else preview_order
-
-                file_path = os.path.join(files_path, file_name)
-                if os.path.isfile(file_path):
-                    with open(file_path) as file:
-                        self.dynamic_additional_files[os.path.basename(file_name)] = {
-                                "content": file.read(),
-                                "preview_name": preview_name,
-                                "preview_order": preview_order
-                        }
-
         os.remove(additional_files_path)
-            
-    def get_dynamic_map(self):
-        user_id = os.getenv('USER')
 
-        dynamic_map = os.path.join("/tmp", f"{user_id}.map")
-        
+        for additional_file in additional_files:
+            file_name = (additional_file.get("file_name") or "").strip()
+
+            # Name in the workflow directory: the given name (may be a relative
+            # path), else the base name of the source file as before.
+            if additional_file.get("name"):
+                target = safe_relative_name(additional_file["name"])
+                if target is None:
+                    self.preview_messages.append({"type": "error", "text":
+                        f"Additional file name not allowed: {additional_file['name']!r} "
+                        "(use a relative path without '..')"})
+                    continue
+            else:
+                target = os.path.basename(file_name)
+            if not target:
+                continue
+
+            preview_name = (additional_file.get("preview_name") or "").strip()
+            preview_name = target if preview_name == "" else preview_name
+
+            preview_order = additional_file.get("preview_order", 0)
+            preview_order = 0 if preview_order < -1 else preview_order
+
+            if additional_file.get("content") is not None:
+                content = str(additional_file["content"])
+            else:
+                file_path = os.path.join(env_path, file_name)
+                if not os.path.isfile(file_path):
+                    continue  # skipped silently, as before
+                with open(file_path) as file:
+                    content = file.read()
+
+            self.dynamic_additional_files[target] = {
+                "content": content,
+                "preview_name": preview_name,
+                "preview_order": preview_order
+            }
+
+    def get_dynamic_map(self):
+        dynamic_map = drona_utils.drona_state_path("map")
+
         if not os.path.exists(dynamic_map):
             return {}
 
@@ -393,8 +479,6 @@ class Engine():
         os.remove(dynamic_map)
 
         return map_dict
-
-   
 
     def get_environment(self):
         return self.environment
@@ -415,24 +499,16 @@ class Engine():
         return globals()
 
     def get_messages(self, params):
-        user_id = os.getenv('USER')
-        messages_path = os.path.join("/tmp", f"{user_id}.messages")
+        messages = list(self.preview_messages)
+        messages_path = drona_utils.drona_state_path("messages")
         if not os.path.exists(messages_path):
-            return []
+            return messages
 
-        messages = []
-        
-        with open(messages_path, 'r') as file: 
+        with open(messages_path, 'r') as file:
             messages_dict = json.load(file)
- 
-        if "messages" in messages_dict:
-            messages = messages_dict["messages"] 
-
         os.remove(messages_path)
 
-        return messages
-        
-
+        return messages_dict.get("messages", []) + messages
 
     def fetch_template(self, template_path):
         try:
@@ -456,35 +532,56 @@ class Engine():
             
     def custom_replace_with_indentation(self, template, map, params):
         """
-        Replace placeholders while preserving indentation for multi-line values.
-        Could potentially be optimized.
+        Replace [KEY] placeholders with their map values, preserving the
+        indentation of multi-line values.
+
+        The template is scanned once for the known keys, so the result does not
+        depend on the order of the map. A value can itself contain [KEY]
+        placeholders (e.g. a driver that contains [CANCEL]); they are expanded
+        recursively. A key that refers to itself (directly or through other
+        keys) is left as literal text instead of looping. Text in brackets that
+        is not a map key (e.g. shell tests like `[ -f x ]`) is never touched.
         """
-        for key, value in map.items():
-            placeholder = "[" + key + "]"
-            lines = template.split('\n')
-            new_lines = []
+        keys = sorted((str(k) for k in map if str(k)), key=len, reverse=True)
+        if not keys:
+            return template
+        pattern = re.compile(r"\[(" + "|".join(re.escape(k) for k in keys) + r")\]")
+        values = {str(k): v for k, v in map.items()}
 
-            for line in lines:
-                if placeholder in line:
-                    indent_match = re.match(r'^(\s*)', line)
-                    base_indent = indent_match.group(1) if indent_match else ''
-                    
-                    value_lines = str(value).split('\n')
+        def expand(text, active):
+            if "[" not in text:
+                return text
+            out_lines = []
+            for line in text.split("\n"):
+                matches = list(pattern.finditer(line))
+                if not matches:
+                    out_lines.append(line)
+                    continue
 
-                    replaced_line = line.replace(placeholder, value_lines[0])
-                    new_lines.append(replaced_line)
-                    
-                    # Add remaining lines with proper indentation
+                base_indent = re.match(r"^(\s*)", line).group(1)
+                pieces = []
+                extra_lines = []
+                pos = 0
+                for m in matches:
+                    key = m.group(1)
+                    pieces.append(line[pos:m.start()])
+                    pos = m.end()
+                    if key in active:
+                        pieces.append(m.group(0))
+                        continue
+                    value = expand(str(values[key]), active | {key})
+                    value_lines = value.split("\n")
+                    pieces.append(value_lines[0])
+                    # Remaining lines of a multi-line value follow the line, indented like it
                     for value_line in value_lines[1:]:
-                        if value_line.strip(): 
-                            new_lines.append(base_indent + value_line)
-                        else:
-                            new_lines.append(value_line)  # Keep empty lines as-is
-                else:
-                    new_lines.append(line)
-            template = '\n'.join(new_lines)
-        return template
-    
+                        extra_lines.append(base_indent + value_line if value_line.strip() else value_line)
+                pieces.append(line[pos:])
+                out_lines.append("".join(pieces))
+                out_lines.extend(extra_lines)
+            return "\n".join(out_lines)
+
+        return expand(template, frozenset())
+
     def custom_replace(self, template, map, params):
         return self.custom_replace_with_indentation(template, map, params)
 
@@ -502,6 +599,27 @@ class Engine():
     
     
     def preview_script(self, params):
+        """Evaluate the map and build the preview. Files, messages and mappings
+        that environment functions add go to a private directory for this
+        preview only (mode 0700, removed afterwards)."""
+        if self.environment is None:
+            return "No environment selected"
+        forget_env_modules(self.env_dir)
+        preview_dir = tempfile.mkdtemp(prefix="drona-preview-", dir=PREVIEW_TMP_ROOT)
+        previous_dir = drona_utils.drona_get_preview_dir()
+        drona_utils.drona_set_preview_dir(preview_dir)
+        # A run on an existing workflow (see views/workflow_runs.py): map functions can ask
+        # with drona_get_run_target()
+        target = str(params.get("drona_target_wf") or "").strip()
+        drona_utils.drona_set_run_target(target if target.isdigit() else None)
+        try:
+            return self._preview_script(params)
+        finally:
+            drona_utils.drona_set_preview_dir(previous_dir)
+            drona_utils.drona_set_run_target(None)
+            shutil.rmtree(preview_dir, ignore_errors=True)
+
+    def _preview_script(self, params):
         if self.environment is None:
             return "No environment selected"
         else:
@@ -564,14 +682,27 @@ class Engine():
                     job_file.write(self.script)
 
             self.additional_files = json.loads(params["additional_files"])
+            location_real = os.path.realpath(params['location'])
+
+            # Check every name before writing anything.
+            targets = []
             for fname, content in self.additional_files.items():
-                # Copy  files with the job script
-                nfile=content
-                additional_job_file_path = os.path.join(params['location'], fname)
-                with open(os.path.join(additional_job_file_path), "w") as ajob_file:
-                    nfile = self.replace_placeholders(nfile, self.map, params)
-                    ajob_file.write(nfile)
-            
+                rel = safe_relative_name(fname)
+                path = os.path.realpath(os.path.join(location_real, rel)) if rel else None
+                if path is None or os.path.commonpath([location_real, path]) != location_real:
+                    raise ValueError(f"Additional file name not allowed: {fname!r}")
+                targets.append((path, content))
+
+            for path, content in targets:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Placeholders were already replaced at preview (with the
+                # evaluated map); the text may have been edited since, so only
+                # normalize tabs and line endings, like the job script.
+                text = str(content).replace("\t", " ")
+                text = re.sub(r'\r\n?|\r', '\n', text)
+                with open(path, "w") as ajob_file:
+                    ajob_file.write(text)
+
             if params.get("run_command") is not None:
                 return job_file_path
             else:

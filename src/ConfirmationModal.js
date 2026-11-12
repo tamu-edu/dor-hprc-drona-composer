@@ -48,8 +48,8 @@ const ConfirmationModal = ({
           alignItems: "center",
         }}>
           <h5 style={{
-            fontSize: "1.25rem",
-            fontWeight: "600",
+            fontSize: "var(--drona-text-heading)",
+            fontWeight: "var(--drona-weight-strong)",
             margin: 0,
             color: "white",
           }}>
@@ -62,7 +62,7 @@ const ConfirmationModal = ({
         }}>
           <p style={{ 
             marginBottom: "1rem", 
-            fontSize: "14px", 
+            fontSize: "var(--drona-text-ui)", 
             lineHeight: "1.6",
             color: "#495057"
           }}>
@@ -82,8 +82,8 @@ const ConfirmationModal = ({
                 border: "1px solid #6c757d",
                 borderRadius: "0.25rem",
                 cursor: "pointer",
-                fontWeight: "500",
-                fontSize: "14px",
+                fontWeight: "var(--drona-weight-normal)",
+                fontSize: "var(--drona-text-ui)",
                 transition: "all 0.2s ease",
                 backgroundColor: "#6c757d",
                 color: "white",
@@ -101,8 +101,8 @@ const ConfirmationModal = ({
                 border: "1px solid maroon",
                 borderRadius: "0.25rem",
                 cursor: "pointer",
-                fontWeight: "500",
-                fontSize: "14px",
+                fontWeight: "var(--drona-weight-normal)",
+                fontSize: "var(--drona-text-ui)",
                 transition: "all 0.2s ease",
                 backgroundColor: "maroon",
                 color: "white",

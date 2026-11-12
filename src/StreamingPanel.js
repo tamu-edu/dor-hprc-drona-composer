@@ -36,7 +36,7 @@ const StreamingContent = ({ status, htmlOutput, outputLines, styles }) => {
     <div style={styles.placeholder}>
       <div style={styles.placeholder.title}>Live Output Stream</div>
       <div style={styles.placeholder.subtitle}>
-        Job execution output will appear here in real-time once you submit your configuration.
+        Output will appear here in real time once the generated scripts run.
       </div>
     </div>
   );
@@ -78,7 +78,7 @@ const StreamingPanel = ({
     : styles.rightPaneTitle;
 
   const contentStyle = isFullscreen
-    ? { ...styles.streamingContent, padding: '0.5rem 0.75rem', fontSize: '13px' }
+    ? { ...styles.streamingContent, padding: '0.5rem 0.75rem', fontSize: "var(--drona-text-data)" }
     : styles.streamingContent;
 
   return (
@@ -88,7 +88,7 @@ const StreamingPanel = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {!isFullscreen && <StatusBadge status={status} styles={styles} />}
           <button
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '14px', padding: '0 2px', lineHeight: 1 }}
+            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: "var(--drona-text-ui)", padding: '0 2px', lineHeight: 1 }}
             onClick={onToggleCollapse}
             title="Hide output"
             onMouseOver={(e) => e.currentTarget.style.color = 'white'}

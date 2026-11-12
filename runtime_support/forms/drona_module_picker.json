@@ -1,0 +1,9 @@
+{
+  "drona_Modules": {
+    "type": "module",
+    "label": "Add modules (optional)",
+    "name": "drona_module_list",
+    "help": "Modules are used to manage all the software packages available. If your job needs a software package, just start typing in the search bar, and it will show all available software modules matching the entered string. Select the software module you want and click the add button. The dropdown on the right shows all available toolchains. If you need multiple software modules, use the same toolchain. All added modules will show up in little blue bubbles. If you want to remove any of the added modules, just click on its name.",
+    "toolchainName": "toolchain"
+  }
+}

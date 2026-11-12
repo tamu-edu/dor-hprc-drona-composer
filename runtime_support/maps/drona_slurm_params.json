@@ -1,0 +1,3 @@
+{
+  "DUMMY": "!retrieve_slurm_params($drona_nodes,$drona_tasks,$drona_cpus,$drona_memory,$drona_gpu,$drona_numgpu,$drona_walltime,$drona_account,$drona_extra_slurm)"
+}

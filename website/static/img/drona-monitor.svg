@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-labelledby="t">
+  <title id="t">Monitoring a workflow</title>
+  <!-- Rounded hexagon, same shape and colour as drona1.png -->
+  <path d="M512 82 Q540 66 568 82 L918 284 Q944 300 944 330 L944 750 Q944 780 918 796 L568 998 Q540 1014 512 998 L162 796 Q136 780 136 750 L136 330 Q136 300 162 284 Z" fill="#7B3640"/>
+  <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Browser window -->
+    <rect x="262" y="320" width="556" height="436" rx="30"/>
+    <line x1="262" y1="402" x2="818" y2="402"/>
+    <!-- Line chart: utilization over time -->
+    <polyline points="322,620 382,566 438,592 500,500 562,536 630,462"/>
+    <!-- Chart axes -->
+    <polyline points="312,460 312,680 660,680"/>
+    <!-- Resource bars -->
+    <line x1="712" y1="680" x2="712" y2="612"/>
+    <line x1="748" y1="680" x2="748" y2="552"/>
+    <line x1="784" y1="680" x2="784" y2="506"/>
+  </g>
+  <!-- Window buttons, as in drona1.png -->
+  <circle cx="313" cy="362" r="16" fill="#E8414A"/>
+  <circle cx="363" cy="362" r="16" fill="#F5C02B"/>
+  <circle cx="413" cy="362" r="16" fill="#43B05C"/>
+  <!-- Job status light in the title bar -->
+  <circle cx="770" cy="362" r="18" fill="#43B05C" stroke="#fff" stroke-width="8"/>
+  <!-- Latest data point -->
+  <circle cx="630" cy="462" r="18" fill="#7B3640" stroke="#fff" stroke-width="12"/>
+</svg>

@@ -20,6 +20,7 @@
 - Automatic generation of all necessary job files
 - Editable preview of generated scripts before submission
 - Environment system for defining and sharing job templates
+- Workflow History environment for browsing, rerunning and deleting the workflows of all environments
 - Import feature for researchers to add new environments to their local storage
 - Built with React frontend and Flask backend
 
@@ -33,7 +34,7 @@ Open OnDemand >=3.0
 
 Python 3.8+ (see `requirements.txt` for dependencies)
 
-For detailed information on how to use Drona Workflow Engine and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Workflow Engine](https://tamu-edu.github.io/dor-hprc-drona-composer/) website.
+For detailed information on how to use Drona Workflow Engine and how to create your custom jobs and/or workflows, check out this GitHub repo's Wiki or the HPRC [Drona Workflow Engine](https://tamu-edu.github.io/dor-hprc-drona-composer/) website. If you're building or debugging an environment, see [`runtime_support/README.md`](runtime_support/README.md) for the shared form components, retriever scripts, and templates every environment can reuse.
 
 To set up/install Drona Workflow Engine, see the instructions below. If you have any questions, please contact us at help@hprc.tamu.edu. If you find any bugs, you are welcome to create an issue in this repo.
 
@@ -89,7 +90,7 @@ If you use Drona Workflow Engine, please cite our paper:
 
 ## License
 
-MIT (see [LICENSE](https://github.com/tamu-edu/dor-hprc-drona-composer/LICENSE.md) file)
+MIT (see [LICENSE](https://github.com/tamu-edu/dor-hprc-drona-composer/blob/master/LICENSE) file)
 
 ## Acknowledgments
 

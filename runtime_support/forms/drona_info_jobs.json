@@ -1,0 +1,17 @@
+{
+  "drona_hidden_jobs_check": {
+    "type": "hidden",
+    "label": "JOB_IDS",
+    "failureNotice": "Job list cannot be updated right now",
+    "name": "drona_info_jobs",
+    "refreshInterval": "60",
+    "isDynamic": true,
+    "retrieverParams": {
+      "id": "$drona_create_manage_allworkflows",
+      "field": "runtime_meta",
+      "key": "jobinfo.*.id",
+      "join": " "
+    },
+    "retriever": "builtin:db_lookup"
+  }
+}

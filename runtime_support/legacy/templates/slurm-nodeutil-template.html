@@ -1,0 +1,31 @@
+<div id="dc-nodeutil" style="width: 100%; box-sizing: border-box;">
+    <style>
+        #dc-nodeutil {
+            --dc-text: #1e293b;
+            --dc-text-muted: #64748b;
+            --dc-border: #e2e8f0;
+            --dc-divider: #f1f5f9;
+            --dc-radius-card: 12px;
+            --dc-radius-pill: 999px;
+            --dc-radius-sm: 8px;
+            --dc-live: #10b981;
+            color: var(--dc-text);
+        }
+
+        #dc-nodeutil .node-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+        #dc-nodeutil .node-card {
+            background: #ffffff; border: 1px solid var(--dc-border); border-radius: var(--dc-radius-sm);
+            padding: 10px 12px; width: 140px;
+        }
+        #dc-nodeutil .node-name { font-size: var(--drona-text-data); font-weight: var(--drona-weight-strong); color: var(--dc-text); margin-bottom: 6px; display: block; border-bottom: 1px solid var(--dc-divider); padding-bottom: 6px; }
+        #dc-nodeutil .stat-row { display: flex; justify-content: space-between; font-size: var(--drona-text-caption); color: var(--dc-text-muted); margin-top: 2px; }
+        #dc-nodeutil .bar-wrap { background: var(--dc-divider); height: 4px; border-radius: 2px; margin-top: 3px; overflow: hidden; }
+        #dc-nodeutil .bar-fill { height: 100%; border-radius: 2px; }
+        #dc-nodeutil .bg-cpu { background: #3b82f6; }
+        #dc-nodeutil .bg-mem { background: #10b981; }
+    </style>
+
+        <div class="node-grid">
+            {{NODE_CARDS}}
+        </div>
+</div>

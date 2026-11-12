@@ -6,7 +6,7 @@ export const customSelectStyles = {
     borderRadius: ".25rem",
     minHeight: "38px",
     boxShadow: state.isFocused ? "0 0 0 .2rem rgba(0,123,255,.25)" : "none",
-    fontSize: "1rem",
+    fontSize: "var(--drona-text-body)",
   }),
   menu: (provided) => ({
     ...provided,

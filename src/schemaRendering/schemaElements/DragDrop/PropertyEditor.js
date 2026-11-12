@@ -153,7 +153,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
           <h4 style={{
             margin: 0,
             color: "maroon",
-            fontWeight: "600"
+            fontWeight: "var(--drona-weight-strong)"
           }}>
             Edit {template.label}
           </h4>
@@ -177,7 +177,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
           backgroundColor: "#f8f9fa",
           borderRadius: "0.25rem",
           marginBottom: "1.5rem",
-          fontSize: "0.9rem"
+          fontSize: "var(--drona-text-ui)"
         }}>
           <strong>Type:</strong> {element.type}
         </div>
@@ -188,8 +188,8 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
               <label style={{
                 display: "block",
                 marginBottom: "0.5rem",
-                fontWeight: "600",
-                fontSize: "0.9rem",
+                fontWeight: "var(--drona-weight-strong)",
+                fontSize: "var(--drona-text-ui)",
                 color: "#333"
               }}>
                 {key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ")}
@@ -208,7 +208,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
                   display: "block",
                   marginTop: "0.25rem",
                   color: "#666",
-                  fontSize: "0.8rem"
+                  fontSize: "var(--drona-text-caption)"
                 }}>
                   {property.help}
                 </small>
@@ -226,15 +226,15 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
         }}>
           <h6 style={{
             marginBottom: "0.75rem",
-            fontSize: "0.9rem",
-            fontWeight: "600",
+            fontSize: "var(--drona-text-ui)",
+            fontWeight: "var(--drona-weight-strong)",
             color: "maroon"
           }}>
             Preview
           </h6>
           <pre style={{
             margin: 0,
-            fontSize: "0.75rem",
+            fontSize: "var(--drona-text-caption)",
             backgroundColor: "#fff",
             padding: "0.75rem",
             borderRadius: "0.25rem",
@@ -262,7 +262,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
               border: "none",
               borderRadius: "0.25rem",
               cursor: "pointer",
-              fontSize: "0.9rem"
+              fontSize: "var(--drona-text-ui)"
             }}
           >
             Cancel
@@ -276,7 +276,7 @@ function PropertyEditor({ element, template, onSave, onCancel }) {
               border: "none",
               borderRadius: "0.25rem",
               cursor: "pointer",
-              fontSize: "0.9rem"
+              fontSize: "var(--drona-text-ui)"
             }}
           >
             Save Changes

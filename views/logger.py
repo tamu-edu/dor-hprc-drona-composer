@@ -25,6 +25,10 @@ class Logger:
         except Exception as e:
             print(f"Error writing to log file: {e}")
 
+    def log(self, log_entry: str):
+        """Append a single entry to the log file."""
+        self._write_log(log_entry)
+
     def log_route(self,
                  extract_fields: Optional[Dict[str, Callable]] = None,
                  format_string: Optional[str] = None):

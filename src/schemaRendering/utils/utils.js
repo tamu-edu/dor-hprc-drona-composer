@@ -55,16 +55,25 @@ export async function executeScript({
     }
 
     const queryString = params.toString();
-    const devUrl = config.development.dashboard_url;
-    const prodUrl = config.production.dashboard_url;
-    const curUrl = process.env.NODE_ENV === "development" ? devUrl : prodUrl;
+    const curUrl = document.dashboard_url || (process.env.NODE_ENV === "development" ? config.development.dashboard_url : config.production.dashboard_url);
     
     const requestUrl = `${curUrl}/jobs/composer/evaluate_script?retriever_path=${encodeURIComponent(
         retrieverPath
     )}${queryString ? `&${queryString}` : ""}`;
 
-    const response = await fetch(requestUrl);
-    
+    let response;
+    try {
+        response = await fetch(requestUrl);
+    } catch (fetchError) {
+        const error = {
+            message: fetchError.message || "Network error while executing script",
+            status_code: null,
+            details: ""
+        };
+        onError?.(error);
+        throw error;
+    }
+
     if (!response.ok) {
         let errorData = {};
         try {
@@ -108,9 +117,7 @@ export async function fetchFileContent({ filePath, environment }) {
         params.append('DRONA_ENV_DIR', envPath);
     }
 
-    const devUrl = config.development.dashboard_url;
-    const prodUrl = config.production.dashboard_url;
-    const curUrl = process.env.NODE_ENV === "development" ? devUrl : prodUrl;
+    const curUrl = document.dashboard_url || (process.env.NODE_ENV === "development" ? config.development.dashboard_url : config.production.dashboard_url);
 
     const requestUrl = `${curUrl}/jobs/composer/read_file?${params.toString()}`;
     const response = await fetch(requestUrl);

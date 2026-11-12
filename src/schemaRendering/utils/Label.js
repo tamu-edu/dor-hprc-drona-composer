@@ -22,7 +22,7 @@ const Label = ({ labelOnTop, name, label, help }) => {
         <span
            style={{
    		marginLeft: '3px',
-    		fontSize: '0.75em',
+    		fontSize: "var(--drona-text-caption)",
     		color: '#007bff', // Link-like color (blue)
     		opacity: 0.6,
     		cursor: 'pointer',

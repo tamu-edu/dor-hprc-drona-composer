@@ -3,12 +3,19 @@ import io from "socket.io-client";
 import ReactDOM from "react-dom";
 import JobComposer from "./JobComposer";
 import RerunPromptModal from "./RerunPromptModal";
-import EnvironmentModal from "./EnvironmentModal";
+import AppShell from "./AppShell";
+import { EnvironmentProvider, useEnvironment } from "./environment/EnvironmentContext";
 import { GlobalFilesContext } from './GlobalFilesContext';
 
-export function App() {
+// The workflow pane: form, Generate, preview, submit, rerun/recreate. It gets the selected
+// environment from the environment context (envInstanceId is bumped on every selection so
+// <Composer> gets a fresh mount even when the same environment is picked again; fields that
+// fetch only once on mount, e.g. Generic's "configured" check, then re-run). It does not know
+// about the environment sidebar.
+export function WorkflowPane() {
+  const { environment, envInstanceId, initialValues, selectEnvironment } = useEnvironment();
   const [globalFiles, setGlobalFiles] = useState([]);
-  const [environment, setEnvironment] = useState({ env: "", src: "" });
+  const [pendingValues, setPendingValues] = useState(null);
   const [fields, setFields] = useState({});
   const [jobScript, setJobScript] = useState("");
   const [messages, setMessages] = useState([]);
@@ -28,11 +35,12 @@ export function App() {
   const composerRef = useRef(null);
 
 
-  const [fieldsLoadedResolver, setFieldsLoadedResolver] = useState(null);
+  // Resolver for "schema loaded" (Recreate waits on it). A ref, not state: as state it was a dependency of
+  // the schema-fetch effect, so resolving it re-ran the effect and loaded (and reset) the form a second time.
+  const fieldsLoadedResolverRef = useRef(null);
 
   const formRef = useRef(null);
   const previewRef = useRef(null);
-  const envModalRef = useRef(null);
   const multiPaneRef = useRef(null);
 
   const defaultRunLocation = document.drona_dir + "/runs";
@@ -45,8 +53,21 @@ export function App() {
 
   const [pendingNewPreview, setPendingNewPreview] = useState(false);
 
-  const [environments, setEnvironments] = useState([]);
   const [error, setError] = useState(null);
+  // Set when the selected environment needs a newer Drona (X-Drona-Env-Warning from the schema route)
+  const [envWarning, setEnvWarning] = useState(null);
+
+  // A new selection drops the previous environment's schema until the new one arrives. Done while
+  // rendering (not in an effect), so the remounted form never sees the old fields: it would fire
+  // their retrievers (e.g. Generic's "configured" check) against the new environment.
+  const [fieldsEnvironment, setFieldsEnvironment] = useState(environment);
+  if (fieldsEnvironment !== environment) {
+    setFieldsEnvironment(environment);
+    setFields({});
+    setEnvWarning(null);
+    // Values the selection came with (e.g. a recent workflow: Manage + that workflow)
+    setPendingValues(initialValues || null);
+  }
 
   useEffect(() => {
     console.log("locationPickedByUser changed ->", locationPickedByUser);
@@ -75,27 +96,6 @@ export function App() {
     setPendingNewPreview(false);
     handlePreview();   // dronaJobId is guaranteed to generate new id
   }, [pendingNewPreview, dronaJobId]);
-
-  useEffect(() => {
-    fetch(document.dashboard_url + "/jobs/composer/environments")
-      .then((response) => response.json())
-      .then((data) => {
-
-        setEnvironments(
-          data.map((env) => ({
-            value: env.env,
-            label: env.env,
-            src: env.src,
-            is_user_env: env.is_user_env,
-            styles: { color: env.is_user_env ? "#3B71CA" : "" },
-            icon: env.icon,
-	  }))
-        );
-      })
-      .catch((error) => {
-        console.error("Error fetching JSON data");
-      });
-  }, []);
 
   function sync_job_name(name, customRunLocation, options = {}) {
     const { force = false } = options;
@@ -157,13 +157,15 @@ export function App() {
           };
         }
 
+        setEnvWarning(response.headers.get("X-Drona-Env-Warning"));
         const data = await response.json();
         setFields(data);
 
         // Resolve the promise if there's a resolver
-        if (fieldsLoadedResolver) {
-          fieldsLoadedResolver(data);
-          setFieldsLoadedResolver(null);
+        if (fieldsLoadedResolverRef.current) {
+          const resolve = fieldsLoadedResolverRef.current;
+          fieldsLoadedResolverRef.current = null;
+          resolve(data);
         }
       } catch (error) {
         setError(error);
@@ -171,98 +173,98 @@ export function App() {
     };
 
     fetchSchema();
-  }, [environment, fieldsLoadedResolver]);
+  }, [environment]);
 
 
-  function handleEnvChange(key, option) {
-    setEnvironment({
-      env: option.value,
-      src: option.src,
-      icon: option.icon,
-      is_user_env: option.is_user_env,
-   });
-
-  const params = new URLSearchParams(window.location.search);
-  params.set("environment", option.value);
-
-  const newUrl = `${window.location.pathname}?${params.toString()}`;
-  window.history.pushState({}, "", newUrl);
-}
-    
-  useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const envName = params.get("environment");
-
-  if (!envName || environments.length === 0) return;
-
-  const match = environments.find((env) => env.value === envName);
-
-  if (match) {
-    handleEnvChange("runtime", match);
+  function generateDronaJobId() {
+    return String(Math.floor(Math.random() * 68719476735));
   }
-  }, [environments]);
 
   function handleRerunCancel() {
     setShowRerunModal(false);
   }
   async function processRerun(promptData) {
-
     setJobStatus("rerun");
     setShowRerunModal(false);
+
     try {
-      const response = await fetch(`${document.dashboard_url}/jobs/composer/history/${pendingRerunRow.job_id}`, {
-        method: 'GET'
+      const originalJobId = pendingRerunRow?.job_id || pendingRerunRow?.drona_id;
+      const rerunJobId = generateDronaJobId();
+      const jobId = originalJobId;
+
+      const response = await fetch(`${document.dashboard_url}/jobs/composer/history/${jobId}`, {
+        method: "GET",
       });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      const jobScript = await response.json();
+      const savedJob = await response.json();
+      const additionalFiles = savedJob.additional_files || {};
 
       setShowSplitScreenModal(true);
-
-      setJobScript(jobScript["script"]);
+      setJobScript(savedJob.script || "");
 
       const panes = [
         {
           preview_name: "driver.sh",
-          content: jobScript["driver"],
+          content: savedJob.driver || "",
           name: "driver",
-          order: -2
+          order: -2,
         },
-
       ];
-      if (jobScript["script"] != null) {
+
+      if (savedJob.script != null) {
         panes.push({
           preview_name: "template.txt",
-          content: jobScript["script"],
+          content: savedJob.script,
           name: "run_command",
-          order: -3
+          order: -3,
         });
       }
 
-      for (const [fname, file] of Object.entries(jobScript["additional_files"])) {
+      for (const [fname, file] of Object.entries(additionalFiles)) {
+        const fileIsObject = file && typeof file === "object";
         panes.push({
-          preview_name: file["preview_name"] || fname,
-          content: file["content"] || file,
+          preview_name: fileIsObject ? (file.preview_name || fname) : fname,
+          content: fileIsObject ? (file.content || "") : file,
           name: fname,
-          order: file["preview_order"]
+          order: fileIsObject ? file.preview_order : undefined,
         });
       }
 
       setPanes(panes);
       setMessages([]);
-      setRerunInfo({
-        ...pendingRerunRow,
-        name: promptData.jobName,
-        location: promptData.location
-      });
-      setPendingRerunRow(null);
 
+      const envName =
+        savedJob.runtime ||
+        pendingRerunRow?.runtime ||
+        savedJob.form_data?.env_name ||
+        savedJob.form_data?.runtime?.value ||
+        savedJob.form_data?.runtime?.label ||
+        "";
+
+      setRerunInfo({
+        ...savedJob,
+        original_job_id: originalJobId,
+        job_id: rerunJobId,
+        drona_job_id: rerunJobId,
+        name: promptData.jobName,
+        location: promptData.location,
+        runtime: envName,
+        runtime_label: envName,
+        env_name: envName,
+        env_dir: savedJob.env_dir || pendingRerunRow?.env_dir || savedJob.form_data?.env_dir || "",
+        driver: savedJob.driver || "",
+        script: savedJob.script || "",
+        additional_files: additionalFiles,
+      });
+
+      setPendingRerunRow(null);
     } catch (error) {
-      console.error('Failed to generate preview:', error);
-      alert('Failed to generate preview: ' + error.message);
+      console.error("Failed to generate preview:", error);
+      alert("Failed to generate preview: " + error.message);
     }
   }
 
@@ -272,15 +274,163 @@ export function App() {
     setShowRerunModal(true);
   }
   async function handleForm(row) {
-    const fieldsPromise = new Promise(resolve => {
-      setFieldsLoadedResolver(() => resolve);
-    });
+    try {
+      const jobId = row?.job_id || row?.drona_id;
+      let savedJob = row;
 
-    await setEnvironment({ env: row.runtime, src: row.env_dir });
-    const updatedFields = await fieldsPromise;
+      // Pull the full saved record when possible. The history list can be partial/stale.
+      if (jobId) {
+        const response = await fetch(`${document.dashboard_url}/jobs/composer/history/${jobId}`, {
+          method: "GET",
+        });
 
-    if (composerRef.current) {
-      composerRef.current.setValues(row.form_data);
+        if (response.ok) {
+          savedJob = await response.json();
+        }
+      }
+
+      const savedForm = { ...(savedJob.form_data || {}) };
+
+      const envName =
+        savedJob.runtime ||
+        savedForm.env_name ||
+        savedForm.runtime?.value ||
+        savedForm.runtime?.label ||
+        row?.runtime ||
+        "Generic";
+
+      const envDir =
+        savedJob.env_dir ||
+        savedForm.env_dir ||
+        row?.env_dir ||
+        "";
+
+      const savedName = savedForm.name || savedJob.name || "unnamed";
+      const savedLocation = savedForm.location || savedJob.location || defaultRunLocation;
+
+      const recreateValues = {
+        ...savedForm,
+
+        // Force the Create form to open after clicking Recreate from Manage.
+        // `mode` is the field name in older schemas; the shared create/manage components use
+        // drona_create_manage_mode, and the saved form data holds "manage" under it.
+        mode: "create",
+        drona_create_manage_mode: "create",
+
+        // Generic uses this composite schema element for job name/location.
+        runDestinationFinal: {
+          name: savedName,
+          location: savedLocation,
+        },
+
+        // Keep the flat values too because backend/history expects them.
+        name: savedName,
+        location: savedLocation,
+
+        runtime: savedForm.runtime || {
+          label: envName,
+          value: envName,
+        },
+        runtime_label: envName,
+        env_name: envName,
+        env_dir: envDir,
+      };
+
+      // If fileUploader was not preserved, rebuild enough for Uploader to recreate from paths.
+      if (
+        (!recreateValues.fileUploader || recreateValues.fileUploader.length === 0) &&
+        Array.isArray(savedJob.uploaded_files)
+      ) {
+        recreateValues.fileUploader = savedJob.uploaded_files.map((filename) => ({
+          filename,
+          filepath: `${savedLocation}/${filename}`,
+        }));
+      }
+
+      // Recreate should behave like a normal new/create workflow,
+      // but it should also restore the saved preview panes so the Job Script appears.
+      setJobStatus("new");
+
+      const additionalFiles = savedJob.additional_files || {};
+      const recreatedPanes = [
+        {
+          preview_name: "driver.sh",
+          content: savedJob.driver || savedForm.driver || "",
+          name: "driver",
+          order: -2,
+        },
+      ];
+
+      if (savedJob.script || savedForm.run_command) {
+        recreatedPanes.push({
+          preview_name: "template.txt",
+          content: savedJob.script || savedForm.run_command,
+          name: "run_command",
+          order: -3,
+        });
+      }
+
+      for (const [fname, file] of Object.entries(additionalFiles)) {
+        const fileIsObject = file && typeof file === "object";
+        recreatedPanes.push({
+          preview_name: fileIsObject ? (file.preview_name || fname) : fname,
+          content: fileIsObject ? (file.content || "") : file,
+          name: fname,
+          order: fileIsObject ? file.preview_order : undefined,
+        });
+      }
+
+      setPanes(recreatedPanes);
+      setMessages([]);
+
+      // Recreate should restore the form/env view only.
+      // User can click Preview to open the script pane.
+      setShowSplitScreenModal(false);
+
+      // A saved location ending in <name> or <name>-N was chosen by Drona, not the user: restore
+      // it as an automatic location, so Generate gives the new workflow a free <name>-2, ...
+      // instead of reusing (and overwriting) the original's directory. Any other location was
+      // picked by hand and is kept; the preview then warns that the directory is in use.
+      const trimmedLocation = savedLocation.replace(/\/+$/, "");
+      const lastSlash = trimmedLocation.lastIndexOf("/");
+      const lastPart = trimmedLocation.slice(lastSlash + 1);
+      const escapedName = savedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const automaticLocation =
+        lastSlash > 0 && new RegExp(`^${escapedName}(-\\d+)?$`).test(lastPart);
+
+      setRunLocation(savedLocation);
+      setBaseRunLocation(automaticLocation ? trimmedLocation.slice(0, lastSlash) : savedLocation);
+      setLocationPickedByUser(!automaticLocation);
+
+      const sameEnvironment =
+        environment.env === envName &&
+        environment.src === envDir;
+
+      if (!sameEnvironment) {
+        const fieldsPromise = new Promise((resolve) => {
+          fieldsLoadedResolverRef.current = resolve;
+        });
+
+        selectEnvironment({ env: envName, src: envDir }, { remount: false });
+
+        // Wait for schema reload after changing environments.
+        await fieldsPromise;
+      }
+
+      // Fields that only appear after a retriever resolves (e.g. `mode` after Generic's "configured"
+      // check) would miss a one-shot setValues, so also hand the values to Composer as pending: they
+      // are applied as each field becomes visible.
+      setPendingValues(recreateValues);
+
+      // Let Composer render/update first, then push values.
+      setTimeout(() => {
+        if (composerRef.current) {
+          composerRef.current.setValues(recreateValues);
+        }
+      }, 0);
+    } catch (error) {
+      console.error("Failed to recreate workflow:", error);
+      alert("Failed to recreate workflow: " + error.message);
     }
   }
 
@@ -304,7 +454,8 @@ export function App() {
         var jobScript = request.response;
         callback(null, jobScript); // Pass the result to the callback
       } else {
-        callback(`Error ${request.status}. Try again!`); // Pass the error to the callback
+        const serverError = request.response && request.response.error;
+        callback(serverError ? `Error ${request.status}: ${serverError}` : `Error ${request.status}. Try again!`);
       }
     };
     request.onerror = function (event) {
@@ -315,33 +466,6 @@ export function App() {
   }
   
 
-    const handleAddEnvironment = (newEnv) => {
-      const newName = newEnv.env || newEnv.value || newEnv.label;
-    
-      setEnvironments((prevEnvironments) => {
-        const alreadyExists = prevEnvironments.some((env) => {
-          const existingName = env.env || env.value || env.label;
-          return existingName === newName && env.src === newEnv.src;
-        });
-    
-        if (alreadyExists) {
-          return prevEnvironments;
-        }
-    
-        return [
-          ...prevEnvironments,
-          {
-            value: newName,
-            label: newName,
-            src: newEnv.src,
-            is_user_env: true,
-            styles: { color: "#3B71CA" },
-            icon: newEnv.icon,
-          },
-        ];
-      });
-    };
-  
   function handlePreview() {
     setJobStatus("new");
     const formData = new FormData(formRef.current);
@@ -444,60 +568,6 @@ export function App() {
     // }
   }
 
-  function handleAddEnv() {
-    const modal = new bootstrap.Modal(envModalRef.current);
-    modal.toggle();
-  }
-  async function handleRemoveEnv(env) {
-      const name = env.env || env.value || env.label;
-    
-      if (!env.is_user_env) {
-        alert("System environments cannot be removed.");
-        return;
-      }
-    
-      if (!window.confirm(`Remove environment "${name}"? This cannot be undone.`)) {
-        return;
-      }
-    
-      try {
-        const response = await fetch(
-          `${document.dashboard_url}/jobs/composer/environment`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              env: name,
-              src: env.src,
-            }),
-          }
-        );
-    
-        const data = await response.json();
-    
-        if (!response.ok) {
-          throw new Error(data.message || data.details?.error || "Failed to remove environment.");
-        }
-    
-        setEnvironments((prev) =>
-          prev.filter((item) => {
-            const itemName = item.env || item.value || item.label;
-            return !(itemName === name && item.src === env.src);
-          })
-        );
-    
-        if (environment.env === name && environment.src === env.src) {
-          setEnvironment({ env: "", src: "" });
-          setFields({});
-        }
-      } catch (error) {
-        console.error(error);
-        alert(error.message || "Failed to remove environment.");
-      }
-    }
-
   function add_submission_loading_indicator() {
     var submission_section = document.getElementById(
       "job-submit-button-section"
@@ -533,8 +603,12 @@ export function App() {
         <JobComposer
           error={error}
           setError={setError}
+          envWarning={envWarning}
+          onDismissEnvWarning={() => setEnvWarning(null)}
           environment={environment}
-          environments={environments}
+          envInstanceId={envInstanceId}
+          pendingValues={pendingValues}
+          onPendingApplied={() => setPendingValues(null)}
           fields={fields}
           runLocation={runLocation}
           messages={messages}
@@ -544,13 +618,10 @@ export function App() {
           globalFiles={globalFiles}
           handlePreview={handlePreview}
           rerunInfo={rerunInfo}
-          handleEnvChange={handleEnvChange}
-          handleAddEnv={handleAddEnv}
           handleUploadedFiles={handleUploadedFiles}
           sync_job_name={sync_job_name}
           formRef={formRef}
           previewRef={previewRef}
-          envModalRef={envModalRef}
           multiPaneRef={multiPaneRef}
           handleRerun={handleRerun}
           handleForm={handleForm}
@@ -564,24 +635,30 @@ export function App() {
           locationPickedByUser={locationPickedByUser}
           pendingNewPreview={pendingNewPreview}
           setPendingNewPreview={setPendingNewPreview}
-          handleRemoveEnv={handleRemoveEnv}
         />
         {showRerunModal && (
           <RerunPromptModal
             modalRef={rerunPromptModalRef}
             originalName={rerunOriginalName}
+            originalLocation={pendingRerunRow?.location}
             defaultLocation={defaultRunLocation}
             onConfirm={processRerun}
             onCancel={handleRerunCancel}
           />
         )}
-        <EnvironmentModal
-          envModalRef={envModalRef}
-          onAddEnvironment={handleAddEnvironment}
-          setError={setError}
-        />
       </>
     </GlobalFilesContext.Provider>
+  );
+}
+
+// The app: environment selection (context) + page frame (sidebar, workflow pane)
+export function App() {
+  return (
+    <EnvironmentProvider>
+      <AppShell>
+        <WorkflowPane />
+      </AppShell>
+    </EnvironmentProvider>
   );
 }
 

@@ -108,23 +108,31 @@ export default function JobNameLocation({
         // treat env/schema update as init
         didInit.current = false;
 
-        // Only apply schema defaults if they exist.
-        // If the new schema doesn't include customJobLocation, it will be undefined.
+        // Only apply schema defaults if they actually exist.
+        // Important for Recreate: do not wipe restored values with blank schema defaults.
         if (customJobLocation) {
             setRunLocation?.(customJobLocation);
             setFieldValue?.("location", customJobLocation, { silent: true });
         }
 
-        const newName = customJobName ?? "";
-        setJobName(newName);
-        setFieldValue?.("name", newName);
+        if (customJobName) {
+            setJobName(customJobName);
+            setFieldValue?.("name", customJobName);
 
-        if (newName) {
-            sync_job_name?.(newName, customJobLocation, { force: true });
+            sync_job_name?.(customJobName, customJobLocation, { force: true });
+
+            // Keep the composite field value in Composer consistent.
+            onChange?.(undefined, {
+                name: customJobName,
+                location: customJobLocation ?? runLocation ?? ""
+            });
+        } else if (customJobLocation) {
+            // Location-only schema default. Preserve current/restored name.
+            onChange?.(undefined, {
+                name: jobName ?? "",
+                location: customJobLocation
+            });
         }
-
-        // Keep the composite field value in Composer consistent (standard onChange pattern).
-        onChange?.(undefined, { name: newName, location: customJobLocation ?? runLocation ?? "" });
 
         didInit.current = true;
     }, [environment?.env, environment?.src, customJobLocation, customJobName]);

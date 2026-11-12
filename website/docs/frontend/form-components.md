@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Form Components
 
-Documentation for all form components in the Drona Workflow Engine system. Components are used in JSON schema files by specifying the appropriate `type` field.
+Documentation for all form components in the Drona Composer system. Components are used in JSON schema files by specifying the appropriate `type` field.
 
 ## Common Properties
 
@@ -41,6 +41,54 @@ All form components share a set of standard properties that control basic behavi
 
 ---
 
+## Choice element styling
+
+`radioGroup`, `dynamicRadioGroup`, `checkboxGroup` and `dynamicCheckboxGroup` share two styling props.
+
+- `style` sets the appearance of each option: `"default"` (standard input and label) or `"button"` (toggle buttons; works for checkboxes as well as radios).
+- `layout` sets how the whole group is arranged and framed. It takes a preset name, an object, or an array mixing these:
+  - `"inline"` (default), `"list"` (one option per row), `"grid"` (auto-fitting columns), `"boxed"` (border, radius and padding matching the text inputs), `"card"` (rounded card like the Slurm job queue panel: the title is a pill on the top border, with an optional pulsing green dot).
+  - A preset with params: `{ "preset": "boxed", "title": "Running jobs" }`. `boxed` accepts `title`; `card` accepts `title` and `dot` (default `true`, set `false` to hide the green dot); `grid` accepts `minWidth` (default `"12rem"`). Unsupported params are ignored with a console warning.
+  - A bare CSS object (camelCase keys) applied to the group container: `{ "maxHeight": "220px", "overflowY": "auto" }`. With `card` it applies to the option area inside the card, so the title stays put when the list scrolls.
+
+`container`, `rowContainer` and `staticText` accept the same `layout` prop, limited to `card` and `boxed` (plus a CSS object for the content area); other presets are ignored with a console warning. Without `layout` nothing is drawn around the container. `collapsibleRowContainer` and `collapsibleColContainer` take `layout: "card"` only: the title pill becomes the expand/collapse toggle (a maroon chevron replaces the green dot) and the separate Show/Hide button is dropped. The pill highlights on hover and keyboard focus, and a collapsed card shows a "Click to expand" hint and expands when clicked anywhere on the strip. To hide a whole card, put the `condition` on the container itself, since the card is drawn even if every child is hidden.
+
+`staticText` can also collapse itself: a `card` layout with `"collapsible": true` (and `"collapsed": true` for the initial state, which implies `collapsible`) turns the title pill into the toggle, e.g. `{ "preset": "card", "title": "Job Logs", "collapsible": true, "collapsed": true }`. While collapsed, the element's retriever and polling are held back, as in a collapsible container. These two params apply to `staticText`, `chart` and `dynamicTable` only.
+
+Unknown preset names are ignored with a console warning. Titles and labels are rendered as text, never HTML.
+
+A `title` can reference form fields as `$fieldName`, which is replaced by the field's current value (empty when the field has no value), e.g. `{ "preset": "card", "title": "Resource Usage · Job $jobs" }`. This is the same `$` convention as `retrieverParams`. A `$` not followed by a letter or underscore (such as `$5`) is left as written. This works in every element that takes `layout`.
+
+For `staticText` the frame wraps the whole element, including its loading spinner and refresh button. Use it instead of drawing a card and title pill in the retriever's HTML, so the look stays consistent with other elements:
+
+```json
+{
+  "type": "staticText",
+  "name": "drona_sstat2",
+  "useLabel": false,
+  "isDynamic": true,
+  "allowHtml": true,
+  "retriever": "drona_slurm_sstat.sh",
+  "retrieverParams": { "JOBID": "$jobs" },
+  "layout": { "preset": "card", "title": "Resource Usage · Job $jobs" }
+}
+```
+
+```json
+{
+  "type": "dynamicCheckboxGroup",
+  "name": "drona_cancel_jobs",
+  "label": "Cancel jobs",
+  "style": "button",
+  "layout": [
+    { "preset": "card", "title": "Running jobs" },
+    "list",
+    { "maxHeight": "220px", "overflowY": "auto" }
+  ],
+  "retriever": "drona_cancelable_jobs.sh"
+}
+```
+
 ## Component Reference
 
 Each component below supports all common properties listed above, plus component-specific properties.
@@ -69,10 +117,197 @@ A dynamic search-based dropdown component that fetches options as you type. Uses
 "placeholder": "Search for an institution...",
 "help": "Type at least 2 characters to search for institutions"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/AutocompleteSelect.js`*
+
+---
+
+## ButtonLabels
+
+Sets the text of the two workflow buttons and the title of the window that shows the generated scripts. Renders nothing. It applies only while it is visible: a `buttonLabels` element inside a mode's container (for example in `manage.schema.json`) changes the labels only in that mode. When several are visible, the most deeply nested one wins; at equal depth the later one wins. Keys left out, and the whole element when there is none, fall back to the defaults: **Generate** / **Run** / **Generated Scripts**.
+
+### Properties
+- `preview` (string, optional) - Text of the form button that generates the scripts. Default `Generate`
+- `submit` (string, optional) - Text of the button in the generated-scripts window that runs them. Default `Run`
+- `title` (string, optional) - Title of the generated-scripts window. Default `Generated Scripts`
+- `condition` (string, optional) - Same as other elements; the labels apply only while it is true
+
+### Examples
+#### Example 1
+```json
+// In manage.schema.json: label the buttons for running actions
+{
+"type": "buttonLabels",
+"preview": "Generate action",
+"submit": "Run action",
+"title": "Action Preview"
+}
+```
+
+#### Example 2
+```json
+// At the top of schema.json: one label for the whole environment
+{
+"type": "buttonLabels",
+"submit": "Submit to Slurm"
+}
+```
+
+*Source: `src/schemaRendering/schemaElements/ButtonLabels.js`*
+
+---
+
+## Chart
+
+A declarative, self-contained live chart backed by Recharts. Polls a retriever script on an interval (like `staticText`) and renders line/bar/area/pie charts from whatever JSON it returns — no JSX or hand-written JS required, every aspect of the chart (type, axes, series, colors) is controlled by plain JSON properties. The retriever may emit a JSON array of samples (replaces the rolling window each poll — the recommended `tail -n <N>` pattern) or a single JSON sample object (appended to an in-memory buffer capped at `maxDataPoints`). Set `series: "auto"` to derive series from whatever keys show up in each sample when the metric set isn't known until runtime (e.g. GPU count varies per job), or pass an explicit array when metric names are fixed and known ahead of time. See the "Live Charts" guide under Environment Development > Advanced Features for the full retriever contract, data-format examples, and suggested retriever scripts. A single poll can also be split across multiple side-by-side panels instead of one combined chart — see `panels` (explicit, for grouping semantically different metrics like GPU % vs. memory GB, each with its own y-axis) and `seriesPerPanel` (automatic, for capping how many lines land in one panel when the series count isn't known ahead of time, e.g. `series: "auto"` with a variable GPU count). Both still poll the retriever exactly once per interval regardless of panel count. If both are given, `panels` wins and `seriesPerPanel` is ignored.
+
+### Properties
+- `name - Component name` (string) - 
+- `label` (string, optional) - Display label
+- `labelOnTop=false` (boolean, optional) - Label above vs. beside the chart
+- `help` (string, optional) - Help text below the chart
+- `chartType="line"` ("line"|"bar"|"area"|"pie", optional) - Chart type. Applies to the single pane, or uniformly to every `seriesPerPanel`-generated panel; ignored for `panels` entries that set their own `chartType`.
+- `retriever - Path to the retriever script` (string) - 
+- `retrieverParams` (Object, optional) - Params passed to the script, `$fieldName` values are substituted from form state
+- `refreshInterval` (number, optional) - Poll interval in seconds. Omit/0 to fetch once on mount only. Paused while the browser tab is hidden; a poll is skipped if the previous one is still running. A failed poll keeps the chart with an inline "Refresh failed" note, and only raises the global error after several failures in a row.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); polling only runs while it is true, with one final fetch when it turns false, e.g. "!drona_status.DONE"
+- `maxDataPoints=120` (number, optional) - Rolling window cap (client-side safety net, applied regardless of what the retriever returns)
+- `series="auto"` (string|Array, optional) - "auto" to derive series from sample keys, or an array of `{key, label, color}` objects for fixed, known metrics
+- `seriesLabelMap` (Object, optional) - `{key: label}` overrides for auto-derived series labels
+- `colors` (string[], optional) - Override the default 8-color sequence used for auto series
+- `xAxis` (Object, optional) - `{key="timestamp", label, format, unit}`. `format`: "time"|"date"|"datetime" applies a built-in formatter; `unit`: "s"|"ms" (default "s") for timestamp values.
+- `yAxis` (Object, optional) - `{label, min, max}`
+- `stacked=false` (boolean, optional) - Stack series (bar/area only)
+- `height=300` (number, optional) - Chart height in pixels. Applies per-panel when `panels`/`seriesPerPanel` is used, unless a `panels` entry overrides it.
+- `showLegend=true` (boolean, optional) - Show legend when there are 2+ series in a given pane
+- `showGrid=true` (boolean, optional) - Show gridlines
+- `showTable=false` (boolean, optional) - Show a "view as table" toggle below the chart (accessibility fallback). With `panels`/`seriesPerPanel`, one combined table covers every series across all panels.
+- `emptyMessage="No data yet"` (string, optional) - Message shown before the first sample arrives
+- `panels` (`Array<Object>`, optional) - Explicit, manual panel split from one shared poll: `{title, series, seriesLabelMap, colors, chartType, yAxis, stacked, showLegend, showGrid, height}` per panel. `series` is required per panel (usually an explicit `{key,label,color}` array, since the point is hand-grouping known keys by meaning). Omitted per-panel options fall back to the top-level prop of the same name. Takes precedence over `seriesPerPanel` if both are set.
+- `seriesPerPanel` (number, optional) - Automatic split: chunks the series derived from the top-level `series` prop (auto or explicit) into groups of this size, one panel per group, in first-seen order. Panel count adjusts as new keys appear in the data. Ignored if `panels` is set.
+
+### Examples
+#### Example 1
+```json
+// Dynamic series line chart — GPU utilization, GPU count unknown ahead of time
+{
+"type": "chart",
+"name": "gpuUtilization",
+"label": "GPU Utilization",
+"chartType": "line",
+"retriever": "retrievers/gpu_utilization_retriever.sh",
+"retrieverParams": { "jobId": "$jobId" },
+"refreshInterval": 10,
+"maxDataPoints": 120,
+"xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
+"yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 },
+"series": "auto",
+"help": "Live GPU utilization — one line per GPU reported"
+}
+```
+
+#### Example 2
+```json
+// Explicit series — fixed, known metric names
+{
+"type": "chart",
+"name": "trainingMetrics",
+"label": "Training Progress",
+"chartType": "line",
+"retriever": "retrievers/training_log_retriever.sh",
+"retrieverParams": { "jobId": "$jobId" },
+"refreshInterval": 15,
+"maxDataPoints": 200,
+"xAxis": { "key": "epoch", "label": "Epoch" },
+"series": [
+{ "key": "loss", "label": "Loss", "color": "#e34948" },
+{ "key": "accuracy", "label": "Accuracy", "color": "#1baf7a" }
+]
+}
+```
+
+#### Example 3
+```json
+// Stacked bar chart
+{
+"type": "chart",
+"name": "diskIO",
+"label": "Disk I/O",
+"chartType": "bar",
+"stacked": true,
+"retriever": "retrievers/disk_io_retriever.sh",
+"retrieverParams": { "jobId": "$jobId" },
+"refreshInterval": 10,
+"xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
+"series": [
+{ "key": "read", "label": "Read (MB/s)" },
+{ "key": "write", "label": "Write (MB/s)" }
+]
+}
+```
+
+#### Example 4
+```json
+// Pie chart snapshot — dynamic series (per-rank memory, rank count unknown)
+{
+"type": "chart",
+"name": "memoryByRank",
+"label": "Memory Usage by Rank",
+"chartType": "pie",
+"retriever": "retrievers/memory_by_rank_retriever.sh",
+"retrieverParams": { "jobId": "$jobId" },
+"refreshInterval": 10,
+"series": "auto",
+"help": "Current memory usage per MPI rank"
+}
+```
+
+#### Example 5
+```json
+// Explicit panels — two semantically different metric families, one shared poll,
+// each with its own y-axis (count-based splitting can't do this: it groups by
+// discovery order, not by what a key means)
+{
+"type": "chart",
+"name": "gpuAndMemory",
+"label": "GPU & Memory",
+"retriever": "retrievers/gpu_and_memory_retriever.sh",
+"refreshInterval": 10,
+"xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
+"panels": [
+{
+"title": "GPU Utilization",
+"series": [{ "key": "gpu0" }, { "key": "gpu1" }],
+"yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 }
+},
+{
+"title": "Memory Usage",
+"chartType": "area",
+"series": [{ "key": "mem0" }, { "key": "mem1" }],
+"yAxis": { "label": "Memory (GB)", "min": 0, "max": 80 }
+}
+]
+}
+```
+
+#### Example 6
+```json
+// seriesPerPanel — series count unknown ahead of time (auto), capped at 2 lines per panel
+{
+"type": "chart",
+"name": "gpuUtilizationSplit",
+"label": "GPU Utilization (split)",
+"retriever": "retrievers/gpu_utilization_retriever.sh",
+"refreshInterval": 10,
+"xAxis": { "key": "timestamp", "label": "Time", "format": "time" },
+"yAxis": { "label": "Utilization (%)", "min": 0, "max": 100 },
+"series": "auto",
+"seriesPerPanel": 2
+}
+```
+
+*Source: `src/schemaRendering/schemaElements/Chart.js`*
 
 ---
 
@@ -96,7 +331,6 @@ A checkbox input component that returns a specified value when checked and an em
 "value": "Yes",
 "help": "Toggle input that returns a value when checked"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Checkbox.js`*
@@ -112,6 +346,8 @@ A checkbox group component that allows users to select multiple options from a l
 - `label` (string, optional) - Display label for the field
 - `options - Array of option objects, each with value and label properties` (Array) - 
 - `value` (Array, optional) - Default/initial selected values
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the input
 
 ### Example
@@ -129,7 +365,6 @@ A checkbox group component that allows users to select multiple options from a l
 "value": ["analytics", "reporting"],
 "help": "Select one or more options"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/CheckboxGroup.js`*
@@ -140,9 +375,13 @@ A checkbox group component that allows users to select multiple options from a l
 
 A collapsible container component that organizes form fields in a horizontal row. Features a header with a toggle button to show/hide the content, making complex forms more manageable. Each child element is rendered by the FieldRenderer component in a 100% width layout.
 
+While the container is collapsed, the retrievers of the elements inside it do not run: their first fetch and any `refreshInterval` polling wait until the container is opened, and one refresh follows on opening. This applies to every dynamic element, including those in nested containers. The fields stay part of the form, so their values are kept, validated and submitted as usual. An input that gets its value from its own retriever (for example a `dynamicSelect` without a default `value`) is therefore submitted empty if the container is never opened.
+
 ### Properties
 - `elements - Object of field configuration objects to be rendered in the container` (Object) - 
 - `title="Collapsible Row Container"` (string, optional) - Title displayed in the container header
+- `default_state="expanded"` (('collapsed'|'expanded'), optional) - Initial visibility state
+- `layout` (string | Object, optional) - `"card"` draws a rounded card whose title pill is the toggle (chevron, no separate button); the pill text is the layout `title`, else the `title` prop. Unset keeps the default header and Show/Hide button. See [Choice element styling](#choice-element-styling)
 
 ### Example
 ```json
@@ -171,10 +410,49 @@ A collapsible container component that organizes form fields in a horizontal row
 }
 }
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/CollapsibleContainer.js`*
+
+---
+
+## Container
+
+A layout component that organizes form fields in a vertical row. It wraps multiple form elements in a responsive grid layout, with each child element rendered by the FieldRenderer component in a row format.
+
+### Properties
+- `elements - Array of field configuration objects to be rendered in the row` (Array) - 
+- `layout` (string | Object | Array, optional) - Optional frame around the container: `"card"` or `"boxed"`, e.g. `{ "preset": "card", "title": "Job Resources" }`. See [Choice element styling](#choice-element-styling). Unset renders no frame
+
+### Example
+```json
+// Row with multiple text fields
+{
+"type": "container",
+"elements": {
+"element1": {
+"type": "text",
+"name": "element1",
+"label": "Container1",
+"placeholder": "Enter text"
+},
+"element2": {
+"type": "text",
+"name": "element1",
+"label": "Container1",
+"placeholder": "Enter text"
+},
+"element3": {
+"type": "text",
+"name": "element1",
+"label": "Container1",
+"placeholder": "Enter text"
+}
+}
+}
+```
+
+*Source: `src/schemaRendering/schemaElements/Container.js`*
 
 ---
 
@@ -217,7 +495,6 @@ A visual drag-and-drop form builder component that allows users to construct for
 "allowEdit": true,
 "help": "Drag elements from the palette to build your form"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/DragDropContainer.js`*
@@ -235,6 +512,9 @@ A checkbox group that dynamically loads its options from a retriever script. All
 - `retrieverParams` (Object, optional) - Parameters passed to the retriever script, values with $ prefix are replaced with form values
 - `value` (Array, optional) - Default/initial selected values (array of value strings)
 - `options` (Array, optional) - Initial options array, overridden by retriever results
+- `pruneMissing` (boolean, optional, default `false`) - Silently drop selected values that are not in the loaded options, without the "no longer available" warning. Meant for action lists such as cancel-jobs
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the checkboxes
 
 ### Examples
@@ -262,7 +542,6 @@ A checkbox group that dynamically loads its options from a retriever script. All
 "retrieverParams": { "role": "$userRole", "environment": "production" },
 "help": "Permissions update based on selected role"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/DynamicCheckboxGroup.js`*
@@ -271,15 +550,17 @@ A checkbox group that dynamically loads its options from a retriever script. All
 
 ## DynamicRadioGroup
 
-A radio button group that dynamically loads its options from a retriever script. Allows single selection and automatically refreshes options when dependent form values change. Warns when the previously selected option becomes unavailable after options refresh.
+A radio button group that dynamically loads its options from a retriever script. Allows single selection and automatically refreshes options when dependent form values change. Warns when the previously selected option becomes unavailable.
 
 ### Properties
 - `name - Input field name, used for form submission` (string) - 
 - `label` (string, optional) - Display label for the field
-- `retriever - Path to the script that retrieves radio button options` (string) - 
+- `retriever - Path to the script that retrieves radio options` (string) - 
 - `retrieverParams` (Object, optional) - Parameters passed to the retriever script, values with $ prefix are replaced with form values
 - `value` (string, optional) - Default/initial selected value
 - `options` (Array, optional) - Initial options array, overridden by retriever results
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the radio buttons
 
 ### Examples
@@ -288,11 +569,11 @@ A radio button group that dynamically loads its options from a retriever script.
 // Basic dynamic radio group
 {
 "type": "dynamicRadioGroup",
-"name": "cluster",
-"label": "Available Clusters",
-"retriever": "retrievers/clusters_list.sh",
-"value": "cluster1",
-"help": "Select a cluster (options loaded dynamically)"
+"name": "selectedOption",
+"label": "Choose One",
+"retriever": "retrievers/options_list.sh",
+"value": "option1",
+"help": "Select one option (options loaded dynamically)"
 }
 ```
 
@@ -301,13 +582,12 @@ A radio button group that dynamically loads its options from a retriever script.
 // Dynamic radio group with parameters from form values
 {
 "type": "dynamicRadioGroup",
-"name": "nodeType",
-"label": "Node Type",
-"retriever": "retrievers/node_types_by_cluster.sh",
-"retrieverParams": { "cluster": "$cluster", "availability": "high" },
-"help": "Available node types update based on selected cluster"
+"name": "deployment",
+"label": "Deployment Target",
+"retriever": "retrievers/deployments_by_env.sh",
+"retrieverParams": { "environment": "$selectedEnv" },
+"help": "Deployment targets update based on selected environment"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/DynamicRadioGroup.js`*
@@ -352,10 +632,129 @@ A dropdown select component that dynamically loads its options from a retriever 
 "retrieverParams": { "region": "$selectedRegion", "type": "production" },
 "help": "Servers will update based on selected region"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/DynamicSelect.js`*
+
+---
+
+## DynamicTable
+
+A table that works like a `dynamicSelect`: its rows come from a retriever script, and clicking a row selects it. The selected value is the row's `value` (with its `label`), so conditions, `$field` references and restored workflows behave exactly as with `dynamicSelect`. Rows can be searched and sorted, which makes it a better fit than a dropdown when each option has several attributes. Like `dynamicSelect` rows are `{ value, label }`, but `label` may be a list with one cell per column, and the retriever may send the column headers along.
+
+### Properties
+- `name - Input field name, used for form submission` (string) - 
+- `label` (string, optional) - Display label for the field
+- `retriever - Path to the script that retrieves the rows` (string) - 
+- `retrieverParams` (Object, optional) - Parameters passed to the script as environment variables, values with $ prefix will be replaced with form values
+- `columns` (Array, optional) - Header names or objects `{ title?, align?: "left"|"right", sortable?: boolean (default true), width?, html?: boolean }`. When the retriever returns `columns` these refine them by position; otherwise they define the columns (legacy form: objects with `key` read that row key).
+- `value` (Object, optional) - Default/initial selected row (object with value and label)
+- `options` (Array, optional) - Initial rows, may be overridden by retriever
+- `searchable=true` (boolean, optional) - Show a search box that filters rows across all columns
+- `searchPlaceholder` (string, optional) - Placeholder text for the search box
+- `maxHeight="300px"` (string, optional) - Height at which the table body starts scrolling
+- `layout` (string|Object|Array, optional) - Optional frame: "card" (rounded card with a title pill and green dot) or "boxed", e.g. `{ "preset": "card", "title": "Workflows" }`; a CSS object applies to the content area. The title may reference form fields as `$fieldName`. Unset renders no frame.
+- `layout.collapsible` / `layout.collapsed` (boolean, optional, card only) - `"collapsible": true` makes the title pill a toggle (chevron before the title) so the card can be folded; `"collapsed": true` sets the initial state to folded and implies `collapsible`. While folded, the retriever and polling are held back. Example: `{ "preset": "card", "title": "Job Logs", "collapsible": true, "collapsed": true }`
+- `showRefreshButton` on a card layout puts the button on the top border at the right corner, opposite the title pill
+- `useLabel=true` (boolean, optional) - false hides the label row (handy with `layout`, which has its own title)
+- `showRefreshButton=false` (boolean, optional) - Show a button next to the search box that re-fetches the rows
+- `collapseOnSelect=false` (boolean, optional) - After the user clicks a row, fold the table into a one-line summary of the selected row with a "Expand" button that brings the table back. Restored values do not collapse the table.
+- `collapseRestoredValue=false` (boolean, optional) - With `collapseOnSelect`: a value set from outside (a restored form, or a workflow opened from the start page) folds the table too. A value that is not among the loaded rows leaves the table open.
+- `hideLabelWhenCollapsed=false` (boolean, optional) - While the table is folded to the selected row, hide the label; the folded view's column headers still say what the row is.
+- `pagination=false` (boolean, optional) - Use pages instead of scrolling
+- `emptyMessage="No options available"` (string, optional) - Text shown when there are no rows
+- `help` (string, optional) - Help text displayed below the table
+- `refreshInterval` (number, optional) - Re-fetch the rows every this many seconds. Omit/0 to fetch only when shown and when a `$field` in `retrieverParams` changes. Paused while the browser tab is hidden; a failed poll keeps the current rows.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); polling only runs while it is true, with one final fetch when it turns false
+
+### Examples
+#### Example 1
+```json
+// Retriever output: header names plus rows of { value, label: [one cell per column] }.
+// The number of columns is whatever the script returns; cells may be strings, numbers, null.
+{
+"columns": ["Name", "State", "Elapsed"],
+"rows": [
+{ "value": "123", "label": ["sim1", "RUNNING", "1:02"] },
+{ "value": "124", "label": ["sim2", "PENDING", null] }
+]
+}
+// Clicking a row sets the field to { value: "123", label: ["sim1", "RUNNING", "1:02"] }
+```
+
+#### Example 2
+```json
+// Schema: columns entries refine the retrieved headers by position (widths, alignment, ...)
+{
+"type": "dynamicTable",
+"name": "job",
+"retriever": "retrievers/my_jobs.sh",
+"columns": [{ "width": "40%" }, {}, { "align": "right" }],
+"maxHeight": "250px"
+}
+```
+
+#### Example 3
+```json
+// Legacy form: array of { value, label, ...extra keys }; every key except `value` is a column
+// retriever output: [{"value":"123","label":"sim1","state":"RUNNING"}]
+```
+
+*Source: `src/schemaRendering/schemaElements/DynamicTable.js`*
+
+---
+
+## DynamicViewer
+
+A sandboxed iframe-based viewer component that can load external CDN libraries and execute custom initialization code. Supports dynamic data fetching via retriever scripts.
+
+### Properties
+- `name - Component name for form submission` (string) - 
+- `retriever` (string, optional) - Path to retriever script for dynamic data
+- `retrieverPath` (string, optional) - Alias for retriever
+- `retrieverParams` (Object, optional) - Parameters with $fieldName references for dynamic values
+- `value - Viewer configuration object` (Object) - 
+- `value.title` (string, optional) - Title displayed in card header
+- `value.description` (string, optional) - Description shown under title
+- `value.cdnLibraries` (string|string[], optional) - CDN URLs to load (must be from approved sources)
+- `value.initCode` (string, optional) - JavaScript code to execute in iframe, or a path to a .js file (e.g. "viewers/myViewer.js") whose content will be fetched and used
+- `value.data` (Object, optional) - Static data passed to initCode (overridden by retriever)
+- `value.height="600px"` (string, optional) - Iframe height
+- `value.footer` (string, optional) - Footer text
+
+### Examples
+#### Example 1
+```json
+// Static data viewer
+{
+"type": "dynamicViewer",
+"name": "proteinViewer",
+"value": {
+"title": "Protein Viewer",
+"cdnLibraries": ["https://3dmol.csb.pitt.edu/build/3Dmol-min.js"],
+"initCode": "// Use data variable",
+"data": { "pdbId": "1CRN" }
+}
+}
+```
+
+#### Example 2
+```json
+// Dynamic data viewer with retriever
+{
+"type": "dynamicViewer",
+"name": "proteinViewer",
+"retriever": "retrievers/fetch_protein.sh",
+"retrieverParams": { "proteinId": "$selectedProtein" },
+"value": {
+"title": "Protein Viewer",
+"cdnLibraries": ["https://3dmol.csb.pitt.edu/build/3Dmol-min.js"],
+"initCode": "// data variable contains fetched result"
+}
+}
+```
+
+*Source: `src/schemaRendering/schemaElements/DynamicViewer.js`*
 
 ---
 
@@ -368,7 +767,8 @@ Executes dynamic scripts without any visual output. Takes no space and displays 
 - `value` (string, optional) - Static value (used when no retriever is specified)
 - `retriever` (string, optional) - Path to the script file to execute (for dynamic execution)
 - `retrieverParams` (Object, optional) - Parameters passed to the script as environment variables
-- `refreshInterval` (number, optional) - Auto-execution interval in seconds
+- `refreshInterval` (number, optional) - Auto-execution interval in seconds. Paused while the browser tab is hidden; a poll is skipped if the previous one is still running.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); periodic refresh only runs while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
 - `setError` (function, optional) - Function to handle errors during script execution
 
 ### Examples
@@ -392,7 +792,6 @@ Executes dynamic scripts without any visual output. Takes no space and displays 
 "name": "staticAction",
 "value": "some_static_value"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Hidden.js`*
@@ -441,7 +840,6 @@ A composite form component that combines job name input and location picker in a
 "showLocation": true,
 "help": "Job name is fixed, but you can change the location"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/JobNameLocation.js`*
@@ -450,33 +848,44 @@ A composite form component that combines job name input and location picker in a
 
 ## Module
 
-A module selection component that allows users to search and select software modules from different toolchains. Features autocomplete suggestions from a server, toolchain selection, and visual representation of selected modules as removable badges.
+A module selection component that allows users to search and select software modules from different toolchains. Features autocomplete suggestions from a server, toolchain selection, and visual representation of selected modules as removable badges. The environment creator must set `module_db_root` to a directory the OOD host can read; Drona has no default for it. A toolchain value is the toolchain's module name, e.g. `foss/2024a`, and `""` means no toolchain. Its database is `<module_db_root>/<value>.sqlite3`, e.g. `foss/2024a.sqlite3`; the default (no toolchain) is `modules.sqlite3`. The first module a user adds is preceded by the chosen toolchain, so `foss/2024a` is loaded before it. Without a toolchains list, the dropdown shows the non-empty databases found under `module_db_root`, so each cluster offers what its OOD host has; if the directory is missing, the dropdown is empty. Older values such as `modules-foss/2024a` and `modules`, and databases in `modules-foss/` directories, still work. The Generic environment's `configuration/README` describes how to build the databases with `generate_modules_db.py`. The shared `drona_module_picker.json` component has no `module_db_root` either: an environment that uses it sets the key next to its `$ref`.
 
 ### Properties
 - `name - Input field name, used for form submission` (string) - 
 - `label` (string, optional) - Display label for the field
 - `value` (string, optional) - Default/initial value as space-separated list of modules
-- `toolchains - Array of toolchain options, each with value and label properties` (Array) - 
+- `toolchains` (Array, optional) - Toolchain options, each with value (the toolchain module name, "" for none) and an optional label (defaults to the value). Omit it to list the toolchains that have a database under module_db_root; set it to pin a fixed list.
 - `toolchainName="toolchain"` (string, optional) - Name for the toolchain select input
 - `help` (string, optional) - Help text displayed below the input
+- `module_db_root` (string) - Directory that holds the module databases. Set by the environment creator; no default.
 
-### Example
+### Examples
+#### Example 1
 ```json
-// Module selection component with multiple toolchains
+// Module selection; toolchains are listed from the databases under module_db_root
 {
 "type": "module",
 "name": "moduleList",
 "label": "Module",
 "value": "gcc/9.3.0 openmpi/4.0.5",
-"toolchains": [
-{ "value": "modules", "label": "Modules" },
-{ "value": "lmod-gcc", "label": "GCC Modules" },
-{ "value": "lmod-intel", "label": "Intel Modules" }
-],
+"module_db_root": "/path/readable/by/ood/modules",
 "toolchainName": "toolchain",
 "help": "Search and select software modules for your environment"
 }
-/
+```
+
+#### Example 2
+```json
+// Pinned toolchain list (value = toolchain module name, "" = none)
+{
+"type": "module",
+"name": "moduleList",
+"module_db_root": "/path/readable/by/ood/modules",
+"toolchains": [
+{ "label": "No toolchain (default)", "value": "" },
+{ "label": "foss/2024a", "value": "foss/2024a" }
+]
+}
 ```
 
 *Source: `src/schemaRendering/schemaElements/Module.js`*
@@ -511,7 +920,6 @@ A numeric input field component for collecting numerical values. Supports minimu
 "placeholder": "Enter a number",
 "help": "Numeric input with min/max constraints"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Number.js`*
@@ -528,6 +936,9 @@ A file and directory picker component that allows users to browse and select fil
 - `localLabel - Label for the local file browser button` (string) - 
 - `remoteLabel` (string, optional) - Label for remote file upload button (if omitted, remote upload option isn't shown)
 - `showFiles="false"` (string|boolean, optional) - Whether to show files in directory listings ("true" or "false")
+- `allowedFileTypes` (string, optional) - Comma-separated list of file extensions to allow (e.g. "csv,txt,json"); non-matching files are hidden from the browser. Leading dots are optional, matching is case-insensitive, and directories are always shown regardless of this filter.
+- `showHidden=true` (string|boolean, optional) - Whether to include dot-prefixed hidden files and directories (e.g. ".git", ".config") in the browser listing ("true" or "false")
+- `multiple=false` (string|boolean, optional) - When true, each browse adds one more file/directory to a list instead of replacing a single value. The submitted value becomes a colon-joined string of the chosen full paths (e.g. "/scratch/a:/scratch/b"), matching shell $PATH-style lists. Single-select behavior (a plain path string) is unchanged when this is left unset.
 - `defaultLocation` (string, optional) - Default path to show in the input field
 - `defaultPaths` (Object, optional) - Custom paths to show as quick access buttons (key:label, value:path)
 - `useHPCDefaultPaths=true` (boolean, optional) - Whether to use system default paths
@@ -543,6 +954,7 @@ A file and directory picker component that allows users to browse and select fil
 "localLabel": "Browse Directories",
 "remoteLabel": "Upload File",
 "showFiles": "true",
+"allowedFileTypes": "csv,txt,json",
 "defaultLocation": "$HOME",
 "defaultPaths": {
 "HomeCustom": "$HOME"
@@ -550,7 +962,6 @@ A file and directory picker component that allows users to browse and select fil
 "useHPCDefaultPaths": true,
 "help": "Select a file or directory location"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Picker.js`*
@@ -566,6 +977,8 @@ A radio button group component that allows users to select a single option from 
 - `label` (string, optional) - Display label for the field
 - `options - Array of option objects, each with value and label properties` (Array) - 
 - `value` (string, optional) - Default/initial selected value
+- `style` (string, optional) - Option appearance: "default" or "button" (button-style options)
+- `layout` (string | Object | Array, optional) - Group layout: `"inline"` | `"list"` | `"grid"` | `"boxed"` | `"card"`, a preset with params, a CSS object, or an array of these. See [Choice element styling](#choice-element-styling)
 - `help` (string, optional) - Help text displayed below the input
 
 ### Example
@@ -575,6 +988,7 @@ A radio button group component that allows users to select a single option from 
 "type": "radioGroup",
 "name": "priority",
 "label": "RadioGroup",
+"style": "button",
 "options": [
 { "value": "low", "label": "Low" },
 { "value": "medium", "label": "Medium" },
@@ -583,7 +997,6 @@ A radio button group component that allows users to select a single option from 
 "value": "medium",
 "help": "Select one option from multiple choices"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/RadioGroup.js`*
@@ -596,6 +1009,7 @@ A layout component that organizes form fields in a horizontal row. It wraps mult
 
 ### Properties
 - `elements - Array of field configuration objects to be rendered in the row` (Array) - 
+- `layout` (string | Object | Array, optional) - Optional frame around the container: `"card"` or `"boxed"`, e.g. `{ "preset": "card", "title": "Job Resources" }`. See [Choice element styling](#choice-element-styling). Unset renders no frame
 
 ### Example
 ```json
@@ -623,7 +1037,6 @@ A layout component that organizes form fields in a horizontal row. It wraps mult
 }
 }
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/RowContainer.js`*
@@ -657,7 +1070,6 @@ A dropdown select component based on react-select that provides a customizable s
 "value": { "value": "option1", "label": "Option 1" },
 "help": "Select one option from the dropdown"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Select.js`*
@@ -679,8 +1091,10 @@ Displays static or dynamically fetched text content. Can show plain text or HTML
 - `retrieverParams` (Object, optional) - Parameters passed to the script as environment variables, values with $ prefix will be replaced with form values
 - `allowHtml=false` (boolean, optional) - Whether to render content as HTML using dangerouslySetInnerHTML
 - `showRefreshButton=false` (boolean, optional) - Whether to show a manual refresh button for dynamic content
-- `refreshInterval` (number, optional) - Auto-refresh interval in seconds
+- `refreshInterval` (number, optional) - Auto-refresh interval in seconds. Paused while the browser tab is hidden; a poll is skipped if the previous one is still running. A failed poll keeps the previous content with an inline "Refresh failed" note, and only raises the global error after several failures in a row.
+- `refreshWhile` (string, optional) - Condition (same syntax as `condition`); auto-refresh only runs while it is true, with one final refresh when it turns false, e.g. "!drona_status.DONE"
 - `isHeading=false` (boolean, optional) - Whether to style the text as a heading with larger, bold font
+- `layout` (string | Object | Array, optional) - Optional frame: `"card"` (rounded card with a title pill and green dot) or `"boxed"`, e.g. `{ "preset": "card", "title": "Job Efficiency" }`; a CSS object applies to the content area. The title may reference form fields as `$fieldName`, e.g. `"Resource Usage · Job $jobs"`. See [Choice element styling](#choice-element-styling). Unset renders no frame
 - `setError` (function, optional) - Function to handle errors during content fetching
 
 ### Examples
@@ -722,7 +1136,6 @@ Displays static or dynamically fetched text content. Can show plain text or HTML
 "allowHtml": true,
 "refreshInterval": 30
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/StaticText.js`*
@@ -751,7 +1164,6 @@ A standard text input field component for collecting single-line text input. Pro
 "placeholder": "Enter your text here",
 "help": "Standard single-line text input field"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Text.js`*
@@ -782,7 +1194,6 @@ A multi-line text input field component for collecting longer text content. Prov
 "placeholder": "Enter multi-line text here",
 "help": "Multi-line text input for longer content"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/TextArea.js`*
@@ -809,7 +1220,6 @@ A time duration input component that allows users to specify time periods using 
 "value": "36:30",
 "help": "Specify a time duration in days, hours, and minutes"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Time.js`*
@@ -842,7 +1252,6 @@ A compound input component that combines a numeric value with a unit selector. U
 ],
 "help": "Select a numeric value with units"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Unit.js`*
@@ -872,7 +1281,6 @@ A file and directory uploader component that allows users to select and upload i
 "acceptedFileTypes": ["text/*", "application/json", ".csv"],
 "help": "Upload files or directories with support for multiple file selection"
 }
-/
 ```
 
 *Source: `src/schemaRendering/schemaElements/Uploader.js`*

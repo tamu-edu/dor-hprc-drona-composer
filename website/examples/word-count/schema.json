@@ -1,0 +1,8 @@
+{
+  "CreateManageContainer": {
+    "type": "container",
+    "elements": {
+      "$ref": "$DRONA_RUNTIME_DIR/forms/drona_create_manage-table.json"
+    }
+  }
+}

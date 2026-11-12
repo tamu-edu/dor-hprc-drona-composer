@@ -248,7 +248,7 @@ export function useJobSocket() {
     return false;
   };
 
-  const startHttpJob = async (bashCmd, drona_job_id = null, job_location = null, env_name = null, env_dir = null) => {
+  const startHttpJob = async (bashCmd, drona_job_id = null, job_location = null, env_name = null, env_dir = null, run = {}) => {
     try {
       const url = `${baseUrl.current}/ws-start-job`;
       if (DEBUG) console.log('[DEBUG] Starting job URL:', url);
@@ -266,7 +266,10 @@ export function useJobSocket() {
           ...(drona_job_id && { drona_job_id: drona_job_id }),
           ...(job_location && { job_location: job_location }),
           ...(env_name && { env_name: env_name }),
-          ...(env_dir && { env_dir: env_dir })
+          ...(env_dir && { env_dir: env_dir }),
+          ...(run.name && { wf_name: run.name }),
+          ...(run.run_id && { run_id: run.run_id }),
+          ...(run.run_dir && { run_dir: run.run_dir })
         })
       });
 
@@ -336,10 +339,15 @@ export function useJobSocket() {
           }
 
           if (initialRequest.status === 200 && initialRequest.response && initialRequest.response.bash_cmd && initialRequest.response.drona_job_id && initialRequest.response.location) {
-            startHttpJob(initialRequest.response.bash_cmd, initialRequest.response.drona_job_id, initialRequest.response.location,
-              initialRequest.response.env_name, initialRequest.response.env_dir);
+            const r = initialRequest.response;
+            // run_id/run_dir are set for a run on an existing workflow (drona_target_wf)
+            startHttpJob(r.bash_cmd, r.drona_job_id, r.location, r.env_name, r.env_dir,
+              { name: r.name, run_id: r.run_id, run_dir: r.run_dir });
           } else {
-            appendOutput(`\nError starting the job: ${initialRequest.status}\n`);
+            const serverError = initialRequest.response && initialRequest.response.error;
+            appendOutput(serverError
+              ? `\nError starting the job: ${serverError}\n`
+              : `\nError starting the job: ${initialRequest.status}\n`);
             setStatus('error');
           }
         }

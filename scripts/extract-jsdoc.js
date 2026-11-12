@@ -55,15 +55,24 @@ function extractJSDocFromFile(filePath) {
           description: propertyMatch[3]
         };
       }
-    } else if (line.startsWith('/**') || line.startsWith('*/') || line === '') {
+    } else if (line.startsWith('/**') || line.startsWith('*/') || line === '' || line === '/') {
+      // A closing "*/" with nothing else on the line strips (via the "* " prefix
+      // regex above) down to a bare "/" — an artifact of the comment delimiter,
+      // not real content. Without this it gets appended to whatever the last
+      // example/property was, e.g. a stray "/" line or " /" suffix.
       continue;
     } else {
       if (currentSection === 'description' && result.description && !line.startsWith('@')) {
         result.description += ' ' + line;
+      } else if (currentProperty && !line.startsWith('@')) {
+        // A @property line, once seen, always "owns" subsequent continuation lines
+        // until the next @-tag — even though currentSection is still 'example' (no
+        // tag resets it to 'property'). Must be checked before the example branch,
+        // otherwise multi-line @property descriptions get silently appended to the
+        // last @example's JSON instead of the property they continue.
+        currentProperty.description += ' ' + line;
       } else if (currentSection === 'example' && !line.startsWith('@')) {
         currentExample += line + '\n';
-      } else if (currentProperty && !line.startsWith('@')) {
-        currentProperty.description += ' ' + line;
       }
     }
   }

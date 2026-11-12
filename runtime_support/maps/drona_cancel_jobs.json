@@ -1,0 +1,3 @@
+{
+  "CANCEL": "!retrieve_cancel_jobs($drona_create_manage_mode, $drona_cancel_jobs, $drona_info_jobs)"
+}

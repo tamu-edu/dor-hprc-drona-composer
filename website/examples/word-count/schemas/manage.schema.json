@@ -1,0 +1,40 @@
+{
+  "hidden_jobs": {
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_jobs.json#/drona_hidden_jobs_check"
+  },
+  "hidden_status": {
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_status.json#/drona_hidden_selected_job_status_check"
+  },
+  "hidden_jobdir": {
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_jobdir.json#/drona_hidden_jobdir_path"
+  },
+  "workflowActions": {
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_manage_actions.json#/drona_workflowActions"
+  },
+  "workingDirectory": {
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_info_jobdir_view.json#/drona_workingDirectoryBar"
+  },
+  "slurm_jobs": {
+    "$ref": "$DRONA_RUNTIME_DIR/forms/drona_slurm_jobs_table.json#/drona_slurmJobsTable"
+  },
+  "results": {
+    "type": "staticText",
+    "name": "word_count_results",
+    "label": "",
+    "isDynamic": true,
+    "retriever": "retrievers/show_results.sh",
+    "retrieverParams": {
+      "JOB_DIR": "$drona_job_dir"
+    },
+    "refreshInterval": 30,
+    "refreshWhile": "!drona_status.DONE",
+    "showRefreshButton": true,
+    "allowHtml": true,
+    "condition": "!drona_job_dir.",
+    "layout": {
+      "preset": "card",
+      "title": "Top Words",
+      "dot": false
+    }
+  }
+}

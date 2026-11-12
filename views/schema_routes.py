@@ -1,12 +1,39 @@
-from flask import request, jsonify, current_app as app
+from flask import request, jsonify, make_response, current_app as app
 import os
 import json
 import jsonref
+import signal
 import subprocess
+import time
 import traceback
+from string import Template
+from urllib.request import urlopen
+from urllib.parse import urlparse, unquote
 from .error_handler import APIError, handle_api_error
 from copy import deepcopy
 from .utils import get_envs_dir, get_runtime_dir
+from .env_api import check_compatible, read_env_requirement
+from .logger import Logger
+from runtime_support.db_access.builtin_retrievers import BUILTIN_REGISTRY, BuiltinRetrieverError
+from runtime_support import drona_runtime_paths
+
+# Every retriever failure/timeout is appended here (one JSON object per line),
+# so intermittent problems such as a slow Slurm controller can be diagnosed
+# from data rather than from occasional UI alerts.
+retriever_error_logger = Logger(os.path.join(
+    os.path.dirname(os.getenv('LOG_DIRECTORY', 'logs/drona_log')), 'retriever_errors'))
+
+def _log_retriever_failure(kind, script, duration, env_vars, message):
+    params = {k: v for k, v in (env_vars or {}).items() if k not in ('DRONA_ENV_DIR', 'DRONA_ENV_NAME')}
+    retriever_error_logger.log(json.dumps({
+        'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'user': os.getenv('USER', 'unknown'),
+        'kind': kind,
+        'script': script,
+        'duration_s': round(duration, 2),
+        'params': params,
+        'message': (message or '')[:500],
+    }))
 
 CONTAINER_TYPES = {
     "rowContainer", "container", "collapsibleRowContainer",
@@ -23,8 +50,25 @@ def iterate_schema(schema_dict):
         if value.get("type") in CONTAINER_TYPES and "elements" in value:
             yield from iterate_schema(value["elements"])
 
+def _unwrap_json_params(params):
+    """
+    The frontend JSON.stringify's every resolved retrieverParams value before
+    sending it as a query param, so it can carry non-string values through a
+    query string. Undo that in place: a JSON object becomes its 'value' key
+    (or itself if there is none), anything else becomes its parsed value
+    coerced to str, and anything that fails to parse (e.g. DRONA_ENV_DIR, a
+    plain path) passes through unchanged. Returns the same dict for chaining.
+    """
+    for key, value in params.items():
+        try:
+            parsed = json.loads(value)
+            params[key] = parsed.get('value', parsed) if isinstance(parsed, dict) else str(parsed)
+        except Exception:
+            pass
+    return params
+
 def execute_script(
-    retriever_path, 
+    retriever_path,
     env_vars=None, 
     script_type="Generic", 
     parse_json=False, 
@@ -54,14 +98,16 @@ def execute_script(
         final_retriever_path = os.path.join(env_vars["DRONA_ENV_DIR"], retriever_path)
 
     if not os.path.exists(final_retriever_path):
-        fallback_path = os.path.join(get_runtime_dir(), "retriever_scripts", retriever_path)
-        if os.path.exists(fallback_path):
+        # Shared retrievers: schedulers/<scheduler>/retrievers -> retrievers -> legacy/retrievers
+        fallback_path = drona_runtime_paths.find_retriever(retriever_path)
+        if fallback_path:
             final_retriever_path = fallback_path
         else:
             raise APIError(
                 f"{script_type} script not found in any of the searched paths",
                 status_code=404,
-                details={"path 1": final_retriever_path, "path 2": fallback_path}
+                details={"path 1": final_retriever_path,
+                         "shared": [os.path.join(d, retriever_path) for d in drona_runtime_paths.retriever_dirs()]}
             )
     
     retriever_path = final_retriever_path
@@ -77,64 +123,138 @@ def execute_script(
     execution_env["DRONA_RUNTIME_DIR"] = get_runtime_dir() 
 
     if env_vars:
-        for key, value in env_vars.items():
-            try:
-                parsed = json.loads(value)
-                env_vars[key] = parsed.get('value', parsed) if isinstance(parsed, dict) else str(parsed)
-            except:
-                pass
-        execution_env.update(env_vars)
+        execution_env.update(_unwrap_json_params(env_vars))
     
+    # Retrievers are polled by the UI (e.g. every 10-30s on the Manage page), so
+    # a hung squeue/sstat must not hold a worker indefinitely: other polls queue
+    # behind it and the proxy starts returning 502/504s. Kill it after
+    # retriever_timeout (resolved once at startup in app.py) and report which
+    # script was slow instead.
+    # start_new_session puts the script and anything it spawns (squeue, sstat,
+    # ...) in their own process group, so a timeout can kill all of them;
+    # killing only the shell would leave children holding the output pipes.
+    timeout = app.config['retriever_timeout']
+    start = time.monotonic()
     try:
-        result = subprocess.run(
+        proc = subprocess.Popen(
             cmd,
             shell=True,
-            check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True,
             cwd=retriever_dir,
-            env=execution_env
+            env=execution_env,
+            start_new_session=True
         )
-        
-        if result.returncode != 0:
-            raise APIError(
-                f"The {script_type.lower()} script failed with non-zero exit code: {result.returncode}",
-                status_code=400,
-                details={
-                    'script': retriever_path,
-                    'error': result.stderr,
-                    'output': result.stdout[:500] + ('...' if len(result.stdout) > 500 else '')
-                }
-            )
-        
-        if parse_json:
-            try:
-                return json.loads(result.stdout)
-            except json.JSONDecodeError as e:
-                raise APIError(
-                    f"The {script_type.lower()} script did not return valid JSON",
-                    status_code=400,
-                    details={
-                        'error': str(e),
-                        'output': result.stdout[:500] + ('...' if len(result.stdout) > 500 else ''),
-                        'script': retriever_path
-                    }
-                )
-        else:
-            return result.stdout
-            
-    except subprocess.CalledProcessError as e:
+    except OSError as e:
+        raise APIError(
+            f"Failed to execute {script_type.lower()} script",
+            status_code=500,
+            details={'error': str(e), 'script': retriever_path, 'cmd': cmd}
+        )
+
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.communicate()
+        _log_retriever_failure('timeout', retriever_path, time.monotonic() - start, env_vars,
+                               f"exceeded {timeout}s")
+        raise APIError(
+            f"The {script_type.lower()} script timed out after {timeout}s",
+            status_code=504,
+            details={'script': retriever_path, 'timeout': timeout}
+        )
+
+    duration = time.monotonic() - start
+
+    if proc.returncode != 0:
+        _log_retriever_failure('exit', retriever_path, duration, env_vars,
+                               f"exit code {proc.returncode}: {stderr}")
         raise APIError(
             f"Failed to execute {script_type.lower()} script",
             status_code=500,
             details={
-                'error': str(e),
-                'stderr': e.stderr,
+                'error': f"Command '{cmd}' returned non-zero exit status {proc.returncode}.",
+                'stderr': stderr,
                 'script': retriever_path,
                 'cmd': cmd
             }
         )
+
+    if parse_json:
+        try:
+            return json.loads(stdout)
+        except json.JSONDecodeError as e:
+            _log_retriever_failure('invalid_json', retriever_path, duration, env_vars, str(e))
+            raise APIError(
+                f"The {script_type.lower()} script did not return valid JSON",
+                status_code=400,
+                details={
+                    'error': str(e),
+                    'output': stdout[:500] + ('...' if len(stdout) > 500 else ''),
+                    'script': retriever_path
+                }
+            )
+    return stdout
+
+# Tier 0 declarative built-ins (runtime_support/db_access/builtin_retrievers.py)
+# run in-process with no subprocess spawn: a schema element opts in by setting
+# its retriever to "builtin:<name>" instead of a script path, e.g.
+# "retriever": "builtin:db_lookup". Everything else about how params reach the
+# retriever (query args -> env_vars dict) stays identical to the script path.
+BUILTIN_PREFIX = "builtin:"
+
+def is_builtin_retriever(retriever_path):
+    return bool(retriever_path) and retriever_path.startswith(BUILTIN_PREFIX)
+
+def execute_builtin(retriever_path, params):
+    """
+    Run a Tier 0 built-in in-process and return its (already-JSON-serializable)
+    result. Unlike execute_script, there is no subprocess, no timeout, and no
+    stdout/JSON parsing step - the built-in returns a Python value directly.
+    """
+    name = retriever_path[len(BUILTIN_PREFIX):]
+    fn = BUILTIN_REGISTRY.get(name)
+    if fn is None:
+        raise APIError(
+            f"Unknown built-in retriever: {name}",
+            status_code=400,
+            details={'available': sorted(BUILTIN_REGISTRY)}
+        )
+    start = time.monotonic()
+    try:
+        return fn(params)
+    except BuiltinRetrieverError as e:
+        _log_retriever_failure('builtin_invalid_params', retriever_path,
+                               time.monotonic() - start, params, str(e))
+        raise APIError(str(e), status_code=400, details={'builtin': name, 'params': params})
+
+def _make_schema_loader(env_dir):
+    """
+    Build the loader jsonref uses for every file a $ref points at (local or remote).
+    Its default loader does not know our placeholders, so any file it follows a $ref into
+    (e.g. schemas/create.schema.json, or a shared form component) would see them
+    unsubstituted. Substituting here makes them work at any nesting depth:
+      $DRONA_RUNTIME_DIR - the fixed runtime_support directory
+      $DRONA_ENV_DIR     - the environment being loaded, so shared components can point at
+                           its fixed layout, e.g. $DRONA_ENV_DIR/schemas/create.schema.json
+    """
+    def loader(uri, **kwargs):
+        parsed = urlparse(uri)
+        if parsed.scheme == "file":
+            # Old runtime_support locations (form_components/...) resolve via aliases.json
+            with open(drona_runtime_paths.resolve(unquote(parsed.path)), encoding="utf-8") as content:
+                raw = content.read()
+        else:
+            with urlopen(uri) as content:
+                raw = content.read().decode("utf-8")
+        raw = Template(raw).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir(), DRONA_ENV_DIR=env_dir)
+        return json.loads(raw, **kwargs)
+    return loader
 
 def convert_jsonref_to_dict(obj):
     """
@@ -180,7 +300,10 @@ def get_schema_route(environment):
     try:
         abs_path = os.path.abspath(base_path)
         base_uri = f'file:///{abs_path.lstrip("/").replace(os.sep, "/")}/'
-        jsonref_result = jsonref.loads(schema_data, base_uri=base_uri, proxies=True)
+        # Allows $ref targets to point at the fixed runtime_support directory via e.g.
+        # "$ref": "$DRONA_RUNTIME_DIR/foo.json#/defs/bar" (or $DRONA_ENV_DIR/... for the environment's own files)
+        schema_data = Template(schema_data).safe_substitute(DRONA_RUNTIME_DIR=get_runtime_dir(), DRONA_ENV_DIR=abs_path)
+        jsonref_result = jsonref.loads(schema_data, base_uri=base_uri, proxies=True, loader=_make_schema_loader(abs_path))
         
         schema_dict = convert_jsonref_to_dict(jsonref_result)
         
@@ -200,7 +323,13 @@ def get_schema_route(environment):
             element["isEvaluated"] = False
             element["isShown"] = False
 
-    return jsonref.dumps(schema_dict)
+    response = make_response(jsonref.dumps(schema_dict))
+    response.mimetype = "application/json"
+    # The schema still loads when the environment needs a newer Drona; the frontend shows this as a warning
+    compatible, reason = check_compatible(read_env_requirement(base_path))
+    if not compatible:
+        response.headers["X-Drona-Env-Warning"] = reason
+    return response
 
 def get_map_route(environment):
     """Get map.json for a specific environment"""
@@ -295,14 +424,28 @@ def evaluate_script_route():
         if k not in ["retriever_path"]
     }
 
-    result = execute_script(
-        retriever_path=retriever_path,
-        env_vars=env_vars if env_vars else None,
-        script_type="Dynamic Script",
-        parse_json=False
-    )
+    # TEMP (timing investigation): report time spent in this handler as a
+    # Server-Timing header, visible in the browser's Network > Timing tab, to
+    # tell server work apart from browser/queue wait. Remove with the
+    # t_start / Server-Timing lines below once done.
+    t_start = time.monotonic()
 
-    return result
+    if is_builtin_retriever(retriever_path):
+        result = execute_builtin(retriever_path, _unwrap_json_params(env_vars))
+        response = jsonify(result)
+    else:
+        result = execute_script(
+            retriever_path=retriever_path,
+            env_vars=env_vars if env_vars else None,
+            script_type="Dynamic Script",
+            parse_json=False
+        )
+        response = make_response(result)
+
+    label = "".join(c for c in retriever_path if c.isalnum() or c in ":._-/")[-60:]
+    response.headers["Server-Timing"] = 'handler;dur=%.1f;desc="%s"' % (
+        (time.monotonic() - t_start) * 1000, label)
+    return response
 
 
 

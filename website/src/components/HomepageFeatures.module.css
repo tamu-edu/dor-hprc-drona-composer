@@ -5,7 +5,27 @@
   width: 100%;
 }
 
-.featureSvg {
-  height: 200px;
-  width: 200px;
+.feature {
+  margin-bottom: 1.5rem;
+}
+
+/* The whole card is a link; keep it looking like text, not a hyperlink */
+.featureLink,
+.featureLink:hover {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+}
+
+.featureLink:hover h3 {
+  color: var(--ifm-color-primary);
+}
+
+/* The illustrations have different shapes and margins; fit each into the same box */
+.featureImage {
+  height: 170px;
+  width: 100%;
+  max-width: 240px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
 }

@@ -1,0 +1,15 @@
+{
+  "drona_hidden_jobdir_path": {
+    "type": "hidden",
+    "name": "drona_job_dir",
+    "label": "Job Directory Path",
+    "failureNotice": "Working directory cannot be updated right now",
+    "isDynamic": true,
+    "condition": "!drona_info_jobs.",
+    "retrieverParams": {
+      "id": "$drona_create_manage_allworkflows",
+      "field": "location"
+    },
+    "retriever": "builtin:db_lookup"
+  }
+}

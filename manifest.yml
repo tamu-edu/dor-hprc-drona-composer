@@ -1,5 +1,6 @@
 ---
-name: Drona Composer
+name: Drona Workflow Engine
 category: Jobs
-description: Drona Composer
+subcategory: Workflows
+description: Drona Workflow Engine
 icon: ''
