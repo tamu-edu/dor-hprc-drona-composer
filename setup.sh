@@ -83,10 +83,10 @@ pip install -r requirements.txt
 # pip install -r requirements.txt.Python2.6.8
 
 
-# Release tarballs ship the built frontend in static/dist/, so Node is not needed there.
-# A git clone builds it here. After a frontend change, rebuild with: npm run build:prod:compress
-if [ -f static/dist/main.bundle.js ]; then
-  echo "Prebuilt frontend found in static/dist/, skipping the npm build."
+# Release tarballs ship a prebuilt static/dist/ and have no .git, so Node is not needed there.
+# A git clone always reinstalls and rebuilds, so a pull never leaves a stale node_modules or bundle.
+if [ ! -d .git ] && [ -f static/dist/main.bundle.js ]; then
+  echo "Prebuilt release package detected, skipping the npm build."
 else
   npm ci --no-audit --no-fund
   npm run build:prod:compress

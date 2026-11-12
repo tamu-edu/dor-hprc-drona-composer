@@ -13,6 +13,12 @@ says what environments can rely on and has its own changelog in [ENV_API_CHANGEL
 
 ## [Unreleased]
 
+### Fixed
+- `setup.sh` in a git clone now always runs `npm ci` and rebuilds the frontend. Before, it skipped both when an
+  earlier build had left `static/dist/` behind, so after a `git pull` the app could serve an old frontend or fail
+  to build with a missing package (such as `recharts`). Release packages still skip the npm build.
+
+
 ## [2.1.0] - 2026-11-12
 
 Easier installs: each release now comes with a prebuilt package, so the host needs only Python, not Node.
