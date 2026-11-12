@@ -13,6 +13,12 @@ says what environments can rely on and has its own changelog in [ENV_API_CHANGEL
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-12
+
+Easier installs: each release now comes with a prebuilt package, so the host needs only Python, not Node.
+Also moves the app to Flask 3. No configuration or environment changes are needed; existing installs should
+update their venv (see Changed).
+
 ### Added
 - Release packages: pushing a `v*` tag builds `drona-workflow-engine-<version>-prebuilt.tar.gz` (source plus the
   built frontend in `static/dist/`) with a SHA-256 checksum, and attaches both to the GitHub Release with the
@@ -449,6 +455,7 @@ The state of `master` as of PR #276. Highlights from 2025-11 to 2026-08:
   integration and resubmit.
 - Cluster auto-detection, Lustre quota, a quota request flow with validation, and cluster stats charts.
 
-[Unreleased]: https://github.com/tamu-edu/dor-hprc-drona-composer/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/tamu-edu/dor-hprc-drona-composer/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/tamu-edu/dor-hprc-drona-composer/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/tamu-edu/dor-hprc-drona-composer/compare/7115269...v2.0.0
 [1.0.0]: https://github.com/tamu-edu/dor-hprc-drona-composer/tree/7115269
