@@ -13,6 +13,11 @@ says what environments can rely on and has its own changelog in [ENV_API_CHANGEL
 
 ## [Unreleased]
 
+### Fixed
+- The frontend build no longer reads `config.yml`. The bundle embedded the `dashboard_url` of whoever built it,
+  and a clean checkout without `config.yml` could not be built. The URL now always comes from the page at
+  runtime, so one built bundle works on every install.
+
 ## [2.0.0] - 2026-11-11
 
 About 100 commits since `1.0.0`, merged in PR #307. This release introduces environment API 2.0. The
