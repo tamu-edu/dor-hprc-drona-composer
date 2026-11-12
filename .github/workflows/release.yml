@@ -30,7 +30,7 @@ jobs:
 
       # jsdom 29 (Jest 30) and the build need Node ^20.19, ^22.13 or >=24.
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
