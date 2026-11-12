@@ -13,3 +13,8 @@ environments-repo/
 /docs/
 API.md
 .env
+# Editor swap files and macOS metadata
+*.swp
+*.swo
+*~
+.DS_Store
