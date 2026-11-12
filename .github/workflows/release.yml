@@ -24,7 +24,7 @@ jobs:
       APP_DIR: dor-hprc-drona-composer   # fixed folder name: it sets the OOD URL
     steps:
       - name: Checkout tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ env.TAG }}
 
