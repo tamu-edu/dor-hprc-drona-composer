@@ -115,7 +115,6 @@ module.exports = (env, argv) => {
     alias: {
       react: path.resolve(__dirname, "node_modules/react"),
       "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
-      '@config': path.resolve(__dirname, 'config.yml'),
       '@composer_index': path.resolve(__dirname, 'src/composer', 'index.js')
     },
   },
