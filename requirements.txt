@@ -1,16 +1,19 @@
-click>=8.0.4
-#dataclasses
-Flask>=2.2.5
-Flask-Cors>=4.0.2
-importlib-metadata==4.8.3
-itsdangerous==2.0.1
-requests
-eventlet
-jsonref
-flask-socketio
-Jinja2>=3.1.4
-MarkupSafe>=2.0.1
-PyYAML>=6.0.1
-typing-extensions>=4.1.1
-Werkzeug>=3.0.3
-zipp>=3.19.1
+# Python dependencies of the Drona web app. Supported Python: 3.8 and newer.
+#
+# Only direct dependencies are listed; pip resolves the rest (click, itsdangerous, MarkupSafe, ...)
+# to versions that match. Upper bounds stop a new major version from arriving unannounced.
+#
+# Environment retriever scripts run in this same venv (Passenger starts the app through bin/python,
+# which activates .venv, and the scripts use "#!/usr/bin/env python3"). requests and PyYAML are
+# kept for them: removing a package here can break environments that import it.
+
+Flask>=3.0,<4
+Flask-Cors>=4.0.2,<7
+jsonref>=1.1,<2
+PyYAML>=6.0.1,<7
+requests>=2.32,<3
+
+# Security floors for packages Flask pulls in.
+Werkzeug>=3.0.3,<4
+Jinja2>=3.1.4,<4
+zipp>=3.19.1; python_version < "3.10"

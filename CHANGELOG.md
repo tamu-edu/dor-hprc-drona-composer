@@ -23,6 +23,17 @@ says what environments can rely on and has its own changelog in [ENV_API_CHANGEL
 - `setup.sh` skips the npm build when `static/dist/` already holds a built frontend, as in a release package.
   In a git clone, rebuild after frontend changes with `npm run build:prod:compress`.
 - `setup.sh` prints the app's URL when it finishes.
+- Python dependencies (`requirements.txt`):
+  - Flask 3 instead of Flask 2.2.5. The `itsdangerous==2.0.1` pin had held Flask at 2.2.5 while Werkzeug moved
+    to 3.x, a combination Flask 2.2 does not support (its test client crashed).
+  - Only direct dependencies are listed, with upper bounds on the major version. Security floors stay for
+    Werkzeug, Jinja2 and zipp.
+  - Removed: `flask-socketio` and `eventlet` (never used; no Socket.IO server is created), and the pins on
+    `click`, `importlib-metadata`, `itsdangerous`, `MarkupSafe` and `typing-extensions` (pip resolves them).
+  - `requests` and `PyYAML` stay because environment retriever scripts run in the app's venv and use them.
+  - Tested on Python 3.8, 3.9, 3.12 and 3.13.
+
+  To update an existing install, run `.venv/bin/pip install -r requirements.txt` and restart the app.
 
 ### Fixed
 - The frontend build no longer reads `config.yml`. The bundle embedded the `dashboard_url` of whoever built it,
