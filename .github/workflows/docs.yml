@@ -37,7 +37,7 @@ jobs:
       # here, after having verified the docs build cleanly.
       - name: Setup GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
       - name: Upload Docusaurus build artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: actions/upload-pages-artifact@v3
