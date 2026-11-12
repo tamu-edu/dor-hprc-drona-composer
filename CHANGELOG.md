@@ -8,12 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 The app version (this file, `package.json`) is separate from the environment API version `DRONA_ENV_API`, which
 says what environments can rely on and has its own changelog in [ENV_API_CHANGELOG.md](ENV_API_CHANGELOG.md).
 
-Earlier versions were never tagged. `1.0.0` is the state of `master` on 2026-08-18 (PR #276). The sections below
-it summarize the project history before that release, grouped by period.
+`2.0.0` is the first tagged release. `1.0.0` was never tagged: it is the state of `master` on 2026-08-18
+(PR #276). The sections below it summarize the project history before that release, grouped by period.
 
-## [2.0.0] - Unreleased
+## [Unreleased]
 
-The `hprc-dev` line: about 100 commits since `1.0.0`. This release introduces environment API 2.0. The
+## [2.0.0] - 2026-11-11
+
+About 100 commits since `1.0.0`, merged in PR #307. This release introduces environment API 2.0. The
 shared major number is a coincidence: the two versions change independently from here on. The main changes:
 
 - A shared **runtime library** (`runtime_support/`) of form components, map fragments, retrievers, job helpers
@@ -413,5 +415,6 @@ The state of `master` as of PR #276. Highlights from 2025-11 to 2026-08:
   integration and resubmit.
 - Cluster auto-detection, Lustre quota, a quota request flow with validation, and cluster stats charts.
 
-[2.0.0]: https://github.com/tamu-edu/dor-hprc-drona-composer/compare/master...hprc-dev
+[Unreleased]: https://github.com/tamu-edu/dor-hprc-drona-composer/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/tamu-edu/dor-hprc-drona-composer/compare/7115269...v2.0.0
 [1.0.0]: https://github.com/tamu-edu/dor-hprc-drona-composer/tree/7115269

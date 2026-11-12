@@ -22,7 +22,7 @@ installed environment is opened.
 
 ## 2.0
 
-First versioned API (the `hprc-dev` line). Environments written for it need at least:
+First versioned API, introduced in Drona 2.0.0. Environments written for it need at least:
 
 - `runtime_support`: `$DRONA_RUNTIME_DIR` / `$DRONA_ENV_DIR` in schema `$ref`s, shared form components
   (`forms/*.json`), map fragments (`maps/`), shared retriever scripts (`retrievers/`,
